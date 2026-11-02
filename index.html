@@ -5935,15 +5935,28 @@ function deleteEditedMessage() {
   deleteOwnMessage(id);
 }
 
+// Tab kuralı (sitenin her yerinde): odak nerede olursa olsun Tab → önce mesaj kutusu; mesaj kutusundayken → isim kutusu; isim kutusundayken → mesaj kutusu.
+// Yalnızca başka bir yazı alanında (not düzenleme, arama kutusu vb.), PIN ekranında, ekran gizliyken ve kurulum ekranında normal Tab çalışır.
 document.addEventListener('keydown', (event) => {
-  if (event.key !== 'Tab' || messageInput.disabled || document.body.classList.contains('nick-hidden')) return;
+  if (event.key !== 'Tab' || event.ctrlKey || event.altKey || event.metaKey) return;
+  if (event.defaultPrevented) return;
+  const root = document.documentElement;
+  if (root.classList.contains('pin-locked')) return;
+  const cover = document.getElementById('privacy-cover');
+  if (cover && cover.classList.contains('show')) return;
+  if (setupPanel && setupPanel.style.display === 'flex') return;
   const active = document.activeElement;
-  if (event.shiftKey) {
-    if (active === nickInput) { event.preventDefault(); messageInput.focus(); }
-  } else {
-    if (active === messageInput) { event.preventDefault(); nickInput.focus(); }
-  }
-});
+  if (active && active !== messageInput && active !== nickInput && active.closest &&
+      active.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""]')) return;
+  const nickOk = !document.body.classList.contains('nick-hidden') && !nickInput.disabled && nickInput.offsetParent !== null;
+  const msgOk = !messageInput.disabled && messageInput.offsetParent !== null;
+  let target = null;
+  if (active === messageInput) target = nickOk ? nickInput : null;
+  else if (active === nickInput) target = msgOk ? messageInput : null;
+  else target = msgOk ? messageInput : (nickOk ? nickInput : null);
+  event.preventDefault();
+  if (target && target !== active) { try { target.focus(); } catch (e) {} }
+}, true);
 
 function updateHistoryEntry(id, text, nick, ownFlag) {
   const list = readHistory();
