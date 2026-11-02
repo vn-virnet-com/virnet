@@ -288,7 +288,7 @@ body.names-inline .time-tag::after { content: '\00a0·\00a0'; }
 
 #send-btn { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: none; }
 /* Renk paleti şeridi: yalnızca isim kutusu görünürken vardır */
-body.has-menu:not(.nick-hidden) #typing-indicator { display: flex; }
+body #typing-indicator { display: none !important; }
 /* Gönder tuşunu yukarı sürükleyince açılan tik/çarpı menüsü */
 #chip-menu {
   position: fixed; z-index: 22500; display: none; flex-direction: column; gap: 4px; padding: 4px;
@@ -770,12 +770,26 @@ body.nick-hidden #nick-color-grid { display: grid; }
 .ncg-item.sel .nc-dot { box-shadow: 0 0 0 2px var(--accent); }
 
 /* ---- Şerit içi renk seçici (Yeni mesaj yolda şeridi) ---- */
-#np-dots { touch-action: none; flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 2px; margin: 0 8px 0 -2px; overflow: hidden; pointer-events: auto; }
+#sb-mid { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; justify-content: center; margin: 0 4px; }
+#auto-chip.show ~ #sb-mid { display: none; }
+#np-dots { touch-action: none; flex: 0 1 214px; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 2px; margin: 0; overflow: hidden; pointer-events: auto; }
+#nick-ghost { display: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-size: 13.5px; color: var(--c-88); opacity: 0.55; pointer-events: none; user-select: none; -webkit-user-select: none; }
+body.nick-hidden #nick-ghost { display: block; }
+/* Masaüstü: palet 5 renklik pencere; iki yandaki oklar üzerine gelince / tıklanınca paleti tamamen sağa ya da sola kaydırır */
+.np-arrow { display: none; flex: 0 0 auto; align-items: center; justify-content: center; width: 18px; height: 26px; color: var(--c-88); opacity: 0.55; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: opacity 0.15s ease; }
+.np-arrow svg { display: block; pointer-events: none; }
+.np-arrow:hover { opacity: 1; }
+.np-arrow.off { opacity: 0.15; cursor: default; }
+@media (min-width: 769px) {
+  body:not(.nick-hidden) .np-arrow { display: flex; }
+  #np-dots { position: relative; flex: 0 0 128px; width: 128px; justify-content: flex-start; scroll-behavior: smooth; }
+  #np-dots .np-item { flex: 0 0 24px; }
+}
 .np-item {
   flex: 0 1 24px; min-width: 10px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer;
   -webkit-tap-highlight-color: transparent; touch-action: none; user-select: none; -webkit-user-select: none;
 }
-#typing-indicator .np-item .nc-dot { opacity: 1; animation: none; }
+.np-item .nc-dot { opacity: 1; animation: none; }
 .np-item .nc-dot { width: 16px; max-width: calc(100% - 4px); aspect-ratio: 1 / 1; border-radius: 50%; box-sizing: border-box; display: block; }
 .np-item.sel .nc-dot { box-shadow: 0 0 0 2px var(--accent); }
 body.nick-hidden #np-dots { display: none; }
@@ -1123,6 +1137,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     <span id="settings-btn" title="Ayarlar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span>
   </div>
   <div id="auto-chip" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span class="ac-txt">Oto. Oynat</span><button type="button" id="auto-chip-x" aria-label="Otomatik oynatmayı kapat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div id="sb-mid"><span class="np-arrow" id="np-left" title="Sola"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg></span><div id="np-dots" role="listbox" aria-label="İsim rengi"></div><span class="np-arrow" id="np-right" title="Sağa"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span><span id="nick-ghost" aria-hidden="true"></span></div>
   <span id="bell-btn" title="Bildirimler"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></span>
   <span id="notes-btn" title="Notlar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></span>
   <span id="profile-btn" title="Notlar paneli"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="10" r="3"></circle><path d="M6.17 18.66a6 6 0 0 1 11.66 0"></path></svg></span>
@@ -1150,7 +1165,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
   </div>
 </div>
-<div id="typing-indicator"><div id="np-dots" role="listbox" aria-label="İsim rengi"></div><div id="live-toggle" role="switch" aria-checked="false" aria-label="Dinamik mesaj" title="Dinamik mesaj"><div class="lt-knob"></div></div></div>
+<div id="typing-indicator"><div id="live-toggle" role="switch" aria-checked="false" aria-label="Dinamik mesaj" title="Dinamik mesaj"><div class="lt-knob"></div></div></div>
 <div id="reply-bar">
   <span id="reply-bar-text">Yanıtlanıyor...</span>
   <span id="cancel-reply-btn">✕</span>
@@ -6522,15 +6537,9 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
   }, true);
   function place() {
     if (!cover.classList.contains('show')) return;
-    if (cornerMode()) {
-      coverEye.style.left = '1px';
-      coverEye.style.top = '-8px';
-      return;
-    }
-    const svg = eyeBtn.querySelector('svg');
-    const r = (svg || eyeBtn).getBoundingClientRect();
-    coverEye.style.left = (r.left + r.width / 2 - 24) + 'px';
-    coverEye.style.top = (r.top + r.height / 2 - 24) + 'px';
+    // Hem mobilde hem masaüstünde (tuş şeridi aşağıda olduğundan) geri gösteren göz tuşu her zaman sol üst köşede
+    coverEye.style.left = '1px';
+    coverEye.style.top = '-8px';
   }
   window.addEventListener('resize', place);
   if (window.visualViewport) { window.visualViewport.addEventListener('resize', place); window.visualViewport.addEventListener('scroll', place); }
@@ -7169,6 +7178,18 @@ function closeNotesPop() {
   else if (mqMobile.addListener) mqMobile.addListener(placeNotesBtn);
 })();
 
+// İsim kutusu gizliyken şeritte soluk gösterilen isim
+(function nickGhost() {
+  const g = document.getElementById('nick-ghost');
+  if (!g) return;
+  let last = null;
+  const sync = () => { const v = nickInput.value.trim(); if (v !== last) { last = v; g.textContent = v; } };
+  nickInput.addEventListener('input', sync);
+  nickInput.addEventListener('change', sync);
+  setInterval(sync, 250);
+  sync();
+})();
+
 (function initKeepKeyboard() {
   // Genel kural: başka bir yazma alanı seçilmediği ve klavye özellikle kapatılmadığı sürece, her işlemden sonra odak mesaj kutusunda kalır / geri gelir
   let kbWanted = false, lastPtr = 0;
@@ -7689,12 +7710,33 @@ if (window.visualViewport) {
     if (stripBox) stripBox.appendChild(el);
     return el;
   });
+  const arrL = document.getElementById('np-left'), arrR = document.getElementById('np-right');
+  let lastStripKey = null, lastStripVis = false;
+  function updateArrows() {
+    if (!stripBox || !arrL || !arrR) return;
+    const max = stripBox.scrollWidth - stripBox.clientWidth;
+    arrL.classList.toggle('off', stripBox.scrollLeft <= 1);
+    arrR.classList.toggle('off', stripBox.scrollLeft >= max - 1);
+  }
   function markStrip() {
     stripItems.forEach((el) => el.classList.toggle('sel', el.dataset.key === nickColorKey));
+    if (!stripBox) return;
+    const vis = stripBox.clientWidth > 0;
+    // Seçili renk pencerenin dışındaysa (masaüstü) görünür hale kaydır; yalnızca seçim değişince ya da şerit yeniden görününce
+    if (vis && (nickColorKey !== lastStripKey || !lastStripVis)) {
+      const sel = stripItems.find((el) => el.dataset.key === nickColorKey);
+      if (sel) {
+        const l = sel.offsetLeft, r = l + sel.offsetWidth;
+        if (l < stripBox.scrollLeft) stripBox.scrollLeft = l - 2;
+        else if (r > stripBox.scrollLeft + stripBox.clientWidth) stripBox.scrollLeft = r - stripBox.clientWidth + 2;
+      }
+    }
+    if (vis) lastStripKey = nickColorKey;
+    lastStripVis = vis;
+    updateArrows();
   }
   if (stripBox) {
-    // Parmağı şerit üzerinde sağa/sola kaydırdıkça seçim komşu renge tek tek geçer, her geçişte tıkır diye titrer
-    let dragId = null, startX = 0, moved = false;
+    // Renk noktasına dokununca seçilir (basılı tutup kaydırarak renk değiştirme yok)
     const idxAt = (x) => {
       let best = 0, bd = Infinity;
       stripItems.forEach((el, i) => {
@@ -7704,44 +7746,15 @@ if (window.visualViewport) {
       });
       return best;
     };
-    const curIdx = () => { const i = stripItems.findIndex((el) => el.dataset.key === nickColorKey); return i < 0 ? 0 : i; };
-    function scrubTo(target) {
-      const from = curIdx();
-      if (target === from) return 0;
-      setNickColor(stripItems[target].dataset.key);
-      markSelected();
-      return Math.abs(target - from);
-    }
-    function tick(steps) {
-      try {
-        if (steps <= 1) navigator.vibrate(12);
-        else { const pat = []; for (let i = 0; i < Math.min(steps, 4); i++) { if (i) pat.push(22); pat.push(12); } navigator.vibrate(pat); }
-      } catch (err) {}
-    }
     stripBox.addEventListener('pointerdown', (e) => {
       if (e.cancelable) e.preventDefault();
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-      dragId = e.pointerId; startX = e.clientX; moved = false;
-      try { stripBox.setPointerCapture(e.pointerId); } catch (err) {}
-      // Doğrudan dokunuşta atlanan renk sayısına bakmadan tek titreşim
-      const steps = scrubTo(idxAt(e.clientX));
-      try { navigator.vibrate(steps ? 12 : 8); } catch (err) {}
+      const t = stripItems[idxAt(e.clientX)];
+      if (t.dataset.key === nickColorKey) return;
+      setNickColor(t.dataset.key);
+      markSelected();
+      try { navigator.vibrate(12); } catch (err) {}
     });
-    stripBox.addEventListener('pointermove', (e) => {
-      if (e.pointerId !== dragId) return;
-      if (e.cancelable) e.preventDefault();
-      // Dokunurken parmağın hafifçe oynaması kaydırma sayılmasın
-      if (!moved) { if (Math.abs(e.clientX - startX) < 10) return; moved = true; }
-      const steps = scrubTo(idxAt(e.clientX));
-      if (steps) tick(steps);
-    });
-    const endDrag = (e) => {
-      if (e.pointerId !== dragId) return;
-      dragId = null;
-      try { stripBox.releasePointerCapture(e.pointerId); } catch (err) {}
-    };
-    stripBox.addEventListener('pointerup', endDrag);
-    stripBox.addEventListener('pointercancel', endDrag);
     stripBox.addEventListener('mousedown', (e) => e.preventDefault());
     // Klavyeyle tetiklenen tıklamalar (dokunuşlar yukarıda pointerdown'da işlendi)
     stripBox.addEventListener('click', (e) => {
@@ -7751,6 +7764,21 @@ if (window.visualViewport) {
       setNickColor(el.dataset.key);
       markSelected();
     });
+    // Masaüstü okları: üzerine gelince ya da tıklayınca palet tamamen sola / sağa kayar
+    const goEnd = (dir) => {
+      const max = stripBox.scrollWidth - stripBox.clientWidth;
+      stripBox.scrollTo({ left: dir < 0 ? 0 : max, behavior: 'smooth' });
+    };
+    [[arrL, -1], [arrR, 1]].forEach(([el, dir]) => {
+      if (!el) return;
+      el.addEventListener('mouseenter', () => goEnd(dir));
+      el.addEventListener('click', () => goEnd(dir));
+      el.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
+      el.addEventListener('mousedown', (e) => e.preventDefault());
+    });
+    stripBox.addEventListener('scroll', updateArrows, { passive: true });
+    window.addEventListener('resize', updateArrows);
+    if (window.ResizeObserver) new ResizeObserver(markStrip).observe(stripBox);
   }
 
   // Ayarlar: isim kutusu gizliyken görünen 4x2 renk seçici (aynı sıralama)
