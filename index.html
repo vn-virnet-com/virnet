@@ -258,7 +258,7 @@ body.names-inline .time-tag::after { content: '\00a0·\00a0'; }
 @keyframes tdot-blink { 0%, 70%, 100% { opacity: 0.25; } 30% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .typing-msg .tdot { animation: none; opacity: 0.6; } }
 #typing-indicator {
-  flex: 0 0 26px; display: none; width: 100%; height: 26px;
+  flex: 0 0 32px; display: none; width: 100%; height: 32px;
   padding: 0 15px; background: var(--c-000); border-top: 1px solid var(--c-1a); align-items: center; pointer-events: none;
 }
 
@@ -770,7 +770,7 @@ body.nick-hidden #nick-color-grid { display: grid; }
 .ncg-item.sel .nc-dot { box-shadow: 0 0 0 2px var(--accent); }
 
 /* ---- Şerit içi renk seçici (Yeni mesaj yolda şeridi) ---- */
-#np-dots { touch-action: none; flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 2px; margin: 0 8px 0 2px; overflow: hidden; pointer-events: auto; }
+#np-dots { touch-action: none; flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 2px; margin: 0 8px 0 -2px; overflow: hidden; pointer-events: auto; }
 .np-item {
   flex: 0 1 24px; min-width: 10px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer;
   -webkit-tap-highlight-color: transparent; touch-action: none; user-select: none; -webkit-user-select: none;
@@ -789,7 +789,7 @@ body.nick-hidden #np-dots { display: none; }
 body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-1a); }
 #status-left #notes-btn, #status-left #bell-btn, #status-left #profile-btn { padding: 8px 13px 8px 0; margin: -8px 0; }
 #bell-btn[data-pos="top"] { margin-left: auto; }
-#status-bar > #live-toggle { margin-left: 13px; }
+#status-bar > #live-toggle { margin-left: 13px; order: 99; }
 @keyframes notes-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 #notes-btn.unseen { color: var(--warn); animation: notes-blink 1s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { #notes-btn.unseen { animation: none; } }
