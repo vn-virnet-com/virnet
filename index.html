@@ -2015,13 +2015,12 @@ const NICK_HISTORY_MAX = 5;
 function readNickHistory() {
   try {
     const a = JSON.parse(lsGet(NICK_HISTORY_KEY) || '[]');
-    if (Array.isArray(a)) return a.filter((x) => typeof x === 'string' && x.trim() !== '').slice(-NICK_HISTORY_MAX);
+    if (Array.isArray(a)) return a.filter((x) => typeof x === 'string').slice(-NICK_HISTORY_MAX);   // boş isim ('') de geçerli bir kayıttır
   } catch (e) {}
   return [];
 }
 function pushNickHistory(name) {
   const n = String(name || '').trim();
-  if (n === '') return;
   let secret = false;
   try { secret = !!secretProfile(n); } catch (e) {}   // gizli kod kelimeleri geçmişe girmez
   if (secret) return;
@@ -2039,7 +2038,7 @@ function setNickFromHistory(name, dir) {
   nickInput.value = name;
   try { nickInput.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
   nickHistSetting = false;
-  nickBrowsing = name !== '';
+  nickBrowsing = true;   // gezinme oturumu (boş isim de dahil); kullanıcı yazınca kapanır
   try { nickInput.setSelectionRange(name.length, name.length); } catch (e) {}
   if (dir) {
     nickInput.classList.remove('nudge-prev', 'nudge-next');
@@ -2059,7 +2058,7 @@ nickInput.addEventListener('focus', () => {
   if (editingId) return;
   pushNickHistory(nickInput.value);
   nickBrowsing = false;
-  nickHistPos = readNickHistory().length;
+  { const hh = readNickHistory(); nickHistPos = (hh.length && hh[hh.length - 1] === '') ? hh.length - 1 : hh.length; }
   nickInput.value = ''; lsSet('nick', ''); applyNickColor();
 });
 nickInput.addEventListener('input', () => { if (!nickHistSetting) nickBrowsing = false; });
@@ -2071,13 +2070,15 @@ nickInput.addEventListener('keydown', (e) => {
   if (!(nickInput.value === '' || nickBrowsing)) return;
   e.preventDefault();
   const h = readNickHistory();
-  if (!nickBrowsing) nickHistPos = h.length;
+  const emptyLast = h.length > 0 && h[h.length - 1] === '';   // son kayıt boş isimse kutudaki boşluk odur
+  const endPos = emptyLast ? h.length - 1 : h.length;
+  if (!nickBrowsing) nickHistPos = endPos;
   if (e.key === 'ArrowLeft') {
     if (nickHistPos <= 0 || h.length === 0) return;
     nickHistPos--;
     setNickFromHistory(h[nickHistPos], -1);
   } else {
-    if (nickHistPos >= h.length) return;
+    if (nickHistPos >= endPos) return;
     nickHistPos++;
     setNickFromHistory(nickHistPos >= h.length ? '' : h[nickHistPos], 1);
   }
@@ -2088,11 +2089,8 @@ nickInput.addEventListener('keydown', (e) => {
   function go(dir) {
     let h = readNickHistory();
     const cur = nickInput.value.trim().toLowerCase();
-    let idx = h.length;
-    if (cur !== '') {
-      idx = h.findIndex((x) => x.trim().toLowerCase() === cur);
-      if (idx < 0) { pushNickHistory(nickInput.value); h = readNickHistory(); idx = h.length - 1; }
-    }
+    let idx = h.findIndex((x) => x.trim().toLowerCase() === cur);
+    if (idx < 0) { pushNickHistory(nickInput.value); h = readNickHistory(); idx = h.length - 1; }
     const ni = idx + dir;
     if (ni < 0 || ni >= h.length) return;
     setNickFromHistory(h[ni], dir);
