@@ -770,14 +770,14 @@ body.nick-hidden #nick-color-grid { display: grid; }
 .ncg-item.sel .nc-dot { box-shadow: 0 0 0 2px var(--accent); }
 
 /* ---- Şerit içi renk seçici (Yeni mesaj yolda şeridi) ---- */
-#sb-mid { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; justify-content: center; margin: 0 4px; }
+#sb-mid { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; justify-content: center; margin: 0 -7px; }  /* tuşların görünmez 13px iç boşluğuna taşar: simgelere yaklaşık 6px kalır */
 #auto-chip.show ~ #sb-mid { display: none; }
 #np-dots { position: relative; touch-action: pan-x; flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: safe center; gap: 0; margin: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; pointer-events: auto; }
 #np-dots::-webkit-scrollbar { display: none; }
 #nick-ghost { display: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-size: 13.5px; color: var(--c-88); opacity: 0.55; pointer-events: none; user-select: none; -webkit-user-select: none; }
 body.nick-hidden #nick-ghost { display: block; }
 /* Palet: sabit boyutlu renkler, sığmazsa kaydırılır. Masaüstünde sığmayınca iki yandaki oklar üzerine gelince / tıklanınca paleti tamamen sağa ya da sola kaydırır */
-.np-arrow { display: none; flex: 0 0 auto; align-items: center; justify-content: center; width: 18px; height: 26px; color: var(--c-88); opacity: 0.55; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: opacity 0.15s ease; }
+.np-arrow { display: none; flex: 0 0 auto; align-items: center; justify-content: center; width: 14px; height: 26px; color: var(--c-88); opacity: 0.55; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: opacity 0.15s ease; }
 .np-arrow svg { display: block; pointer-events: none; }
 .np-arrow:hover { opacity: 1; }
 .np-arrow.off { opacity: 0.15; cursor: default; }
@@ -785,15 +785,15 @@ body.nick-hidden #nick-ghost { display: block; }
 @media (min-width: 769px) {
   body:not(.nick-hidden) .np-arrow { display: flex; }
   /* Boş alana yayılır: renkler genişleyen hücrelere dağılır, alan yetmezse kaydırılır */
-  #np-dots .np-item { flex: 1 1 30px; min-width: 30px; max-width: 64px; }
-  #np-dots .np-item .nc-dot { width: 18px; }
+  #np-dots .np-item { flex: 1 1 24px; min-width: 24px; max-width: 56px; }
+  #np-dots .np-item .nc-dot { width: 16px; }
 }
 .np-item {
-  flex: 0 0 34px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  flex: 0 0 20px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer;
   -webkit-tap-highlight-color: transparent; touch-action: pan-x; user-select: none; -webkit-user-select: none;
 }
 .np-item .nc-dot { opacity: 1; animation: none; }
-.np-item .nc-dot { width: 20px; max-width: calc(100% - 4px); aspect-ratio: 1 / 1; border-radius: 50%; box-sizing: border-box; display: block; }
+.np-item .nc-dot { width: 14px; max-width: calc(100% - 4px); aspect-ratio: 1 / 1; border-radius: 50%; box-sizing: border-box; display: block; }
 .np-item.sel .nc-dot { box-shadow: 0 0 0 2px var(--accent); }
 body.nick-hidden #np-dots { display: none; }
 /* Titreşim ayarı yalnızca mobil görünümde */
