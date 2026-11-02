@@ -789,11 +789,11 @@ body.nick-hidden #nick-ghost { display: block; }
   #np-dots .np-item .nc-dot { width: 16px; }
 }
 .np-item {
-  flex: 0 0 20px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  flex: 0 0 calc(100% / 6.5); height: 28px; display: flex;  /* mobil: palet genişliğine tam 6,5 renk sığar, yedinci yarım görünür */ align-items: center; justify-content: center; cursor: pointer;
   -webkit-tap-highlight-color: transparent; touch-action: pan-x; user-select: none; -webkit-user-select: none;
 }
 .np-item .nc-dot { opacity: 1; animation: none; }
-.np-item .nc-dot { width: 14px; max-width: calc(100% - 4px); aspect-ratio: 1 / 1; border-radius: 50%; box-sizing: border-box; display: block; }
+.np-item .nc-dot { width: 16px; max-width: calc(100% - 4px); aspect-ratio: 1 / 1; border-radius: 50%; box-sizing: border-box; display: block; }
 .np-item.sel .nc-dot { box-shadow: 0 0 0 2px var(--accent); }
 body.nick-hidden #np-dots { display: none; }
 /* Titreşim ayarı yalnızca mobil görünümde */
