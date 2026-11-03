@@ -105,13 +105,12 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
   padding: 0 15px; background: var(--c-000); border-bottom: 1px solid var(--c-1a);
   font-size: 13.5px; color: var(--c-88);
 }
-#auto-chip { display: none; align-items: center; gap: 6px; min-width: 0; margin-left: auto; color: var(--c-88); font-size: 12.5px; white-space: nowrap; }
-#auto-chip.show { display: inline-flex; }
+#auto-chip { display: none; position: absolute; top: 0; left: 0; right: 0; z-index: 7; box-sizing: border-box; height: 28px; align-items: center; justify-content: center; gap: 6px; padding: 0 12px; background: color-mix(in srgb, var(--c-1a) 96%, transparent); border-bottom: 1px solid var(--c-33); color: var(--c-88); font-size: 12.5px; white-space: nowrap; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+#auto-chip.show { display: flex; }
 #auto-chip svg { display: block; flex: 0 0 auto; }
 #auto-chip .ac-txt { overflow: hidden; text-overflow: ellipsis; }
-#auto-chip-x { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 22px; height: 22px; margin: -4px -4px -4px 0; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+#auto-chip-x { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 22px; height: 22px; margin: 0 -4px 0 0; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #auto-chip-x:active { background: var(--c-1a); }
-body.sb-bottom #auto-chip { flex: 1 1 0; justify-content: center; margin: 0 8px; }
 #status-left { display: flex; align-items: center; }
 #refresh-btn { cursor: pointer; display: inline-flex; align-items: center; padding: 8px 13px 8px 0; margin: -8px 0; color: var(--c-88); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 #refresh-btn svg, #eye-btn svg, #settings-btn svg, #notes-btn svg, #bell-btn svg { display: block; }
@@ -411,6 +410,7 @@ body.own-right .msg.own-msg .yt-card { margin-left: 0; margin-right: 0; }
 .yt-err a { color: var(--c-fff); text-decoration: underline; }
 /* Yüzen mini oynatıcı */
 #yt-dock { position: absolute; top: 0; left: 0; right: 0; box-sizing: border-box; z-index: 6; width: 100%; display: none; flex-direction: column; align-items: stretch; gap: 0; padding: 6px 10px 7px; border-radius: 0; background: color-mix(in srgb, var(--c-1a) 96%, transparent); color: var(--c-fff); border: 0; border-bottom: 1px solid var(--yt-a12); box-shadow: 0 4px 14px rgba(0,0,0,.4); font-family: 'Lexend', sans-serif; line-height: 1.25; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-user-select: none; user-select: none; }
+#auto-chip.show ~ #yt-dock { top: 28px; }
 #yt-dock.show { display: flex; animation: ytdIn .2s ease-out; }
 #yt-dock.hide { opacity: 0; transform: translateY(-8px); transition: opacity .2s ease, transform .2s ease; pointer-events: none; }
 @keyframes ytdIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
@@ -772,7 +772,6 @@ body.nick-hidden #nick-color-grid { display: grid; }
 
 /* ---- Şerit içi renk seçici (Yeni mesaj yolda şeridi) ---- */
 #sb-mid { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; justify-content: center; margin: 0 -7px; }  /* tuşların görünmez 13px iç boşluğuna taşar: simgelere yaklaşık 6px kalır */
-#auto-chip.show ~ #sb-mid { display: none; }
 #np-dots { position: relative; touch-action: pan-x; flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: safe center; gap: 0; margin: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; pointer-events: auto; }
 #np-dots::-webkit-scrollbar { display: none; }
 #nick-ghost { display: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-size: 13.5px; color: var(--c-88); opacity: 0.55; pointer-events: none; user-select: none; -webkit-user-select: none; }
@@ -1140,7 +1139,6 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     <span id="refresh-btn" title="Sayfayı yenile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg></span>
     <span id="settings-btn" title="Ayarlar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span>
   </div>
-  <div id="auto-chip" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span class="ac-txt">Oto. Oynat</span><button type="button" id="auto-chip-x" aria-label="Otomatik oynatmayı kapat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div id="sb-mid"><span class="np-arrow" id="np-left" title="Sola"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg></span><div id="np-dots" role="listbox" aria-label="İsim rengi"></div><span class="np-arrow" id="np-right" title="Sağa"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span><span id="nick-ghost" aria-hidden="true"></span></div>
   <span id="bell-btn" title="Bildirimler"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></span>
   <span id="notes-btn" title="Notlar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></span>
@@ -1165,6 +1163,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 <div id="new-notes-badge" class="new-badge"><span>Yeni</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
 <div id="chat-wrap">
   <div id="chat-area"></div>
+  <div id="auto-chip" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span class="ac-txt">Oto. Oynat</span><button type="button" id="auto-chip-x" aria-label="Otomatik oynatmayı kapat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div id="scroll-down-btn" title="En son mesaja git">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
   </div>
@@ -3467,6 +3466,28 @@ function ytDockUpdate() {
 }
 setInterval(ytDockUpdate, 300);
 
+/* Üstteki şeritler (Oto. Oynat + şarkı şeridi) göründükçe mesaj alanının üst boşluğu şeritlerin altına iner; ilk mesajlar altta kalmaz */
+function ytTopInsetSync() {
+  const area = document.getElementById('chat-area'), wrap = document.getElementById('chat-wrap');
+  if (!area || !wrap) return;
+  let inset = 0;
+  const wb = wrap.getBoundingClientRect().top;
+  ['auto-chip', 'yt-dock'].forEach((id) => {
+    const e = document.getElementById(id);
+    if (!e || e.classList.contains('hide')) return;
+    if (id === 'auto-chip' ? !e.classList.contains('show') : !e.classList.contains('show')) return;
+    const r = e.getBoundingClientRect();
+    if (r.height) inset = Math.max(inset, Math.ceil(r.bottom - wb));
+  });
+  const want = inset ? inset + 8 : 8;
+  if (parseFloat(area.style.paddingTop || 8) === want) return;
+  const dist = area.scrollHeight - area.scrollTop - area.clientHeight; // alta olan uzaklığı koru
+  area.style.paddingTop = want + 'px';
+  area.scrollTop = Math.max(0, area.scrollHeight - area.clientHeight - dist);
+}
+setInterval(ytTopInsetSync, 150);
+window.addEventListener('resize', () => { try { ytTopInsetSync(); } catch (e) {} });
+
 /* ===== Tek şarkı kilidi: bir şarkıya hazır verilince (ben ya da karşı taraf) diğer şarkıların hazır tuşları solar ===== */
 let ytSweepRaf = 0;
 function ytSweepLocksSoon() {
@@ -3495,6 +3516,7 @@ function ytAutoSet(v) {
   ytAutoReady = !!v;
   const c = document.getElementById('auto-chip');
   if (c) c.classList.toggle('show', ytAutoReady);
+  try { ytTopInsetSync(); } catch (e) {}
 }
 (function () {
   const x = document.getElementById('auto-chip-x');
