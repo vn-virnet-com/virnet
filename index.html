@@ -7576,6 +7576,43 @@ cardOutbox = cardOutbox.filter((o) => !(o.op === 'add' && o.item && o.item.k ===
 cardOutbox.forEach((o) => { if (o.op === 'add') cardList.push({ id: o.item.id, k: o.item.k === 'b' ? 'b' : 'a', n: o.item.n, b: o.item.b, c: o.item.c, z: o.item.z, u: o.item.u || 0, d: o.item.d || 0, f: cdFireSan(o.item.f), r: o.item.r || 0, at: o.item.ts, own: true, pending: true }); });
 // ---- 3. sayfa: yalnızca en son gönderi tutulur. localStorage'da saklanır; her bağlantıda iki taraf revizyonu kıyaslar, daha güncel olan kazanır ----
 let thirdRev = 0;
+/* ===== Sayı değişimi: hedef rakama atlamaz, 15 saniyede eşit hızla (doğrusal) o rakama ulaşır. Veri hemen hedefe ayarlanır ve karşıya gider; yalnızca ekranda gösterilen sayı akar, iki tarafta aynı anda başlar ===== */
+const CD_ANIM_MS = 15000;
+const cdAnim = {}; // kartId -> { u|d|v: { f: başlangıç, t: hedef, t0: başlangıç zamanı } }
+let cdAnimTimer = null;
+function cdShown(id, key, target) {
+  const o = cdAnim[id], a = o && o[key];
+  if (!a) return target;
+  const p = (Date.now() - a.t0) / CD_ANIM_MS;
+  if (p >= 1) { delete o[key]; return a.t; }
+  return Math.round(a.f + (a.t - a.f) * p);
+}
+function cdAnimTo(id, key, oldT, newT) {
+  if (oldT === newT) return;
+  const cur = cdShown(id, key, oldT);
+  if (cur === newT) { if (cdAnim[id]) delete cdAnim[id][key]; return; }
+  (cdAnim[id] = cdAnim[id] || {})[key] = { f: cur, t: newT, t0: Date.now() };
+  if (!cdAnimTimer) cdAnimTimer = setInterval(cdAnimTick, 100);
+}
+function cdAnimTick() {
+  const R = { u: '1', d: '2', v: '3' };
+  let any = false;
+  Object.keys(cdAnim).forEach((id) => {
+    const n = cardList.find((x) => x.id === id);
+    if (!n) { delete cdAnim[id]; return; }
+    let card = null;
+    document.querySelectorAll('.bp-card').forEach((c) => { if (c.dataset.id === id) card = c; });
+    Object.keys(cdAnim[id]).forEach((key) => {
+      const base = key === 'u' ? (n.u || 0) : key === 'd' ? (n.d || 0) : (n.v || 0);
+      const val = cdShown(id, key, base) + ((key === 'u' && n.r === 1) || (key === 'd' && n.r === 2) ? 1 : 0);
+      if (cdAnim[id] && cdAnim[id][key]) any = true;
+      const sp = card && card.querySelector('.cd-rb[data-r="' + R[key] + '"] .cd-num');
+      if (sp) { const tx = cdFmt(val); if (sp.textContent !== tx) sp.textContent = tx; }
+    });
+    if (!Object.keys(cdAnim[id]).length) delete cdAnim[id];
+  });
+  if (!any && !Object.keys(cdAnim).length) { clearInterval(cdAnimTimer); cdAnimTimer = null; }
+}
 function thirdCard() { return cardList.find((x) => x.k === 'b') || null; }
 function thirdPayload() {
   const c = thirdCard();
@@ -7618,6 +7655,7 @@ function receiveThird(d, isHello) {
   cardList.push(c);
   thirdRev = rev;
   persistThird();
+  if (!isHello && prev && prev.id === c.id) { cdAnimTo(c.id, 'u', prev.u || 0, c.u); cdAnimTo(c.id, 'd', prev.d || 0, c.d); cdAnimTo(c.id, 'v', prev.v || 0, c.v); }
   const isNew = !prev || prev.id !== c.id;
   if (bellPop.classList.contains('show')) renderCards();
   else if (isNew) bellBtn.classList.add('unseen');
@@ -7664,8 +7702,11 @@ function cdFmt(v) { return String(v || 0).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 function setCardCounts(id, u, d, v) {
   const n = cardList.find((x) => x.id === id);
   if (!n) return;
+  const ou = n.u || 0, od = n.d || 0, ov = n.v || 0;
   n.u = cdNum(u); n.d = cdNum(d);
-  if (n.k === 'b') { n.v = cdNum(v == null ? n.v : v); thirdBump(); persistThird(); sendThird('third'); renderCards(); return; }
+  if (n.k === 'b') n.v = cdNum(v == null ? n.v : v);
+  cdAnimTo(id, 'u', ou, n.u); cdAnimTo(id, 'd', od, n.d);
+  if (n.k === 'b') { cdAnimTo(id, 'v', ov, n.v || 0); thirdBump(); persistThird(); sendThird('third'); renderCards(); return; }
   const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === id);
   if (ai) { ai.item.u = n.u; ai.item.d = n.d; }
   else {
@@ -7736,7 +7777,9 @@ function receiveCardCount(d) {
   if (!d || typeof d.id !== 'string') return;
   const n = cardList.find((x) => x.id === d.id);
   if (!n) return;
+  const ou = n.u || 0, od = n.d || 0;
   n.u = cdNum(d.u); n.d = cdNum(d.d);
+  cdAnimTo(d.id, 'u', ou, n.u); cdAnimTo(d.id, 'd', od, n.d);
   if (bellPop.classList.contains('show')) renderCards();
 }
 let cdEditing = false, cdRenderPending = false;
@@ -7787,9 +7830,9 @@ function renderCards() {
         cdTagsHtml(n, can) +
         (n.z ? '<div class="cd-row cd-time">' + escapeHtml(n.z) + '</div>' : '') +
         '<div class="cd-row cd-rx">' +
-          '<button type="button" class="cd-rb' + (n.r === 1 ? ' on' : '') + ((k === 'b' && !can) ? ' ro' : '') + '" data-r="1" aria-label="Beğen" aria-pressed="' + (n.r === 1) + '">' + CD_UP + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.u || 0) + (n.r === 1 ? 1 : 0)) + '</span></button>' +
-          '<button type="button" class="cd-rb' + (n.r === 2 ? ' on' : '') + ((k === 'b' && !can) ? ' ro' : '') + '" data-r="2" aria-label="Beğenme" aria-pressed="' + (n.r === 2) + '">' + CD_DN + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.d || 0) + (n.r === 2 ? 1 : 0)) + '</span></button>' +
-          (k === 'b' ? '<button type="button" class="cd-rb' + (!can ? ' ro' : '') + '" data-r="3" aria-label="Görüntülenme">' + CD_EYE + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt(n.v || 0) + '</span></button>' : '') +
+          '<button type="button" class="cd-rb' + (n.r === 1 ? ' on' : '') + ((k === 'b' && !can) ? ' ro' : '') + '" data-r="1" aria-label="Beğen" aria-pressed="' + (n.r === 1) + '">' + CD_UP + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt(cdShown(n.id, 'u', n.u || 0) + (n.r === 1 ? 1 : 0)) + '</span></button>' +
+          '<button type="button" class="cd-rb' + (n.r === 2 ? ' on' : '') + ((k === 'b' && !can) ? ' ro' : '') + '" data-r="2" aria-label="Beğenme" aria-pressed="' + (n.r === 2) + '">' + CD_DN + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt(cdShown(n.id, 'd', n.d || 0) + (n.r === 2 ? 1 : 0)) + '</span></button>' +
+          (k === 'b' ? '<button type="button" class="cd-rb' + (!can ? ' ro' : '') + '" data-r="3" aria-label="Görüntülenme">' + CD_EYE + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt(cdShown(n.id, 'v', n.v || 0)) + '</span></button>' : '') +
         '</div>' +
         (n.pending ? '<div class="cd-row bp-pend">Gönderilmedi, bağlanınca gidecek</div>' : '') +
         '</div>';
