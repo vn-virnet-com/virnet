@@ -832,6 +832,36 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 .bp-nav svg { display: block; }
 .bp-nav:hover { background: var(--c-33); color: var(--c-fff); }
 @media (min-width: 769px) { .bp-nav { display: flex; } }
+@media (max-width: 768px) { #cd-list .bp-del { display: none; } #cd-list .bp-card.has-del .cd-name { padding-right: 0; } }
+#cd-list { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 8px 8px 64px; }
+#cd-add { display: none; position: absolute; right: 12px; bottom: 12px; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(var(--sh),0.5); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; z-index: 3; }
+#cd-add.can { display: flex; }
+#cd-add svg { display: block; }
+#cd-compose { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--c-111); padding: 8px; flex-direction: column; gap: 6px; z-index: 4; }
+#cd-compose.show { display: flex; }
+#cd-name-in, #cd-body-in, #cd-topic-in, #cd-time-in { width: 100%; border: 1px solid var(--c-33); border-radius: 6px; background: var(--c-000); color: var(--c-fff); outline: none; font-size: 16px; padding: 7px 9px; caret-color: var(--accent); font-family: 'Lexend', sans-serif; flex: 0 0 auto; }
+#cd-counts { display: flex; gap: 6px; flex: 0 0 auto; }
+#cd-up-in, #cd-dn-in { flex: 1 1 0; min-width: 0; width: 100%; border: 1px solid var(--c-33); border-radius: 6px; background: var(--c-000); color: var(--c-fff); outline: none; font-size: 16px; padding: 7px 9px; caret-color: var(--accent); font-family: 'Lexend', sans-serif; }
+.cd-num.can { text-decoration: underline dotted; text-underline-offset: 3px; cursor: pointer; }
+#cd-name-in { font-weight: 700; }
+#cd-body-in { flex: 1 1 auto; min-height: 0; resize: none; font-weight: 300; line-height: 1.3; }
+#cd-actions { display: flex; gap: 8px; justify-content: flex-end; flex: 0 0 auto; }
+#cd-actions span { cursor: pointer; padding: 7px 14px; border-radius: 6px; font-size: 14px; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; color: var(--c-cc); border: 1px solid var(--c-33); }
+#cd-send { background: var(--accent); color: var(--on-accent) !important; border-color: var(--accent) !important; font-weight: 700; }
+.cd-row { padding: 5px 0; border-top: 1px solid var(--c-33); overflow-wrap: anywhere; word-break: break-word; white-space: pre-wrap; }
+.cd-row:first-child { border-top: 0; padding-top: 0; }
+.cd-row:last-child { padding-bottom: 0; }
+.cd-name { font-size: 15px; line-height: 1.3; font-weight: 700; color: var(--c-fff); }
+.bp-card.has-del .cd-name { padding-right: 24px; }
+.cd-body { font-size: 14px; line-height: 1.35; font-weight: 300; color: var(--c-cc); }
+.cd-body b { font-weight: 700; }
+.cd-topic { font-size: 13.5px; line-height: 1.3; font-weight: 400; color: var(--c-cc); }
+.cd-time { font-size: 12px; line-height: 1.3; font-weight: 300; color: var(--c-77); }
+.cd-rx { display: flex; align-items: center; gap: 18px; white-space: normal; }
+.cd-rb { display: inline-flex; align-items: center; gap: 6px; margin: -4px 0; padding: 6px 4px 6px 0; border: 0; background: transparent; color: var(--c-77); font-size: 13px; font-family: inherit; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.cd-rb svg { display: block; fill: none; }
+.cd-rb.on { color: var(--c-fff); }
+.cd-rb.on svg { fill: currentColor; }
 #bp-list { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 8px 8px 64px; }
 .bp-card { touch-action: pan-y; position: relative; width: 100%; margin: 0 0 8px; padding: 8px 11px; background: var(--c-1a); border: 1px solid var(--c-33); border-radius: 6px; }
 .bp-title { font-size: 15px; line-height: 1.3; font-weight: 700; color: var(--c-fff); white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
@@ -1165,6 +1195,16 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   <div id="bp-next" class="bp-nav" title="Yan sayfa"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
   </div>
   <div id="bp-page-side" class="bp-page">
+  <div id="cd-list"></div>
+  <div id="cd-add" title="Kart ekle"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+  <div id="cd-compose">
+    <input id="cd-name-in" type="text" placeholder="İsim" maxlength="80" autocomplete="off" autocorrect="off" spellcheck="false">
+    <textarea id="cd-body-in" placeholder="İçerik" maxlength="2000" autocomplete="off" spellcheck="false"></textarea>
+    <input id="cd-topic-in" type="text" placeholder="Konu" maxlength="120" autocomplete="off" autocorrect="off" spellcheck="false">
+    <input id="cd-time-in" type="text" placeholder="Zaman" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false">
+    <div id="cd-counts"><input id="cd-up-in" type="text" inputmode="numeric" placeholder="Beğeni sayısı" maxlength="5" autocomplete="off"><input id="cd-dn-in" type="text" inputmode="numeric" placeholder="Beğenmeme sayısı" maxlength="5" autocomplete="off"></div>
+    <div id="cd-actions"><span id="cd-cancel">İptal</span><span id="cd-send">Gönder</span></div>
+  </div>
   <div id="bp-prev" class="bp-nav" title="Bildirimlere dön"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg></div>
   </div>
   </div>
@@ -2395,6 +2435,7 @@ function setupConnection(c) {
     sendNotes('notes-hello');
     sendQNote('qnote-hello');
     flushNotifOutbox();
+    flushCardOutbox();
     flushOutbox(true);
     flushMediaOutbox();
     try { if (ytCurrent && ytCurrent._announce) ytCurrent._announce(); } catch (e) {}
@@ -2437,6 +2478,11 @@ function setupConnection(c) {
     if (data.type === 'notif') { receiveNotif(data); return; }
     if (data.type === 'notif-del') { receiveNotifDel(data); return; }
     if (data.type === 'notif-ack') { receiveNotifAck(data); return; }
+    if (data.type === 'card') { receiveCard(data); return; }
+    if (data.type === 'card-del') { receiveCardDel(data); return; }
+    if (data.type === 'card-react') { receiveCardReact(data); return; }
+    if (data.type === 'card-count') { receiveCardCount(data); return; }
+    if (data.type === 'card-ack') { receiveCardAck(data); return; }
     if (data.type === 'qnote' || data.type === 'qnote-hello') { receiveQNote(data); return; }
     if (data.type === 'msg-ack') { receiveMsgAck(data); return; }
     if (data.type === 'media-ack') { mediaAcked(data.msgId); return; }
@@ -7088,8 +7134,11 @@ function openBellPop() {
   bpSetSide(false, true);
   bellPop.classList.add('show');
   document.getElementById('bp-add').classList.toggle('can', notifCanSend());
+  document.getElementById('cd-add').classList.toggle('can', notifCanSend());
   closeNotifCompose();
+  closeCardCompose();
   renderNotifs();
+  renderCards();
   document.getElementById('bp-list').scrollTop = 0;
   bellBtn.classList.remove('unseen');
   layoutNotesPop();
@@ -7111,6 +7160,7 @@ function exitNotifCompose(refocus) {
 }
 function closeBellPop() {
   closeNotifCompose();
+  closeCardCompose();
   bellMsgHad = false;
   bellPop.classList.remove('show');
 }
@@ -7118,6 +7168,216 @@ function closeNotesPop() {
   finishPopEdit();
   notesPop.classList.remove('show');
 }
+
+// ---- Kartlar (bildirim penceresinin yan sayfası): İsim / İçerik / Konu / Zaman + ortak beğenme-beğenmeme ----
+// Bildirimlerle aynı mantık: bellekte tutulur (en fazla 10), yalnızca gönderilemeyen işlemler localStorage'da bekler.
+const CARD_MAX = 10;
+const CD_UP = '<svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>', CD_DN = '<svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path></svg>';
+let cardList = [];
+let cardOutbox = [];
+const cardTomb = new Set();
+try { const a = JSON.parse(lsGet('cardOutbox') || '[]'); if (Array.isArray(a)) cardOutbox = a.filter((o) => o && ((o.op === 'add' && o.item && typeof o.item.id === 'string') || ((o.op === 'del' || o.op === 'react' || o.op === 'count') && typeof o.id === 'string'))); } catch (e) {}
+cardOutbox.forEach((o) => { if (o.op === 'add') cardList.push({ id: o.item.id, n: o.item.n, b: o.item.b, c: o.item.c, z: o.item.z, u: o.item.u || 0, d: o.item.d || 0, r: o.item.r || 0, at: o.item.ts, own: true, pending: true }); });
+function persistCardOutbox() { if (cardOutbox.length) lsSet('cardOutbox', JSON.stringify(cardOutbox)); else lsRemove('cardOutbox'); }
+function trimCards() { cardList.sort((a, b) => b.at - a.at); if (cardList.length > CARD_MAX) cardList.length = CARD_MAX; }
+function flushCardOutbox() {
+  if (!isConnected() || !cardOutbox.length) return;
+  cardOutbox.forEach((o) => {
+    try {
+      if (o.op === 'add') conn.send({ type: 'card', item: o.item });
+      else if (o.op === 'del') conn.send({ type: 'card-del', id: o.id });
+      else if (o.op === 'count') conn.send({ type: 'card-count', id: o.id, u: o.u || 0, d: o.d || 0 });
+      else conn.send({ type: 'card-react', id: o.id, r: o.r || 0 });
+      o.tried = true;
+    } catch (e) {}
+  });
+  // Tepkiler onay beklemez: gönderilince kuyruktan çıkar
+  cardOutbox = cardOutbox.filter((o) => o.op !== 'react' && o.op !== 'count');
+  persistCardOutbox();
+}
+function ackCard(id, del) {
+  if (!isConnected()) return;
+  try { conn.send(del ? { type: 'card-ack', id: id, del: true } : { type: 'card-ack', id: id }); } catch (e) {}
+}
+function cdFmtNow() {
+  const d = new Date(), p = (x) => String(x).padStart(2, '0');
+  return p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+function cdNum(v) { v = parseInt(v, 10); return (isFinite(v) && v > 0) ? Math.min(v, 99999) : 0; }
+function setCardCounts(id, u, d) {
+  const n = cardList.find((x) => x.id === id);
+  if (!n) return;
+  n.u = cdNum(u); n.d = cdNum(d);
+  const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === id);
+  if (ai) { ai.item.u = n.u; ai.item.d = n.d; }
+  else {
+    cardOutbox = cardOutbox.filter((o) => !(o.op === 'count' && o.id === id));
+    cardOutbox.push({ op: 'count', id: id, u: n.u, d: n.d });
+  }
+  persistCardOutbox();
+  flushCardOutbox();
+  renderCards();
+}
+function receiveCardCount(d) {
+  if (!d || typeof d.id !== 'string') return;
+  const n = cardList.find((x) => x.id === d.id);
+  if (!n) return;
+  n.u = cdNum(d.u); n.d = cdNum(d.d);
+  if (bellPop.classList.contains('show')) renderCards();
+}
+function renderCards() {
+  const list = document.getElementById('cd-list');
+  if (!list) return;
+  cardList.sort((x, y) => y.at - x.at);
+  const can = notifCanSend();
+  if (!cardList.length) { list.innerHTML = '<div class="bp-empty">Kart Yok</div>'; return; }
+  list.innerHTML = cardList.map((n) => {
+    const del = n.own && can;
+    return '<div class="bp-card' + (del ? ' has-del' : '') + '" data-id="' + escapeHtml(n.id) + '">' +
+      (del ? '<div class="bp-del" title="Sil">' + BP_TRASH + '</div>' : '') +
+      (n.n ? '<div class="cd-row cd-name">' + escapeHtml(n.n) + '</div>' : '') +
+      (n.b ? '<div class="cd-row cd-body">' + renderBodyHtml(n.b) + '</div>' : '') +
+      (n.c ? '<div class="cd-row cd-topic">' + escapeHtml(n.c) + '</div>' : '') +
+      (n.z ? '<div class="cd-row cd-time">' + escapeHtml(n.z) + '</div>' : '') +
+      '<div class="cd-row cd-rx">' +
+        '<button type="button" class="cd-rb' + (n.r === 1 ? ' on' : '') + '" data-r="1" aria-label="Beğen" aria-pressed="' + (n.r === 1) + '">' + CD_UP + '<span class="cd-num' + (can ? ' can' : '') + '">' + ((n.u || 0) + (n.r === 1 ? 1 : 0)) + '</span></button>' +
+        '<button type="button" class="cd-rb' + (n.r === 2 ? ' on' : '') + '" data-r="2" aria-label="Beğenme" aria-pressed="' + (n.r === 2) + '">' + CD_DN + '<span class="cd-num' + (can ? ' can' : '') + '">' + ((n.d || 0) + (n.r === 2 ? 1 : 0)) + '</span></button>' +
+      '</div>' +
+      (n.pending ? '<div class="cd-row bp-pend">Gönderilmedi, bağlanınca gidecek</div>' : '') +
+      '</div>';
+  }).join('');
+}
+function dismissCardLocal(id) {
+  const i = cardList.findIndex((n) => n.id === id);
+  if (i < 0) return;
+  if (!cardList[i].own) cardTomb.add(id);
+  cardList.splice(i, 1);
+  renderCards();
+}
+function deleteOwnCard(id) {
+  const i = cardList.findIndex((n) => n.id === id && n.own);
+  if (i < 0) return;
+  cardList.splice(i, 1);
+  const ai = cardOutbox.findIndex((o) => o.op === 'add' && o.item.id === id);
+  let tried = true;
+  if (ai >= 0) { tried = !!cardOutbox[ai].tried; cardOutbox.splice(ai, 1); }
+  cardOutbox = cardOutbox.filter((o) => !((o.op === 'react' || o.op === 'count') && o.id === id));
+  if (tried) cardOutbox.push({ op: 'del', id: id });
+  persistCardOutbox();
+  flushCardOutbox();
+  renderCards();
+}
+// Beğenme / beğenmeme: iki kullanıcı için ortak tek durum (0 yok, 1 beğeni, 2 beğenmeme); ikisi aynı anda olamaz
+function reactCard(id, r) {
+  const n = cardList.find((x) => x.id === id);
+  if (!n) return;
+  const nr = (n.r === r) ? 0 : r;
+  n.r = nr;
+  const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === id);
+  if (ai) ai.item.r = nr; // henüz gitmemiş kartta güncel hâl kartla birlikte gider
+  else {
+    cardOutbox = cardOutbox.filter((o) => !(o.op === 'react' && o.id === id));
+    cardOutbox.push({ op: 'react', id: id, r: nr });
+  }
+  persistCardOutbox();
+  flushCardOutbox();
+  renderCards();
+}
+function receiveCard(d) {
+  const n = d && d.item;
+  if (!n || typeof n.id !== 'string') return;
+  const id = n.id.slice(0, 40);
+  if (cardTomb.has(id) || cardList.some((x) => x.id === id)) { ackCard(id, false); return; }
+  const str = (v, m) => (typeof v === 'string' ? v.slice(0, m) : '');
+  cardList.push({ id: id, n: str(n.n, 80), b: str(n.b, 2000), c: str(n.c, 120), z: str(n.z, 40), u: cdNum(n.u), d: cdNum(n.d), r: (n.r === 1 || n.r === 2) ? n.r : 0, at: Date.now(), own: false, pending: false });
+  trimCards();
+  ackCard(id, false);
+  if (!bellPop.classList.contains('show')) bellBtn.classList.add('unseen');
+  else renderCards();
+}
+function receiveCardDel(d) {
+  if (!d || typeof d.id !== 'string') return;
+  cardTomb.add(d.id);
+  const i = cardList.findIndex((n) => n.id === d.id && !n.own);
+  if (i >= 0) { cardList.splice(i, 1); if (bellPop.classList.contains('show')) renderCards(); }
+  ackCard(d.id, true);
+}
+function receiveCardReact(d) {
+  if (!d || typeof d.id !== 'string') return;
+  const n = cardList.find((x) => x.id === d.id);
+  if (!n) return;
+  n.r = (d.r === 1 || d.r === 2) ? d.r : 0;
+  if (bellPop.classList.contains('show')) renderCards();
+}
+function receiveCardAck(d) {
+  if (!d || typeof d.id !== 'string') return;
+  if (d.del) cardOutbox = cardOutbox.filter((o) => !(o.op === 'del' && o.id === d.id));
+  else {
+    cardOutbox = cardOutbox.filter((o) => !(o.op === 'add' && o.item.id === d.id));
+    const n = cardList.find((x) => x.id === d.id && x.own);
+    if (n) n.pending = false;
+  }
+  persistCardOutbox();
+  if (bellPop.classList.contains('show')) renderCards();
+}
+function closeCardCompose() {
+  const c = document.getElementById('cd-compose');
+  if (c) c.classList.remove('show');
+  const ae = document.activeElement;
+  if (ae && /^cd-(name|body|topic|time|up|dn)-in$/.test(ae.id || '')) {
+    if (!messageInput.disabled) { try { messageInput.focus({ preventScroll: true }); } catch (e) {} }
+    else { try { ae.blur(); } catch (e) {} }
+  }
+}
+(function initCardUi() {
+  const list = document.getElementById('cd-list'), add = document.getElementById('cd-add'), comp = document.getElementById('cd-compose');
+  const upIn = document.getElementById('cd-up-in'), dnIn = document.getElementById('cd-dn-in');
+  const nIn = document.getElementById('cd-name-in'), bIn = document.getElementById('cd-body-in'), cIn = document.getElementById('cd-topic-in'), zIn = document.getElementById('cd-time-in');
+  const send = document.getElementById('cd-send'), cancel = document.getElementById('cd-cancel');
+  window.addEventListener('pin-level', () => { add.classList.toggle('can', notifCanSend()); if (bellPop.classList.contains('show')) renderCards(); });
+  list.addEventListener('click', (e) => {
+    const d = e.target.closest && e.target.closest('.bp-del');
+    if (d) { const card = d.closest('.bp-card'); if (card && notifCanSend()) deleteOwnCard(card.dataset.id); return; }
+    const rb = e.target.closest && e.target.closest('.cd-rb');
+    const nm = e.target.closest && e.target.closest('.cd-num.can');
+    if (nm && rb && notifCanSend()) {
+      const card = rb.closest('.bp-card'), c = cardList.find((x) => x.id === card.dataset.id);
+      if (!c) return;
+      const up = rb.dataset.r === '1';
+      const v = window.prompt(up ? 'Beğeni sayısı' : 'Beğenmeme sayısı', String(up ? (c.u || 0) : (c.d || 0)));
+      if (v === null) return;
+      setCardCounts(c.id, up ? v : c.u, up ? c.d : v);
+      return;
+    }
+    if (rb) { const card = rb.closest('.bp-card'); if (card) reactCard(card.dataset.id, parseInt(rb.dataset.r, 10)); }
+  });
+  add.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
+  add.addEventListener('click', () => {
+    if (!notifCanSend()) return;
+    bellMsgHad = document.activeElement === messageInput;
+    nIn.value = ''; bIn.value = ''; cIn.value = ''; zIn.value = cdFmtNow(); upIn.value = ''; dnIn.value = '';
+    comp.classList.add('show');
+    try { nIn.focus(); } catch (e) {}
+  });
+  cancel.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
+  cancel.addEventListener('click', () => { closeCardCompose(); bellMsgHad = false; });
+  send.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
+  send.addEventListener('click', () => {
+    if (!notifCanSend()) return;
+    const n = nIn.value.trim(), b = bIn.value.trim(), c = cIn.value.trim(), z = zIn.value.trim();
+    if (!n && !b && !c) return;
+    const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, c: c, z: z, u: cdNum(upIn.value), d: cdNum(dnIn.value), r: 0, ts: Date.now() };
+    cardList.push({ id: item.id, n: n, b: b, c: c, z: z, u: item.u, d: item.d, r: 0, at: item.ts, own: true, pending: true });
+    trimCards();
+    cardOutbox.push({ op: 'add', item: item, tried: false });
+    persistCardOutbox();
+    flushCardOutbox();
+    closeCardCompose();
+    bellMsgHad = false;
+    renderCards();
+    list.scrollTop = 0;
+  });
+})();
 
 /* Bildirim penceresi: mobilde sağdan sola kaydırınca boş yan sayfa; masaüstünde ok tuşlarıyla geçiş */
 function bpSetSide(on, instant) {
@@ -7135,7 +7395,7 @@ function bpSetSide(on, instant) {
   bellPop.addEventListener('pointerdown', (e) => {
     if (e.pointerType === 'mouse') return; // masaüstünde ok tuşları
     if (e.target.closest && e.target.closest('input, textarea, .bp-nav')) return;
-    if (document.getElementById('bp-compose').classList.contains('show')) return;
+    if (document.getElementById('bp-compose').classList.contains('show') || document.getElementById('cd-compose').classList.contains('show')) return;
     g = { x: e.clientX, y: e.clientY, id: e.pointerId, on: false };
   });
   bellPop.addEventListener('pointermove', (e) => {
@@ -7145,7 +7405,7 @@ function bpSetSide(on, instant) {
     if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.2) {
       const side = bellPop.classList.contains('side');
       if (!side && dx < 0) { bpSetSide(true); g.on = true; }
-      else if (side && dx > 0) { bpSetSide(false); g.on = true; }
+      else if (side && dx > 0 && true) { bpSetSide(false); g.on = true; }
       else g = null;
     }
   });
