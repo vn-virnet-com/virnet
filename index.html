@@ -2484,6 +2484,7 @@ function setupConnection(c) {
     flushNotifOutbox();
     flushCardOutbox();
     sendThird('third-hello');
+    sendFireSync();
     flushOutbox(true);
     flushMediaOutbox();
     try { if (ytCurrent && ytCurrent._announce) ytCurrent._announce(); } catch (e) {}
@@ -2531,6 +2532,7 @@ function setupConnection(c) {
     if (data.type === 'card-react') { receiveCardReact(data); return; }
     if (data.type === 'card-count') { receiveCardCount(data); return; }
     if (data.type === 'card-fire') { receiveCardFire(data); return; }
+    if (data.type === 'card-fire-sync') { receiveCardFireSync(data); return; }
     if (data.type === 'third-hello') { receiveThird(data, true); return; }
     if (data.type === 'third') { receiveThird(data, false); return; }
     if (data.type === 'card-ack') { receiveCardAck(data); return; }
@@ -7263,7 +7265,7 @@ function cdTagsHtml(n, can) {
 let cardList = [];
 let cardOutbox = [];
 const cardTomb = new Set();
-try { const a = JSON.parse(lsGet('cardOutbox') || '[]'); if (Array.isArray(a)) cardOutbox = a.filter((o) => o && ((o.op === 'add' && o.item && typeof o.item.id === 'string') || ((o.op === 'del' || o.op === 'react' || o.op === 'count' || o.op === 'fire') && typeof o.id === 'string'))); } catch (e) {}
+try { const a = JSON.parse(lsGet('cardOutbox') || '[]'); if (Array.isArray(a)) cardOutbox = a.filter((o) => o && ((o.op === 'add' && o.item && typeof o.item.id === 'string') || ((o.op === 'del' || o.op === 'react' || o.op === 'count') && typeof o.id === 'string'))); } catch (e) {}
 cardOutbox = cardOutbox.filter((o) => !(o.op === 'add' && o.item && o.item.k === 'b'));
 cardOutbox.forEach((o) => { if (o.op === 'add') cardList.push({ id: o.item.id, k: o.item.k === 'b' ? 'b' : 'a', n: o.item.n, b: o.item.b, c: o.item.c, z: o.item.z, u: o.item.u || 0, d: o.item.d || 0, f: cdFireSan(o.item.f), r: o.item.r || 0, at: o.item.ts, own: true, pending: true }); });
 // ---- 3. sayfa: yalnızca en son gönderi tutulur. localStorage'da saklanır; her bağlantıda iki taraf revizyonu kıyaslar, daha güncel olan kazanır ----
@@ -7333,13 +7335,12 @@ function flushCardOutbox() {
       if (o.op === 'add') conn.send({ type: 'card', item: o.item });
       else if (o.op === 'del') conn.send({ type: 'card-del', id: o.id });
       else if (o.op === 'count') conn.send({ type: 'card-count', id: o.id, u: o.u || 0, d: o.d || 0 });
-      else if (o.op === 'fire') conn.send({ type: 'card-fire', id: o.id, f: o.f || [] });
       else conn.send({ type: 'card-react', id: o.id, r: o.r || 0 });
       o.tried = true;
     } catch (e) {}
   });
   // Tepkiler onay beklemez: gönderilince kuyruktan çıkar
-  cardOutbox = cardOutbox.filter((o) => o.op !== 'react' && o.op !== 'count' && o.op !== 'fire');
+  cardOutbox = cardOutbox.filter((o) => o.op !== 'react' && o.op !== 'count');
   persistCardOutbox();
 }
 function ackCard(id, del) {
@@ -7367,14 +7368,47 @@ function setCardCounts(id, u, d, v) {
   flushCardOutbox();
   renderCards();
 }
-function receiveCardFire(d) {
-  if (!d || typeof d.id !== 'string') return;
-  const n = cardList.find((x) => x.id === d.id);
-  if (!n || n.k === 'b') return;
-  n.f = cdFireSan(d.f);
+// Ateş durumu: kart başına {f: etiket sıraları, t: son değişiklik zamanı}. localStorage'da tutulur; bağlanınca iki taraf haritalarını birleştirir, zamanı büyük olan (en son yapılan) geçerli olur.
+let fireMap = {};
+try { const o = JSON.parse(lsGet('cardFire') || '{}'); if (o && typeof o === 'object') Object.keys(o).forEach((k) => { const e = o[k]; if (e && typeof e.t === 'number') fireMap[k.slice(0, 40)] = { f: cdFireSan(e.f), t: e.t }; }); } catch (e) {}
+function persistFire() {
+  const ks = Object.keys(fireMap);
+  if (ks.length > 80) { ks.sort((a, b) => fireMap[b].t - fireMap[a].t); ks.slice(80).forEach((k) => { delete fireMap[k]; }); }
+  if (Object.keys(fireMap).length) lsSet('cardFire', JSON.stringify(fireMap)); else lsRemove('cardFire');
+}
+function applyFireMap() { cardList.forEach((n) => { if (n.k === 'a' && fireMap[n.id]) n.f = fireMap[n.id].f.slice(); }); }
+function sendFireSync() {
+  if (!isConnected() || !Object.keys(fireMap).length) return;
+  try { conn.send({ type: 'card-fire-sync', m: fireMap }); } catch (e) {}
+}
+function receiveCardFireSync(d) {
+  const m = d && d.m;
+  if (!m || typeof m !== 'object') return;
+  let ch = false;
+  Object.keys(m).slice(0, 200).forEach((k) => {
+    const e = m[k];
+    if (!e || typeof e.t !== 'number' || !isFinite(e.t)) return;
+    const id = k.slice(0, 40);
+    if (fireMap[id] && fireMap[id].t >= e.t) return;
+    fireMap[id] = { f: cdFireSan(e.f), t: e.t };
+    ch = true;
+  });
+  if (!ch) return;
+  persistFire();
+  applyFireMap();
   if (bellPop.classList.contains('show')) renderCards();
 }
-// 6687: etikete tıklayınca ateş simgesi aç/kapat; 3. sayfada gönderiyle birlikte, 2. sayfada ayrı mesajla karşıya gider
+function receiveCardFire(d) {
+  if (!d || typeof d.id !== 'string') return;
+  const id = d.id.slice(0, 40), t = Number(d.t);
+  if (!isFinite(t)) return;
+  if (fireMap[id] && fireMap[id].t >= t) return;
+  fireMap[id] = { f: cdFireSan(d.f), t: t };
+  persistFire();
+  applyFireMap();
+  if (bellPop.classList.contains('show')) renderCards();
+}
+// 6687: etikete tıklayınca ateş simgesi aç/kapat. 3. sayfada gönderiyle birlikte (revizyonla), 2. sayfada zaman damgalı haritayla karşıya gider; bağlı değilken de kaydolur, bağlanınca en son yapılan geçerli olur
 function toggleTagFire(id, i) {
   if (!notifCanSend()) return;
   const n = cardList.find((x) => x.id === id);
@@ -7383,14 +7417,11 @@ function toggleTagFire(id, i) {
   if (at >= 0) f.splice(at, 1); else f.push(i);
   n.f = f;
   if (n.k === 'b') { thirdBump(); persistThird(); sendThird('third'); renderCards(); return; }
-  const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === id);
-  if (ai) ai.item.f = f.slice();
-  else {
-    cardOutbox = cardOutbox.filter((o) => !(o.op === 'fire' && o.id === id));
-    cardOutbox.push({ op: 'fire', id: id, f: f.slice() });
-  }
-  persistCardOutbox();
-  flushCardOutbox();
+  const prev = fireMap[id];
+  const t = Math.max(Date.now(), prev ? prev.t + 1 : 0);
+  fireMap[id] = { f: f.slice(), t: t };
+  persistFire();
+  if (isConnected()) { try { conn.send({ type: 'card-fire', id: id, f: f.slice(), t: t }); } catch (e) {} }
   renderCards();
 }
 function receiveCardCount(d) {
@@ -7431,6 +7462,7 @@ function cdStartEdit(rb, c) {
 }
 function renderCards() {
   if (cdEditing) { cdRenderPending = true; return; } // sayı yazılırken liste yeniden çizilip kutuyu silmesin
+  applyFireMap();
   cardList.sort((x, y) => y.at - x.at);
   const can = notifCanSend();
   const draw = (id, k, emptyTxt) => {
