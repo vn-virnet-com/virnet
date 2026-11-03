@@ -825,17 +825,19 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 @media (prefers-reduced-motion: reduce) { #bell-btn.unseen { animation: none; } }
 #settings-btn.unseen { color: var(--warn); animation: notes-blink 1s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { #settings-btn.unseen { animation: none; } }
-#bp-clip { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; border-radius: inherit; }
+#bp-clip { position: absolute; top: 0; left: 0; right: 0; bottom: 36px; overflow: hidden; border-radius: 6px 6px 0 0; }
+#bp-tabs { position: absolute; left: 0; right: 0; bottom: 0; height: 36px; padding: 4px 5px; box-sizing: border-box; border-top: 1px solid var(--c-33); border-radius: 0 0 6px 6px; background: var(--c-111); z-index: 3; }
+#bp-tabs-in { --bp-page: 0; position: relative; display: flex; height: 100%; padding: 2px; box-sizing: border-box; background: var(--c-1a); border: 1px solid var(--c-33); border-radius: 8px; }
+#bp-pill { position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc((100% - 4px) / 3); border-radius: 6px; background: var(--accent); box-shadow: 0 1px 4px rgba(var(--sh),0.4); transform: translateX(calc(var(--bp-page) * 100%)); transition: transform .25s ease; will-change: transform; pointer-events: none; }
+#bell-pop.no-anim #bp-pill { transition: none; }
+.bp-tab { position: relative; z-index: 1; flex: 1 1 0; min-width: 0; padding: 0 2px; border: 0; background: transparent; color: var(--c-88); font-size: 12px; font-weight: 400; font-family: inherit; line-height: 1; cursor: pointer; white-space: nowrap; transition: color .25s ease; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.bp-tab.on { color: var(--on-accent); font-weight: 700; }
+.bp-tab .bp-dot { display: none; position: absolute; top: -2px; right: 3px; width: 9px; height: 9px; border-radius: 50%; background: var(--bad); border: 1.5px solid var(--c-111); box-sizing: content-box; }
+.bp-tab.new .bp-dot { display: block; }
 #bp-slider { --bp-page: 0; position: absolute; top: 0; bottom: 0; left: 0; width: 300%; display: flex; touch-action: pan-y; transition: transform .25s ease; will-change: transform; }
 #bp-slider { transform: translateX(calc(var(--bp-page) * -33.3333%)); }
 #bell-pop.no-anim #bp-slider { transition: none; }
 .bp-page { position: relative; flex: 0 0 33.3333%; width: 33.3333%; height: 100%; overflow: hidden; }
-.bp-nav { display: none; position: absolute; left: -48px; top: calc(50% - 20px); width: 40px; height: 40px; border-radius: 50%; background: var(--c-1a); border: 1px solid var(--c-33); color: var(--c-cc); align-items: center; justify-content: center; cursor: pointer; z-index: 3; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-.bp-nav svg { display: block; }
-.bp-nav:hover { background: var(--c-33); color: var(--c-fff); }
-@media (min-width: 769px) { .bp-nav { display: flex; } }
-#bp-next { left: auto; right: -48px; }
-.bp-nav.off { opacity: 0.3; pointer-events: none; cursor: default; }
 #td-list { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 8px 8px 64px; }
 #td-add { display: none; position: absolute; right: 12px; bottom: 12px; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(var(--sh),0.5); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; z-index: 3; }
 #td-add.can { display: flex; }
@@ -1253,8 +1255,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   </div>
   </div>
   </div>
-  <div id="bp-next" class="bp-nav" title="Sonraki sayfa"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
-  <div id="bp-prev" class="bp-nav" title="Önceki sayfa"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg></div>
+  <div id="bp-tabs"><div id="bp-tabs-in"><div id="bp-pill"></div><button type="button" class="bp-tab on" data-p="0">Bildirim<span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="1">Keşfet<span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="2">Oluştur<span class="bp-dot"></span></button></div></div>
 </div>
 <div id="notes-pop">
   <div id="np-view"></div>
@@ -7172,6 +7173,7 @@ function receiveNotif(d) {
   ackNotif(id, false);
   if (!bellPop.classList.contains('show')) bellBtn.classList.add('unseen');
   else renderNotifs();
+  bpMarkUnread(0);
 }
 function receiveNotifDel(d) {
   if (!d || typeof d.id !== 'string') return;
@@ -7194,7 +7196,7 @@ function receiveNotifAck(d) {
 }
 function openBellPop() {
   closeNotesPop();
-  bpSetPage(0, true);
+  bpSetPage(bpPage, true);
   bellPop.classList.add('show');
   document.getElementById('bp-add').classList.toggle('can', notifCanSend());
   document.getElementById('cd-add').classList.toggle('can', notifCanSend());
@@ -7312,8 +7314,10 @@ function receiveThird(d, isHello) {
   cardList.push(c);
   thirdRev = rev;
   persistThird();
+  const isNew = !prev || prev.id !== c.id;
   if (bellPop.classList.contains('show')) renderCards();
-  else if (!prev || prev.id !== c.id) bellBtn.classList.add('unseen');
+  else if (isNew) bellBtn.classList.add('unseen');
+  if (isNew) bpMarkUnread(2);
 }
 (function loadThird() {
   try {
@@ -7547,6 +7551,7 @@ function receiveCard(d) {
   ackCard(id, false);
   if (!bellPop.classList.contains('show')) bellBtn.classList.add('unseen');
   else renderCards();
+  bpMarkUnread(1);
 }
 function receiveCardDel(d) {
   if (!d || typeof d.id !== 'string') return;
@@ -7689,29 +7694,36 @@ function closeCardCompose() {
   });
 })();
 
-/* Bildirim penceresi: mobilde sağdan sola kaydırınca boş yan sayfa; masaüstünde ok tuşlarıyla geçiş */
-let bpPage = 0;
+/* Bildirim penceresi: altta Bildirim | Keşfet | Oluştur sekmeleri; mobilde ayrıca sağa/sola kaydırarak geçiş. Son seçilen sayfa hatırlanır */
+let bpPage = (() => { const v = parseInt(lsGet('bpPage') || '0', 10); return (v >= 0 && v <= 2) ? v : 0; })();
 const BP_PAGES = 3;
+const bpUnread = [false, false, false];
+function bpDots() { document.querySelectorAll('.bp-tab').forEach((b, i) => b.classList.toggle('new', !!bpUnread[i])); }
+// Seçili olmayan sayfaya yeni gönderi gelirse o sekmenin köşesinde kırmızı nokta çıkar
+function bpMarkUnread(i) { if (i === bpPage) return; bpUnread[i] = true; bpDots(); }
 function bpSetPage(p, instant) {
   p = Math.max(0, Math.min(BP_PAGES - 1, p));
   if (instant) bellPop.classList.add('no-anim');
   bpPage = p;
   document.getElementById('bp-slider').style.setProperty('--bp-page', String(p));
+  document.getElementById('bp-tabs-in').style.setProperty('--bp-page', String(p));
   if (instant) { void bellPop.offsetWidth; bellPop.classList.remove('no-anim'); }
-  document.getElementById('bp-prev').classList.toggle('off', p <= 0);
-  document.getElementById('bp-next').classList.toggle('off', p >= BP_PAGES - 1);
+  document.querySelectorAll('.bp-tab').forEach((b, k) => b.classList.toggle('on', k === p));
+  bpUnread[p] = false;
+  bpDots();
+  try { lsSet('bpPage', String(p)); } catch (e) {}
 }
 (function initBellPages() {
-  const nx = document.getElementById('bp-next'), pv = document.getElementById('bp-prev');
-  const act = (fn) => (e) => { e.preventDefault(); e.stopPropagation(); fn(); };
-  nx.addEventListener('click', act(() => bpSetPage(bpPage + 1)));
-  pv.addEventListener('click', act(() => bpSetPage(bpPage - 1)));
-  [nx, pv].forEach((b) => b.addEventListener('mousedown', (e) => e.preventDefault()));
-  bpSetPage(0, true);
+  document.querySelectorAll('.bp-tab').forEach((b) => {
+    b.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
+    b.addEventListener('mousedown', (e) => e.preventDefault());
+    b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); bpSetPage(parseInt(b.dataset.p, 10)); });
+  });
+  bpSetPage(bpPage, true);
   let g = null;
   bellPop.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'mouse') return; // masaüstünde ok tuşları
-    if (e.target.closest && e.target.closest('input, textarea, .bp-nav')) return;
+    if (e.pointerType === 'mouse') return; // masaüstünde sekmelerle geçiş
+    if (e.target.closest && e.target.closest('input, textarea, #bp-tabs')) return;
     if (document.getElementById('bp-compose').classList.contains('show') || document.getElementById('cd-compose').classList.contains('show') || document.getElementById('td-compose').classList.contains('show')) return;
     g = { x: e.clientX, y: e.clientY, id: e.pointerId, on: false };
   });
