@@ -832,6 +832,8 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 #bell-pop.no-anim #bp-pill { transition: none; }
 .bp-tab { position: relative; z-index: 1; flex: 1 1 0; min-width: 0; padding: 0 2px; border: 0; background: transparent; color: var(--c-88); font-size: 12px; font-weight: 400; font-family: inherit; line-height: 1; cursor: pointer; white-space: nowrap; transition: color .25s ease; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .bp-tab.on { color: var(--on-accent); font-weight: 700; }
+#bell-pop.composing #bp-tabs { display: none; }
+#bell-pop.composing #bp-clip { bottom: 0; border-radius: inherit; }
 .bp-tab .bp-dot { display: none; position: absolute; top: -2px; right: 3px; width: 9px; height: 9px; border-radius: 50%; background: var(--bad); border: 1.5px solid var(--c-111); box-sizing: content-box; }
 .bp-tab.new .bp-dot { display: block; }
 #bp-slider { --bp-page: 0; position: absolute; top: 0; bottom: 0; left: 0; width: 300%; display: flex; touch-action: pan-y; transition: transform .25s ease; will-change: transform; }
@@ -7713,6 +7715,15 @@ function bpSetPage(p, instant) {
   bpDots();
   try { lsSet('bpPage', String(p)); } catch (e) {}
 }
+// Yazma (oluşturma) ekranı açıkken sekmeler gizlenir, ekran panelin tamamını kaplar
+(function initBellComposeWatch() {
+  const ids = ['bp-compose', 'cd-compose', 'td-compose'];
+  const els = ids.map((id) => document.getElementById(id)).filter(Boolean);
+  const sync = () => bellPop.classList.toggle('composing', els.some((el) => el.classList.contains('show')));
+  const mo = new MutationObserver(sync);
+  els.forEach((el) => mo.observe(el, { attributes: true, attributeFilter: ['class'] }));
+  sync();
+})();
 (function initBellPages() {
   document.querySelectorAll('.bp-tab').forEach((b) => {
     b.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
