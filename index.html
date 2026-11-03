@@ -1234,7 +1234,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   <div id="td-compose">
     <input id="td-name-in" type="text" placeholder="İsim" readonly tabindex="-1" autocomplete="off">
     <textarea id="td-body-in" placeholder="İçerik" maxlength="2000" autocomplete="off" spellcheck="false"></textarea>
-    <input id="td-topic-in" type="text" placeholder="Konu (#etiket şeklinde)" maxlength="120" autocomplete="off" autocorrect="off" spellcheck="false">
+    <input id="td-topic-in" type="text" placeholder="Konu" maxlength="120" autocomplete="off" autocorrect="off" spellcheck="false">
     <div id="td-actions"><span id="td-cancel">İptal</span><span id="td-send">Gönder</span></div>
   </div>
   </div>
@@ -7221,6 +7221,7 @@ function closeNotesPop() {
 // Bildirimlerle aynı mantık: bellekte tutulur (en fazla 10), yalnızca gönderilemeyen işlemler localStorage'da bekler.
 const CARD_MAX = 10;
 const CD_UP = '<svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>', CD_DN = '<svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path></svg>';
+const CD_EYE = '<svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
 let cardList = [];
 let cardOutbox = [];
 const cardTomb = new Set();
@@ -7232,7 +7233,7 @@ let thirdRev = 0;
 function thirdCard() { return cardList.find((x) => x.k === 'b') || null; }
 function thirdPayload() {
   const c = thirdCard();
-  if (c) return { rev: thirdRev, card: { id: c.id, n: c.n, b: c.b, c: c.c, z: c.z, u: c.u || 0, d: c.d || 0 } };
+  if (c) return { rev: thirdRev, card: { id: c.id, n: c.n, b: c.b, c: c.c, z: c.z, u: c.u || 0, d: c.d || 0, v: c.v || 0 } };
   return thirdRev > 0 ? { rev: thirdRev, card: null } : null; // silinmiş hâl de revizyonla taşınır, karşıda gönderi geri gelmesin
 }
 function persistThird() {
@@ -7243,7 +7244,7 @@ function persistThird() {
 function thirdSanitize(c) {
   if (!c || typeof c.id !== 'string') return null;
   const str = (v, m) => (typeof v === 'string' ? v.slice(0, m) : '');
-  return { id: c.id.slice(0, 40), k: 'b', n: str(c.n, 80), b: str(c.b, 2000), c: str(c.c, 120), z: str(c.z, 40), u: cdNum(c.u), d: cdNum(c.d), r: 0, at: Date.now(), own: false, pending: false };
+  return { id: c.id.slice(0, 40), k: 'b', n: str(c.n, 80), b: str(c.b, 2000), c: str(c.c, 120), z: str(c.z, 40), u: cdNum(c.u), d: cdNum(c.d), v: cdNum(c.v), r: 0, at: Date.now(), own: false, pending: false };
 }
 function thirdBump() { thirdRev = Math.max(Date.now(), thirdRev + 1); }
 function sendThird(type) {
@@ -7312,11 +7313,11 @@ function cdFmtNow() {
 }
 function cdNum(v) { v = parseInt(String(v == null ? '' : v).replace(/\D/g, '').slice(0, 10), 10); return (isFinite(v) && v > 0) ? v : 0; }
 function cdFmt(v) { return String(v || 0).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
-function setCardCounts(id, u, d) {
+function setCardCounts(id, u, d, v) {
   const n = cardList.find((x) => x.id === id);
   if (!n) return;
   n.u = cdNum(u); n.d = cdNum(d);
-  if (n.k === 'b') { thirdBump(); persistThird(); sendThird('third'); renderCards(); return; }
+  if (n.k === 'b') { n.v = cdNum(v == null ? n.v : v); thirdBump(); persistThird(); sendThird('third'); renderCards(); return; }
   const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === id);
   if (ai) { ai.item.u = n.u; ai.item.d = n.d; }
   else {
@@ -7337,15 +7338,16 @@ function receiveCardCount(d) {
 let cdEditing = false, cdRenderPending = false;
 function cdStartEdit(rb, c) {
   if (cdEditing) return;
-  const up = rb.dataset.r === '1';
+  const kind = rb.dataset.r; // 1 beğeni, 2 beğenmeme, 3 görüntülenme (yalnızca 3. sayfa)
+  const up = kind === '1';
   const svg = rb.querySelector('svg');
   const wrap = document.createElement('span');
   wrap.className = 'cd-ed';
   if (svg) wrap.appendChild(svg.cloneNode(true));
   const inp = document.createElement('input');
   inp.type = 'text'; inp.inputMode = 'numeric'; inp.maxLength = 14; inp.autocomplete = 'off';
-  inp.setAttribute('aria-label', up ? 'Beğeni sayısı' : 'Beğenmeme sayısı');
-  inp.value = cdFmt(up ? (c.u || 0) : (c.d || 0));
+  inp.setAttribute('aria-label', kind === '3' ? 'Görüntülenme sayısı' : up ? 'Beğeni sayısı' : 'Beğenmeme sayısı');
+  inp.value = cdFmt(kind === '3' ? (c.v || 0) : up ? (c.u || 0) : (c.d || 0));
   wrap.appendChild(inp);
   rb.replaceWith(wrap);
   cdEditing = true;
@@ -7353,7 +7355,7 @@ function cdStartEdit(rb, c) {
   const finish = (save) => {
     if (done) return; done = true;
     cdEditing = false;
-    if (save) setCardCounts(c.id, up ? inp.value : c.u, up ? c.d : inp.value);
+    if (save) setCardCounts(c.id, up ? inp.value : c.u, kind === '2' ? inp.value : c.d, kind === '3' ? inp.value : c.v);
     else renderCards();
     cdRenderPending = false;
   };
@@ -7382,6 +7384,7 @@ function renderCards() {
         '<div class="cd-row cd-rx">' +
           '<button type="button" class="cd-rb' + (n.r === 1 ? ' on' : '') + ((k === 'b' && !can) ? ' ro' : '') + '" data-r="1" aria-label="Beğen" aria-pressed="' + (n.r === 1) + '">' + CD_UP + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.u || 0) + (n.r === 1 ? 1 : 0)) + '</span></button>' +
           '<button type="button" class="cd-rb' + (n.r === 2 ? ' on' : '') + ((k === 'b' && !can) ? ' ro' : '') + '" data-r="2" aria-label="Beğenme" aria-pressed="' + (n.r === 2) + '">' + CD_DN + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.d || 0) + (n.r === 2 ? 1 : 0)) + '</span></button>' +
+          (k === 'b' ? '<button type="button" class="cd-rb' + (!can ? ' ro' : '') + '" data-r="3" aria-label="Görüntülenme">' + CD_EYE + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt(n.v || 0) + '</span></button>' : '') +
         '</div>' +
         (n.pending ? '<div class="cd-row bp-pend">Gönderilmedi, bağlanınca gidecek</div>' : '') +
         '</div>';
@@ -7576,7 +7579,7 @@ function closeCardCompose() {
     if (!b && !c) return;
     const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, c: c, z: cdFmtNow(), u: 0, d: 0, r: 0, ts: Date.now(), k: 'b' };
     cardList = cardList.filter((x) => x.k !== 'b'); // önceki gönderi silinir, yalnızca sonuncu kalır
-    cardList.push({ id: item.id, k: 'b', n: n, b: b, c: c, z: item.z, u: 0, d: 0, r: 0, at: item.ts, own: true, pending: false });
+    cardList.push({ id: item.id, k: 'b', n: n, b: b, c: c, z: item.z, u: 0, d: 0, v: 0, r: 0, at: item.ts, own: true, pending: false });
     thirdBump(); persistThird(); sendThird('third');
     closeCardCompose();
     bellMsgHad = false;
