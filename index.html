@@ -849,6 +849,7 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 #td-actions span { cursor: pointer; padding: 7px 14px; border-radius: 6px; font-size: 14px; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; color: var(--c-cc); border: 1px solid var(--c-33); }
 #td-send { background: var(--accent); color: var(--on-accent) !important; border-color: var(--accent) !important; font-weight: 700; }
 #td-name-in[readonly] { opacity: 0.6; pointer-events: none; -webkit-user-select: none; user-select: none; }
+#td-name-in { display: none; } /* 3. sayfa yazma ekranında isim kutusu gösterilmez; isim gönderirken sohbetteki isim kutusundan alınır */
 #td-add.off { opacity: 0.35; pointer-events: none; }
 #cd-list { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 8px 8px 64px; }
 #cd-add { display: none; position: absolute; right: 12px; bottom: 12px; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(var(--sh),0.5); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; z-index: 3; }
@@ -7359,7 +7360,7 @@ function cdStartEdit(rb, c) {
   inp.addEventListener('input', () => { const v = cdNum(inp.value); inp.value = inp.value.replace(/\D/g, '') ? cdFmt(v) : ''; });
   inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
   inp.addEventListener('blur', () => finish(true));
-  try { inp.focus(); inp.select(); } catch (e) {}
+  try { inp.focus(); const L = inp.value.length; inp.setSelectionRange(L, L); } catch (e) {} // tümü seçilmesin, imleç sonda dursun
 }
 function renderCards() {
   if (cdEditing) { cdRenderPending = true; return; } // sayı yazılırken liste yeniden çizilip kutuyu silmesin
@@ -7531,6 +7532,32 @@ function closeCardCompose() {
   const tSend = document.getElementById('td-send'), tCancel = document.getElementById('td-cancel');
   const tSync = () => { tAdd.classList.toggle('can', thirdCanSend()); tAdd.classList.toggle('off', !isConnected()); };
   tSync(); setInterval(tSync, 400);
+  // ---- Konu kutusu: yalnızca '#konu #konu' biçimi. Her etiketin # işareti otomatik gelir ve silinemez; boşluk basınca yeni '#' eklenir ----
+  const tagNorm = (v, delBack) => {
+    let trail = /\s$/.test(v);
+    const toks = v.replace(/#/g, ' ').split(/\s+/).filter(Boolean);
+    if (!toks.length) return '#';
+    let out = toks.map((t) => '#' + t).join(' ');
+    if (trail && !delBack) out += ' #';
+    return out;
+  };
+  const tagEnd = () => { try { const L = tTopic.value.length; tTopic.setSelectionRange(L, L); } catch (e) {} };
+  tTopic.addEventListener('focus', () => { if (!tTopic.value) tTopic.value = '#'; setTimeout(tagEnd, 0); });
+  tTopic.addEventListener('click', () => setTimeout(tagEnd, 0));
+  tTopic.addEventListener('input', (e) => {
+    let v = tTopic.value;
+    const back = !!(e && e.inputType && e.inputType.indexOf('delete') === 0);
+    // Silme sırasında boş kalan son '#' ile birlikte önündeki boşluk da gider; # tek başına silinmez
+    if (back) v = v.replace(/\s+$/, '');
+    let r = tagNorm(v, false);
+    if (r.length > 120) r = r.slice(0, 120);
+    if (tTopic.value !== r) tTopic.value = r;
+    tagEnd();
+  });
+  tTopic.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'Home') { e.preventDefault(); tagEnd(); }
+  });
+  tTopic.addEventListener('blur', () => { tTopic.value = tTopic.value.replace(/(^|\s)#\s*$/, '').trim(); });
   tAdd.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
   tAdd.addEventListener('click', () => {
     if (!thirdCanSend() || !isConnected()) return;
@@ -7545,7 +7572,7 @@ function closeCardCompose() {
   tSend.addEventListener('click', () => {
     if (!thirdCanSend()) return;
     if (!isConnected()) { try { flashStatus('Bağlı değil, gönderi gönderilmedi'); } catch (e) {} return; }
-    const n = nickInput.value.trim(), b = tBody.value.trim(), c = tTopic.value.trim();
+    const n = nickInput.value.trim(), b = tBody.value.trim(), c = tTopic.value.split(/\s+/).filter((t) => t.length > 1 && t[0] === '#').join(' ');
     if (!b && !c) return;
     const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, c: c, z: cdFmtNow(), u: 0, d: 0, r: 0, ts: Date.now(), k: 'b' };
     cardList = cardList.filter((x) => x.k !== 'b'); // önceki gönderi silinir, yalnızca sonuncu kalır
