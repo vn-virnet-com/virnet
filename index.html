@@ -878,6 +878,10 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 .cd-rb { display: inline-flex; align-items: center; gap: 6px; margin: -4px 0; padding: 6px 4px 6px 0; border: 0; background: transparent; color: var(--c-77); font-size: 13px; font-family: inherit; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .cd-rb svg { display: block; fill: none; }
 .cd-rb.on { color: var(--c-fff); }
+.cd-rb.ro { pointer-events: none; cursor: default; }
+.cd-ed { display: inline-flex; align-items: center; gap: 6px; margin: -4px 0; padding: 2px 4px 2px 0; color: var(--c-fff); }
+.cd-ed svg { display: block; fill: none; flex: 0 0 auto; }
+.cd-ed input { width: 9ch; min-width: 0; border: 1px solid var(--accent); border-radius: 5px; background: var(--c-000); color: var(--c-fff); outline: none; font-size: 14px; padding: 3px 6px; font-family: 'Lexend', sans-serif; caret-color: var(--accent); }
 .cd-rb.on svg { fill: currentColor; }
 #bp-list { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 8px 8px 64px; }
 .bp-card { touch-action: pan-y; position: relative; width: 100%; margin: 0 0 8px; padding: 8px 11px; background: var(--c-1a); border: 1px solid var(--c-33); border-radius: 6px; }
@@ -1229,7 +1233,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   <div id="td-compose">
     <input id="td-name-in" type="text" placeholder="İsim" readonly tabindex="-1" autocomplete="off">
     <textarea id="td-body-in" placeholder="İçerik" maxlength="2000" autocomplete="off" spellcheck="false"></textarea>
-    <input id="td-topic-in" type="text" placeholder="Konu" maxlength="120" autocomplete="off" autocorrect="off" spellcheck="false">
+    <input id="td-topic-in" type="text" placeholder="Konu (#etiket şeklinde)" maxlength="120" autocomplete="off" autocorrect="off" spellcheck="false">
     <div id="td-actions"><span id="td-cancel">İptal</span><span id="td-send">Gönder</span></div>
   </div>
   </div>
@@ -2465,6 +2469,7 @@ function setupConnection(c) {
     sendQNote('qnote-hello');
     flushNotifOutbox();
     flushCardOutbox();
+    sendThird('third-hello');
     flushOutbox(true);
     flushMediaOutbox();
     try { if (ytCurrent && ytCurrent._announce) ytCurrent._announce(); } catch (e) {}
@@ -2511,6 +2516,8 @@ function setupConnection(c) {
     if (data.type === 'card-del') { receiveCardDel(data); return; }
     if (data.type === 'card-react') { receiveCardReact(data); return; }
     if (data.type === 'card-count') { receiveCardCount(data); return; }
+    if (data.type === 'third-hello') { receiveThird(data, true); return; }
+    if (data.type === 'third') { receiveThird(data, false); return; }
     if (data.type === 'card-ack') { receiveCardAck(data); return; }
     if (data.type === 'qnote' || data.type === 'qnote-hello') { receiveQNote(data); return; }
     if (data.type === 'msg-ack') { receiveMsgAck(data); return; }
@@ -7217,7 +7224,54 @@ let cardList = [];
 let cardOutbox = [];
 const cardTomb = new Set();
 try { const a = JSON.parse(lsGet('cardOutbox') || '[]'); if (Array.isArray(a)) cardOutbox = a.filter((o) => o && ((o.op === 'add' && o.item && typeof o.item.id === 'string') || ((o.op === 'del' || o.op === 'react' || o.op === 'count') && typeof o.id === 'string'))); } catch (e) {}
+cardOutbox = cardOutbox.filter((o) => !(o.op === 'add' && o.item && o.item.k === 'b'));
 cardOutbox.forEach((o) => { if (o.op === 'add') cardList.push({ id: o.item.id, k: o.item.k === 'b' ? 'b' : 'a', n: o.item.n, b: o.item.b, c: o.item.c, z: o.item.z, u: o.item.u || 0, d: o.item.d || 0, r: o.item.r || 0, at: o.item.ts, own: true, pending: true }); });
+// ---- 3. sayfa: yalnızca en son gönderi tutulur. localStorage'da saklanır; her bağlantıda iki taraf revizyonu kıyaslar, daha güncel olan kazanır ----
+let thirdRev = 0;
+function thirdCard() { return cardList.find((x) => x.k === 'b') || null; }
+function thirdPayload() {
+  const c = thirdCard();
+  return c ? { rev: thirdRev, card: { id: c.id, n: c.n, b: c.b, c: c.c, z: c.z, u: c.u || 0, d: c.d || 0 } } : null;
+}
+function persistThird() {
+  const p = thirdPayload();
+  if (!p) { lsRemove('thirdCard'); return; }
+  lsSet('thirdCard', JSON.stringify(p));
+}
+function thirdSanitize(c) {
+  if (!c || typeof c.id !== 'string') return null;
+  const str = (v, m) => (typeof v === 'string' ? v.slice(0, m) : '');
+  return { id: c.id.slice(0, 40), k: 'b', n: str(c.n, 80), b: str(c.b, 2000), c: str(c.c, 120), z: str(c.z, 40), u: cdNum(c.u), d: cdNum(c.d), r: 0, at: Date.now(), own: false, pending: false };
+}
+function thirdBump() { thirdRev = Math.max(Date.now(), thirdRev + 1); }
+function sendThird(type) {
+  if (!isConnected()) return;
+  const p = thirdPayload();
+  if (!p) return;
+  try { conn.send({ type: type, rev: p.rev, card: p.card }); } catch (e) {}
+}
+function receiveThird(d, isHello) {
+  if (!d) return;
+  const rev = Number(d.rev) || 0;
+  if (rev < thirdRev) { if (isHello) sendThird('third'); return; } // bende daha güncel: karşıya gönder
+  if (rev === thirdRev) return;
+  const c = thirdSanitize(d.card);
+  if (!c) return;
+  const prev = thirdCard();
+  cardList = cardList.filter((x) => x.k !== 'b');
+  cardList.push(c);
+  thirdRev = rev;
+  persistThird();
+  if (bellPop.classList.contains('show')) renderCards();
+  else if (!prev || prev.id !== c.id) bellBtn.classList.add('unseen');
+}
+(function loadThird() {
+  try {
+    const o = JSON.parse(lsGet('thirdCard') || 'null');
+    const c = o && thirdSanitize(o.card);
+    if (c) { cardList.push(c); thirdRev = Number(o.rev) || 0; }
+  } catch (e) {}
+})();
 function persistCardOutbox() { if (cardOutbox.length) lsSet('cardOutbox', JSON.stringify(cardOutbox)); else lsRemove('cardOutbox'); }
 function trimCards() {
   cardList.sort((a, b) => b.at - a.at);
@@ -7252,6 +7306,7 @@ function setCardCounts(id, u, d) {
   const n = cardList.find((x) => x.id === id);
   if (!n) return;
   n.u = cdNum(u); n.d = cdNum(d);
+  if (n.k === 'b') { thirdBump(); persistThird(); sendThird('third'); renderCards(); return; }
   const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === id);
   if (ai) { ai.item.u = n.u; ai.item.d = n.d; }
   else {
@@ -7269,7 +7324,36 @@ function receiveCardCount(d) {
   n.u = cdNum(d.u); n.d = cdNum(d.d);
   if (bellPop.classList.contains('show')) renderCards();
 }
+let cdEditing = false, cdRenderPending = false;
+function cdStartEdit(rb, c) {
+  if (cdEditing) return;
+  const up = rb.dataset.r === '1';
+  const svg = rb.querySelector('svg');
+  const wrap = document.createElement('span');
+  wrap.className = 'cd-ed';
+  if (svg) wrap.appendChild(svg.cloneNode(true));
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.inputMode = 'numeric'; inp.maxLength = 14; inp.autocomplete = 'off';
+  inp.setAttribute('aria-label', up ? 'Beğeni sayısı' : 'Beğenmeme sayısı');
+  inp.value = cdFmt(up ? (c.u || 0) : (c.d || 0));
+  wrap.appendChild(inp);
+  rb.replaceWith(wrap);
+  cdEditing = true;
+  let done = false;
+  const finish = (save) => {
+    if (done) return; done = true;
+    cdEditing = false;
+    if (save) setCardCounts(c.id, up ? inp.value : c.u, up ? c.d : inp.value);
+    else renderCards();
+    cdRenderPending = false;
+  };
+  inp.addEventListener('input', () => { const v = cdNum(inp.value); inp.value = inp.value.replace(/\D/g, '') ? cdFmt(v) : ''; });
+  inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
+  inp.addEventListener('blur', () => finish(true));
+  try { inp.focus(); inp.select(); } catch (e) {}
+}
 function renderCards() {
+  if (cdEditing) { cdRenderPending = true; return; } // sayı yazılırken liste yeniden çizilip kutuyu silmesin
   cardList.sort((x, y) => y.at - x.at);
   const can = notifCanSend();
   const draw = (id, k, emptyTxt) => {
@@ -7286,8 +7370,8 @@ function renderCards() {
         (n.c ? '<div class="cd-row cd-topic">' + escapeHtml(n.c) + '</div>' : '') +
         (n.z ? '<div class="cd-row cd-time">' + escapeHtml(n.z) + '</div>' : '') +
         '<div class="cd-row cd-rx">' +
-          '<button type="button" class="cd-rb' + (n.r === 1 ? ' on' : '') + '" data-r="1" aria-label="Beğen" aria-pressed="' + (n.r === 1) + '">' + CD_UP + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.u || 0) + (n.r === 1 ? 1 : 0)) + '</span></button>' +
-          '<button type="button" class="cd-rb' + (n.r === 2 ? ' on' : '') + '" data-r="2" aria-label="Beğenme" aria-pressed="' + (n.r === 2) + '">' + CD_DN + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.d || 0) + (n.r === 2 ? 1 : 0)) + '</span></button>' +
+          '<button type="button" class="cd-rb' + (n.r === 1 ? ' on' : '') + ((k === 'b' && !can) ? ' ro' : '') + '" data-r="1" aria-label="Beğen" aria-pressed="' + (n.r === 1) + '">' + CD_UP + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.u || 0) + (n.r === 1 ? 1 : 0)) + '</span></button>' +
+          '<button type="button" class="cd-rb' + (n.r === 2 ? ' on' : '') + ((k === 'b' && !can) ? ' ro' : '') + '" data-r="2" aria-label="Beğenme" aria-pressed="' + (n.r === 2) + '">' + CD_DN + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.d || 0) + (n.r === 2 ? 1 : 0)) + '</span></button>' +
         '</div>' +
         (n.pending ? '<div class="cd-row bp-pend">Gönderilmedi, bağlanınca gidecek</div>' : '') +
         '</div>';
@@ -7319,7 +7403,8 @@ function deleteOwnCard(id) {
 // Beğenme / beğenmeme: iki kullanıcı için ortak tek durum (0 yok, 1 beğeni, 2 beğenmeme); ikisi aynı anda olamaz
 function reactCard(id, r) {
   const n = cardList.find((x) => x.id === id);
-  if (!n) return;
+  if (!n || n.k === 'b') return; // 3. sayfada beğenme/beğenmeme tuşları kullanılamaz
+
   const nr = (n.r === r) ? 0 : r;
   n.r = nr;
   const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === id);
@@ -7334,7 +7419,7 @@ function reactCard(id, r) {
 }
 function receiveCard(d) {
   const n = d && d.item;
-  if (!n || typeof n.id !== 'string') return;
+  if (!n || typeof n.id !== 'string' || n.k === 'b') return;
   const id = n.id.slice(0, 40);
   if (cardTomb.has(id) || cardList.some((x) => x.id === id)) { ackCard(id, false); return; }
   const str = (v, m) => (typeof v === 'string' ? v.slice(0, m) : '');
@@ -7354,7 +7439,7 @@ function receiveCardDel(d) {
 function receiveCardReact(d) {
   if (!d || typeof d.id !== 'string') return;
   const n = cardList.find((x) => x.id === d.id);
-  if (!n) return;
+  if (!n || n.k === 'b') return;
   n.r = (d.r === 1 || d.r === 2) ? d.r : 0;
   if (bellPop.classList.contains('show')) renderCards();
 }
@@ -7389,17 +7474,12 @@ function closeCardCompose() {
     const d = e.target.closest && e.target.closest('.bp-del');
     if (d) { const card = d.closest('.bp-card'); if (card && notifCanSend()) deleteOwnCard(card.dataset.id); return; }
     const rb = e.target.closest && e.target.closest('.cd-rb');
-    const nm = e.target.closest && e.target.closest('.cd-num.can');
-    if (nm && rb && notifCanSend()) {
-      const card = rb.closest('.bp-card'), c = cardList.find((x) => x.id === card.dataset.id);
-      if (!c) return;
-      const up = rb.dataset.r === '1';
-      const v = window.prompt(up ? 'Beğeni sayısı' : 'Beğenmeme sayısı', cdFmt(up ? (c.u || 0) : (c.d || 0)));
-      if (v === null) return;
-      setCardCounts(c.id, up ? v : c.u, up ? c.d : v);
-      return;
-    }
-    if (rb) { const card = rb.closest('.bp-card'); if (card) reactCard(card.dataset.id, parseInt(rb.dataset.r, 10)); }
+    if (!rb) return;
+    const card = rb.closest('.bp-card'), c = card && cardList.find((x) => x.id === card.dataset.id);
+    if (!c) return;
+    if (notifCanSend()) { cdStartEdit(rb, c); return; } // 6687: 2. ve 3. sayfada tuşa/rakama basınca sayıyı değiştirir
+    if (c.k === 'b') return; // 3. sayfada diğer kullanıcılar tepki veremez
+    reactCard(c.id, parseInt(rb.dataset.r, 10));
   }));
   add.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
   add.addEventListener('click', () => {
@@ -7450,11 +7530,9 @@ function closeCardCompose() {
     const n = nickInput.value.trim(), b = tBody.value.trim(), c = tTopic.value.trim();
     if (!b && !c) return;
     const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, c: c, z: cdFmtNow(), u: 0, d: 0, r: 0, ts: Date.now(), k: 'b' };
-    cardList.push({ id: item.id, k: 'b', n: n, b: b, c: c, z: item.z, u: 0, d: 0, r: 0, at: item.ts, own: true, pending: true });
-    trimCards();
-    cardOutbox.push({ op: 'add', item: item, tried: false });
-    persistCardOutbox();
-    flushCardOutbox();
+    cardList = cardList.filter((x) => x.k !== 'b'); // önceki gönderi silinir, yalnızca sonuncu kalır
+    cardList.push({ id: item.id, k: 'b', n: n, b: b, c: c, z: item.z, u: 0, d: 0, r: 0, at: item.ts, own: true, pending: false });
+    thirdBump(); persistThird(); sendThird('third');
     closeCardCompose();
     bellMsgHad = false;
     renderCards();
