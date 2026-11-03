@@ -7231,7 +7231,8 @@ let thirdRev = 0;
 function thirdCard() { return cardList.find((x) => x.k === 'b') || null; }
 function thirdPayload() {
   const c = thirdCard();
-  return c ? { rev: thirdRev, card: { id: c.id, n: c.n, b: c.b, c: c.c, z: c.z, u: c.u || 0, d: c.d || 0 } } : null;
+  if (c) return { rev: thirdRev, card: { id: c.id, n: c.n, b: c.b, c: c.c, z: c.z, u: c.u || 0, d: c.d || 0 } };
+  return thirdRev > 0 ? { rev: thirdRev, card: null } : null; // silinmiş hâl de revizyonla taşınır, karşıda gönderi geri gelmesin
 }
 function persistThird() {
   const p = thirdPayload();
@@ -7255,6 +7256,13 @@ function receiveThird(d, isHello) {
   const rev = Number(d.rev) || 0;
   if (rev < thirdRev) { if (isHello) sendThird('third'); return; } // bende daha güncel: karşıya gönder
   if (rev === thirdRev) return;
+  if (d.card === null) { // karşı taraf gönderiyi sildi
+    cardList = cardList.filter((x) => x.k !== 'b');
+    thirdRev = rev;
+    persistThird();
+    if (bellPop.classList.contains('show')) renderCards();
+    return;
+  }
   const c = thirdSanitize(d.card);
   if (!c) return;
   const prev = thirdCard();
@@ -7270,6 +7278,7 @@ function receiveThird(d, isHello) {
     const o = JSON.parse(lsGet('thirdCard') || 'null');
     const c = o && thirdSanitize(o.card);
     if (c) { cardList.push(c); thirdRev = Number(o.rev) || 0; }
+    else if (o && o.card === null) thirdRev = Number(o.rev) || 0;
   } catch (e) {}
 })();
 function persistCardOutbox() { if (cardOutbox.length) lsSet('cardOutbox', JSON.stringify(cardOutbox)); else lsRemove('cardOutbox'); }
@@ -7362,7 +7371,7 @@ function renderCards() {
     const arr = cardList.filter((x) => x.k === k);
     if (!arr.length) { list.innerHTML = '<div class="bp-empty">' + emptyTxt + '</div>'; return; }
     list.innerHTML = arr.map((n) => {
-      const del = k === 'a' && n.own && can; // 3. sayfadaki gönderiler silinemez
+      const del = can && (k === 'b' || n.own); // 3. sayfadaki gönderiyi 6687 şifreli kişi silebilir
       return '<div class="bp-card' + (del ? ' has-del' : '') + '" data-id="' + escapeHtml(n.id) + '">' +
         (del ? '<div class="bp-del" title="Sil">' + BP_TRASH + '</div>' : '') +
         (n.n ? '<div class="cd-row cd-name">' + escapeHtml(n.n) + '</div>' : '') +
@@ -7398,6 +7407,15 @@ function deleteOwnCard(id) {
   if (tried) cardOutbox.push({ op: 'del', id: id });
   persistCardOutbox();
   flushCardOutbox();
+  renderCards();
+}
+// 3. sayfa gönderisini 6687 şifreli kişi siler; silme revizyonla karşıya da gider
+function deleteThirdCard(id) {
+  if (!notifCanSend()) return;
+  const c = thirdCard();
+  if (!c || c.id !== id) return;
+  cardList = cardList.filter((x) => x.k !== 'b');
+  thirdBump(); persistThird(); sendThird('third');
   renderCards();
 }
 // Beğenme / beğenmeme: iki kullanıcı için ortak tek durum (0 yok, 1 beğeni, 2 beğenmeme); ikisi aynı anda olamaz
@@ -7472,7 +7490,7 @@ function closeCardCompose() {
   const tList = document.getElementById('td-list');
   [list, tList].forEach((L) => L.addEventListener('click', (e) => {
     const d = e.target.closest && e.target.closest('.bp-del');
-    if (d) { const card = d.closest('.bp-card'); if (card && notifCanSend()) deleteOwnCard(card.dataset.id); return; }
+    if (d) { const card = d.closest('.bp-card'); if (card && notifCanSend()) { if (card.closest('#td-list')) deleteThirdCard(card.dataset.id); else deleteOwnCard(card.dataset.id); } return; }
     const rb = e.target.closest && e.target.closest('.cd-rb');
     if (!rb) return;
     const card = rb.closest('.bp-card'), c = card && cardList.find((x) => x.id === card.dataset.id);
