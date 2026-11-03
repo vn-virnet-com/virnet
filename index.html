@@ -836,6 +836,20 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 @media (min-width: 769px) { .bp-nav { display: flex; } }
 #bp-next { left: auto; right: -48px; }
 .bp-nav.off { opacity: 0.3; pointer-events: none; cursor: default; }
+#td-list { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 8px 8px 64px; }
+#td-add { display: none; position: absolute; right: 12px; bottom: 12px; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(var(--sh),0.5); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; z-index: 3; }
+#td-add.can { display: flex; }
+#td-add svg { display: block; }
+#td-compose { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--c-111); padding: 8px; flex-direction: column; gap: 6px; z-index: 4; }
+#td-compose.show { display: flex; }
+#td-name-in, #td-body-in, #td-topic-in { width: 100%; border: 1px solid var(--c-33); border-radius: 6px; background: var(--c-000); color: var(--c-fff); outline: none; font-size: 16px; padding: 7px 9px; caret-color: var(--accent); font-family: 'Lexend', sans-serif; flex: 0 0 auto; }
+#td-name-in { font-weight: 700; }
+#td-body-in { flex: 1 1 auto; min-height: 0; resize: none; font-weight: 300; line-height: 1.3; }
+#td-actions { display: flex; gap: 8px; justify-content: flex-end; flex: 0 0 auto; }
+#td-actions span { cursor: pointer; padding: 7px 14px; border-radius: 6px; font-size: 14px; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; color: var(--c-cc); border: 1px solid var(--c-33); }
+#td-send { background: var(--accent); color: var(--on-accent) !important; border-color: var(--accent) !important; font-weight: 700; }
+#td-name-in[readonly] { opacity: 0.6; pointer-events: none; -webkit-user-select: none; user-select: none; }
+#td-add.off { opacity: 0.35; pointer-events: none; }
 #cd-list { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 8px 8px 64px; }
 #cd-add { display: none; position: absolute; right: 12px; bottom: 12px; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(var(--sh),0.5); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; z-index: 3; }
 #cd-add.can { display: flex; }
@@ -1209,7 +1223,16 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     <div id="cd-actions"><span id="cd-cancel">İptal</span><span id="cd-send">Gönder</span></div>
   </div>
   </div>
-  <div id="bp-page-third" class="bp-page"></div>
+  <div id="bp-page-third" class="bp-page">
+  <div id="td-list"></div>
+  <div id="td-add" title="Gönderi ekle"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+  <div id="td-compose">
+    <input id="td-name-in" type="text" placeholder="İsim" readonly tabindex="-1" autocomplete="off">
+    <textarea id="td-body-in" placeholder="İçerik" maxlength="2000" autocomplete="off" spellcheck="false"></textarea>
+    <input id="td-topic-in" type="text" placeholder="Konu" maxlength="120" autocomplete="off" autocorrect="off" spellcheck="false">
+    <div id="td-actions"><span id="td-cancel">İptal</span><span id="td-send">Gönder</span></div>
+  </div>
+  </div>
   </div>
   </div>
   <div id="bp-next" class="bp-nav" title="Sonraki sayfa"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
@@ -7057,6 +7080,7 @@ lsRemove('notifList'); lsRemove('notifUnseen');
 try { const a = JSON.parse(lsGet('notifOutbox') || '[]'); if (Array.isArray(a)) notifOutbox = a.filter((o) => o && (o.op === 'del' ? typeof o.id === 'string' : (o.op === 'add' && o.item && typeof o.item.id === 'string'))); } catch (e) {}
 notifOutbox.forEach((o) => { if (o.op === 'add') notifList.push({ id: o.item.id, t: o.item.t, b: o.item.b, at: o.item.ts, own: true, pending: true }); });
 notifList.sort((x, y) => y.at - x.at); // açılışta da en yeni üstte
+function thirdCanSend() { try { return sessionStorage.getItem('pinOk') === '1' && sessionStorage.getItem('pinLive') !== '1'; } catch (e) { return false; } }
 function notifCanSend() { try { return sessionStorage.getItem('pinLive') === '1'; } catch (e) { return false; } }
 function persistOutbox() { if (notifOutbox.length) lsSet('notifOutbox', JSON.stringify(notifOutbox)); else lsRemove('notifOutbox'); }
 function trimNotifs() {
@@ -7150,6 +7174,7 @@ function openBellPop() {
   bellPop.classList.add('show');
   document.getElementById('bp-add').classList.toggle('can', notifCanSend());
   document.getElementById('cd-add').classList.toggle('can', notifCanSend());
+  document.getElementById('td-add').classList.toggle('can', thirdCanSend());
   closeNotifCompose();
   closeCardCompose();
   renderNotifs();
@@ -7192,9 +7217,12 @@ let cardList = [];
 let cardOutbox = [];
 const cardTomb = new Set();
 try { const a = JSON.parse(lsGet('cardOutbox') || '[]'); if (Array.isArray(a)) cardOutbox = a.filter((o) => o && ((o.op === 'add' && o.item && typeof o.item.id === 'string') || ((o.op === 'del' || o.op === 'react' || o.op === 'count') && typeof o.id === 'string'))); } catch (e) {}
-cardOutbox.forEach((o) => { if (o.op === 'add') cardList.push({ id: o.item.id, n: o.item.n, b: o.item.b, c: o.item.c, z: o.item.z, u: o.item.u || 0, d: o.item.d || 0, r: o.item.r || 0, at: o.item.ts, own: true, pending: true }); });
+cardOutbox.forEach((o) => { if (o.op === 'add') cardList.push({ id: o.item.id, k: o.item.k === 'b' ? 'b' : 'a', n: o.item.n, b: o.item.b, c: o.item.c, z: o.item.z, u: o.item.u || 0, d: o.item.d || 0, r: o.item.r || 0, at: o.item.ts, own: true, pending: true }); });
 function persistCardOutbox() { if (cardOutbox.length) lsSet('cardOutbox', JSON.stringify(cardOutbox)); else lsRemove('cardOutbox'); }
-function trimCards() { cardList.sort((a, b) => b.at - a.at); if (cardList.length > CARD_MAX) cardList.length = CARD_MAX; }
+function trimCards() {
+  cardList.sort((a, b) => b.at - a.at);
+  ['a', 'b'].forEach((k) => { let c = 0; cardList = cardList.filter((x) => x.k !== k || ++c <= CARD_MAX); });
+}
 function flushCardOutbox() {
   if (!isConnected() || !cardOutbox.length) return;
   cardOutbox.forEach((o) => {
@@ -7242,26 +7270,31 @@ function receiveCardCount(d) {
   if (bellPop.classList.contains('show')) renderCards();
 }
 function renderCards() {
-  const list = document.getElementById('cd-list');
-  if (!list) return;
   cardList.sort((x, y) => y.at - x.at);
   const can = notifCanSend();
-  if (!cardList.length) { list.innerHTML = '<div class="bp-empty">Gönderi Yok</div>'; return; }
-  list.innerHTML = cardList.map((n) => {
-    const del = n.own && can;
-    return '<div class="bp-card' + (del ? ' has-del' : '') + '" data-id="' + escapeHtml(n.id) + '">' +
-      (del ? '<div class="bp-del" title="Sil">' + BP_TRASH + '</div>' : '') +
-      (n.n ? '<div class="cd-row cd-name">' + escapeHtml(n.n) + '</div>' : '') +
-      (n.b ? '<div class="cd-row cd-body">' + renderBodyHtml(n.b) + '</div>' : '') +
-      (n.c ? '<div class="cd-row cd-topic">' + escapeHtml(n.c) + '</div>' : '') +
-      (n.z ? '<div class="cd-row cd-time">' + escapeHtml(n.z) + '</div>' : '') +
-      '<div class="cd-row cd-rx">' +
-        '<button type="button" class="cd-rb' + (n.r === 1 ? ' on' : '') + '" data-r="1" aria-label="Beğen" aria-pressed="' + (n.r === 1) + '">' + CD_UP + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.u || 0) + (n.r === 1 ? 1 : 0)) + '</span></button>' +
-        '<button type="button" class="cd-rb' + (n.r === 2 ? ' on' : '') + '" data-r="2" aria-label="Beğenme" aria-pressed="' + (n.r === 2) + '">' + CD_DN + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.d || 0) + (n.r === 2 ? 1 : 0)) + '</span></button>' +
-      '</div>' +
-      (n.pending ? '<div class="cd-row bp-pend">Gönderilmedi, bağlanınca gidecek</div>' : '') +
-      '</div>';
-  }).join('');
+  const draw = (id, k, emptyTxt) => {
+    const list = document.getElementById(id);
+    if (!list) return;
+    const arr = cardList.filter((x) => x.k === k);
+    if (!arr.length) { list.innerHTML = '<div class="bp-empty">' + emptyTxt + '</div>'; return; }
+    list.innerHTML = arr.map((n) => {
+      const del = k === 'a' && n.own && can; // 3. sayfadaki gönderiler silinemez
+      return '<div class="bp-card' + (del ? ' has-del' : '') + '" data-id="' + escapeHtml(n.id) + '">' +
+        (del ? '<div class="bp-del" title="Sil">' + BP_TRASH + '</div>' : '') +
+        (n.n ? '<div class="cd-row cd-name">' + escapeHtml(n.n) + '</div>' : '') +
+        (n.b ? '<div class="cd-row cd-body">' + renderBodyHtml(n.b) + '</div>' : '') +
+        (n.c ? '<div class="cd-row cd-topic">' + escapeHtml(n.c) + '</div>' : '') +
+        (n.z ? '<div class="cd-row cd-time">' + escapeHtml(n.z) + '</div>' : '') +
+        '<div class="cd-row cd-rx">' +
+          '<button type="button" class="cd-rb' + (n.r === 1 ? ' on' : '') + '" data-r="1" aria-label="Beğen" aria-pressed="' + (n.r === 1) + '">' + CD_UP + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.u || 0) + (n.r === 1 ? 1 : 0)) + '</span></button>' +
+          '<button type="button" class="cd-rb' + (n.r === 2 ? ' on' : '') + '" data-r="2" aria-label="Beğenme" aria-pressed="' + (n.r === 2) + '">' + CD_DN + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.d || 0) + (n.r === 2 ? 1 : 0)) + '</span></button>' +
+        '</div>' +
+        (n.pending ? '<div class="cd-row bp-pend">Gönderilmedi, bağlanınca gidecek</div>' : '') +
+        '</div>';
+    }).join('');
+  };
+  draw('cd-list', 'a', 'Gönderi Yok');
+  draw('td-list', 'b', 'Gönderin yok');
 }
 function dismissCardLocal(id) {
   const i = cardList.findIndex((n) => n.id === id);
@@ -7305,7 +7338,7 @@ function receiveCard(d) {
   const id = n.id.slice(0, 40);
   if (cardTomb.has(id) || cardList.some((x) => x.id === id)) { ackCard(id, false); return; }
   const str = (v, m) => (typeof v === 'string' ? v.slice(0, m) : '');
-  cardList.push({ id: id, n: str(n.n, 80), b: str(n.b, 2000), c: str(n.c, 120), z: str(n.z, 40), u: cdNum(n.u), d: cdNum(n.d), r: (n.r === 1 || n.r === 2) ? n.r : 0, at: Date.now(), own: false, pending: false });
+  cardList.push({ id: id, k: n.k === 'b' ? 'b' : 'a', n: str(n.n, 80), b: str(n.b, 2000), c: str(n.c, 120), z: str(n.z, 40), u: cdNum(n.u), d: cdNum(n.d), r: (n.r === 1 || n.r === 2) ? n.r : 0, at: Date.now(), own: false, pending: false });
   trimCards();
   ackCard(id, false);
   if (!bellPop.classList.contains('show')) bellBtn.classList.add('unseen');
@@ -7337,10 +7370,9 @@ function receiveCardAck(d) {
   if (bellPop.classList.contains('show')) renderCards();
 }
 function closeCardCompose() {
-  const c = document.getElementById('cd-compose');
-  if (c) c.classList.remove('show');
+  ['cd-compose', 'td-compose'].forEach((id) => { const c = document.getElementById(id); if (c) c.classList.remove('show'); });
   const ae = document.activeElement;
-  if (ae && /^cd-(name|body|topic|time|up|dn)-in$/.test(ae.id || '')) {
+  if (ae && /^(cd-(name|body|topic|time|up|dn)|td-(name|body|topic))-in$/.test(ae.id || '')) {
     if (!messageInput.disabled) { try { messageInput.focus({ preventScroll: true }); } catch (e) {} }
     else { try { ae.blur(); } catch (e) {} }
   }
@@ -7351,8 +7383,9 @@ function closeCardCompose() {
   const nIn = document.getElementById('cd-name-in'), bIn = document.getElementById('cd-body-in'), cIn = document.getElementById('cd-topic-in'), zIn = document.getElementById('cd-time-in');
   const send = document.getElementById('cd-send'), cancel = document.getElementById('cd-cancel');
   [upIn, dnIn].forEach((el) => el.addEventListener('input', () => { const v = cdNum(el.value); el.value = el.value.replace(/\D/g, '') ? cdFmt(v) : ''; }));
-  window.addEventListener('pin-level', () => { add.classList.toggle('can', notifCanSend()); if (bellPop.classList.contains('show')) renderCards(); });
-  list.addEventListener('click', (e) => {
+  window.addEventListener('pin-level', () => { add.classList.toggle('can', notifCanSend()); document.getElementById('td-add').classList.toggle('can', thirdCanSend()); if (bellPop.classList.contains('show')) renderCards(); });
+  const tList = document.getElementById('td-list');
+  [list, tList].forEach((L) => L.addEventListener('click', (e) => {
     const d = e.target.closest && e.target.closest('.bp-del');
     if (d) { const card = d.closest('.bp-card'); if (card && notifCanSend()) deleteOwnCard(card.dataset.id); return; }
     const rb = e.target.closest && e.target.closest('.cd-rb');
@@ -7367,7 +7400,7 @@ function closeCardCompose() {
       return;
     }
     if (rb) { const card = rb.closest('.bp-card'); if (card) reactCard(card.dataset.id, parseInt(rb.dataset.r, 10)); }
-  });
+  }));
   add.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
   add.addEventListener('click', () => {
     if (!notifCanSend()) return;
@@ -7383,8 +7416,8 @@ function closeCardCompose() {
     if (!notifCanSend()) return;
     const n = nIn.value.trim(), b = bIn.value.trim(), c = cIn.value.trim(), z = zIn.value.trim();
     if (!n && !b && !c) return;
-    const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, c: c, z: z, u: cdNum(upIn.value), d: cdNum(dnIn.value), r: 0, ts: Date.now() };
-    cardList.push({ id: item.id, n: n, b: b, c: c, z: z, u: item.u, d: item.d, r: 0, at: item.ts, own: true, pending: true });
+    const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, c: c, z: z, u: cdNum(upIn.value), d: cdNum(dnIn.value), r: 0, ts: Date.now(), k: 'a' };
+    cardList.push({ id: item.id, k: 'a', n: n, b: b, c: c, z: z, u: item.u, d: item.d, r: 0, at: item.ts, own: true, pending: true });
     trimCards();
     cardOutbox.push({ op: 'add', item: item, tried: false });
     persistCardOutbox();
@@ -7393,6 +7426,39 @@ function closeCardCompose() {
     bellMsgHad = false;
     renderCards();
     list.scrollTop = 0;
+  });
+  // ---- 3. sayfa: yalnızca 3828 şifresiyle gönderi atılır; isim sohbetteki isim kutusundan alınır, zaman gönderim anında yazılır ----
+  const tAdd = document.getElementById('td-add'), tComp = document.getElementById('td-compose');
+  const tName = document.getElementById('td-name-in'), tBody = document.getElementById('td-body-in'), tTopic = document.getElementById('td-topic-in');
+  const tSend = document.getElementById('td-send'), tCancel = document.getElementById('td-cancel');
+  const tSync = () => { tAdd.classList.toggle('can', thirdCanSend()); tAdd.classList.toggle('off', !isConnected()); };
+  tSync(); setInterval(tSync, 400);
+  tAdd.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
+  tAdd.addEventListener('click', () => {
+    if (!thirdCanSend() || !isConnected()) return;
+    bellMsgHad = document.activeElement === messageInput;
+    tName.value = nickInput.value.trim(); tBody.value = ''; tTopic.value = '';
+    tComp.classList.add('show');
+    try { tBody.focus(); } catch (e) {}
+  });
+  tCancel.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
+  tCancel.addEventListener('click', () => { closeCardCompose(); bellMsgHad = false; });
+  tSend.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
+  tSend.addEventListener('click', () => {
+    if (!thirdCanSend()) return;
+    if (!isConnected()) { try { flashStatus('Bağlı değil, gönderi gönderilmedi'); } catch (e) {} return; }
+    const n = nickInput.value.trim(), b = tBody.value.trim(), c = tTopic.value.trim();
+    if (!b && !c) return;
+    const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, c: c, z: cdFmtNow(), u: 0, d: 0, r: 0, ts: Date.now(), k: 'b' };
+    cardList.push({ id: item.id, k: 'b', n: n, b: b, c: c, z: item.z, u: 0, d: 0, r: 0, at: item.ts, own: true, pending: true });
+    trimCards();
+    cardOutbox.push({ op: 'add', item: item, tried: false });
+    persistCardOutbox();
+    flushCardOutbox();
+    closeCardCompose();
+    bellMsgHad = false;
+    renderCards();
+    tList.scrollTop = 0;
   });
 })();
 
@@ -7419,7 +7485,7 @@ function bpSetPage(p, instant) {
   bellPop.addEventListener('pointerdown', (e) => {
     if (e.pointerType === 'mouse') return; // masaüstünde ok tuşları
     if (e.target.closest && e.target.closest('input, textarea, .bp-nav')) return;
-    if (document.getElementById('bp-compose').classList.contains('show') || document.getElementById('cd-compose').classList.contains('show')) return;
+    if (document.getElementById('bp-compose').classList.contains('show') || document.getElementById('cd-compose').classList.contains('show') || document.getElementById('td-compose').classList.contains('show')) return;
     g = { x: e.clientX, y: e.clientY, id: e.pointerId, on: false };
   });
   bellPop.addEventListener('pointermove', (e) => {
