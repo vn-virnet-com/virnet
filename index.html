@@ -815,6 +815,7 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
   background: var(--c-111); border: 1px solid var(--c-33); border-radius: 6px; box-shadow: 0 6px 24px rgba(var(--sh),0.5);
   overflow: hidden; box-sizing: border-box;
 }
+#bell-pop { overflow: visible; }
 #notes-pop.show, #bell-pop.show { display: block; }
 #profile-btn { display: none; }
 @media (max-width: 768px) { #profile-btn { display: inline-flex; } }
@@ -824,14 +825,16 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 @media (prefers-reduced-motion: reduce) { #bell-btn.unseen { animation: none; } }
 #settings-btn.unseen { color: var(--warn); animation: notes-blink 1s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { #settings-btn.unseen { animation: none; } }
+#bp-clip { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; border-radius: inherit; }
 #bp-slider { position: absolute; top: 0; bottom: 0; left: 0; width: 200%; display: flex; touch-action: pan-y; transition: transform .25s ease; will-change: transform; }
 #bell-pop.side #bp-slider { transform: translateX(-50%); }
 #bell-pop.no-anim #bp-slider { transition: none; }
 .bp-page { position: relative; flex: 0 0 50%; width: 50%; height: 100%; overflow: hidden; }
-.bp-nav { display: none; position: absolute; left: 12px; bottom: 12px; width: 40px; height: 40px; border-radius: 50%; background: var(--c-1a); border: 1px solid var(--c-33); color: var(--c-cc); align-items: center; justify-content: center; cursor: pointer; z-index: 3; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.bp-nav { display: none; position: absolute; left: -48px; top: calc(50% - 20px); width: 40px; height: 40px; border-radius: 50%; background: var(--c-1a); border: 1px solid var(--c-33); color: var(--c-cc); align-items: center; justify-content: center; cursor: pointer; z-index: 3; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .bp-nav svg { display: block; }
 .bp-nav:hover { background: var(--c-33); color: var(--c-fff); }
 @media (min-width: 769px) { .bp-nav { display: flex; } }
+#bell-pop.side #bp-next, #bell-pop:not(.side) #bp-prev { display: none !important; }
 @media (max-width: 768px) { #cd-list .bp-del { display: none; } #cd-list .bp-card.has-del .cd-name { padding-right: 0; } }
 #cd-list { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 8px 8px 64px; }
 #cd-add { display: none; position: absolute; right: 12px; bottom: 12px; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(var(--sh),0.5); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; z-index: 3; }
@@ -1183,6 +1186,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   <span id="profile-btn" title="Notlar paneli"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="10" r="3"></circle><path d="M6.17 18.66a6 6 0 0 1 11.66 0"></path></svg></span>
 </div>
 <div id="bell-pop">
+  <div id="bp-clip">
   <div id="bp-slider">
   <div id="bp-page-main" class="bp-page">
   <div id="bp-list"></div>
@@ -1192,22 +1196,23 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     <textarea id="bp-body-in" placeholder="İçerik" maxlength="2000" autocomplete="off" spellcheck="false"></textarea>
     <div id="bp-actions"><span id="bp-cancel">İptal</span><span id="bp-send">Gönder</span></div>
   </div>
-  <div id="bp-next" class="bp-nav" title="Yan sayfa"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
   </div>
   <div id="bp-page-side" class="bp-page">
   <div id="cd-list"></div>
-  <div id="cd-add" title="Kart ekle"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+  <div id="cd-add" title="Gönderi ekle"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
   <div id="cd-compose">
     <input id="cd-name-in" type="text" placeholder="İsim" maxlength="80" autocomplete="off" autocorrect="off" spellcheck="false">
     <textarea id="cd-body-in" placeholder="İçerik" maxlength="2000" autocomplete="off" spellcheck="false"></textarea>
     <input id="cd-topic-in" type="text" placeholder="Konu" maxlength="120" autocomplete="off" autocorrect="off" spellcheck="false">
     <input id="cd-time-in" type="text" placeholder="Zaman" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false">
-    <div id="cd-counts"><input id="cd-up-in" type="text" inputmode="numeric" placeholder="Beğeni sayısı" maxlength="5" autocomplete="off"><input id="cd-dn-in" type="text" inputmode="numeric" placeholder="Beğenmeme sayısı" maxlength="5" autocomplete="off"></div>
+    <div id="cd-counts"><input id="cd-up-in" type="text" inputmode="numeric" placeholder="Beğeni sayısı" maxlength="14" autocomplete="off"><input id="cd-dn-in" type="text" inputmode="numeric" placeholder="Beğenmeme sayısı" maxlength="14" autocomplete="off"></div>
     <div id="cd-actions"><span id="cd-cancel">İptal</span><span id="cd-send">Gönder</span></div>
   </div>
+  </div>
+  </div>
+  </div>
+  <div id="bp-next" class="bp-nav" title="Yan sayfa"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
   <div id="bp-prev" class="bp-nav" title="Bildirimlere dön"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg></div>
-  </div>
-  </div>
 </div>
 <div id="notes-pop">
   <div id="np-view"></div>
@@ -7203,7 +7208,8 @@ function cdFmtNow() {
   const d = new Date(), p = (x) => String(x).padStart(2, '0');
   return p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
 }
-function cdNum(v) { v = parseInt(v, 10); return (isFinite(v) && v > 0) ? Math.min(v, 99999) : 0; }
+function cdNum(v) { v = parseInt(String(v == null ? '' : v).replace(/\D/g, '').slice(0, 10), 10); return (isFinite(v) && v > 0) ? v : 0; }
+function cdFmt(v) { return String(v || 0).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
 function setCardCounts(id, u, d) {
   const n = cardList.find((x) => x.id === id);
   if (!n) return;
@@ -7230,7 +7236,7 @@ function renderCards() {
   if (!list) return;
   cardList.sort((x, y) => y.at - x.at);
   const can = notifCanSend();
-  if (!cardList.length) { list.innerHTML = '<div class="bp-empty">Kart Yok</div>'; return; }
+  if (!cardList.length) { list.innerHTML = '<div class="bp-empty">Gönderi Yok</div>'; return; }
   list.innerHTML = cardList.map((n) => {
     const del = n.own && can;
     return '<div class="bp-card' + (del ? ' has-del' : '') + '" data-id="' + escapeHtml(n.id) + '">' +
@@ -7240,8 +7246,8 @@ function renderCards() {
       (n.c ? '<div class="cd-row cd-topic">' + escapeHtml(n.c) + '</div>' : '') +
       (n.z ? '<div class="cd-row cd-time">' + escapeHtml(n.z) + '</div>' : '') +
       '<div class="cd-row cd-rx">' +
-        '<button type="button" class="cd-rb' + (n.r === 1 ? ' on' : '') + '" data-r="1" aria-label="Beğen" aria-pressed="' + (n.r === 1) + '">' + CD_UP + '<span class="cd-num' + (can ? ' can' : '') + '">' + ((n.u || 0) + (n.r === 1 ? 1 : 0)) + '</span></button>' +
-        '<button type="button" class="cd-rb' + (n.r === 2 ? ' on' : '') + '" data-r="2" aria-label="Beğenme" aria-pressed="' + (n.r === 2) + '">' + CD_DN + '<span class="cd-num' + (can ? ' can' : '') + '">' + ((n.d || 0) + (n.r === 2 ? 1 : 0)) + '</span></button>' +
+        '<button type="button" class="cd-rb' + (n.r === 1 ? ' on' : '') + '" data-r="1" aria-label="Beğen" aria-pressed="' + (n.r === 1) + '">' + CD_UP + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.u || 0) + (n.r === 1 ? 1 : 0)) + '</span></button>' +
+        '<button type="button" class="cd-rb' + (n.r === 2 ? ' on' : '') + '" data-r="2" aria-label="Beğenme" aria-pressed="' + (n.r === 2) + '">' + CD_DN + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.d || 0) + (n.r === 2 ? 1 : 0)) + '</span></button>' +
       '</div>' +
       (n.pending ? '<div class="cd-row bp-pend">Gönderilmedi, bağlanınca gidecek</div>' : '') +
       '</div>';
@@ -7334,6 +7340,7 @@ function closeCardCompose() {
   const upIn = document.getElementById('cd-up-in'), dnIn = document.getElementById('cd-dn-in');
   const nIn = document.getElementById('cd-name-in'), bIn = document.getElementById('cd-body-in'), cIn = document.getElementById('cd-topic-in'), zIn = document.getElementById('cd-time-in');
   const send = document.getElementById('cd-send'), cancel = document.getElementById('cd-cancel');
+  [upIn, dnIn].forEach((el) => el.addEventListener('input', () => { const v = cdNum(el.value); el.value = el.value.replace(/\D/g, '') ? cdFmt(v) : ''; }));
   window.addEventListener('pin-level', () => { add.classList.toggle('can', notifCanSend()); if (bellPop.classList.contains('show')) renderCards(); });
   list.addEventListener('click', (e) => {
     const d = e.target.closest && e.target.closest('.bp-del');
@@ -7344,7 +7351,7 @@ function closeCardCompose() {
       const card = rb.closest('.bp-card'), c = cardList.find((x) => x.id === card.dataset.id);
       if (!c) return;
       const up = rb.dataset.r === '1';
-      const v = window.prompt(up ? 'Beğeni sayısı' : 'Beğenmeme sayısı', String(up ? (c.u || 0) : (c.d || 0)));
+      const v = window.prompt(up ? 'Beğeni sayısı' : 'Beğenmeme sayısı', cdFmt(up ? (c.u || 0) : (c.d || 0)));
       if (v === null) return;
       setCardCounts(c.id, up ? v : c.u, up ? c.d : v);
       return;
