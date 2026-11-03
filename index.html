@@ -874,6 +874,19 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 .cd-body { font-size: 14px; line-height: 1.35; font-weight: 300; color: var(--c-cc); }
 .cd-body b { font-weight: 700; }
 .cd-topic { font-size: 13.5px; line-height: 1.3; font-weight: 400; color: var(--c-cc); }
+.cd-tags { display: flex; flex-wrap: wrap; gap: 6px 6px; white-space: normal; padding-top: 7px; padding-bottom: 7px; }
+.cd-tag { position: relative; display: inline-flex; align-items: center; max-width: 100%; padding: 3px 9px 3px 7px; border-radius: 9px; font-size: 12.5px; line-height: 1.3; font-weight: 400; color: var(--c-dd); background: linear-gradient(180deg, var(--c-22), var(--c-1a)); border: 1px solid var(--c-44); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 1px 2px rgba(var(--sh),0.35); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.cd-tag .cd-tt { position: relative; overflow-wrap: anywhere; word-break: break-word; }
+.cd-tag .cd-hash { color: var(--c-77); font-weight: 700; margin-right: 1px; }
+.cd-tag.can { cursor: pointer; }
+.cd-tag.fire { color: var(--warn); background: linear-gradient(180deg, color-mix(in srgb, var(--warn) 24%, var(--c-1a)), color-mix(in srgb, var(--warn) 10%, var(--c-1a))); border-color: color-mix(in srgb, var(--warn) 70%, transparent); box-shadow: 0 0 9px color-mix(in srgb, var(--warn) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.12); margin-right: 3px; }
+.cd-tag.fire .cd-hash { color: var(--warn); }
+.cd-tag.fire::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(110deg, transparent 30%, color-mix(in srgb, var(--warn) 55%, transparent) 50%, transparent 70%); background-size: 260% 100%; background-position: 130% 0; animation: cdTagShine 2.6s ease-in-out infinite; }
+.cd-tag .cd-flame { position: absolute; top: -9px; right: -7px; width: 15px; height: 15px; pointer-events: none; color: var(--warn); filter: drop-shadow(0 0 3px color-mix(in srgb, var(--warn) 70%, transparent)); transform-origin: 50% 90%; animation: cdFlame 1.1s ease-in-out infinite; }
+.cd-tag .cd-flame svg { display: block; width: 100%; height: 100%; fill: currentColor; stroke: none; }
+@keyframes cdTagShine { 0% { background-position: 130% 0; } 55%, 100% { background-position: -30% 0; } }
+@keyframes cdFlame { 0%, 100% { transform: scale(1) rotate(-4deg); } 50% { transform: scale(1.14, 1.2) rotate(4deg); } }
+@media (prefers-reduced-motion: reduce) { .cd-tag.fire::before, .cd-tag .cd-flame { animation: none; } }
 .cd-time { font-size: 12px; line-height: 1.3; font-weight: 300; color: var(--c-77); }
 .cd-rx { display: flex; align-items: center; gap: 18px; white-space: normal; }
 .cd-rb { display: inline-flex; align-items: center; gap: 6px; margin: -4px 0; padding: 6px 4px 6px 0; border: 0; background: transparent; color: var(--c-77); font-size: 13px; font-family: inherit; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -2517,6 +2530,7 @@ function setupConnection(c) {
     if (data.type === 'card-del') { receiveCardDel(data); return; }
     if (data.type === 'card-react') { receiveCardReact(data); return; }
     if (data.type === 'card-count') { receiveCardCount(data); return; }
+    if (data.type === 'card-fire') { receiveCardFire(data); return; }
     if (data.type === 'third-hello') { receiveThird(data, true); return; }
     if (data.type === 'third') { receiveThird(data, false); return; }
     if (data.type === 'card-ack') { receiveCardAck(data); return; }
@@ -7222,18 +7236,42 @@ function closeNotesPop() {
 const CARD_MAX = 10;
 const CD_UP = '<svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>', CD_DN = '<svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path></svg>';
 const CD_EYE = '<svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+const CD_FLAME = '<svg viewBox="0 0 24 24"><path d="M12.6 2.2c.3 2.6-.8 4.1-2.2 5.7C8.9 9.6 7 11.5 7 14.6 7 18 9.4 21 12.2 21c3.2 0 5.3-2.6 5.3-5.6 0-2-.8-3.4-1.8-4.7-.2 1.2-.8 2.1-1.8 2.6.5-3.8-.4-7.9-1.3-11.1z"></path></svg>';
+function tagClean(v) { return String(v || '').split(/\s+/).filter((t) => t.length > 1 && t[0] === '#').join(' '); }
+function cdFireSan(f) {
+  if (!Array.isArray(f)) return [];
+  const o = [];
+  f.forEach((x) => { x = parseInt(x, 10); if (isFinite(x) && x >= 0 && x < 100 && o.indexOf(x) < 0) o.push(x); });
+  return o.slice(0, 60);
+}
+function cdTagList(c) {
+  c = String(c || '').trim();
+  if (!c) return [];
+  const m = c.match(/#\S+/g);
+  return m && m.length ? m : [c];
+}
+function cdTagsHtml(n, can) {
+  const tags = cdTagList(n.c);
+  if (!tags.length) return '';
+  const f = n.f || [];
+  return '<div class="cd-row cd-topic cd-tags">' + tags.map((t, i) => {
+    const body = t[0] === '#' ? '<span class="cd-hash">#</span>' + escapeHtml(t.slice(1)) : escapeHtml(t);
+    const on = f.indexOf(i) >= 0;
+    return '<span class="cd-tag' + (on ? ' fire' : '') + (can ? ' can' : '') + '" data-i="' + i + '"><span class="cd-tt">' + body + '</span>' + (on ? '<span class="cd-flame">' + CD_FLAME + '</span>' : '') + '</span>';
+  }).join('') + '</div>';
+}
 let cardList = [];
 let cardOutbox = [];
 const cardTomb = new Set();
-try { const a = JSON.parse(lsGet('cardOutbox') || '[]'); if (Array.isArray(a)) cardOutbox = a.filter((o) => o && ((o.op === 'add' && o.item && typeof o.item.id === 'string') || ((o.op === 'del' || o.op === 'react' || o.op === 'count') && typeof o.id === 'string'))); } catch (e) {}
+try { const a = JSON.parse(lsGet('cardOutbox') || '[]'); if (Array.isArray(a)) cardOutbox = a.filter((o) => o && ((o.op === 'add' && o.item && typeof o.item.id === 'string') || ((o.op === 'del' || o.op === 'react' || o.op === 'count' || o.op === 'fire') && typeof o.id === 'string'))); } catch (e) {}
 cardOutbox = cardOutbox.filter((o) => !(o.op === 'add' && o.item && o.item.k === 'b'));
-cardOutbox.forEach((o) => { if (o.op === 'add') cardList.push({ id: o.item.id, k: o.item.k === 'b' ? 'b' : 'a', n: o.item.n, b: o.item.b, c: o.item.c, z: o.item.z, u: o.item.u || 0, d: o.item.d || 0, r: o.item.r || 0, at: o.item.ts, own: true, pending: true }); });
+cardOutbox.forEach((o) => { if (o.op === 'add') cardList.push({ id: o.item.id, k: o.item.k === 'b' ? 'b' : 'a', n: o.item.n, b: o.item.b, c: o.item.c, z: o.item.z, u: o.item.u || 0, d: o.item.d || 0, f: cdFireSan(o.item.f), r: o.item.r || 0, at: o.item.ts, own: true, pending: true }); });
 // ---- 3. sayfa: yalnızca en son gönderi tutulur. localStorage'da saklanır; her bağlantıda iki taraf revizyonu kıyaslar, daha güncel olan kazanır ----
 let thirdRev = 0;
 function thirdCard() { return cardList.find((x) => x.k === 'b') || null; }
 function thirdPayload() {
   const c = thirdCard();
-  if (c) return { rev: thirdRev, card: { id: c.id, n: c.n, b: c.b, c: c.c, z: c.z, u: c.u || 0, d: c.d || 0, v: c.v || 0 } };
+  if (c) return { rev: thirdRev, card: { id: c.id, n: c.n, b: c.b, c: c.c, z: c.z, u: c.u || 0, d: c.d || 0, v: c.v || 0, f: c.f || [] } };
   return thirdRev > 0 ? { rev: thirdRev, card: null } : null; // silinmiş hâl de revizyonla taşınır, karşıda gönderi geri gelmesin
 }
 function persistThird() {
@@ -7244,7 +7282,7 @@ function persistThird() {
 function thirdSanitize(c) {
   if (!c || typeof c.id !== 'string') return null;
   const str = (v, m) => (typeof v === 'string' ? v.slice(0, m) : '');
-  return { id: c.id.slice(0, 40), k: 'b', n: str(c.n, 80), b: str(c.b, 2000), c: str(c.c, 120), z: str(c.z, 40), u: cdNum(c.u), d: cdNum(c.d), v: cdNum(c.v), r: 0, at: Date.now(), own: false, pending: false };
+  return { id: c.id.slice(0, 40), k: 'b', n: str(c.n, 80), b: str(c.b, 2000), c: str(c.c, 120), z: str(c.z, 40), u: cdNum(c.u), d: cdNum(c.d), v: cdNum(c.v), f: cdFireSan(c.f), r: 0, at: Date.now(), own: false, pending: false };
 }
 function thirdBump() { thirdRev = Math.max(Date.now(), thirdRev + 1); }
 function sendThird(type) {
@@ -7295,12 +7333,13 @@ function flushCardOutbox() {
       if (o.op === 'add') conn.send({ type: 'card', item: o.item });
       else if (o.op === 'del') conn.send({ type: 'card-del', id: o.id });
       else if (o.op === 'count') conn.send({ type: 'card-count', id: o.id, u: o.u || 0, d: o.d || 0 });
+      else if (o.op === 'fire') conn.send({ type: 'card-fire', id: o.id, f: o.f || [] });
       else conn.send({ type: 'card-react', id: o.id, r: o.r || 0 });
       o.tried = true;
     } catch (e) {}
   });
   // Tepkiler onay beklemez: gönderilince kuyruktan çıkar
-  cardOutbox = cardOutbox.filter((o) => o.op !== 'react' && o.op !== 'count');
+  cardOutbox = cardOutbox.filter((o) => o.op !== 'react' && o.op !== 'count' && o.op !== 'fire');
   persistCardOutbox();
 }
 function ackCard(id, del) {
@@ -7323,6 +7362,32 @@ function setCardCounts(id, u, d, v) {
   else {
     cardOutbox = cardOutbox.filter((o) => !(o.op === 'count' && o.id === id));
     cardOutbox.push({ op: 'count', id: id, u: n.u, d: n.d });
+  }
+  persistCardOutbox();
+  flushCardOutbox();
+  renderCards();
+}
+function receiveCardFire(d) {
+  if (!d || typeof d.id !== 'string') return;
+  const n = cardList.find((x) => x.id === d.id);
+  if (!n || n.k === 'b') return;
+  n.f = cdFireSan(d.f);
+  if (bellPop.classList.contains('show')) renderCards();
+}
+// 6687: etikete tıklayınca ateş simgesi aç/kapat; 3. sayfada gönderiyle birlikte, 2. sayfada ayrı mesajla karşıya gider
+function toggleTagFire(id, i) {
+  if (!notifCanSend()) return;
+  const n = cardList.find((x) => x.id === id);
+  if (!n) return;
+  const f = cdFireSan(n.f), at = f.indexOf(i);
+  if (at >= 0) f.splice(at, 1); else f.push(i);
+  n.f = f;
+  if (n.k === 'b') { thirdBump(); persistThird(); sendThird('third'); renderCards(); return; }
+  const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === id);
+  if (ai) ai.item.f = f.slice();
+  else {
+    cardOutbox = cardOutbox.filter((o) => !(o.op === 'fire' && o.id === id));
+    cardOutbox.push({ op: 'fire', id: id, f: f.slice() });
   }
   persistCardOutbox();
   flushCardOutbox();
@@ -7379,7 +7444,7 @@ function renderCards() {
         (del ? '<div class="bp-del" title="Sil">' + BP_TRASH + '</div>' : '') +
         (n.n ? '<div class="cd-row cd-name">' + escapeHtml(n.n) + '</div>' : '') +
         (n.b ? '<div class="cd-row cd-body">' + renderBodyHtml(n.b) + '</div>' : '') +
-        (n.c ? '<div class="cd-row cd-topic">' + escapeHtml(n.c) + '</div>' : '') +
+        cdTagsHtml(n, can) +
         (n.z ? '<div class="cd-row cd-time">' + escapeHtml(n.z) + '</div>' : '') +
         '<div class="cd-row cd-rx">' +
           '<button type="button" class="cd-rb' + (n.r === 1 ? ' on' : '') + ((k === 'b' && !can) ? ' ro' : '') + '" data-r="1" aria-label="Beğen" aria-pressed="' + (n.r === 1) + '">' + CD_UP + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt((n.u || 0) + (n.r === 1 ? 1 : 0)) + '</span></button>' +
@@ -7445,7 +7510,7 @@ function receiveCard(d) {
   const id = n.id.slice(0, 40);
   if (cardTomb.has(id) || cardList.some((x) => x.id === id)) { ackCard(id, false); return; }
   const str = (v, m) => (typeof v === 'string' ? v.slice(0, m) : '');
-  cardList.push({ id: id, k: n.k === 'b' ? 'b' : 'a', n: str(n.n, 80), b: str(n.b, 2000), c: str(n.c, 120), z: str(n.z, 40), u: cdNum(n.u), d: cdNum(n.d), r: (n.r === 1 || n.r === 2) ? n.r : 0, at: Date.now(), own: false, pending: false });
+  cardList.push({ id: id, k: n.k === 'b' ? 'b' : 'a', n: str(n.n, 80), b: str(n.b, 2000), c: str(n.c, 120), z: str(n.z, 40), u: cdNum(n.u), d: cdNum(n.d), f: cdFireSan(n.f), r: (n.r === 1 || n.r === 2) ? n.r : 0, at: Date.now(), own: false, pending: false });
   trimCards();
   ackCard(id, false);
   if (!bellPop.classList.contains('show')) bellBtn.classList.add('unseen');
@@ -7495,6 +7560,8 @@ function closeCardCompose() {
   [list, tList].forEach((L) => L.addEventListener('click', (e) => {
     const d = e.target.closest && e.target.closest('.bp-del');
     if (d) { const card = d.closest('.bp-card'); if (card && notifCanSend()) { if (card.closest('#td-list')) deleteThirdCard(card.dataset.id); else deleteOwnCard(card.dataset.id); } return; }
+    const tg = e.target.closest && e.target.closest('.cd-tag');
+    if (tg) { const card = tg.closest('.bp-card'); if (card && notifCanSend()) toggleTagFire(card.dataset.id, parseInt(tg.dataset.i, 10)); return; }
     const rb = e.target.closest && e.target.closest('.cd-rb');
     if (!rb) return;
     const card = rb.closest('.bp-card'), c = card && cardList.find((x) => x.id === card.dataset.id);
@@ -7516,10 +7583,10 @@ function closeCardCompose() {
   send.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
   send.addEventListener('click', () => {
     if (!notifCanSend()) return;
-    const n = nIn.value.trim(), b = bIn.value.trim(), c = cIn.value.trim(), z = zIn.value.trim();
+    const n = nIn.value.trim(), b = bIn.value.trim(), c = tagClean(cIn.value), z = zIn.value.trim();
     if (!n && !b && !c) return;
-    const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, c: c, z: z, u: cdNum(upIn.value), d: cdNum(dnIn.value), r: 0, ts: Date.now(), k: 'a' };
-    cardList.push({ id: item.id, k: 'a', n: n, b: b, c: c, z: z, u: item.u, d: item.d, r: 0, at: item.ts, own: true, pending: true });
+    const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, c: c, z: z, u: cdNum(upIn.value), d: cdNum(dnIn.value), f: [], r: 0, ts: Date.now(), k: 'a' };
+    cardList.push({ id: item.id, k: 'a', n: n, b: b, c: c, z: z, u: item.u, d: item.d, f: [], r: 0, at: item.ts, own: true, pending: true });
     trimCards();
     cardOutbox.push({ op: 'add', item: item, tried: false });
     persistCardOutbox();
@@ -7535,32 +7602,34 @@ function closeCardCompose() {
   const tSend = document.getElementById('td-send'), tCancel = document.getElementById('td-cancel');
   const tSync = () => { tAdd.classList.toggle('can', thirdCanSend()); tAdd.classList.toggle('off', !isConnected()); };
   tSync(); setInterval(tSync, 400);
-  // ---- Konu kutusu: yalnızca '#konu #konu' biçimi. Her etiketin # işareti otomatik gelir ve silinemez; boşluk basınca yeni '#' eklenir ----
-  const tagNorm = (v, delBack) => {
-    let trail = /\s$/.test(v);
+  // ---- Konu kutusu (2. ve 3. sayfa): yalnızca '#konu #konu' biçimi. Her etiketin # işareti otomatik gelir ve silinemez; boşluk basınca yeni '#' eklenir ----
+  const tagNorm = (v) => {
+    const trail = /\s$/.test(v);
     const toks = v.replace(/#/g, ' ').split(/\s+/).filter(Boolean);
     if (!toks.length) return '#';
     let out = toks.map((t) => '#' + t).join(' ');
-    if (trail && !delBack) out += ' #';
+    if (trail) out += ' #';
     return out;
   };
-  const tagEnd = () => { try { const L = tTopic.value.length; tTopic.setSelectionRange(L, L); } catch (e) {} };
-  tTopic.addEventListener('focus', () => { if (!tTopic.value) tTopic.value = '#'; setTimeout(tagEnd, 0); });
-  tTopic.addEventListener('click', () => setTimeout(tagEnd, 0));
-  tTopic.addEventListener('input', (e) => {
-    let v = tTopic.value;
-    const back = !!(e && e.inputType && e.inputType.indexOf('delete') === 0);
-    // Silme sırasında boş kalan son '#' ile birlikte önündeki boşluk da gider; # tek başına silinmez
-    if (back) v = v.replace(/\s+$/, '');
-    let r = tagNorm(v, false);
-    if (r.length > 120) r = r.slice(0, 120);
-    if (tTopic.value !== r) tTopic.value = r;
-    tagEnd();
-  });
-  tTopic.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'Home') { e.preventDefault(); tagEnd(); }
-  });
-  tTopic.addEventListener('blur', () => { tTopic.value = tTopic.value.replace(/(^|\s)#\s*$/, '').trim(); });
+  const bindTagInput = (el) => {
+    const end = () => { try { const L = el.value.length; el.setSelectionRange(L, L); } catch (e) {} };
+    el.addEventListener('focus', () => { if (!el.value) el.value = '#'; setTimeout(end, 0); });
+    el.addEventListener('click', () => setTimeout(end, 0));
+    el.addEventListener('input', (e) => {
+      let v = el.value;
+      const back = !!(e && e.inputType && e.inputType.indexOf('delete') === 0);
+      // Silme sırasında boş kalan son '#' ile birlikte önündeki boşluk da gider; # tek başına silinmez
+      if (back) v = v.replace(/\s+$/, '');
+      let r = tagNorm(v);
+      if (r.length > 120) r = r.slice(0, 120);
+      if (el.value !== r) el.value = r;
+      end();
+    });
+    el.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' || e.key === 'Home') { e.preventDefault(); end(); } });
+    el.addEventListener('blur', () => { el.value = el.value.replace(/(^|\s)#\s*$/, '').trim(); });
+  };
+  bindTagInput(tTopic);
+  bindTagInput(cIn);
   tAdd.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
   tAdd.addEventListener('click', () => {
     if (!thirdCanSend() || !isConnected()) return;
@@ -7575,11 +7644,11 @@ function closeCardCompose() {
   tSend.addEventListener('click', () => {
     if (!thirdCanSend()) return;
     if (!isConnected()) { try { flashStatus('Bağlı değil, gönderi gönderilmedi'); } catch (e) {} return; }
-    const n = nickInput.value.trim(), b = tBody.value.trim(), c = tTopic.value.split(/\s+/).filter((t) => t.length > 1 && t[0] === '#').join(' ');
+    const n = nickInput.value.trim(), b = tBody.value.trim(), c = tagClean(tTopic.value);
     if (!b && !c) return;
     const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, c: c, z: cdFmtNow(), u: 0, d: 0, r: 0, ts: Date.now(), k: 'b' };
     cardList = cardList.filter((x) => x.k !== 'b'); // önceki gönderi silinir, yalnızca sonuncu kalır
-    cardList.push({ id: item.id, k: 'b', n: n, b: b, c: c, z: item.z, u: 0, d: 0, v: 0, r: 0, at: item.ts, own: true, pending: false });
+    cardList.push({ id: item.id, k: 'b', n: n, b: b, c: c, z: item.z, u: 0, d: 0, v: 0, f: [], r: 0, at: item.ts, own: true, pending: false });
     thirdBump(); persistThird(); sendThird('third');
     closeCardCompose();
     bellMsgHad = false;
