@@ -4874,10 +4874,28 @@ function closeReplyBar() {
   if (liveMode && liveActive && !editingId) sendLive();
 }
 
+// Çarpıya basınca yanıt çubuğu pointerdown anında kapanıyor, düzen kayıyor ve parmak bırakılınca oluşan 'click'
+// artık çarpının altına gelen tuşa (dinamik mesaj vb.) düşüyordu. Bu dokunuşun click'ini yutuyoruz.
+let cancelClickArmedUntil = 0;
+let cancelClickGuardUntil = 0;
+window.addEventListener('pointerup', () => {
+  if (Date.now() < cancelClickArmedUntil) { cancelClickArmedUntil = 0; cancelClickGuardUntil = Date.now() + 500; }
+}, true);
+window.addEventListener('pointercancel', () => { cancelClickArmedUntil = 0; }, true);
+window.addEventListener('click', (e) => {
+  if (Date.now() < cancelClickArmedUntil || Date.now() < cancelClickGuardUntil) {
+    cancelClickGuardUntil = 0;
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+  }
+}, true);
+
 cancelReplyBtn.addEventListener('pointerdown', (event) => {
   event.preventDefault();
   event.stopPropagation();
   lastCancelTime = Date.now();
+  cancelClickArmedUntil = Date.now() + 3000;
   if (editingId) endEdit(); else closeReplyBar();
   setTimeout(() => { messageInput.focus(); }, 10);
 });
