@@ -826,15 +826,16 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 #settings-btn.unseen { color: var(--warn); animation: notes-blink 1s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { #settings-btn.unseen { animation: none; } }
 #bp-clip { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; border-radius: inherit; }
-#bp-slider { position: absolute; top: 0; bottom: 0; left: 0; width: 200%; display: flex; touch-action: pan-y; transition: transform .25s ease; will-change: transform; }
-#bell-pop.side #bp-slider { transform: translateX(-50%); }
+#bp-slider { --bp-page: 0; position: absolute; top: 0; bottom: 0; left: 0; width: 300%; display: flex; touch-action: pan-y; transition: transform .25s ease; will-change: transform; }
+#bp-slider { transform: translateX(calc(var(--bp-page) * -33.3333%)); }
 #bell-pop.no-anim #bp-slider { transition: none; }
-.bp-page { position: relative; flex: 0 0 50%; width: 50%; height: 100%; overflow: hidden; }
+.bp-page { position: relative; flex: 0 0 33.3333%; width: 33.3333%; height: 100%; overflow: hidden; }
 .bp-nav { display: none; position: absolute; left: -48px; top: calc(50% - 20px); width: 40px; height: 40px; border-radius: 50%; background: var(--c-1a); border: 1px solid var(--c-33); color: var(--c-cc); align-items: center; justify-content: center; cursor: pointer; z-index: 3; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .bp-nav svg { display: block; }
 .bp-nav:hover { background: var(--c-33); color: var(--c-fff); }
 @media (min-width: 769px) { .bp-nav { display: flex; } }
-#bell-pop.side #bp-next, #bell-pop:not(.side) #bp-prev { display: none !important; }
+#bp-next { left: auto; right: -48px; }
+.bp-nav.off { opacity: 0.3; pointer-events: none; cursor: default; }
 #cd-list { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 8px 8px 64px; }
 #cd-add { display: none; position: absolute; right: 12px; bottom: 12px; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(var(--sh),0.5); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; z-index: 3; }
 #cd-add.can { display: flex; }
@@ -1208,10 +1209,11 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     <div id="cd-actions"><span id="cd-cancel">İptal</span><span id="cd-send">Gönder</span></div>
   </div>
   </div>
+  <div id="bp-page-third" class="bp-page"></div>
   </div>
   </div>
-  <div id="bp-next" class="bp-nav" title="Yan sayfa"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
-  <div id="bp-prev" class="bp-nav" title="Bildirimlere dön"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg></div>
+  <div id="bp-next" class="bp-nav" title="Sonraki sayfa"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
+  <div id="bp-prev" class="bp-nav" title="Önceki sayfa"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg></div>
 </div>
 <div id="notes-pop">
   <div id="np-view"></div>
@@ -6984,7 +6986,16 @@ function layoutPopFor(notesPop, notesBtn) {
     st.left = L + 'px'; st.right = 'auto';
   }
 }
-function layoutNotesPop() { layoutPopFor(notesPop, notesBtn); layoutPopFor(bellPop, bellBtn); }
+function layoutNotesPop() {
+  layoutPopFor(notesPop, notesBtn); layoutPopFor(bellPop, bellBtn);
+  // Masaüstünde bildirim penceresinin sağındaki ok için yer bırak
+  try {
+    if (bellPop.classList.contains('show') && !isMobileLayout()) {
+      const r = parseFloat(bellPop.style.right);
+      if (isFinite(r) && r < 56) bellPop.style.right = '56px';
+    }
+  } catch (e) {}
+}
 // Tuş şeridinin yerini seç: hem mobilde hem masaüstünde, isim kutusu görünür de gizli de olsa şerit en altta (renk şeridi varsa onun üstünde, mesaj kutusunun üstünde); dinamik mesaj tuşu şeridin en sağında.
 function placeNotesBtn() {
   const pos = 'top';
@@ -7135,7 +7146,7 @@ function receiveNotifAck(d) {
 }
 function openBellPop() {
   closeNotesPop();
-  bpSetSide(false, true);
+  bpSetPage(0, true);
   bellPop.classList.add('show');
   document.getElementById('bp-add').classList.toggle('can', notifCanSend());
   document.getElementById('cd-add').classList.toggle('can', notifCanSend());
@@ -7205,7 +7216,7 @@ function ackCard(id, del) {
 }
 function cdFmtNow() {
   const d = new Date(), p = (x) => String(x).padStart(2, '0');
-  return p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  return 'Bugün \u00b7 ' + p(d.getHours()) + ':' + p(d.getMinutes());
 }
 function cdNum(v) { v = parseInt(String(v == null ? '' : v).replace(/\D/g, '').slice(0, 10), 10); return (isFinite(v) && v > 0) ? v : 0; }
 function cdFmt(v) { return String(v || 0).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
@@ -7386,17 +7397,24 @@ function closeCardCompose() {
 })();
 
 /* Bildirim penceresi: mobilde sağdan sola kaydırınca boş yan sayfa; masaüstünde ok tuşlarıyla geçiş */
-function bpSetSide(on, instant) {
-  if (instant) { bellPop.classList.add('no-anim'); }
-  bellPop.classList.toggle('side', !!on);
+let bpPage = 0;
+const BP_PAGES = 3;
+function bpSetPage(p, instant) {
+  p = Math.max(0, Math.min(BP_PAGES - 1, p));
+  if (instant) bellPop.classList.add('no-anim');
+  bpPage = p;
+  document.getElementById('bp-slider').style.setProperty('--bp-page', String(p));
   if (instant) { void bellPop.offsetWidth; bellPop.classList.remove('no-anim'); }
+  document.getElementById('bp-prev').classList.toggle('off', p <= 0);
+  document.getElementById('bp-next').classList.toggle('off', p >= BP_PAGES - 1);
 }
 (function initBellPages() {
   const nx = document.getElementById('bp-next'), pv = document.getElementById('bp-prev');
   const act = (fn) => (e) => { e.preventDefault(); e.stopPropagation(); fn(); };
-  nx.addEventListener('click', act(() => bpSetSide(true)));
-  pv.addEventListener('click', act(() => bpSetSide(false)));
+  nx.addEventListener('click', act(() => bpSetPage(bpPage + 1)));
+  pv.addEventListener('click', act(() => bpSetPage(bpPage - 1)));
   [nx, pv].forEach((b) => b.addEventListener('mousedown', (e) => e.preventDefault()));
+  bpSetPage(0, true);
   let g = null;
   bellPop.addEventListener('pointerdown', (e) => {
     if (e.pointerType === 'mouse') return; // masaüstünde ok tuşları
@@ -7409,9 +7427,8 @@ function bpSetSide(on, instant) {
     const dx = e.clientX - g.x, dy = e.clientY - g.y;
     if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { g = null; return; }
     if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.2) {
-      const side = bellPop.classList.contains('side');
-      if (!side && dx < 0) { bpSetSide(true); g.on = true; }
-      else if (side && dx > 0 && true) { bpSetSide(false); g.on = true; }
+      if (dx < 0 && bpPage < BP_PAGES - 1) { bpSetPage(bpPage + 1); g.on = true; }
+      else if (dx > 0 && bpPage > 0) { bpSetPage(bpPage - 1); g.on = true; }
       else g = null;
     }
   });
