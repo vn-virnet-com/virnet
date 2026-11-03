@@ -824,6 +824,14 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 @media (prefers-reduced-motion: reduce) { #bell-btn.unseen { animation: none; } }
 #settings-btn.unseen { color: var(--warn); animation: notes-blink 1s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { #settings-btn.unseen { animation: none; } }
+#bp-slider { position: absolute; top: 0; bottom: 0; left: 0; width: 200%; display: flex; touch-action: pan-y; transition: transform .25s ease; will-change: transform; }
+#bell-pop.side #bp-slider { transform: translateX(-50%); }
+#bell-pop.no-anim #bp-slider { transition: none; }
+.bp-page { position: relative; flex: 0 0 50%; width: 50%; height: 100%; overflow: hidden; }
+.bp-nav { display: none; position: absolute; left: 12px; bottom: 12px; width: 40px; height: 40px; border-radius: 50%; background: var(--c-1a); border: 1px solid var(--c-33); color: var(--c-cc); align-items: center; justify-content: center; cursor: pointer; z-index: 3; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.bp-nav svg { display: block; }
+.bp-nav:hover { background: var(--c-33); color: var(--c-fff); }
+@media (min-width: 769px) { .bp-nav { display: flex; } }
 #bp-list { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 8px 8px 64px; }
 .bp-card { touch-action: pan-y; position: relative; width: 100%; margin: 0 0 8px; padding: 8px 11px; background: var(--c-1a); border: 1px solid var(--c-33); border-radius: 6px; }
 .bp-title { font-size: 15px; line-height: 1.3; font-weight: 700; color: var(--c-fff); white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
@@ -1145,12 +1153,20 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   <span id="profile-btn" title="Notlar paneli"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="10" r="3"></circle><path d="M6.17 18.66a6 6 0 0 1 11.66 0"></path></svg></span>
 </div>
 <div id="bell-pop">
+  <div id="bp-slider">
+  <div id="bp-page-main" class="bp-page">
   <div id="bp-list"></div>
   <div id="bp-add" title="Bildirim gönder"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
   <div id="bp-compose">
     <input id="bp-title-in" type="text" placeholder="Başlık" maxlength="120" autocomplete="off" autocorrect="off" spellcheck="false">
     <textarea id="bp-body-in" placeholder="İçerik" maxlength="2000" autocomplete="off" spellcheck="false"></textarea>
     <div id="bp-actions"><span id="bp-cancel">İptal</span><span id="bp-send">Gönder</span></div>
+  </div>
+  <div id="bp-next" class="bp-nav" title="Yan sayfa"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
+  </div>
+  <div id="bp-page-side" class="bp-page">
+  <div id="bp-prev" class="bp-nav" title="Bildirimlere dön"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg></div>
+  </div>
   </div>
 </div>
 <div id="notes-pop">
@@ -7069,6 +7085,7 @@ function receiveNotifAck(d) {
 }
 function openBellPop() {
   closeNotesPop();
+  bpSetSide(false, true);
   bellPop.classList.add('show');
   document.getElementById('bp-add').classList.toggle('can', notifCanSend());
   closeNotifCompose();
@@ -7101,6 +7118,41 @@ function closeNotesPop() {
   finishPopEdit();
   notesPop.classList.remove('show');
 }
+
+/* Bildirim penceresi: mobilde sağdan sola kaydırınca boş yan sayfa; masaüstünde ok tuşlarıyla geçiş */
+function bpSetSide(on, instant) {
+  if (instant) { bellPop.classList.add('no-anim'); }
+  bellPop.classList.toggle('side', !!on);
+  if (instant) { void bellPop.offsetWidth; bellPop.classList.remove('no-anim'); }
+}
+(function initBellPages() {
+  const nx = document.getElementById('bp-next'), pv = document.getElementById('bp-prev');
+  const act = (fn) => (e) => { e.preventDefault(); e.stopPropagation(); fn(); };
+  nx.addEventListener('click', act(() => bpSetSide(true)));
+  pv.addEventListener('click', act(() => bpSetSide(false)));
+  [nx, pv].forEach((b) => b.addEventListener('mousedown', (e) => e.preventDefault()));
+  let g = null;
+  bellPop.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse') return; // masaüstünde ok tuşları
+    if (e.target.closest && e.target.closest('input, textarea, .bp-nav')) return;
+    if (document.getElementById('bp-compose').classList.contains('show')) return;
+    g = { x: e.clientX, y: e.clientY, id: e.pointerId, on: false };
+  });
+  bellPop.addEventListener('pointermove', (e) => {
+    if (!g || e.pointerId !== g.id || g.on) return;
+    const dx = e.clientX - g.x, dy = e.clientY - g.y;
+    if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { g = null; return; }
+    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      const side = bellPop.classList.contains('side');
+      if (!side && dx < 0) { bpSetSide(true); g.on = true; }
+      else if (side && dx > 0) { bpSetSide(false); g.on = true; }
+      else g = null;
+    }
+  });
+  const end = (e) => { if (g && e.pointerId === g.id) g = null; };
+  bellPop.addEventListener('pointerup', end);
+  bellPop.addEventListener('pointercancel', end);
+})();
 (function initNotesPopup() {
   if (notesUnseen) notesBtn.classList.add('unseen');
   // Not/bildirim paneli açıkken sohbet alanına (mesajlara) basış yalnızca paneli kapatır, mesaja yanıt vermez
