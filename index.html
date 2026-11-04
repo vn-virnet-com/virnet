@@ -7912,7 +7912,7 @@ function flushCardOutbox() {
       else if (o.op === 'del') conn.send({ type: 'card-del', id: o.id });
       else if (o.op === 'count') conn.send({ type: 'card-count', id: o.id, u: o.u || 0, d: o.d || 0 });
       else if (o.op === 'reply') conn.send({ type: 'card-reply', id: o.id, rp: o.rp });
-      else if (o.op === 'poll') conn.send({ type: 'card-poll', id: o.id, v: o.v });
+      else if (o.op === 'poll') conn.send({ type: 'card-poll', id: o.id, v: o.v, inst: o.inst ? 1 : 0 });
       else conn.send({ type: 'card-react', id: o.id, r: o.r || 0 });
       o.tried = true;
     } catch (e) {}
@@ -8164,13 +8164,13 @@ function receiveCardReply(d) {
 }
 // Oy sayısı değiştirme (6687): 3. sayfada gönderiyle birlikte revizyonla, 2. sayfada 'card-poll' ile karşıya gider
 // 3828: 2. sayfadaki gönderilerde seçeneğe basınca oy verir (+1); aynı seçeneğe tekrar basınca geri alır, başka seçeneğe basınca oyunu taşır
-function pollSyncOut(c) {
+function pollSyncOut(c, inst) {
   if (c.k === 'b') { thirdBump(); persistThird(); sendThird('third'); renderCards(); return; }
   const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === c.id);
   if (ai) ai.item.pl = { q: c.pl.q, o: c.pl.o.map((x) => ({ t: x.t, v: x.v })) };
   else {
     cardOutbox = cardOutbox.filter((o) => !(o.op === 'poll' && o.id === c.id));
-    cardOutbox.push({ op: 'poll', id: c.id, v: c.pl.o.map((x) => x.v) });
+    cardOutbox.push({ op: 'poll', id: c.id, v: c.pl.o.map((x) => x.v), inst: inst ? 1 : 0 });
   }
   persistCardOutbox();
   flushCardOutbox();
@@ -8186,8 +8186,9 @@ function votePoll(id, i) {
     if (prev >= 0 && o[prev]) o[prev].v = Math.max(0, o[prev].v - 1);
     o[i].v = cdNum(o[i].v + 1); c.mv = i;
   }
-  o.forEach((x, k) => { if (x.v !== old[k]) cdAnimTo(id, 'p' + k, old[k], x.v); });
-  pollSyncOut(c);
+  // Oy anında yansır: bekleyen animasyon varsa iptal edilir, karşı tarafa da 'anında' işaretiyle gider
+  o.forEach((x, k) => { if (x.v !== old[k] && cdAnim[id]) delete cdAnim[id]['p' + k]; });
+  pollSyncOut(c, true);
 }
 // Yanıt yetkisi: 6687 her iki sayfada; 3828 yalnızca 2. sayfadaki gönderilerde (isim sohbet isim kutusundan, onay rozeti hazır)
 function rpAllowed(id) {
@@ -8238,7 +8239,7 @@ function receiveCardPoll(d) {
   if (!d || typeof d.id !== 'string' || !Array.isArray(d.v)) return;
   const c = cardList.find((x) => x.id === d.id && x.k !== 'b');
   if (!c || !c.pl || d.v.length !== c.pl.o.length) return;
-  c.pl.o.forEach((x, i) => { const nv = cdNum(d.v[i]); cdAnimTo(c.id, 'p' + i, x.v, nv); x.v = nv; });
+  c.pl.o.forEach((x, i) => { const nv = cdNum(d.v[i]); if (d.inst) { if (cdAnim[c.id]) delete cdAnim[c.id]['p' + i]; } else cdAnimTo(c.id, 'p' + i, x.v, nv); x.v = nv; });
   if (bellPop.classList.contains('show')) renderCards();
 }
 function receiveCardDel(d) {
