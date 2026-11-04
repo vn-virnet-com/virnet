@@ -5452,6 +5452,7 @@ function ytPlPlayCurrent(t, resume, play) {
   ytDockDismissed = null;
   if (resume) g._startAt(t || 0, !!play); else g._toggle();
   ytPlUI();
+  try { ytMsSync(); } catch (e) {}
 }
 function ytPlStart(listId) {
   const ids = ytPlIds(listId);
@@ -5481,6 +5482,7 @@ function ytPlStop() {
   ytPl = null;
   ytPlPersist();
   ytPlUI();
+  try { ytMsSync(); } catch (e) {}
 }
 function ytPlOnPlay(card) { if (ytPl && card === ytsGhost) ytPlFails = 0; }
 function ytPlOnEnd(card) {
@@ -5495,15 +5497,35 @@ function ytPlOnFail(card) {
 }
 ytPlEl.shuf.addEventListener('click', () => { if (ytPlStripList) ytPlStart(ytPlStripList); });
 ytPlEl.next.addEventListener('click', () => { if (ytPl) ytPlNext(); });
-// Klavyedeki / kulaklıktaki "sonraki şarkı" medya tuşu: karışık çalma açıkken sıradaki şarkıya geçer
-try {
-  if ('mediaSession' in navigator) navigator.mediaSession.setActionHandler('nexttrack', () => { try { if (ytPl) ytPlNext(); } catch (e) {} });
-} catch (e) {}
+// Klavyedeki / kulaklıktaki "sonraki şarkı" medya tuşu: karışık çalma açıkken sıradaki şarkıya geçer.
+// YouTube iframe'i medya oturumunu kendine aldığı için sayfa, sessiz bir ses öğesiyle oturumu kendi üzerinde tutar.
+let ytMsAudio = null;
+function ytMsSkip() { try { if (ytPl) ytPlNext(); } catch (e) {} }
+function ytMsSync() {
+  try {
+    if (!('mediaSession' in navigator)) return;
+    if (!ytMsAudio) {
+      ytMsAudio = new Audio('data:audio/wav;base64,UklGRvQHAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YdAHAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==');
+      ytMsAudio.loop = true;
+      ytMsAudio.volume = 0.02;
+      navigator.mediaSession.setActionHandler('nexttrack', ytMsSkip);
+      try { navigator.mediaSession.setActionHandler('previoustrack', null); } catch (e) {}
+    }
+    if (ytPl) {
+      try { navigator.mediaSession.metadata = new MediaMetadata({ title: 'Karışık çalma', artist: 'VN' }); } catch (e) {}
+      const p = ytMsAudio.play(); if (p && p.catch) p.catch(() => {});
+      navigator.mediaSession.playbackState = 'playing';
+    } else {
+      ytMsAudio.pause();
+      navigator.mediaSession.playbackState = 'none';
+    }
+  } catch (e) {}
+}
 window.addEventListener('keydown', (e) => {
-  if (e.key !== 'MediaTrackNext') return;
+  if (e.key !== 'MediaTrackNext' && e.code !== 'MediaTrackNext') return;
   if (!ytPl) return;
   e.preventDefault();
-  try { ytPlNext(); } catch (err) {}
+  ytMsSkip();
 });
 
 // Sayfa yenilenince / açılınca: karışık oturum kaldığı şarkı ve saniyeden devam eder
