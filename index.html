@@ -941,6 +941,10 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 .pl-q { font-size: 14px; font-weight: 700; line-height: 1.3; color: var(--c-fff); margin-bottom: 6px; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
 .pl-o { position: relative; display: flex; align-items: center; gap: 8px; min-height: 34px; padding: 6px 10px; margin-top: 5px; border: 1px solid var(--c-33); border-radius: 6px; background: var(--c-000); overflow: hidden; }
 .pl-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); opacity: .35; transition: width .1s linear; pointer-events: none; }
+.pl-o.vote { cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+/* Oy verilen kutu: koyu temada hafif açılır, açık temada hafif koyulaşır (yazı rengine doğru karışır) */
+.pl-o.mine { background: var(--c-1a); background: color-mix(in srgb, var(--c-fff) 10%, var(--c-000)); }
+#rp-compose.auto #rp-name-row { display: none; }
 .pl-num, .pl-t, .pl-pct, .pl-ed { position: relative; z-index: 1; }
 .pl-num { flex: 0 0 auto; min-width: 22px; font-size: 13px; font-weight: 700; color: var(--c-fff); font-variant-numeric: tabular-nums; }
 .pl-num.can { cursor: pointer; padding: 2px 0; -webkit-tap-highlight-color: transparent; }
@@ -7699,8 +7703,9 @@ function plPaint(card, vs) {
 function plHtml(n, can) {
   if (!n.pl) return '';
   const vs = n.pl.o.map((x, i) => cdShown(n.id, 'p' + i, x.v)), pc = plPcts(vs), tot = vs.reduce((a, b) => a + b, 0);
+  const vote = n.k === 'a' && thirdCanSend();
   return '<div class="cd-row cd-poll"><div class="pl-q">' + escapeHtml(n.pl.q) + '</div>' + n.pl.o.map((x, i) =>
-    '<div class="pl-o" data-i="' + i + '"><div class="pl-fill" style="width:' + (tot ? (vs[i] * 100 / tot).toFixed(2) : 0) + '%"></div><span class="pl-num' + (can ? ' can' : '') + '">' + cdFmt(vs[i]) + '</span><span class="pl-t">' + escapeHtml(x.t) + '</span><span class="pl-pct">' + pc[i] + '%</span></div>').join('') + '</div>';
+    '<div class="pl-o' + (vote ? ' vote' : '') + (vote && n.mv === i ? ' mine' : '') + '" data-i="' + i + '"><div class="pl-fill" style="width:' + (tot ? (vs[i] * 100 / tot).toFixed(2) : 0) + '%"></div><span class="pl-num' + (can ? ' can' : '') + '">' + cdFmt(vs[i]) + '</span><span class="pl-t">' + escapeHtml(x.t) + '</span><span class="pl-pct">' + pc[i] + '%</span></div>').join('') + '</div>';
 }
 // Gönderi yazma ekranlarına eklenen oylama düzenleyicisi (şifre fark etmeksizin): soru + 2-6 seçenek
 function mountPollEditor(beforeEl) {
@@ -8063,7 +8068,7 @@ function renderCards() {
           (k === 'b' ? '<button type="button" class="cd-rb' + (!can ? ' ro' : '') + '" data-r="3" aria-label="Görüntülenme">' + CD_EYE + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt(cdShown(n.id, 'v', n.v || 0)) + '</span></button>' : '') +
         '</div>' +
         (n.pending ? '<div class="cd-row bp-pend">Gönderilmedi, bağlanınca gidecek</div>' : '') +
-        rpHtml(n, can) +
+        rpHtml(n, can || (k === 'a' && thirdCanSend())) +
         '</div>';
     }).join('');
   };
@@ -8131,7 +8136,7 @@ function receiveCard(d) {
 }
 // Yanıt ekleme (6687): 3. sayfada gönderiyle birlikte revizyonla, 2. sayfada 'card-reply' ile karşıya gider. En yeni üstte, en fazla 3; 4. yanıtla en eskisi silinir
 function addCardReply(cardId, n, b, vf) {
-  if (!notifCanSend()) return false;
+  if (!rpAllowed(cardId)) return false;
   const c = cardList.find((x) => x.id === cardId);
   if (!c) return false;
   const r = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, vf: vf ? 1 : 0, at: Math.max(Date.now(), ((c.rp && c.rp[0]) ? c.rp[0].at + 1 : 0)) };
@@ -8158,6 +8163,37 @@ function receiveCardReply(d) {
   bpMarkUnread(1);
 }
 // Oy sayısı değiştirme (6687): 3. sayfada gönderiyle birlikte revizyonla, 2. sayfada 'card-poll' ile karşıya gider
+// 3828: 2. sayfadaki gönderilerde seçeneğe basınca oy verir (+1); aynı seçeneğe tekrar basınca geri alır, başka seçeneğe basınca oyunu taşır
+function pollSyncOut(c) {
+  if (c.k === 'b') { thirdBump(); persistThird(); sendThird('third'); renderCards(); return; }
+  const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === c.id);
+  if (ai) ai.item.pl = { q: c.pl.q, o: c.pl.o.map((x) => ({ t: x.t, v: x.v })) };
+  else {
+    cardOutbox = cardOutbox.filter((o) => !(o.op === 'poll' && o.id === c.id));
+    cardOutbox.push({ op: 'poll', id: c.id, v: c.pl.o.map((x) => x.v) });
+  }
+  persistCardOutbox();
+  flushCardOutbox();
+  renderCards();
+}
+function votePoll(id, i) {
+  if (!thirdCanSend()) return;
+  const c = cardList.find((x) => x.id === id);
+  if (!c || c.k !== 'a' || !c.pl || !c.pl.o[i]) return;
+  const o = c.pl.o, old = o.map((x) => x.v), prev = (typeof c.mv === 'number') ? c.mv : -1;
+  if (prev === i) { o[i].v = Math.max(0, o[i].v - 1); c.mv = -1; }
+  else {
+    if (prev >= 0 && o[prev]) o[prev].v = Math.max(0, o[prev].v - 1);
+    o[i].v = cdNum(o[i].v + 1); c.mv = i;
+  }
+  o.forEach((x, k) => { if (x.v !== old[k]) cdAnimTo(id, 'p' + k, old[k], x.v); });
+  pollSyncOut(c);
+}
+// Yanıt yetkisi: 6687 her iki sayfada; 3828 yalnızca 2. sayfadaki gönderilerde (isim sohbet isim kutusundan, onay rozeti hazır)
+function rpAllowed(id) {
+  const c = cardList.find((x) => x.id === id);
+  return !!c && (notifCanSend() || (thirdCanSend() && c.k === 'a'));
+}
 function setPollCount(id, i, val) {
   if (!notifCanSend()) return;
   const c = cardList.find((x) => x.id === id);
@@ -8250,23 +8286,25 @@ function closeCardCompose() {
   const tList = document.getElementById('td-list');
   const rpComp = document.getElementById('rp-compose'), rpName = document.getElementById('rp-name-in'), rpBody = document.getElementById('rp-body-in'), rpVf = document.getElementById('rp-vf-in');
   const rpSend = document.getElementById('rp-send'), rpCancel = document.getElementById('rp-cancel');
-  let rpTarget = null;
+  let rpTarget = null, rpAuto = false;
   function openReplyCompose(id) {
-    if (!notifCanSend() || !cardList.some((x) => x.id === id)) return;
+    if (!rpAllowed(id)) return;
     rpTarget = id;
+    rpAuto = !notifCanSend(); // 3828: isim ve tik seçilmez
     bellMsgHad = document.activeElement === messageInput;
     rpName.value = ''; rpBody.value = ''; rpVf.checked = false;
+    rpComp.classList.toggle('auto', rpAuto);
     rpComp.classList.add('show');
-    try { rpName.focus(); } catch (e) {}
+    try { (rpAuto ? rpBody : rpName).focus(); } catch (e) {}
   }
   rpCancel.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
   rpCancel.addEventListener('click', () => { rpTarget = null; closeCardCompose(); bellMsgHad = false; });
   rpSend.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
   rpSend.addEventListener('click', () => {
-    if (!notifCanSend() || !rpTarget) return;
-    const n = rpName.value.trim(), b = rpBody.value.trim();
-    if (!n && !b) return;
-    addCardReply(rpTarget, n, b, rpVf.checked);
+    if (!rpTarget || !rpAllowed(rpTarget)) return;
+    const b = rpBody.value.trim(), n = rpAuto ? nickInput.value.trim() : rpName.value.trim();
+    if (rpAuto ? !b : (!n && !b)) return;
+    addCardReply(rpTarget, n, b, rpAuto ? true : rpVf.checked);
     rpTarget = null;
     closeCardCompose();
     bellMsgHad = false;
@@ -8276,8 +8314,10 @@ function closeCardCompose() {
     if (d) { const card = d.closest('.bp-card'); if (card && notifCanSend()) { if (card.closest('#td-list')) deleteThirdCard(card.dataset.id); else deleteOwnCard(card.dataset.id); } return; }
     const pn = e.target.closest && e.target.closest('.pl-num.can');
     if (pn) { const card = pn.closest('.bp-card'), row = pn.closest('.pl-o'); if (card && row && notifCanSend()) plStartEdit(pn, card.dataset.id, parseInt(row.dataset.i, 10)); return; }
+    const po = e.target.closest && e.target.closest('.pl-o.vote');
+    if (po) { const card = po.closest('.bp-card'); if (card && thirdCanSend()) votePoll(card.dataset.id, parseInt(po.dataset.i, 10)); return; }
     const ra = e.target.closest && e.target.closest('.cd-rp-add');
-    if (ra) { const card = ra.closest('.bp-card'); if (card && notifCanSend()) openReplyCompose(card.dataset.id); return; }
+    if (ra) { const card = ra.closest('.bp-card'); if (card && rpAllowed(card.dataset.id)) openReplyCompose(card.dataset.id); return; }
     const tg = e.target.closest && e.target.closest('.cd-tag');
     if (tg) { const card = tg.closest('.bp-card'); if (card && notifCanSend()) toggleTagFire(card.dataset.id, parseInt(tg.dataset.i, 10)); return; }
     const rb = e.target.closest && e.target.closest('.cd-rb');
