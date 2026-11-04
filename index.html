@@ -2196,6 +2196,20 @@ nickInput.addEventListener('focus', () => {
   nickInput.value = ''; lsSet('nick', ''); applyNickColor();
 });
 nickInput.addEventListener('input', () => { if (!nickHistSetting) nickBrowsing = false; });
+// Ctrl + Sol/Sağ ok: isim kutusundayken renk paletinde bir soldaki / bir sağdaki renge geçer (uçlarda durur)
+const NICK_COLOR_ORDER = ['', 'k', 't', 's', 'y', 'ma', 'l', 'mo', 'p', 'b'];
+nickInput.addEventListener('keydown', (e) => {
+  if (e.isComposing) return;
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  if (!e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+  e.preventDefault();
+  let i = NICK_COLOR_ORDER.indexOf(nickColorKey);
+  if (i < 0) i = 0;
+  const ni = i + (e.key === 'ArrowLeft' ? -1 : 1);
+  if (ni < 0 || ni >= NICK_COLOR_ORDER.length) return;
+  setNickColor(NICK_COLOR_ORDER[ni]);
+  if (window.syncNickColorUI) window.syncNickColorUI();
+});
 nickInput.addEventListener('keydown', (e) => {
   if (editingId || e.isComposing) return;
   if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
@@ -5481,6 +5495,16 @@ function ytPlOnFail(card) {
 }
 ytPlEl.shuf.addEventListener('click', () => { if (ytPlStripList) ytPlStart(ytPlStripList); });
 ytPlEl.next.addEventListener('click', () => { if (ytPl) ytPlNext(); });
+// Klavyedeki / kulaklıktaki "sonraki şarkı" medya tuşu: karışık çalma açıkken sıradaki şarkıya geçer
+try {
+  if ('mediaSession' in navigator) navigator.mediaSession.setActionHandler('nexttrack', () => { try { if (ytPl) ytPlNext(); } catch (e) {} });
+} catch (e) {}
+window.addEventListener('keydown', (e) => {
+  if (e.key !== 'MediaTrackNext') return;
+  if (!ytPl) return;
+  e.preventDefault();
+  try { ytPlNext(); } catch (err) {}
+});
 
 // Sayfa yenilenince / açılınca: karışık oturum kaldığı şarkı ve saniyeden devam eder
 (function ytPlRestore() {
