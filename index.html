@@ -1024,6 +1024,8 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 .ts-bt { font-size: 11px; font-weight: 700; color: var(--warn); margin-bottom: 3px; }
 .ts-bn { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; font-weight: 300; }
 .ts-bn.ts-no { color: var(--c-77); }
+.ts-act { display: flex; justify-content: flex-end; margin-top: 8px; }
+.ts-use { display: inline-block; padding: 5px 14px; border-radius: 6px; background: var(--accent); color: var(--on-accent); font-size: 12.5px; font-weight: 700; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .ts-del { margin-top: 6px; text-align: right; font-size: 12px; color: var(--bad); cursor: pointer; user-select: none; -webkit-user-select: none; }
 @keyframes tsPop { from { opacity: 0; transform: scale(.35); } to { opacity: 1; transform: scale(1); } }
 #ts-compose { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--c-111); padding: 8px; flex-direction: column; gap: 6px; z-index: 5; }
@@ -7906,6 +7908,7 @@ function rpHtml(n, can) {
   return '<div class="cd-rp"><div class="cd-rp-head"><span class="cd-rp-t">Yanıtlar</span>' + (can ? '<span class="cd-rp-add can" role="button" aria-label="Yanıt ekle" title="Yanıt ekle">+</span>' : '') + '</div>' +
     (rp.length ? rp.map((r) => '<div class="cd-rp-i"><div class="cd-rp-n">' + (r.vf ? VF_BADGE : '') + (r.n ? '<span>' + escapeHtml(r.n) + '</span>' : '') + '</div>' + (r.b ? '<div class="cd-rp-b">' + escapeHtml(r.b) + '</div>' : '') + '</div>').join('') : '<div class="cd-rp-e">Yanıt yok</div>') + '</div>';
 }
+function tsHasTag(t) { try { t = String(t).replace(/[#\s]/g, '').slice(0, 24).toLowerCase(); return !!t && tsList.some((x) => x.t.toLowerCase() === t); } catch (e) { return false; } }
 function tagClean(v) { return String(v || '').split(/\s+/).filter((t) => t.length > 1 && t[0] === '#').join(' '); }
 function cdFireSan(f) {
   if (!Array.isArray(f)) return [];
@@ -7925,7 +7928,7 @@ function cdTagsHtml(n, can) {
   const f = n.f || [];
   return '<div class="cd-row cd-topic cd-tags">' + tags.map((t, i) => {
     const body = t[0] === '#' ? '<span class="cd-hash">#</span>' + escapeHtml(t.slice(1)) : escapeHtml(t);
-    const on = f.indexOf(i) >= 0;
+    const on = f.indexOf(i) >= 0 || tsHasTag(t); // trend şeridindeki etiket otomatik ateşli
     return '<span class="cd-tag' + (on ? ' fire' : '') + (can ? ' can' : '') + '" data-i="' + i + '"><span class="cd-tt">' + body + '</span>' + (on ? '<span class="cd-flame">' + CD_FLAME + '</span>' : '') + '</span>';
   }).join('') + '</div>';
 }
@@ -8272,15 +8275,26 @@ function toggleTagFire(id, i) {
   if (!notifCanSend()) return;
   const n = cardList.find((x) => x.id === id);
   if (!n) return;
+  const raw = cdTagList(n.c)[i];
+  if (raw == null) return;
+  const t = String(raw).replace(/[#\s]/g, '').slice(0, 24);
+  const ti = t ? tsList.findIndex((x) => x.t.toLowerCase() === t.toLowerCase()) : -1;
   const f = cdFireSan(n.f), at = f.indexOf(i);
-  if (at >= 0) f.splice(at, 1); else f.push(i);
+  if (ti < 0 && at < 0) { // ateşli değil: trend yap = şeride ekle (ateş şeritten otomatik gelir)
+    if (t) tsChange(tsList.concat([{ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), t: t, n: '' }]));
+    renderCards();
+    return;
+  }
+  if (ti >= 0) tsChange(tsList.filter((_, k) => k !== ti)); // ateşliyse: şeritten de silinir
+  if (at < 0) { renderCards(); return; }
+  f.splice(at, 1); // eski usulle işaretlenmiş ateş de kalksın
   n.f = f;
   if (n.k === 'b') { thirdBump(); persistThird(); sendThird('third'); renderCards(); return; }
   const prev = fireMap[id];
-  const t = Math.max(Date.now(), prev ? prev.t + 1 : 0);
-  fireMap[id] = { f: f.slice(), t: t };
+  const tm = Math.max(Date.now(), prev ? prev.t + 1 : 0);
+  fireMap[id] = { f: f.slice(), t: tm };
   persistFire();
-  if (isConnected()) { try { conn.send({ type: 'card-fire', id: id, f: f.slice(), t: t }); } catch (e) {} }
+  if (isConnected()) { try { conn.send({ type: 'card-fire', id: id, f: f.slice(), t: tm }); } catch (e) {} }
   renderCards();
 }
 function receiveCardCount(d) { /* durum artık 'card-state' ile gelir */ }
@@ -8314,7 +8328,7 @@ function cdStartEdit(rb, c) {
   try { inp.focus(); const L = inp.value.length; inp.setSelectionRange(L, L); } catch (e) {} // tümü seçilmesin, imleç sonda dursun
 }
 /* ===== 2. sayfa üst şeridi: en fazla 3 etiket, hepsi ateşli. 6687 ekler/siler ve not yazar; herkes etikete basınca notu baloncukta okur. Eşitleme: tüm liste revizyonla gider, en yeni olan kazanır; bağlı değilken de kaydolur, bağlanınca karşılaştırılır ===== */
-const TS_MAX = 5;
+const TS_MAX = 1000; // pratikte sınırsız (6687 istediği kadar etiket ekleyebilir)
 let tsList = [], tsRev = 0, tsOpen = null;
 function tsSan(a) {
   const o = [];
@@ -8334,12 +8348,25 @@ function receiveStrip(d, isHello) {
   if (rev < tsRev) { if (isHello) tsSend('strip'); return; } // bende daha güncel: karşıya gönder
   if (rev === tsRev) return;
   tsList = tsSan(d.list); tsRev = rev; tsPersist();
-  if (bellPop.classList.contains('show')) renderStrip();
+  if (bellPop.classList.contains('show')) { renderStrip(); renderCards(); }
 }
 function tsChange(list) {
   if (!notifCanSend()) return;
   tsList = tsSan(list); tsRev = Math.max(Date.now(), tsRev + 1);
   tsPersist(); tsSend('strip'); tsClose(); renderStrip();
+  if (bellPop.classList.contains('show')) renderCards();
+}
+// Kullan: etiketi gönderi oluşturma ekranının konu kısmına koyar. 6687 → Keşfet sayfası gönderi ekranı, 3828 → Oluştur sayfası gönderi ekranı
+function tsUse(t) {
+  tsClose();
+  const a = notifCanSend();
+  if (!a && !thirdCanSend()) return;
+  if (!a && !isConnected()) { try { flashStatus('Bağlı değil, gönderi oluşturulamaz'); } catch (e) {} return; }
+  if (!a) bpSetPage(2);
+  const comp = document.getElementById(a ? 'cd-compose' : 'td-compose');
+  document.getElementById(a ? 'cd-add' : 'td-add').click();
+  if (!comp.classList.contains('show')) return;
+  document.getElementById(a ? 'cd-topic-in' : 'td-topic-in').value = '#' + t;
 }
 function tsClose() { tsOpen = null; const b = document.getElementById('ts-bubble'); if (b) b.classList.remove('show'); }
 function tsTagEl(id) { let r = null; document.querySelectorAll('#ts-strip .ts-t').forEach((e) => { if (e.dataset.id === id) r = e; }); return r; }
@@ -8347,7 +8374,7 @@ function tsShow(id) {
   const x = tsList.find((q) => q.id === id), tg = tsTagEl(id);
   if (!x || !tg) return;
   const b = document.getElementById('ts-bubble'), pg = document.getElementById('bp-page-side'), st = document.getElementById('ts-strip');
-  b.innerHTML = '<div class="ts-bt">#' + escapeHtml(x.t) + '</div>' + (x.n ? '<div class="ts-bn">' + escapeHtml(x.n) + '</div>' : '<div class="ts-bn ts-no">Not yok</div>') + (notifCanSend() ? '<div class="ts-del" role="button">Etiketi sil</div>' : '');
+  b.innerHTML = '<div class="ts-bt">#' + escapeHtml(x.t) + '</div>' + (x.n ? '<div class="ts-bn">' + escapeHtml(x.n) + '</div>' : '<div class="ts-bn ts-no">' + (notifCanSend() ? 'Not yok' : 'Bu etiket hakkında bilgi yok.') + '</div>') + (notifCanSend() ? '<div class="ts-del" role="button">Etiketi sil</div>' : '') + ((notifCanSend() || thirdCanSend()) ? '<div class="ts-act"><span class="ts-use" role="button">Kullan</span></div>' : '');
   const again = b.classList.contains('show') && b.dataset.id === id; // yeniden çizimde açılış animasyonu tekrarlanmasın
   b.dataset.id = id; tsOpen = id;
   if (!again) b.classList.remove('show');
@@ -8361,7 +8388,7 @@ function renderStrip() {
   const el = document.getElementById('ts-strip'), pg = document.getElementById('bp-page-side'), can = notifCanSend();
   pg.classList.toggle('has-strip', tsList.length > 0 || can);
   if (tsOpen && !tsList.some((x) => x.id === tsOpen)) tsClose();
-  el.innerHTML = tsList.map((x) => '<span class="cd-tag fire ts-t' + ((x.n || can) ? '' : ' dead') + '" data-id="' + escapeHtml(x.id) + '"><span class="cd-tt"><span class="cd-hash">#</span>' + escapeHtml(x.t) + '</span><span class="cd-flame">' + CD_FLAME + '</span></span>').join('') +
+  el.innerHTML = tsList.map((x) => '<span class="cd-tag fire ts-t' + ((x.n || can || thirdCanSend()) ? '' : ' dead') + '" data-id="' + escapeHtml(x.id) + '"><span class="cd-tt"><span class="cd-hash">#</span>' + escapeHtml(x.t) + '</span><span class="cd-flame">' + CD_FLAME + '</span></span>').join('') +
     (can && tsList.length < TS_MAX ? '<span id="ts-add" role="button" aria-label="Etiket ekle">+</span>' : '');
   if (tsOpen) tsShow(tsOpen);
 }
@@ -8403,10 +8430,11 @@ function renderStrip() {
     const t = e.target.closest('.ts-t');
     if (!t) return;
     const x = tsList.find((q) => q.id === t.dataset.id);
-    if (!x || (!x.n && !notifCanSend())) return; // notu olmayan etiketlere yalnızca 6687 basabilir (silmek için)
+    if (!x || (!x.n && !notifCanSend() && !thirdCanSend())) return; // notsuz etikete yalnızca 6687 (silmek için) ve 3828 (bilgi yok + Kullan) basabilir
     if (tsOpen === t.dataset.id) tsClose(); else tsShow(t.dataset.id);
   });
   bub.addEventListener('click', (e) => {
+    if (e.target.closest('.ts-use')) { const ux = tsList.find((q) => q.id === bub.dataset.id); if (ux) tsUse(ux.t); return; }
     if (e.target.closest('.ts-del') && notifCanSend()) { const id = bub.dataset.id; tsChange(tsList.filter((x) => x.id !== id)); }
   });
   strip.addEventListener('scroll', tsClose, { passive: true });
