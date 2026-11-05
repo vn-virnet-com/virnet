@@ -609,6 +609,23 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 .codes-val.empty { color: var(--c-55); }
 #codes-close { padding: 12px; font-size: 16px; border: 1px solid var(--c-33); border-radius: 4px; cursor: pointer; font-weight: 700; background: var(--accent); color: var(--on-accent); }
 #reset-yes { background: var(--chip-no); color: var(--c-fff); }
+/* Gizli depolama penceresi: ayarlardaki "Kurulum" başlığına basılı tutunca açılır */
+#blk-setup > .set-title { -webkit-touch-callout: none; }
+#stor-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 21000; background: var(--ov-85); display: none; align-items: center; justify-content: center; padding: 20px; }
+#stor-modal.show { display: flex; }
+#stor-box { background: var(--c-111); border: 1px solid var(--c-33); border-radius: 8px; padding: 16px; width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; align-items: stretch; box-sizing: border-box; }
+#stor-title { font-size: 16px; color: var(--c-fff); font-weight: 700; text-align: center; }
+#stor-bar { height: 8px; border-radius: 4px; background: var(--c-000); border: 1px solid var(--c-33); overflow: hidden; }
+#stor-fill { height: 100%; width: 0; background: var(--accent); min-width: 2px; }
+#stor-fill.warn { background: var(--warn); }
+#stor-fill.bad { background: var(--bad); }
+#stor-sum { font-size: 13px; color: var(--c-dd); text-align: center; font-variant-numeric: tabular-nums; }
+#stor-list { max-height: 38vh; overflow-y: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--c-33); border-radius: 4px; background: var(--c-000); padding: 4px 8px; }
+.stor-row { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; font-size: 12.5px; color: var(--c-cc); border-top: 1px solid var(--c-1a); }
+.stor-row:first-child { border-top: 0; }
+.stor-row span:first-child { min-width: 0; overflow-wrap: anywhere; font-family: 'JetBrains Mono', monospace; }
+.stor-row span:last-child { flex: 0 0 auto; color: var(--c-88); font-variant-numeric: tabular-nums; }
+#stor-close { padding: 12px; font-size: 16px; border: 1px solid var(--c-33); border-radius: 4px; cursor: pointer; font-weight: 700; background: var(--accent); color: var(--on-accent); }
 #idle-modal {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 50000;
   background: var(--ov-85); display: none; align-items: center; justify-content: center; padding: 20px;
@@ -1684,6 +1701,16 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   </div>
 </div>
 
+<div id="stor-modal">
+  <div id="stor-box">
+    <div id="stor-title">Depolama</div>
+    <div id="stor-bar"><div id="stor-fill"></div></div>
+    <div id="stor-sum"></div>
+    <div id="stor-list"></div>
+    <button id="stor-close" type="button">Kapat</button>
+  </div>
+</div>
+
 <div id="idle-modal">
   <div id="idle-box">
     <div id="idle-text">Orada mısın?</div>
@@ -2570,6 +2597,55 @@ document.getElementById('setup-show-btn').addEventListener('click', openCodesMod
 document.getElementById('setup-show-btn').addEventListener('pointerdown', (e) => e.preventDefault());
 document.getElementById('codes-close').addEventListener('click', closeCodesModal);
 codesModal.addEventListener('click', (e) => { if (e.target === codesModal) closeCodesModal(); });
+// ---- Gizli depolama göstergesi: ayarlardaki "Kurulum" başlığına ~0,6 sn basılı tutunca açılır (normal dokunuş başlığı eskisi gibi açıp kapatır) ----
+(function initStorageModal() {
+  const blk = document.getElementById('blk-setup'), modal = document.getElementById('stor-modal');
+  if (!blk || !modal) return;
+  const title = blk.querySelector('.set-title');
+  const QUOTA = 5 * 1024 * 1024; // tahmini: tarayıcılar kotayı bildirmez, çoğu ~5 MB verir (karakter başına 2 bayt sayılır)
+  const fmt = (b) => b < 1024 ? b + ' B' : (b / 1024 < 1024 ? (b / 1024).toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' KB' : (b / 1048576).toLocaleString('tr-TR', { maximumFractionDigits: 2 }) + ' MB');
+  function fill() {
+    const rows = []; let tot = 0;
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i), v = localStorage.getItem(k) || '';
+        const b = (k.length + v.length) * 2;
+        tot += b; rows.push([k, b]);
+      }
+    } catch (e) {}
+    rows.sort((a, b) => b[1] - a[1]);
+    const pct = Math.min(100, tot / QUOTA * 100);
+    const f = document.getElementById('stor-fill');
+    f.style.width = pct + '%';
+    f.classList.toggle('warn', pct >= 70 && pct < 90);
+    f.classList.toggle('bad', pct >= 90);
+    document.getElementById('stor-sum').textContent = fmt(tot) + ' / ~5 MB (%' + pct.toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ') · ' + rows.length + ' kayıt';
+    const list = document.getElementById('stor-list');
+    list.textContent = '';
+    rows.forEach((r) => {
+      const d = document.createElement('div'); d.className = 'stor-row';
+      const a = document.createElement('span'); a.textContent = r[0];
+      const b = document.createElement('span'); b.textContent = fmt(r[1]);
+      d.appendChild(a); d.appendChild(b); list.appendChild(d);
+    });
+  }
+  const close = () => modal.classList.remove('show');
+  const open = () => { fill(); modal.classList.add('show'); };
+  document.getElementById('stor-close').addEventListener('click', close);
+  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+  let timer = null, fired = false, sx = 0, sy = 0;
+  const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } };
+  title.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    fired = false; sx = e.clientX; sy = e.clientY; cancel();
+    timer = setTimeout(() => { timer = null; fired = true; try { if (navigator.vibrate) navigator.vibrate(15); } catch (er) {} open(); }, 600);
+  });
+  title.addEventListener('pointermove', (e) => { if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((n) => title.addEventListener(n, cancel));
+  title.addEventListener('contextmenu', (e) => e.preventDefault());
+  // Uzun basış sonrası gelen "click" başlığı açıp kapatmasın: üst öğede yakalama aşamasında yutulur
+  blk.addEventListener('click', (e) => { if (fired && e.target.closest && e.target.closest('.set-title')) { fired = false; e.stopPropagation(); e.preventDefault(); } }, true);
+})();
 resetCheck.addEventListener('change', () => { if (resetCheck.checked) resetErr.classList.remove('show'); });
 document.getElementById('reset-no').addEventListener('click', closeResetModal);
 document.getElementById('reset-yes').addEventListener('click', () => {
@@ -9237,7 +9313,7 @@ function bpSetPage(p, instant) {
     if (document.documentElement.classList.contains('pin-locked')) return true;
     if (settingsMenu.classList.contains('open')) return true;
     if (msgMenuBackdrop.classList.contains('show')) return true;
-    const ids = ['viewer', 'confirm-modal', 'photo-src-modal', 'ytsearch-modal', 'reset-modal', 'refresh-modal', 'codes-modal', 'idle-modal', 'privacy-cover'];
+    const ids = ['viewer', 'confirm-modal', 'photo-src-modal', 'ytsearch-modal', 'reset-modal', 'refresh-modal', 'codes-modal', 'stor-modal', 'idle-modal', 'privacy-cover'];
     for (let i = 0; i < ids.length; i++) { const el = document.getElementById(ids[i]); if (el && el.classList.contains('show')) return true; }
     if (document.getElementById('bp-compose').classList.contains('show')) return true;
     if (editingNotes || popEditing) return true;
