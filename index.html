@@ -861,7 +861,7 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 body.bp-newmsg #nick-ghost { font-size: 0; opacity: 1; color: var(--warn); animation: notes-blink 1s ease-in-out infinite; }
 body.bp-newmsg #nick-ghost::after { content: "Yeni Mesaj"; font-size: 13.5px; font-weight: 700; }
 #sb-mid { position: relative; }
-#np-veil { display: none; position: absolute; left: 7px; right: 7px; top: 50%; height: 16.5px; margin-top: -8.25px; z-index: 3; align-items: center; justify-content: center; background: color-mix(in srgb, var(--c-000) 85%, transparent); pointer-events: none; overflow: hidden; }
+#np-veil { display: none; position: absolute; left: -1px; right: -1px; top: 50%; height: 18.5px; margin-top: -9.25px; z-index: 3; align-items: center; justify-content: center; background: color-mix(in srgb, var(--c-000) 85%, transparent); pointer-events: none; overflow: hidden; }
 #np-veil span { color: var(--warn); font-size: 13.5px; font-weight: 700; line-height: 1; white-space: nowrap; animation: notes-blink 1s ease-in-out infinite; }
 body.bp-newmsg:not(.nick-hidden) #np-veil { display: flex; }
 @media (prefers-reduced-motion: reduce) { body.bp-newmsg #nick-ghost, #np-veil span { animation: none; } }
