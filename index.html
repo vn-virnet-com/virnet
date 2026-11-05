@@ -1037,9 +1037,9 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 .ts-bt { font-size: 11px; font-weight: 700; color: var(--warn); margin-bottom: 3px; }
 .ts-bn { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; font-weight: 300; }
 .ts-bn.ts-no { color: var(--c-77); }
-.ts-act { display: flex; justify-content: flex-end; margin-top: 8px; }
+.ts-act { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 8px; }
 .ts-use { display: inline-block; padding: 5px 14px; border-radius: 6px; background: var(--accent); color: var(--on-accent); font-size: 12.5px; font-weight: 700; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-.ts-del { margin-top: 6px; text-align: right; font-size: 12px; color: var(--bad); cursor: pointer; user-select: none; -webkit-user-select: none; }
+.ts-delb { display: inline-block; padding: 5px 14px; border-radius: 6px; background: #800020; color: #fff; font-size: 12.5px; font-weight: 700; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 @keyframes tsPop { from { opacity: 0; transform: scale(.35); } to { opacity: 1; transform: scale(1); } }
 #ts-compose { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--c-111); padding: 8px; flex-direction: column; gap: 6px; z-index: 5; }
 #ts-compose.show { display: flex; }
@@ -8484,7 +8484,7 @@ function tsShow(id) {
   const x = tsList.find((q) => q.id === id), tg = tsTagEl(id);
   if (!x || !tg) return;
   const b = document.getElementById('ts-bubble'), pg = document.getElementById('bp-page-side'), st = document.getElementById('ts-strip');
-  b.innerHTML = '<div class="ts-bt">#' + escapeHtml(x.t) + '</div>' + (x.n ? '<div class="ts-bn">' + escapeHtml(x.n) + '</div>' : '<div class="ts-bn ts-no">' + (notifCanSend() ? 'Not yok' : 'Bu etiket hakkında bilgi yok.') + '</div>') + (notifCanSend() ? '<div class="ts-del" role="button">Etiketi sil</div>' : '') + ((notifCanSend() || thirdCanSend()) ? '<div class="ts-act"><span class="ts-use" role="button">Kullan</span></div>' : '');
+  b.innerHTML = '<div class="ts-bt">#' + escapeHtml(x.t) + '</div>' + (x.n ? '<div class="ts-bn">' + escapeHtml(x.n) + '</div>' : '<div class="ts-bn ts-no">' + (notifCanSend() ? 'Not yok' : 'Bu etiket hakkında bilgi yok.') + '</div>') + ((notifCanSend() || thirdCanSend()) ? '<div class="ts-act">' + (notifCanSend() ? '<span class="ts-delb" role="button">Sil</span>' : '') + '<span class="ts-use" role="button">Kullan</span></div>' : '');
   const again = b.classList.contains('show') && b.dataset.id === id; // yeniden çizimde açılış animasyonu tekrarlanmasın
   b.dataset.id = id; tsOpen = id;
   if (!again) b.classList.remove('show');
@@ -8545,7 +8545,7 @@ function renderStrip() {
   });
   bub.addEventListener('click', (e) => {
     if (e.target.closest('.ts-use')) { const ux = tsList.find((q) => q.id === bub.dataset.id); if (ux) tsUse(ux.t); return; }
-    if (e.target.closest('.ts-del') && notifCanSend()) { const id = bub.dataset.id; tsChange(tsList.filter((x) => x.id !== id)); }
+    if (e.target.closest('.ts-delb') && notifCanSend()) { const id = bub.dataset.id; tsChange(tsList.filter((x) => x.id !== id)); }
   });
   strip.addEventListener('scroll', tsClose, { passive: true });
   document.addEventListener('click', (e) => { if (tsOpen && !(e.target.closest && e.target.closest('#ts-bubble, .ts-t'))) tsClose(); });
