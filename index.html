@@ -809,7 +809,7 @@ body.nick-hidden #nick-color-grid { display: grid; }
 
 /* ---- Şerit içi renk seçici (Yeni mesaj yolda şeridi) ---- */
 #sb-mid { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; justify-content: center; margin: 0 -7px; }  /* tuşların görünmez 13px iç boşluğuna taşar: simgelere yaklaşık 6px kalır */
-#np-dots { position: relative; touch-action: pan-x; flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: safe center; gap: 0; margin: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; pointer-events: auto; }
+#np-dots { position: relative; touch-action: manipulation; flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: stretch; justify-content: stretch; gap: 0; margin: 0; overflow: hidden; pointer-events: auto; }
 #np-dots::-webkit-scrollbar { display: none; }
 #nick-ghost { display: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-size: 13.5px; color: var(--c-88); opacity: 0.55; pointer-events: none; user-select: none; -webkit-user-select: none; }
 body.nick-hidden #nick-ghost { display: block; }
@@ -819,19 +819,15 @@ body.nick-hidden #nick-ghost { display: block; }
 .np-arrow:hover { opacity: 1; }
 .np-arrow.off { opacity: 0.15; cursor: default; }
 .np-arrow.none { visibility: hidden; pointer-events: none; }
-@media (min-width: 769px) {
-  body:not(.nick-hidden) .np-arrow { display: flex; }
-  /* Boş alana yayılır: renkler genişleyen hücrelere dağılır, alan yetmezse kaydırılır */
-  #np-dots .np-item { flex: 1 1 24px; min-width: 24px; max-width: 56px; }
-  #np-dots .np-item .nc-dot { width: 16px; }
-}
+/* Palet: şerit yüksekliğini kaplayan, yan yana bitişik dikdörtgen bloklar; hepsi sığar (kaydırma yok), seçili renk gizlenir */
+.np-arrow, body:not(.nick-hidden) .np-arrow { display: none !important; }
 .np-item {
-  flex: 0 0 calc(100% / 6.5); height: 28px; display: flex;  /* mobil: palet genişliğine tam 6,5 renk sığar, yedinci yarım görünür */ align-items: center; justify-content: center; cursor: pointer;
-  -webkit-tap-highlight-color: transparent; touch-action: pan-x; user-select: none; -webkit-user-select: none;
+  flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: stretch; justify-content: stretch; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none;
 }
 .np-item .nc-dot { opacity: 1; animation: none; }
-.np-item .nc-dot { width: 16px; max-width: calc(100% - 4px); aspect-ratio: 1 / 1; border-radius: 50%; box-sizing: border-box; display: block; }
-.np-item.sel .nc-dot { box-shadow: 0 0 0 2px var(--accent); }
+.np-item .nc-dot { width: 100%; height: 100%; border-radius: 0; box-sizing: border-box; display: block; }
+.np-item.sel { display: none; }
 body.nick-hidden #np-dots { display: none; }
 /* Titreşim ayarı yalnızca mobil görünümde */
 #blk-haptic { display: none; }
@@ -1120,6 +1116,7 @@ body.has-menu #settings-menu { display: flex; flex-direction: column; justify-co
 /* Operatör kanalı tuşu: menünün en altında sabit, ayar gruplarının üstüne binmez */
 #op-btn { position: relative; justify-content: center; text-align: center; margin: 0; }
 #op-btn > span:first-child { flex: 0 0 auto; }
+#op-btn.cooling { opacity: 0.4; }
 #op-btn.unread::after { content: ''; position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 0 2px var(--c-000); }
 /* Kanallar: her mesaj kendi kanalının etiketini taşır, diğer kanalın mesajları sadece gizlenir (silinmez) */
 #chat-area:not(.ch-op) > .msg[data-ch="op"], #chat-area.ch-op > .msg:not([data-ch="op"]) { display: none !important; }
@@ -9457,8 +9454,30 @@ if (window.visualViewport) {
 }
 
 (function initSettingsMenu() {
+  // Simge yanıp sönerken (diğer kanaldan mesaj gelmiş) basılı tutunca o kanala otomatik geçer
+  let lpTimer = 0, lpFired = false;
+  const lpClear = () => { if (lpTimer) { clearTimeout(lpTimer); lpTimer = 0; } };
+  settingsBtn.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    lpFired = false; lpClear();
+    if (!settingsBtn.classList.contains('unseen')) return;
+    const target = curCh === 'op' ? 'main' : 'op';
+    if (!chUnread[target]) return;
+    lpTimer = setTimeout(() => {
+      lpTimer = 0;
+      if (!chUnread[target] || curCh === target) return;
+      lpFired = true;
+      switchChannel(target);
+      startChCooldown();
+      if (isMobileLayout() && view !== 'chat') setView('chat');
+      try { navigator.vibrate(20); } catch (err) {}
+    }, 500);
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => settingsBtn.addEventListener(t, lpClear));
+  settingsBtn.addEventListener('contextmenu', (e) => { if (lpFired || lpTimer) e.preventDefault(); });
   settingsBtn.addEventListener('click', (e) => {
     e.stopPropagation();
+    if (lpFired) { lpFired = false; return; }   // uzun basış kanal değiştirdi, menü açılmasın
     if (settingsIsOpen()) closeSettings(); else openSettings();
   });
   settingsBackdrop.addEventListener('click', () => closeSettings());
@@ -9869,15 +9888,6 @@ if (window.visualViewport) {
     stripItems.forEach((el) => el.classList.toggle('sel', el.dataset.key === nickColorKey));
     if (!stripBox) return;
     const vis = stripBox.clientWidth > 0;
-    // Seçili renk pencerenin dışındaysa (masaüstü) görünür hale kaydır; yalnızca seçim değişince ya da şerit yeniden görününce
-    if (vis && (nickColorKey !== lastStripKey || !lastStripVis)) {
-      const sel = stripItems.find((el) => el.dataset.key === nickColorKey);
-      if (sel) {
-        const l = sel.offsetLeft, r = l + sel.offsetWidth;
-        if (l < stripBox.scrollLeft) stripBox.scrollLeft = l - 2;
-        else if (r > stripBox.scrollLeft + stripBox.clientWidth) stripBox.scrollLeft = r - stripBox.clientWidth + 2;
-      }
-    }
     if (vis) lastStripKey = nickColorKey;
     lastStripVis = vis;
     updateArrows();
@@ -10030,6 +10040,12 @@ updateBadges();
 
   setInterval(() => {
     const now = Date.now();
+    // Yalnızca 3828 şifresiyle girenlere sorulur; 6687 (bir kez girilse bile) ve şifresiz durumda hiç çıkmaz
+    if (!thirdCanSend()) {
+      lastAct = now;
+      if (showing) { showing = false; refocusEl = null; modal.classList.remove('show'); }
+      return;
+    }
     if (!showing) {
       if (now - lastAct >= IDLE_MS) { if (alreadyHidden()) lastAct = now; else show(); }
       return;
@@ -10124,11 +10140,26 @@ async function flushMediaOutbox() {
 }
 
 /* ---- Kanallar: ayarlar menüsündeki Operatör / Geri Dön tuşu ---- */
+// 3828 şifresiyle girenler için: kanal tuşunu kullandıktan sonra 15 sn geri sayım, dolmadan tuş çalışmaz
+let chCdUntil = 0, chCdTimer = 0;
+function chCdLeft() { return chCdUntil > Date.now() ? Math.ceil((chCdUntil - Date.now()) / 1000) : 0; }
+function startChCooldown() {
+  if (!thirdCanSend()) return;
+  chCdUntil = Date.now() + 15000;
+  if (chCdTimer) clearInterval(chCdTimer);
+  chCdTimer = setInterval(() => {
+    if (!chCdLeft()) { clearInterval(chCdTimer); chCdTimer = 0; }
+    updateChBtn();
+  }, 250);
+  updateChBtn();
+}
 function updateChBtn() {
   const btn = document.getElementById('op-btn');
   if (!btn) return;
   const lb = btn.querySelector('span');
-  if (lb) lb.textContent = curCh === 'op' ? 'Geri Dön' : 'Operatör';
+  const left = chCdLeft();
+  if (lb) lb.textContent = (curCh === 'op' ? 'Geri Dön' : 'Operatör') + (left ? ' (' + left + ')' : '');
+  btn.classList.toggle('cooling', !!left);
   btn.classList.toggle('unread', !!chUnread[curCh === 'op' ? 'main' : 'op']);
 }
 function markChUnread(ch) {
@@ -10171,7 +10202,9 @@ function switchChannel(ch) {
   const btn = document.getElementById('op-btn');
   if (!btn) return;
   const go = () => {
+    if (chCdLeft()) return;   // 15 sn dolmadan basılamaz
     switchChannel(curCh === 'op' ? 'main' : 'op');
+    startChCooldown();
     if (isMobileLayout()) {
       if (view !== 'chat') setView('chat');
       closeSettings();
