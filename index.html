@@ -8284,6 +8284,7 @@ function receiveThird(d, isHello) {
   if (isNew || rpNew) bpMarkUnread(2);
 }
 (function loadThird() {
+  lsRemove('thirdOwnId'); // eski sürümden kalan cihaz kimliği artık kullanılmıyor
   try {
     const o = JSON.parse(lsGet('thirdCard') || 'null');
     const c = o && thirdSanitize(o.card);
@@ -8675,7 +8676,7 @@ function renderCards() {
           (k === 'b' ? '<button type="button" class="cd-rb' + (!can ? ' ro' : '') + '" data-r="3" aria-label="Görüntülenme">' + CD_EYE + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt(cdShown(n.id, 'v', n.v || 0)) + '</span></button>' : '') +
         '</div>' +
         (n.pending ? '<div class="cd-row bp-pend">Gönderilmedi, bağlanınca gidecek</div>' : '') +
-        rpHtml(n, can || (k === 'a' && thirdCanSend()) || thirdOwn(n)) +
+        rpHtml(n, can || thirdCanSend()) +
         '</div>';
     }).join('');
   };
@@ -8790,12 +8791,10 @@ function votePoll(id, i) {
   o.forEach((x, k) => { if (x.v !== old[k] && cdAnim[id]) delete cdAnim[id]['p' + k]; });
   pollSyncOut(c, true);
 }
-// Yanıt yetkisi: 6687 her iki sayfada; 3828 yalnızca 2. sayfadaki gönderilerde (isim sohbet isim kutusundan, onay rozeti hazır)
-// 3828: 3. sayfadaki kendi gönderisini de yanıtlayabilir (gönderiyi atan cihaz kimliği 'thirdOwnId' ile hatırlanır)
-function thirdOwn(c) { try { return !!c && c.k === 'b' && thirdCanSend() && lsGet('thirdOwnId') === c.id; } catch (e) { return false; } }
+// Yanıt yetkisi (2. ve 3. sayfada aynı kural): 6687 isim ve tiki kendisi seçer; 3828 isim sohbet isim kutusundan gelir, onay rozeti hazırdır
 function rpAllowed(id) {
   const c = cardList.find((x) => x.id === id);
-  return !!c && (notifCanSend() || (thirdCanSend() && (c.k === 'a' || thirdOwn(c))));
+  return !!c && (notifCanSend() || thirdCanSend());
 }
 function setPollCount(id, i, val) {
   if (!notifCanSend()) return;
@@ -9008,7 +9007,6 @@ function closeCardCompose() {
     if (!b && !c && !pg.pl) return;
     const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, c: c, z: cdFmtNow(), u: 0, d: 0, r: 0, vf: 1, pl: pg.pl, ts: Date.now(), k: 'b' };
     cardList = cardList.filter((x) => x.k !== 'b'); // önceki gönderi silinir, yalnızca sonuncu kalır
-    try { lsSet('thirdOwnId', item.id); } catch (e) {}
     cardList.push({ id: item.id, k: 'b', n: n, b: b, c: c, z: item.z, u: 0, d: 0, v: 0, f: [], r: 0, vf: 1, pl: pg.pl, at: item.ts, own: true, pending: false });
     thirdBump(); persistThird(); sendThird('third');
     closeCardCompose();
