@@ -984,6 +984,29 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 @keyframes cdTagShine { 0% { background-position: 130% 0; } 55%, 100% { background-position: -30% 0; } }
 @keyframes cdFlame { 0%, 100% { transform: scale(1) rotate(-4deg); } 50% { transform: scale(1.14, 1.2) rotate(4deg); } }
 @media (prefers-reduced-motion: reduce) { .cd-tag.fire::before, .cd-tag .cd-flame { animation: none; } }
+/* 2. sayfa üst şeridi: en fazla 3 etiket, hepsi ateşli. Etikete basınca altından not baloncuğu açılır */
+#ts-strip { display: none; position: absolute; top: 0; left: 0; right: 0; z-index: 2; box-sizing: border-box; padding: 11px 10px 5px; gap: 8px; align-items: center; flex-wrap: nowrap; background: var(--c-111); border-bottom: 1px solid var(--c-33); }
+#bp-page-side.has-strip #ts-strip { display: flex; }
+#bp-page-side.has-strip #cd-list { top: 38px; }
+.ts-t { flex: 0 1 auto; min-width: 0; cursor: pointer; }
+.ts-t .cd-tt { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#ts-add { flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 17px; line-height: 1; color: var(--on-accent); background: var(--accent); cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+#ts-bubble { display: none; position: absolute; z-index: 3; box-sizing: border-box; max-height: 170px; overflow-y: auto; padding: 8px 11px; border-radius: 14px; background: var(--c-22); border: 1px solid var(--c-44); color: var(--c-dd); font-size: 13px; line-height: 1.35; box-shadow: 0 6px 18px rgba(var(--sh),0.5); }
+#ts-bubble.show { display: block; animation: tsPop .22s cubic-bezier(.2,.9,.3,1.2); }
+#ts-bubble::before { content: ""; position: absolute; top: -6px; left: calc(var(--tx, 20px) - 6px); width: 10px; height: 10px; background: var(--c-22); border-left: 1px solid var(--c-44); border-top: 1px solid var(--c-44); transform: rotate(45deg); }
+.ts-bt { font-size: 11px; font-weight: 700; color: var(--warn); margin-bottom: 3px; }
+.ts-bn { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; font-weight: 300; }
+.ts-bn.ts-no { color: var(--c-77); }
+.ts-del { margin-top: 6px; text-align: right; font-size: 12px; color: var(--bad); cursor: pointer; user-select: none; -webkit-user-select: none; }
+@keyframes tsPop { from { opacity: 0; transform: scale(.35); } to { opacity: 1; transform: scale(1); } }
+#ts-compose { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--c-111); padding: 8px; flex-direction: column; gap: 6px; z-index: 5; }
+#ts-compose.show { display: flex; }
+#ts-tag-in, #ts-note-in { width: 100%; border: 1px solid var(--c-33); border-radius: 6px; background: var(--c-000); color: var(--c-fff); outline: none; font-size: 16px; padding: 7px 9px; caret-color: var(--accent); font-family: 'Lexend', sans-serif; flex: 0 0 auto; }
+#ts-note-in { flex: 1 1 auto; min-height: 0; resize: none; font-weight: 300; line-height: 1.3; }
+#ts-actions { display: flex; gap: 8px; justify-content: flex-end; flex: 0 0 auto; }
+#ts-actions span { cursor: pointer; padding: 7px 14px; border-radius: 6px; font-size: 14px; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; color: var(--c-cc); border: 1px solid var(--c-33); }
+#ts-send { background: var(--accent); color: var(--on-accent) !important; border-color: var(--accent) !important; font-weight: 700; }
+@media (prefers-reduced-motion: reduce) { #ts-bubble.show { animation: none; } }
 .cd-time { font-size: 12px; line-height: 1.3; font-weight: 300; color: var(--c-77); }
 .cd-rx { display: flex; align-items: center; gap: 18px; white-space: normal; }
 .cd-rb { display: inline-flex; align-items: center; gap: 6px; margin: -4px 0; padding: 6px 4px 6px 0; border: 0; background: transparent; color: var(--c-77); font-size: 13px; font-family: inherit; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -1327,6 +1350,8 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   </div>
   </div>
   <div id="bp-page-side" class="bp-page">
+  <div id="ts-strip"></div>
+  <div id="ts-bubble"></div>
   <div id="cd-list"></div>
   <div id="cd-add" title="Gönderi ekle"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
   <div id="cd-compose">
@@ -1336,6 +1361,11 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     <input id="cd-time-in" type="text" placeholder="Zaman" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false">
     <div id="cd-counts"><input id="cd-up-in" type="text" inputmode="numeric" placeholder="Beğeni sayısı" maxlength="14" autocomplete="off"><input id="cd-dn-in" type="text" inputmode="numeric" placeholder="Beğenmeme sayısı" maxlength="14" autocomplete="off"></div>
     <div id="cd-actions"><span id="cd-cancel">İptal</span><span id="cd-send">Gönder</span></div>
+  </div>
+  <div id="ts-compose">
+    <input id="ts-tag-in" type="text" placeholder="Etiket" maxlength="24" autocomplete="off" autocorrect="off" spellcheck="false">
+    <textarea id="ts-note-in" placeholder="Etiket notu (isteğe bağlı)" maxlength="500" autocomplete="off" spellcheck="false"></textarea>
+    <div id="ts-actions"><span id="ts-cancel">İptal</span><span id="ts-send">Ekle</span></div>
   </div>
   </div>
   <div id="bp-page-third" class="bp-page">
@@ -2606,8 +2636,10 @@ function setupConnection(c) {
     sendNotes('notes-hello');
     sendQNote('qnote-hello');
     flushNotifOutbox();
+    cardSyncSoon(true);
     flushCardOutbox();
     sendThird('third-hello');
+    tsSend('strip-hello');
     sendFireSync();
     flushOutbox(true);
     flushMediaOutbox();
@@ -2652,6 +2684,7 @@ function setupConnection(c) {
     if (data.type === 'notif-del') { receiveNotifDel(data); return; }
     if (data.type === 'notif-ack') { receiveNotifAck(data); return; }
     if (data.type === 'card') { receiveCard(data); return; }
+    if (data.type === 'card-state') { receiveCardState(data); return; }
     if (data.type === 'card-del') { receiveCardDel(data); return; }
     if (data.type === 'card-react') { receiveCardReact(data); return; }
     if (data.type === 'card-reply') { receiveCardReply(data); return; }
@@ -2659,6 +2692,8 @@ function setupConnection(c) {
     if (data.type === 'card-count') { receiveCardCount(data); return; }
     if (data.type === 'card-fire') { receiveCardFire(data); return; }
     if (data.type === 'card-fire-sync') { receiveCardFireSync(data); return; }
+    if (data.type === 'strip-hello') { receiveStrip(data, true); return; }
+    if (data.type === 'strip') { receiveStrip(data, false); return; }
     if (data.type === 'third-hello') { receiveThird(data, true); return; }
     if (data.type === 'third') { receiveThird(data, false); return; }
     if (data.type === 'card-ack') { receiveCardAck(data); return; }
@@ -7655,6 +7690,7 @@ function exitNotifCompose(refocus) {
   bellMsgHad = false;
 }
 function closeBellPop() {
+  tsClose();
   closeNotifCompose();
   closeCardCompose();
   bellMsgHad = false;
@@ -7793,36 +7829,124 @@ function cdTagsHtml(n, can) {
 let cardList = [];
 let cardOutbox = [];
 const cardTomb = new Set();
+// ---- 2. sayfa durum eşitleme: kartlar kalıcıdır; her kartın alt grupları (sayılar, tepki, oy) ayrı zaman damgası taşır, yanıtlar kimliğe göre birleşir, silmeler zaman damgalı mezar taşıdır. Bağlanınca ve her değişiklikte tüm durum karşıya gider; her grupta en yeni olan kazanır ----
+let cardDel = {}; // kartId -> silinme zamanı
+let cardSyncT = null, cardSyncHello = false;
+function cdM(x) { if (!x.m) { const a = x.at || Date.now(); x.m = { c: a, r: a, p: a }; } return x.m; }
+function cdStamp(x, g) { const m = cdM(x); m[g] = Math.max(Date.now(), (m[g] || 0) + 1); }
+function cardSan(it) {
+  if (!it || typeof it.id !== 'string' || it.k === 'b') return null;
+  const str = (v, m) => (typeof v === 'string' ? v.slice(0, m) : '');
+  const t = Number(it.ts != null ? it.ts : it.at), at = (isFinite(t) && t > 0) ? t : Date.now();
+  const m = (it.m && typeof it.m === 'object') ? it.m : {};
+  const g = (k) => { const v = Number(m[k]); return (isFinite(v) && v > 0) ? v : at; };
+  return { id: it.id.slice(0, 40), k: 'a', n: str(it.n, 80), b: str(it.b, 2000), c: str(it.c, 120), z: str(it.z, 40), u: cdNum(it.u), d: cdNum(it.d), f: cdFireSan(it.f), r: (it.r === 1 || it.r === 2) ? it.r : 0, vf: it.vf ? 1 : 0, rp: rpSanList(it.rp), pl: plSan(it.pl), pi: it.pi ? 1 : 0, at: at, m: { c: g('c'), r: g('r'), p: g('p') }, own: false, pending: false };
+}
+function cardSnapOut(c) {
+  const m = cdM(c);
+  return { id: c.id, k: 'a', n: c.n || '', b: c.b || '', c: c.c || '', z: c.z || '', u: c.u || 0, d: c.d || 0, r: c.r || 0, vf: c.vf ? 1 : 0, rp: c.rp || [], pl: c.pl || null, pi: c.pi ? 1 : 0, ts: c.at, m: { c: m.c, r: m.r, p: m.p } };
+}
+function cardPersist() {
+  try {
+    const ks = Object.keys(cardDel);
+    if (ks.length > 200) { ks.sort((a, b) => cardDel[b] - cardDel[a]); ks.slice(200).forEach((k) => { delete cardDel[k]; }); }
+    const cards = cardList.filter((x) => x.k === 'a').map((c) => Object.assign(cardSnapOut(c), { own: c.own ? 1 : 0, mv: (typeof c.mv === 'number') ? c.mv : -1 }));
+    lsSet('cardState', JSON.stringify({ cards: cards, del: cardDel }));
+  } catch (e) {}
+}
+function cardRestore() {
+  try {
+    const o = JSON.parse(lsGet('cardState') || 'null');
+    if (!o) return;
+    if (o.del && typeof o.del === 'object') Object.keys(o.del).slice(0, 300).forEach((k) => { const t = Number(o.del[k]); if (isFinite(t) && t > 0) cardDel[k.slice(0, 40)] = t; });
+    (Array.isArray(o.cards) ? o.cards : []).slice(0, 30).forEach((it) => {
+      const c = cardSan(it);
+      if (!c || cardDel[c.id] || cardList.some((x) => x.id === c.id)) return;
+      c.own = !!it.own; c.mv = (typeof it.mv === 'number') ? it.mv : -1;
+      cardList.push(c);
+    });
+  } catch (e) {}
+}
+function cardSyncSoon(hello) {
+  if (hello) cardSyncHello = true;
+  if (cardSyncT) return;
+  cardSyncT = setTimeout(() => {
+    cardSyncT = null;
+    const h = cardSyncHello; cardSyncHello = false;
+    cardPersist();
+    if (!isConnected()) return;
+    try { conn.send({ type: 'card-state', h: h ? 1 : 0, cards: cardList.filter((x) => x.k === 'a').map(cardSnapOut), del: cardDel }); } catch (e) {}
+  }, 0);
+}
+function cardMergeIn(raw, animate) {
+  const r = { ch: false, nw: false, rn: false };
+  const it = cardSan(raw);
+  if (!it || cardDel[it.id]) return r;
+  const x = cardList.find((q) => q.id === it.id);
+  if (!x) { cardList.push(it); r.ch = r.nw = true; return r; }
+  const xm = cdM(x);
+  if (x.own && x.pending) { x.pending = false; cardOutbox = cardOutbox.filter((o) => !(o.op === 'add' && o.item.id === x.id)); persistCardOutbox(); r.ch = true; }
+  if (it.m.c > xm.c) { const ou = x.u || 0, od = x.d || 0; x.u = it.u; x.d = it.d; xm.c = it.m.c; if (animate) { cdAnimTo(x.id, 'u', ou, x.u); cdAnimTo(x.id, 'd', od, x.d); } r.ch = true; }
+  if (it.m.r > xm.r) { x.r = it.r; xm.r = it.m.r; r.ch = true; }
+  if (it.m.p > xm.p && it.pl && x.pl && it.pl.o.length === x.pl.o.length) {
+    x.pi = it.pi; xm.p = it.m.p;
+    x.pl.o.forEach((o, i) => { const ov = o.v, nv = it.pl.o[i].v; o.v = nv; if (it.pi || !animate) { if (cdAnim[x.id]) delete cdAnim[x.id]['p' + i]; } else cdAnimTo(x.id, 'p' + i, ov, nv); });
+    r.ch = true;
+  }
+  const before = (x.rp || []).map((q) => q.id).join();
+  x.rp = rpSanList((x.rp || []).concat(it.rp));
+  if (x.rp.map((q) => q.id).join() !== before) r.ch = r.rn = true;
+  return r;
+}
+function receiveCardState(d) {
+  if (!d) return;
+  let ch = false, nw = false, rn = false;
+  const dm = (d.del && typeof d.del === 'object') ? d.del : {};
+  Object.keys(dm).slice(0, 300).forEach((k) => { const t = Number(dm[k]), id = k.slice(0, 40); if (!isFinite(t) || t <= 0 || cardDel[id] >= t) return; cardDel[id] = t; ch = true; });
+  const n0 = cardList.length;
+  cardList = cardList.filter((x) => x.k === 'b' || !cardDel[x.id]);
+  cardOutbox = cardOutbox.filter((o) => !(o.op === 'add' && cardDel[o.item.id]));
+  if (cardList.length !== n0) ch = true;
+  (Array.isArray(d.cards) ? d.cards.slice(0, 30) : []).forEach((it) => {
+    const r = cardMergeIn(it, !d.h);
+    if (it && typeof it.id === 'string' && r.nw) ackCard(it.id.slice(0, 40), false);
+    if (r.ch) ch = true; if (r.nw) nw = true; if (r.rn) rn = true;
+  });
+  if (ch) {
+    trimCards(); cardPersist();
+    if (bellPop.classList.contains('show')) renderCards();
+    else if (nw || rn) bellBtn.classList.add('unseen');
+    if (nw || rn) bpMarkUnread(1);
+  }
+  if (d.h) cardSyncSoon(false); // karşı taraf yeni bağlandı: kendi durumumu da yolla, ikisi de aynı hâle gelsin
+}
 try { const a = JSON.parse(lsGet('cardOutbox') || '[]'); if (Array.isArray(a)) cardOutbox = a.filter((o) => o && ((o.op === 'add' && o.item && typeof o.item.id === 'string') || ((o.op === 'del' || o.op === 'react' || o.op === 'count' || o.op === 'reply' || o.op === 'poll') && typeof o.id === 'string'))); } catch (e) {}
 cardOutbox = cardOutbox.filter((o) => !(o.op === 'add' && o.item && o.item.k === 'b'));
-cardOutbox.forEach((o) => { if (o.op === 'add') cardList.push({ id: o.item.id, k: o.item.k === 'b' ? 'b' : 'a', n: o.item.n, b: o.item.b, c: o.item.c, z: o.item.z, u: o.item.u || 0, d: o.item.d || 0, f: cdFireSan(o.item.f), r: o.item.r || 0, vf: o.item.vf ? 1 : 0, rp: rpSanList(o.item.rp), pl: plSan(o.item.pl), at: o.item.ts, own: true, pending: true }); });
+cardRestore();
+cardOutbox.forEach((o) => { if (o.op !== 'add') return; const e = cardList.find((x) => x.id === o.item.id); if (e) { e.pending = true; e.own = true; return; } const c = cardSan(o.item); if (c && !cardDel[c.id]) { c.own = true; c.pending = true; cardList.push(c); } });
 // ---- 3. sayfa: yalnızca en son gönderi tutulur. localStorage'da saklanır; her bağlantıda iki taraf revizyonu kıyaslar, daha güncel olan kazanır ----
 let thirdRev = 0;
 /* ===== Sayı değişimi: hedef rakama atlamaz, 1 dakikada düzensiz hızla (hızlanır, yavaşlar, 2-3 sn durur, birkaçı birden gelir) o rakama ulaşır. Eğri; (kart, anahtar, eski, yeni) değerinden türetilen tohumla üretilir, böylece iki tarafta aynıdır. Veri hemen hedefe ayarlanır ve karşıya gider; yalnızca ekranda gösterilen sayı akar ===== */
-const CD_ANIM_MS = 60000;
+const CD_ANIM_MS = 60000, CD_ANIM_LONG_MS = 600000, CD_ANIM_LONG_DIFF = 100000; // fark 100.000'den büyükse 10 dakika
 function cdCurve(str) {
   let h = 2166136261; for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619);
   const r = () => { h = (h + 0x6D2B79F5) | 0; let t = Math.imul(h ^ (h >>> 15), 1 | h); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-  const n = 10 + Math.floor(r() * 5), dt = [], dp = []; let pz = 0, wt = 0, wp = 0;
-  for (let i = 0; i < n; i++) {
-    if (pz < 3 && i > 0 && i < n - 1 && r() < 0.3) { pz++; dt.push((2 + r()) / 60); dp.push(0); }
-    else { const a = 0.3 + r(), b = 0.05 + r() * r() * 2; dt.push(-a); dp.push(b); wt += a; wp += b; }
-  }
-  const fix = 1 - dt.reduce((x, y) => x + (y > 0 ? y : 0), 0), T = [0], P = [0];
-  for (let i = 0; i < n; i++) { T.push(T[i] + (dt[i] > 0 ? dt[i] : -dt[i] / wt * fix)); P.push(P[i] + dp[i] / wp); }
-  T[n] = 1; P[n] = 1; return [T, P];
+  // Hız = exp(birkaç yumuşak dalganın toplamı): hiçbir zaman sıfır olmaz, hız kademeli artıp azalır; bazı bölgeler çok yavaş, bazıları çok hızlı. Küçük hızlı dalgalanma "rastgele insanlar rastgele basıyor" hissi verir
+  const W = [[0.5 + r() * 1.5, 0.75 + r() * 0.3], [2 + r() * 2.5, 0.5 + r() * 0.3], [5 + r() * 4, 0.28 + r() * 0.2], [11 + r() * 9, 0.12 + r() * 0.1]].map((x) => ({ f: x[0], a: x[1], ph: r() * 6.2832 }));
+  const N = 600, P = [0]; let acc = 0;
+  for (let i = 0; i < N; i++) { const t = (i + 0.5) / N; let e = 0; W.forEach((w) => { e += w.a * Math.sin(6.2832 * w.f * t + w.ph); }); acc += Math.exp(e); P.push(acc); }
+  return P.map((v) => v / acc);
 }
-function cdEase(c, p) {
-  const T = c[0], P = c[1]; let i = 0;
-  while (i < T.length - 2 && p >= T[i + 1]) i++;
-  return P[i] + (P[i + 1] - P[i]) * (p - T[i]) / (T[i + 1] - T[i]);
+function cdEase(P, p) {
+  const x = p * (P.length - 1), i = Math.min(P.length - 2, Math.max(0, Math.floor(x)));
+  return P[i] + (P[i + 1] - P[i]) * (x - i);
 }
 const cdAnim = {}; // kartId -> { u|d|v: { f: başlangıç, t: hedef, t0: başlangıç zamanı } }
 let cdAnimTimer = null;
 function cdShown(id, key, target) {
   const o = cdAnim[id], a = o && o[key];
   if (!a) return target;
-  const p = (Date.now() - a.t0) / CD_ANIM_MS;
+  const p = (Date.now() - a.t0) / (a.ms || CD_ANIM_MS);
   if (p >= 1) { delete o[key]; return a.t; }
   return Math.round(a.f + (a.t - a.f) * cdEase(a.c, p));
 }
@@ -7830,7 +7954,7 @@ function cdAnimTo(id, key, oldT, newT) {
   if (oldT === newT) return;
   const cur = cdShown(id, key, oldT);
   if (cur === newT) { if (cdAnim[id]) delete cdAnim[id][key]; return; }
-  (cdAnim[id] = cdAnim[id] || {})[key] = { f: cur, t: newT, t0: Date.now(), c: cdCurve(id + key + oldT + '>' + newT) };
+  (cdAnim[id] = cdAnim[id] || {})[key] = { f: cur, t: newT, t0: Date.now(), ms: Math.abs(newT - oldT) > CD_ANIM_LONG_DIFF ? CD_ANIM_LONG_MS : CD_ANIM_MS, c: cdCurve(id + key + oldT + '>' + newT) };
   if (!cdAnimTimer) cdAnimTimer = setInterval(cdAnimTick, 100);
 }
 function cdAnimTick() {
@@ -7922,15 +8046,13 @@ function trimCards() {
   ['a', 'b'].forEach((k) => { let c = 0; cardList = cardList.filter((x) => x.k !== k || ++c <= CARD_MAX); });
 }
 function flushCardOutbox() {
+  cardSyncSoon(false); // her yerel değişiklikte tüm durum karşıya gider
   if (!isConnected() || !cardOutbox.length) return;
   cardOutbox.forEach((o) => {
     try {
       if (o.op === 'add') conn.send({ type: 'card', item: o.item });
       else if (o.op === 'del') conn.send({ type: 'card-del', id: o.id });
-      else if (o.op === 'count') conn.send({ type: 'card-count', id: o.id, u: o.u || 0, d: o.d || 0 });
-      else if (o.op === 'reply') conn.send({ type: 'card-reply', id: o.id, rp: o.rp });
-      else if (o.op === 'poll') conn.send({ type: 'card-poll', id: o.id, v: o.v, inst: o.inst ? 1 : 0 });
-      else conn.send({ type: 'card-react', id: o.id, r: o.r || 0 });
+      // sayı, yanıt, oy ve tepki değişiklikleri artık 'card-state' ile gider
       o.tried = true;
     } catch (e) {}
   });
@@ -7956,6 +8078,7 @@ function setCardCounts(id, u, d, v) {
   if (n.k === 'b') n.v = cdNum(v == null ? n.v : v);
   cdAnimTo(id, 'u', ou, n.u); cdAnimTo(id, 'd', od, n.d);
   if (n.k === 'b') { cdAnimTo(id, 'v', ov, n.v || 0); thirdBump(); persistThird(); sendThird('third'); renderCards(); return; }
+  cdStamp(n, 'c');
   const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === id);
   if (ai) { ai.item.u = n.u; ai.item.d = n.d; }
   else {
@@ -8022,15 +8145,7 @@ function toggleTagFire(id, i) {
   if (isConnected()) { try { conn.send({ type: 'card-fire', id: id, f: f.slice(), t: t }); } catch (e) {} }
   renderCards();
 }
-function receiveCardCount(d) {
-  if (!d || typeof d.id !== 'string') return;
-  const n = cardList.find((x) => x.id === d.id);
-  if (!n) return;
-  const ou = n.u || 0, od = n.d || 0;
-  n.u = cdNum(d.u); n.d = cdNum(d.d);
-  cdAnimTo(d.id, 'u', ou, n.u); cdAnimTo(d.id, 'd', od, n.d);
-  if (bellPop.classList.contains('show')) renderCards();
-}
+function receiveCardCount(d) { /* durum artık 'card-state' ile gelir */ }
 let cdEditing = false, cdRenderPending = false;
 function cdStartEdit(rb, c) {
   if (cdEditing) return;
@@ -8060,9 +8175,101 @@ function cdStartEdit(rb, c) {
   inp.addEventListener('blur', () => finish(true));
   try { inp.focus(); const L = inp.value.length; inp.setSelectionRange(L, L); } catch (e) {} // tümü seçilmesin, imleç sonda dursun
 }
+/* ===== 2. sayfa üst şeridi: en fazla 3 etiket, hepsi ateşli. 6687 ekler/siler ve not yazar; herkes etikete basınca notu baloncukta okur. Eşitleme: tüm liste revizyonla gider, en yeni olan kazanır; bağlı değilken de kaydolur, bağlanınca karşılaştırılır ===== */
+const TS_MAX = 3;
+let tsList = [], tsRev = 0, tsOpen = null;
+function tsSan(a) {
+  const o = [];
+  if (Array.isArray(a)) a.forEach((x) => {
+    if (!x || typeof x.id !== 'string' || typeof x.t !== 'string' || o.length >= TS_MAX) return;
+    const t = x.t.replace(/[#\s]/g, '').slice(0, 24);
+    if (t) o.push({ id: x.id.slice(0, 40), t: t, n: typeof x.n === 'string' ? x.n.slice(0, 500) : '' });
+  });
+  return o;
+}
+function tsPersist() { lsSet('tagStrip', JSON.stringify({ rev: tsRev, list: tsList })); }
+(function tsLoad() { try { const o = JSON.parse(lsGet('tagStrip') || 'null'); if (o) { tsList = tsSan(o.list); tsRev = Number(o.rev) || 0; } } catch (e) {} })();
+function tsSend(type) { if (!isConnected()) return; try { conn.send({ type: type, rev: tsRev, list: tsList }); } catch (e) {} }
+function receiveStrip(d, isHello) {
+  if (!d) return;
+  const rev = Number(d.rev) || 0;
+  if (rev < tsRev) { if (isHello) tsSend('strip'); return; } // bende daha güncel: karşıya gönder
+  if (rev === tsRev) return;
+  tsList = tsSan(d.list); tsRev = rev; tsPersist();
+  if (bellPop.classList.contains('show')) renderStrip();
+}
+function tsChange(list) {
+  if (!notifCanSend()) return;
+  tsList = tsSan(list); tsRev = Math.max(Date.now(), tsRev + 1);
+  tsPersist(); tsSend('strip'); tsClose(); renderStrip();
+}
+function tsClose() { tsOpen = null; const b = document.getElementById('ts-bubble'); if (b) b.classList.remove('show'); }
+function tsTagEl(id) { let r = null; document.querySelectorAll('#ts-strip .ts-t').forEach((e) => { if (e.dataset.id === id) r = e; }); return r; }
+function tsShow(id) {
+  const x = tsList.find((q) => q.id === id), tg = tsTagEl(id);
+  if (!x || !tg) return;
+  const b = document.getElementById('ts-bubble'), pg = document.getElementById('bp-page-side'), st = document.getElementById('ts-strip');
+  b.innerHTML = '<div class="ts-bt">#' + escapeHtml(x.t) + '</div>' + (x.n ? '<div class="ts-bn">' + escapeHtml(x.n) + '</div>' : '<div class="ts-bn ts-no">Not yok</div>') + (notifCanSend() ? '<div class="ts-del" role="button">Etiketi sil</div>' : '');
+  const again = b.classList.contains('show') && b.dataset.id === id; // yeniden çizimde açılış animasyonu tekrarlanmasın
+  b.dataset.id = id; tsOpen = id;
+  if (!again) b.classList.remove('show');
+  const pw = pg.clientWidth, w = Math.min(250, pw - 16), c = tg.offsetLeft + tg.offsetWidth / 2;
+  const l = Math.max(8, Math.min(pw - w - 8, c - w / 2)), tx = Math.max(14, Math.min(w - 14, c - l));
+  b.style.width = w + 'px'; b.style.left = l + 'px'; b.style.top = (st.offsetHeight + 6) + 'px';
+  b.style.setProperty('--tx', tx + 'px'); b.style.transformOrigin = tx + 'px 0';
+  if (!again) { void b.offsetWidth; b.classList.add('show'); }
+}
+function renderStrip() {
+  const el = document.getElementById('ts-strip'), pg = document.getElementById('bp-page-side'), can = notifCanSend();
+  pg.classList.toggle('has-strip', tsList.length > 0 || can);
+  if (tsOpen && !tsList.some((x) => x.id === tsOpen)) tsClose();
+  el.innerHTML = tsList.map((x) => '<span class="cd-tag fire ts-t" data-id="' + escapeHtml(x.id) + '"><span class="cd-tt"><span class="cd-hash">#</span>' + escapeHtml(x.t) + '</span><span class="cd-flame">' + CD_FLAME + '</span></span>').join('') +
+    (can && tsList.length < TS_MAX ? '<span id="ts-add" role="button" aria-label="Etiket ekle">+</span>' : '');
+  if (tsOpen) tsShow(tsOpen);
+}
+(function initTagStrip() {
+  const strip = document.getElementById('ts-strip'), bub = document.getElementById('ts-bubble'), comp = document.getElementById('ts-compose');
+  const tIn = document.getElementById('ts-tag-in'), nIn = document.getElementById('ts-note-in'), send = document.getElementById('ts-send'), cancel = document.getElementById('ts-cancel');
+  strip.addEventListener('pointerdown', (e) => { if (e.target.closest('#ts-add') && e.cancelable) e.preventDefault(); });
+  strip.addEventListener('click', (e) => {
+    if (e.target.closest('#ts-add')) {
+      if (!notifCanSend() || tsList.length >= TS_MAX) return;
+      tsClose();
+      bellMsgHad = document.activeElement === messageInput;
+      tIn.value = ''; nIn.value = ''; tIn.style.borderColor = '';
+      comp.classList.add('show');
+      try { tIn.focus(); } catch (er) {}
+      return;
+    }
+    const t = e.target.closest('.ts-t');
+    if (!t) return;
+    if (tsOpen === t.dataset.id) tsClose(); else tsShow(t.dataset.id);
+  });
+  bub.addEventListener('click', (e) => {
+    if (e.target.closest('.ts-del') && notifCanSend()) { const id = bub.dataset.id; tsChange(tsList.filter((x) => x.id !== id)); }
+  });
+  document.addEventListener('click', (e) => { if (tsOpen && !(e.target.closest && e.target.closest('#ts-bubble, .ts-t'))) tsClose(); });
+  [cancel, send].forEach((b) => b.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); }));
+  cancel.addEventListener('click', () => { closeCardCompose(); bellMsgHad = false; });
+  const submit = () => {
+    if (!notifCanSend() || tsList.length >= TS_MAX) return;
+    const t = tIn.value.replace(/[#\s]/g, '').slice(0, 24);
+    if (!t) { tIn.style.borderColor = 'var(--bad)'; return; }
+    if (tsList.some((x) => x.t.toLowerCase() === t.toLowerCase())) { tIn.style.borderColor = 'var(--bad)'; return; }
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    tsChange(tsList.concat([{ id: id, t: t, n: nIn.value.trim().slice(0, 500) }]));
+    closeCardCompose();
+    bellMsgHad = false;
+  };
+  send.addEventListener('click', submit);
+  tIn.addEventListener('input', () => { tIn.style.borderColor = ''; });
+  tIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); try { nIn.focus(); } catch (er) {} } else if (e.key === 'Escape') { e.preventDefault(); closeCardCompose(); bellMsgHad = false; } });
+  window.addEventListener('pin-level', () => { if (bellPop.classList.contains('show')) renderStrip(); });
+})();
 function renderCards() {
   if (cdEditing) { cdRenderPending = true; return; } // sayı yazılırken liste yeniden çizilip kutuyu silmesin
   applyFireMap();
+  renderStrip();
   cardList.sort((x, y) => y.at - x.at);
   const can = notifCanSend();
   const draw = (id, k, emptyTxt) => {
@@ -8103,6 +8310,7 @@ function deleteOwnCard(id) {
   const i = cardList.findIndex((n) => n.id === id && n.own);
   if (i < 0) return;
   cardList.splice(i, 1);
+  cardDel[id] = Date.now();
   const ai = cardOutbox.findIndex((o) => o.op === 'add' && o.item.id === id);
   let tried = true;
   if (ai >= 0) { tried = !!cardOutbox[ai].tried; cardOutbox.splice(ai, 1); }
@@ -8128,6 +8336,7 @@ function reactCard(id, r) {
 
   const nr = (n.r === r) ? 0 : r;
   n.r = nr;
+  cdStamp(n, 'r');
   const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === id);
   if (ai) ai.item.r = nr; // henüz gitmemiş kartta güncel hâl kartla birlikte gider
   else {
@@ -8142,14 +8351,13 @@ function receiveCard(d) {
   const n = d && d.item;
   if (!n || typeof n.id !== 'string' || n.k === 'b') return;
   const id = n.id.slice(0, 40);
-  if (cardTomb.has(id) || cardList.some((x) => x.id === id)) { ackCard(id, false); return; }
-  const str = (v, m) => (typeof v === 'string' ? v.slice(0, m) : '');
-  cardList.push({ id: id, k: n.k === 'b' ? 'b' : 'a', n: str(n.n, 80), b: str(n.b, 2000), c: str(n.c, 120), z: str(n.z, 40), u: cdNum(n.u), d: cdNum(n.d), f: cdFireSan(n.f), r: (n.r === 1 || n.r === 2) ? n.r : 0, vf: n.vf ? 1 : 0, rp: rpSanList(n.rp), pl: plSan(n.pl), at: Date.now(), own: false, pending: false });
-  trimCards();
+  const r = cardMergeIn(n, true);
   ackCard(id, false);
+  if (!r.ch) return;
+  trimCards(); cardPersist();
   if (!bellPop.classList.contains('show')) bellBtn.classList.add('unseen');
   else renderCards();
-  bpMarkUnread(1);
+  if (r.nw || r.rn) bpMarkUnread(1);
 }
 // Yanıt ekleme (6687): 3. sayfada gönderiyle birlikte revizyonla, 2. sayfada 'card-reply' ile karşıya gider. En yeni üstte, en fazla 3; 4. yanıtla en eskisi silinir
 function addCardReply(cardId, n, b, vf) {
@@ -8167,22 +8375,12 @@ function addCardReply(cardId, n, b, vf) {
   renderCards();
   return true;
 }
-function receiveCardReply(d) {
-  if (!d || typeof d.id !== 'string') return;
-  const c = cardList.find((x) => x.id === d.id && x.k !== 'b');
-  if (!c) return;
-  const inc = rpSanList(Array.isArray(d.rp) ? d.rp : [d.rp]);
-  const before = (c.rp || []).length ? c.rp.map((x) => x.id).join() : '';
-  c.rp = rpSanList((c.rp || []).concat(inc));
-  if (c.rp.map((x) => x.id).join() === before) return;
-  if (!bellPop.classList.contains('show')) bellBtn.classList.add('unseen');
-  else renderCards();
-  bpMarkUnread(1);
-}
+function receiveCardReply(d) { /* durum artık 'card-state' ile gelir */ }
 // Oy sayısı değiştirme (6687): 3. sayfada gönderiyle birlikte revizyonla, 2. sayfada 'card-poll' ile karşıya gider
 // 3828: 2. sayfadaki gönderilerde seçeneğe basınca oy verir (+1); aynı seçeneğe tekrar basınca geri alır, başka seçeneğe basınca oyunu taşır
 function pollSyncOut(c, inst) {
   if (c.k === 'b') { thirdBump(); persistThird(); sendThird('third'); renderCards(); return; }
+  cdStamp(c, 'p'); c.pi = inst ? 1 : 0;
   const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === c.id);
   if (ai) ai.item.pl = { q: c.pl.q, o: c.pl.o.map((x) => ({ t: x.t, v: x.v })) };
   else {
@@ -8220,6 +8418,7 @@ function setPollCount(id, i, val) {
   c.pl.o[i].v = nv;
   cdAnimTo(id, 'p' + i, ov, nv);
   if (c.k === 'b') { thirdBump(); persistThird(); sendThird('third'); renderCards(); return; }
+  cdStamp(c, 'p'); c.pi = 0;
   const ai = cardOutbox.find((o) => o.op === 'add' && o.item.id === id);
   if (ai) ai.item.pl = { q: c.pl.q, o: c.pl.o.map((x) => ({ t: x.t, v: x.v })) };
   else {
@@ -8252,27 +8451,18 @@ function plStartEdit(sp, id, i) {
   inp.addEventListener('blur', () => finish(true));
   try { inp.focus(); const L = inp.value.length; inp.setSelectionRange(L, L); } catch (e) {}
 }
-function receiveCardPoll(d) {
-  if (!d || typeof d.id !== 'string' || !Array.isArray(d.v)) return;
-  const c = cardList.find((x) => x.id === d.id && x.k !== 'b');
-  if (!c || !c.pl || d.v.length !== c.pl.o.length) return;
-  c.pl.o.forEach((x, i) => { const nv = cdNum(d.v[i]); if (d.inst) { if (cdAnim[c.id]) delete cdAnim[c.id]['p' + i]; } else cdAnimTo(c.id, 'p' + i, x.v, nv); x.v = nv; });
-  if (bellPop.classList.contains('show')) renderCards();
-}
+function receiveCardPoll(d) { /* durum artık 'card-state' ile gelir */ }
 function receiveCardDel(d) {
   if (!d || typeof d.id !== 'string') return;
-  cardTomb.add(d.id);
-  const i = cardList.findIndex((n) => n.id === d.id && !n.own);
+  const id = d.id.slice(0, 40);
+  cardTomb.add(id);
+  if (!cardDel[id]) cardDel[id] = Date.now();
+  const i = cardList.findIndex((n) => n.id === id && n.k !== 'b');
   if (i >= 0) { cardList.splice(i, 1); if (bellPop.classList.contains('show')) renderCards(); }
-  ackCard(d.id, true);
+  cardPersist();
+  ackCard(id, true);
 }
-function receiveCardReact(d) {
-  if (!d || typeof d.id !== 'string') return;
-  const n = cardList.find((x) => x.id === d.id);
-  if (!n || n.k === 'b') return;
-  n.r = (d.r === 1 || d.r === 2) ? d.r : 0;
-  if (bellPop.classList.contains('show')) renderCards();
-}
+function receiveCardReact(d) { /* durum artık 'card-state' ile gelir */ }
 function receiveCardAck(d) {
   if (!d || typeof d.id !== 'string') return;
   if (d.del) cardOutbox = cardOutbox.filter((o) => !(o.op === 'del' && o.id === d.id));
@@ -8285,9 +8475,9 @@ function receiveCardAck(d) {
   if (bellPop.classList.contains('show')) renderCards();
 }
 function closeCardCompose() {
-  ['cd-compose', 'td-compose', 'rp-compose'].forEach((id) => { const c = document.getElementById(id); if (c) c.classList.remove('show'); });
+  ['cd-compose', 'td-compose', 'rp-compose', 'ts-compose'].forEach((id) => { const c = document.getElementById(id); if (c) c.classList.remove('show'); });
   const ae = document.activeElement;
-  if (ae && /^(cd-(name|body|topic|time|up|dn)|td-(name|body|topic)|rp-(name|body))-in$/.test(ae.id || '')) {
+  if (ae && /^(cd-(name|body|topic|time|up|dn)|td-(name|body|topic)|rp-(name|body)|ts-(tag|note))-in$/.test(ae.id || '')) {
     if (!messageInput.disabled) { try { messageInput.focus({ preventScroll: true }); } catch (e) {} }
     else { try { ae.blur(); } catch (e) {} }
   }
@@ -8365,7 +8555,7 @@ function closeCardCompose() {
     if (!n && !b && !c && !pg.pl) return;
     const vf = vfIn.checked ? 1 : 0;
     const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, c: c, z: z, u: cdNum(upIn.value), d: cdNum(dnIn.value), f: [], r: 0, vf: vf, pl: pg.pl, ts: Date.now(), k: 'a' };
-    cardList.push({ id: item.id, k: 'a', n: n, b: b, c: c, z: z, u: item.u, d: item.d, f: [], r: 0, vf: vf, pl: pg.pl, at: item.ts, own: true, pending: true });
+    cardList.push({ id: item.id, k: 'a', n: n, b: b, c: c, z: z, u: item.u, d: item.d, f: [], r: 0, vf: vf, pl: pg.pl, at: item.ts, m: { c: item.ts, r: item.ts, p: item.ts }, pi: 0, own: true, pending: true });
     trimCards();
     cardOutbox.push({ op: 'add', item: item, tried: false });
     persistCardOutbox();
@@ -8449,6 +8639,7 @@ function bpMarkUnread(i) { if (i === bpPage) return; bpUnread[i] = true; bpDots(
 function bpSetPage(p, instant) {
   p = Math.max(0, Math.min(BP_PAGES - 1, p));
   if (instant) bellPop.classList.add('no-anim');
+  tsClose();
   bpPage = p;
   document.getElementById('bp-slider').style.setProperty('--bp-page', String(p));
   document.getElementById('bp-tabs-in').style.setProperty('--bp-page', String(p));
@@ -8460,7 +8651,7 @@ function bpSetPage(p, instant) {
 }
 // Yazma (oluşturma) ekranı açıkken sekmeler gizlenir, ekran panelin tamamını kaplar
 (function initBellComposeWatch() {
-  const ids = ['bp-compose', 'cd-compose', 'td-compose', 'rp-compose'];
+  const ids = ['bp-compose', 'cd-compose', 'td-compose', 'rp-compose', 'ts-compose'];
   const els = ids.map((id) => document.getElementById(id)).filter(Boolean);
   const sync = () => bellPop.classList.toggle('composing', els.some((el) => el.classList.contains('show')));
   const mo = new MutationObserver(sync);
