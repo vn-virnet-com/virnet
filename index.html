@@ -154,6 +154,8 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 @keyframes msg-reveal { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
 @media (prefers-reduced-motion: reduce) { .msg.msg-reveal { animation: none; } }
 .msg-body { cursor: pointer; }
+.msg-body.big-emoji { font-size: 64px; line-height: 1.15; font-weight: 400; padding: 2px 0; white-space: normal; }
+body.names-inline .msg-body.big-emoji { display: block; }
 
 .hdr-row { position: relative; }
 .nick-hdr { transition: transform 0.25s ease; will-change: transform; }
@@ -2235,7 +2237,7 @@ function receiveLive(d) {
     liveEl = div;
   }
   liveEl._raw.text = text;
-  liveEl._body.innerHTML = renderBodyHtml(text);
+  setBodyContent(liveEl._body, text);
   animateLiveWords(liveEl._body, id);
   if (chatArea.lastElementChild !== liveEl) chatArea.appendChild(liveEl);
   layoutNicks();
@@ -3224,6 +3226,16 @@ function buildHdrRow(finalNick, chosenColor, id) {
   row.appendChild(tt);
   row.appendChild(buildNickHeader(finalNick, chosenColor));
   return row;
+}
+
+// Mesaj tek bir emojiden ibaretse (ZWJ, ten tonu, bayrak, tuş takımı dahil) büyük gösterilir
+const SINGLE_EMOJI_RE = /^(?:\p{Regional_Indicator}{2}|[0-9#*]\uFE0F?\u20E3|\u{1F3F4}[\u{E0020}-\u{E007E}]+\u{E007F}|(?:\p{Emoji_Presentation}|\p{Extended_Pictographic}\uFE0F)\p{Emoji_Modifier}?(?:\u200D(?:\p{Emoji_Presentation}|\p{Extended_Pictographic}\uFE0F?)\p{Emoji_Modifier}?)*)$/u;
+function isSingleEmoji(text) {
+  try { return SINGLE_EMOJI_RE.test(String(text || '').trim()); } catch (e) { return false; }
+}
+function setBodyContent(el, text) {
+  el.innerHTML = renderBodyHtml(text);
+  el.classList.toggle('big-emoji', isSingleEmoji(text));
 }
 
 function renderBodyHtml(text) {
@@ -4801,7 +4813,7 @@ function updateMessageContent(el, text, rawNick) {
     el._hdr = hdr;
     el.insertBefore(hdr, body);
   }
-  if (body) body.innerHTML = renderBodyHtml(text);
+  if (body) setBodyContent(body, text);
   syncYtCard(el, text);
   layoutNicks();
   if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
@@ -4953,7 +4965,7 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
       msgDiv.classList.add('chip-msg');
       textDiv.innerHTML = chipHtml(text === CHIP_OK ? 'ok' : 'no');
     } else {
-      textDiv.innerHTML = renderBodyHtml(text);
+      setBodyContent(textDiv, text);
     }
 
     msgDiv._doReply = () => {
