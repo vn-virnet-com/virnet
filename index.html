@@ -1207,7 +1207,9 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 .dg-leg i, .dg-lv i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin: 0 5px 0 0; vertical-align: -1px; }
 .dg-leg span:last-child i { margin: 0 0 0 5px; }
 .dg-lv { font-size: 11px; color: var(--c-88); }
-#chat-area:not(.ch-op) > .durum-card[data-ch="op"], #chat-area.ch-op > .durum-card:not([data-ch="op"]) { display: none !important; }
+.durum-fail { align-self: center; flex: 0 0 auto; margin: 6px 8px; padding: 5px 12px; border-radius: 10px; background: var(--c-111); border: 1px solid var(--c-33); color: var(--c-88); font-size: 12px; font-weight: 700; text-align: center; line-height: 1.3; }
+#chat-area:not(.ch-op) > .durum-card[data-ch="op"], #chat-area.ch-op > .durum-card:not([data-ch="op"]),
+#chat-area:not(.ch-op) > .durum-fail[data-ch="op"], #chat-area.ch-op > .durum-fail:not([data-ch="op"]) { display: none !important; }
 </style>
 </head>
 <body>
@@ -1670,12 +1672,6 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 
 <div id="durum-wait"><span>Bekleyin, durum yükleniyor...</span></div>
 <div id="durum-modal"><div id="durum-box">
-  <div class="dm-title">Sistem Yoğunluğu</div>
-  <div id="dm-lvls">
-    <button type="button" class="dm-lvl" data-l="0" style="--lc:#2fbf5b"><span class="dm-tick"></span><span>Hafif</span></button>
-    <button type="button" class="dm-lvl" data-l="1" style="--lc:#e6b800"><span class="dm-tick"></span><span>Orta</span></button>
-    <button type="button" class="dm-lvl" data-l="2" style="--lc:#e5484d"><span class="dm-tick"></span><span>Yoğun</span></button>
-  </div>
   <label class="dm-row"><span>Toplam Kullanıcı</span><input id="dm-t" type="text" inputmode="numeric" autocomplete="off" maxlength="9" enterkeyhint="done"></label>
   <label class="dm-row"><span>Aktif Kullanıcı</span><input id="dm-a" type="text" inputmode="numeric" autocomplete="off" maxlength="9" enterkeyhint="done"></label>
   <label class="dm-row"><span>Çevrimdışı Kullanıcı</span><input id="dm-o" type="text" inputmode="numeric" autocomplete="off" maxlength="9" enterkeyhint="done"></label>
@@ -9978,12 +9974,11 @@ function switchChannel(ch) {
 (function initDurum() {
   const waitEl = document.getElementById('durum-wait');
   const modal = document.getElementById('durum-modal');
-  const lvlBtns = Array.prototype.slice.call(document.querySelectorAll('#dm-lvls .dm-lvl'));
   const F = { t: document.getElementById('dm-t'), a: document.getElementById('dm-a'), o: document.getElementById('dm-o') };
   const errEl = document.getElementById('dm-err');
   const okBtn = document.getElementById('dm-ok');
   const LV = [{ n: 'Hafif', c: '#2fbf5b' }, { n: 'Orta', c: '#e6b800' }, { n: 'Yoğun', c: '#e5484d' }];
-  let waitId = null, pend = null, lvl = -1, order = ['t', 'a', 'o'], hadFocus = false, usedField = false;
+  let waitId = null, waitAt = 0, waitCh = 'main', pend = null, order = ['t', 'a', 'o'], hadFocus = false, usedField = false;
 
   function jget(k, d) { try { const v = JSON.parse(lsGet(k) || 'null'); return v == null ? d : v; } catch (e) { return d; } }
   function seen(id) { return jget('durumSeen', []).indexOf(id) >= 0; }
@@ -9991,17 +9986,35 @@ function switchChannel(ch) {
   function newId() { return 'dm-' + Date.now() + '-' + Math.floor(Math.random() * 100000); }
 
   // ---- gönderen taraf ----
-  function waitStart(id) {
-    waitId = id;
+  const WAIT_MAX = 60000;   // TEST: 1 dakikadır yanıt yoksa "Durum Yüklenemedi" (normalde 600000 = 10 dk)
+  function waitStart(id, at, ch) {
+    waitId = id; waitAt = at || Date.now(); waitCh = ch === 'op' ? 'op' : 'main';
+    lsSet('durumWait', JSON.stringify({ id: waitId, at: waitAt, ch: waitCh }));
     waitEl.classList.add('show');
     void waitEl.offsetWidth;
     waitEl.classList.add('on');
   }
   function waitEnd() {
     waitId = null;
+    lsRemove('durumWait');
     waitEl.classList.remove('on');
     waitEl.classList.remove('show');
   }
+  function addFail(ch) {
+    const el = document.createElement('div');
+    el.className = 'durum-fail';
+    el.dataset.ch = chNorm(ch);
+    el.textContent = 'Durum Yüklenemedi';
+    chatArea.appendChild(el);
+    if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
+  }
+  function waitCheck() {
+    if (!waitId || Date.now() - waitAt < WAIT_MAX) return;
+    const ch = waitCh;
+    waitEnd();
+    addFail(ch);
+  }
+  setInterval(waitCheck, 1000);
   window.durumWaiting = () => !!waitId;
   // Tekrar .durum için 1 dakikalık bekleme: sayaç gönder tuşunda görünür, o sürede .durum gönderilemez. Başka bir şey yazılınca tuş normale döner
   const CD_MS = 60000;
@@ -10024,6 +10037,7 @@ function switchChannel(ch) {
   messageInput.addEventListener('input', btnSync);
   window.durumTry = function (text) {
     if (String(text).trim().toLowerCase() !== '.durum') return false;
+    if (curCh === 'op') return false;   // Operatör kanalında komut çalışmaz, düz mesaj gider
     if (cdLeft() > 0) { btnSync(); cdEnsure(); return true; }   // bekleme süresi dolmadan gönderilmez, yazı kutuda kalır
     if (!isConnected()) { setStatus('Bağlı değil, mesaj gönderilmedi', false); return true; }
     if (myTypingTimeout) clearTimeout(myTypingTimeout);
@@ -10041,13 +10055,19 @@ function switchChannel(ch) {
     adjustInputHeight();
     lsSet('durumCdUntil', String(Date.now() + CD_MS));
     cdEnsure();
-    waitStart(id);
+    waitStart(id, Date.now(), curCh);
     return true;
   };
-  window.durumOnDisc = function () { if (waitId) waitEnd(); };
+  window.durumOnDisc = function () { /* bekleme ekranı bağlantı kopsa da yenilense de durur; yalnızca yanıt gelince ya da 10 dk sonra kapanır */ };
   waitEl.addEventListener('pointerdown', (e) => e.preventDefault());
 
   if (cdLeft() > 0) { cdEnsure(); btnSync(); }
+  // yenilemede bekleme ekranı geri gelir (10 dakika dolduysa "Durum Yüklenemedi")
+  const w0 = jget('durumWait', null);
+  if (w0 && typeof w0.id === 'string' && isFinite(w0.at) && !seen(w0.id)) {
+    if (Date.now() - w0.at >= WAIT_MAX) { lsRemove('durumWait'); addFail(w0.ch); }
+    else waitStart(w0.id, w0.at, w0.ch);
+  } else lsRemove('durumWait');
 
   // ---- sohbet kartı ----
   function addCard(res, ch) {
@@ -10126,14 +10146,6 @@ function switchChannel(ch) {
     el.addEventListener('blur', () => { if (modal.classList.contains('show')) { if (val(order[0]) !== null) solve(order[0], true); fillEmpty(); } });
     el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); settle(); } });
   });
-  lvlBtns.forEach((b) => {
-    b.addEventListener('pointerdown', (e) => e.preventDefault());
-    b.addEventListener('click', () => {
-      lvl = parseInt(b.dataset.l, 10);
-      lvlBtns.forEach((x) => x.classList.toggle('on', x === b));
-      errEl.textContent = '';
-    });
-  });
   // pencereden çıkılamaz: dışa tıklama/Esc etkisiz, mesaj kutusunun odağı çalınmaz
   modal.addEventListener('pointerdown', (e) => { if (!(e.target && e.target.tagName === 'INPUT')) e.preventDefault(); });
   document.addEventListener('keydown', (e) => {
@@ -10146,7 +10158,6 @@ function switchChannel(ch) {
     const last = jget('durumLast', null);
     ['t', 'a', 'o'].forEach((k) => { F[k].value = (last && isFinite(last[k]) && last[k] >= 0) ? String(Math.floor(last[k])) : ''; F[k].classList.remove('bad'); });
     order = ['t', 'a', 'o'];
-    lvl = -1; lvlBtns.forEach((x) => x.classList.remove('on'));
     errEl.textContent = '';
     hadFocus = document.activeElement === messageInput;
     usedField = false;
@@ -10159,6 +10170,7 @@ function switchChannel(ch) {
   }
   window.durumOnReq = function (d, ch) {
     if (!d || typeof d.id !== 'string') return;
+    if (chNorm(ch || d.ch) === 'op') return;   // Operatör kanalından gelen istek yok sayılır
     const id = d.id.slice(0, 60);
     if (seen(id)) return;
     if (pend) return;
@@ -10172,10 +10184,10 @@ function switchChannel(ch) {
     settle();
     const t = val('t'), a = val('a'), o = val('o');
     ['t', 'a', 'o'].forEach((k) => F[k].classList.toggle('bad', val(k) === null));
-    if (lvl < 0 || t === null || a === null || o === null) {
-      errEl.textContent = lvl < 0 && t !== null && a !== null && o !== null ? 'Sistem yoğunluğunu seçin.' : 'Tüm alanları doldurun ve yoğunluğu seçin.';
-      return;
-    }
+    if (t === null || a === null || o === null) { errEl.textContent = 'Tüm alanları doldurun.'; return; }
+    // Sistem yoğunluğu aktiflik oranına göre otomatik: %30 altı hafif, %30-%75 orta, %75 üstü yoğun
+    const pc = t > 0 ? Math.round(a / t * 100) : 0;
+    const lvl = pc < 30 ? 0 : (pc > 75 ? 2 : 1);
     const res = { type: 'durum-res', id: pend.id, lvl: lvl, t: t, a: a, o: o };
     if (pend.ch === 'op') res.ch = 'op';
     lsSet('durumLast', JSON.stringify({ t: t, a: a, o: o }));
@@ -10190,6 +10202,7 @@ function switchChannel(ch) {
     closeModal();
   });
   window.durumFlush = function () {
+    if (waitId && isConnected()) { try { conn.send(chTag({ type: 'durum-req', id: waitId }, waitCh)); } catch (e) {} }   // istek karşıya ulaşmadıysa yeniden gönder
     const q = jget('durumOut', []);
     if (!q.length || !isConnected()) return;
     lsRemove('durumOut');
