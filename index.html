@@ -1314,6 +1314,15 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   var busy = false;
   var locked = true;
   var onOk = null;
+  /* 6687 için ek adım: son rakama ~0,6 sn basılı tutmak gerekir. Kısa dokunuş = sıradan yanlış PIN gibi görünür */
+  var HOLD_MS = 600;
+  var holdTimer = null, holdSrc = null, holdLive = false;
+  function endHold(src) {
+    if (holdTimer === null) return;
+    if (src !== undefined && src !== holdSrc) return;
+    clearTimeout(holdTimer); holdTimer = null; holdSrc = null; holdLive = false;
+    fail(); // erken bırakıldı
+  }
 
   /* Sitenin kendi yenileme tuşu / otomatik yenilemeleri PIN sormasın; elle tarayıcı yenilemesi ve sıfırdan açış sorsun */
   window.pinReload = function () { location.reload(); };
@@ -1323,6 +1332,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   }
   function setLocked(v) {
     locked = v;
+    if (holdTimer !== null) { clearTimeout(holdTimer); holdTimer = null; holdSrc = null; holdLive = false; }
     root.classList.toggle('pin-locked', v);
     lock.classList.toggle('show', v);
     if (v) {
@@ -1348,7 +1358,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
       busy = false; lock.classList.remove('busy');
     }, 440);
   }
-  function press(k) {
+  function press(k, src) {
     if (!locked || busy) return;
     if (k === 'del') { entered = entered.slice(0, -1); render(); return; }
     if (entered.length >= 4) return;
@@ -1357,8 +1367,16 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
       busy = true; lock.classList.add('busy');
       var hv = h('frc:' + entered + ':pin');
       if (hv === HASH) setTimeout(function () { unlock(false); }, 140);
-      else if (hv === HASH_LIVE) setTimeout(function () { unlock(true); }, 140);
-      else setTimeout(fail, 120);
+      else {
+        /* 6687 de yanlış PIN de aynı yolu izler: basılı tutulursa süre dolunca karar verilir, erken bırakılırsa hata */
+        holdSrc = src; holdLive = (hv === HASH_LIVE);
+        holdTimer = setTimeout(function () {
+          var live = holdLive;
+          holdTimer = null; holdSrc = null; holdLive = false;
+          if (live) { try { if (navigator.vibrate) navigator.vibrate(25); } catch (e) {} unlock(true); }
+          else fail();
+        }, HOLD_MS);
+      }
     }
   }
 
@@ -1369,18 +1387,19 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     e.preventDefault();
     if (!b) return;
     downEl = b; b.classList.add('down');
-    press(b.getAttribute('data-k'));
+    press(b.getAttribute('data-k'), e.pointerId);
   });
-  function release() { if (downEl) { downEl.classList.remove('down'); downEl = null; } }
+  function release(e) { if (downEl) { downEl.classList.remove('down'); downEl = null; } endHold(e ? e.pointerId : undefined); }
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) { pad.addEventListener(t, release); });
   window.addEventListener('pointerup', release);
   ['contextmenu', 'dragstart', 'selectstart'].forEach(function (t) { lock.addEventListener(t, function (e) { e.preventDefault(); }); });
   lock.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
 
   /* Fiziksel klavye: kilitliyken tuşlar siteye ulaşmasın */
+  window.addEventListener('keyup', function () { if (locked) endHold('kbd'); }, true);
   window.addEventListener('keydown', function (e) {
     if (!locked) return;
-    if (e.key >= '0' && e.key <= '9' && e.key.length === 1) press(e.key);
+    if (e.key >= '0' && e.key <= '9' && e.key.length === 1) press(e.key, 'kbd');
     else if (e.key === 'Backspace') press('del');
     if (e.key === 'F5' || ((e.ctrlKey || e.metaKey) && (e.key === 'r' || e.key === 'R'))) return;
     e.preventDefault(); e.stopImmediatePropagation();
