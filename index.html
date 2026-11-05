@@ -10027,15 +10027,15 @@ function switchChannel(ch) {
   setInterval(waitCheck, 1000);
   window.durumWaiting = () => !!waitId;
   // Tekrar .durum için 1 dakikalık bekleme: sayaç gönder tuşunda görünür, o sürede .durum gönderilemez. Başka bir şey yazılınca tuş normale döner
-  const CD_MS = 60000;
+  const CD_MS = 300000;   // 5 dakika
   let cdTimer = null, btnShown = false;
   function cdLeft() { const l = (Number(lsGet('durumCdUntil')) || 0) - Date.now(); return l > 0 ? Math.ceil(l / 1000) : 0; }
   function btnSync() {
     const left = cdLeft();
     const isCmd = messageInput.value.trim().toLowerCase() === '.durum';
     const busy = sendBtn.classList.contains('longpress') || sendBtn.classList.contains('rec');
-    if (left > 0 && isCmd && !busy) { const tx = String(left); if (sendBtn.textContent !== tx) sendBtn.textContent = tx; btnShown = true; }
-    else if (btnShown && !busy) { sendBtn.textContent = SEND_ICON; btnShown = false; }
+    if (left > 0 && isCmd && !busy) { const tx = String(left); if (sendBtn.textContent !== tx) sendBtn.textContent = tx; sendBtn.style.fontSize = tx.length >= 3 ? '14px' : ''; btnShown = true; }
+    else if (btnShown && !busy) { sendBtn.textContent = SEND_ICON; sendBtn.style.fontSize = ''; btnShown = false; }
   }
   function cdEnsure() {
     if (cdTimer) return;
