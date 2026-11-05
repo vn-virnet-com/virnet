@@ -989,6 +989,8 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 #bp-page-side.has-strip #ts-strip { display: flex; }
 #bp-page-side.has-strip #cd-list { top: 38px; }
 #ts-strip::-webkit-scrollbar { display: none; }
+#ts-strip { user-select: none; -webkit-user-select: none; }
+#ts-strip.drag, #ts-strip.drag * { cursor: grabbing !important; }
 #ts-strip > :first-child { margin-left: auto; } /* sığınca ortalanır, taşınca soldan başlayıp kayar */
 #ts-strip > :last-child { margin-right: auto; }
 .ts-t { flex: 0 0 auto; cursor: pointer; }
@@ -1152,6 +1154,27 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 .pin-key svg { display: block; }
 #pin-lock.busy .pin-key { pointer-events: none; }
 
+
+/* ===== Masaüstü: ince sayfa kaydırma çubuğu (şarkı sözü alanları hariç hepsi) =====
+   Çubuk yer kaplar, yani içerik çubuğun altında kalmaz; sadece görünen kısım ince (4px), tıklama alanı 10px. */
+@media (min-width: 769px) {
+  @supports selector(::-webkit-scrollbar) {
+    *:not(.yt-lyrics):not(.ytd-lyr)::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+    *:not(.yt-lyrics):not(.ytd-lyr)::-webkit-scrollbar-track { background: transparent; }
+    *:not(.yt-lyrics):not(.ytd-lyr)::-webkit-scrollbar-corner { background: transparent; }
+    *:not(.yt-lyrics):not(.ytd-lyr)::-webkit-scrollbar-thumb {
+      background-color: color-mix(in srgb, var(--c-fff) 24%, transparent);
+      background-clip: padding-box; border: 3px solid transparent; border-radius: 10px; min-height: 36px; min-width: 36px;
+    }
+    *:not(.yt-lyrics):not(.ytd-lyr)::-webkit-scrollbar-thumb:hover { background-color: color-mix(in srgb, var(--c-fff) 48%, transparent); border-width: 2px; }
+    *:not(.yt-lyrics):not(.ytd-lyr)::-webkit-scrollbar-thumb:active { background-color: color-mix(in srgb, var(--c-fff) 68%, transparent); border-width: 2px; }
+  }
+  @supports not selector(::-webkit-scrollbar) {
+    *:not(.yt-lyrics):not(.ytd-lyr) { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--c-fff) 35%, transparent) transparent; }
+  }
+  /* Sağ kenardaki yüzen tuşlar çubuğa değmesin */
+  #scroll-down-btn, #td-add, #cd-add, #bp-add { right: 18px; }
+}
 </style>
 </head>
 <body>
@@ -8235,7 +8258,28 @@ function renderStrip() {
   const strip = document.getElementById('ts-strip'), bub = document.getElementById('ts-bubble'), comp = document.getElementById('ts-compose');
   const tIn = document.getElementById('ts-tag-in'), nIn = document.getElementById('ts-note-in'), send = document.getElementById('ts-send'), cancel = document.getElementById('ts-cancel');
   strip.addEventListener('pointerdown', (e) => { if (e.target.closest('#ts-add') && e.cancelable) e.preventDefault(); });
+  // Masaüstü: fareyle basılı tutup sürükleyerek ve tekerlekle yana kaydırma
+  let dg = null, dragged = false;
+  strip.addEventListener('pointerdown', (e) => {
+    dragged = false;
+    if (e.pointerType !== 'mouse' || e.button !== 0 || strip.scrollWidth <= strip.clientWidth) return;
+    dg = { x: e.clientX, sl: strip.scrollLeft };
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (!dg) return;
+    const dx = e.clientX - dg.x;
+    if (!dragged && Math.abs(dx) > 4) { dragged = true; strip.classList.add('drag'); }
+    if (dragged) strip.scrollLeft = dg.sl - dx;
+  });
+  const endDrag = () => { if (dg) { dg = null; strip.classList.remove('drag'); } };
+  window.addEventListener('pointerup', endDrag);
+  window.addEventListener('pointercancel', endDrag);
+  strip.addEventListener('wheel', (e) => {
+    if (strip.scrollWidth <= strip.clientWidth || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+    strip.scrollLeft += e.deltaY; e.preventDefault();
+  }, { passive: false });
   strip.addEventListener('click', (e) => {
+    if (dragged) { dragged = false; return; } // sürükleme sonrası etiket açılmasın
     if (e.target.closest('#ts-add')) {
       if (!notifCanSend() || tsList.length >= TS_MAX) return;
       tsClose();
@@ -9803,6 +9847,45 @@ function switchChannel(ch) {
   });
   btn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
   updateChBtn();
+})();
+
+// Masaüstü: kaydırma çubuğuna tıklanınca/sürüklenince mesaj kutusunun odağı kaybolmasın
+(function keepFocusOnScrollbar() {
+  const input = document.getElementById('message-input');
+  if (!input) return;
+  let down = false, timer = 0;
+  function hitsScrollbar(e) {
+    const el = e.target;
+    if (!el || el.nodeType !== 1 || el === document.documentElement || el === document.body) return false;
+    const r = el.getBoundingClientRect();
+    const vBar = el.offsetWidth - el.clientWidth - 2 * el.clientLeft > 0 && e.clientX > r.left + el.clientLeft + el.clientWidth;
+    const hBar = el.offsetHeight - el.clientHeight - 2 * el.clientTop > 0 && e.clientY > r.top + el.clientTop + el.clientHeight;
+    return vBar || hBar;
+  }
+  function refocus() {
+    const a = document.activeElement;
+    if (a && a !== document.body && a !== document.documentElement) return;   // başka bir yazı alanı seçiliyse dokunma
+    try { input.focus({ preventScroll: true }); } catch (err) {}
+  }
+  document.addEventListener('pointerdown', (e) => {
+    if (isMobileLayout() || e.pointerType !== 'mouse') return;
+    down = document.activeElement === input && hitsScrollbar(e);
+    clearTimeout(timer);
+    if (down) timer = setTimeout(() => { down = false; }, 15000);
+  }, true);
+  input.addEventListener('blur', () => {
+    if (!down) return;
+    setTimeout(() => { if (down) refocus(); }, 0);
+  });
+  function end() {
+    if (!down) return;
+    down = false;
+    clearTimeout(timer);
+    setTimeout(refocus, 0);
+  }
+  document.addEventListener('pointerup', end, true);
+  document.addEventListener('mouseup', end, true);
+  document.addEventListener('pointercancel', end, true);
 })();
 </script>
 </body>
