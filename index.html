@@ -10183,10 +10183,11 @@ function switchChannel(ch) {
     if (chNorm(ch || d.ch) === 'op') return;   // Operatör kanalından gelen istek yok sayılır
     const id = d.id.slice(0, 60);
     if (seen(id)) return;
-    if (pend) return;
+    if (pend && pend.id === id) return;           // aynı istek yeniden geldi
+    if (pend) markSeen(pend.id);                  // eski, takılı kalmış istek yerine yeni istek geçer (gönderen yenisini bekliyor)
     pend = { id: id, ch: chNorm(ch || d.ch) };
     lsSet('durumPend', JSON.stringify(pend));
-    openModal();
+    if (!modal.classList.contains('show')) openModal();
     try { noteIncomingMessage(); } catch (e) {}
   };
   okBtn.addEventListener('click', () => {
