@@ -8675,7 +8675,7 @@ function renderCards() {
           (k === 'b' ? '<button type="button" class="cd-rb' + (!can ? ' ro' : '') + '" data-r="3" aria-label="Görüntülenme">' + CD_EYE + '<span class="cd-num' + (can ? ' can' : '') + '">' + cdFmt(cdShown(n.id, 'v', n.v || 0)) + '</span></button>' : '') +
         '</div>' +
         (n.pending ? '<div class="cd-row bp-pend">Gönderilmedi, bağlanınca gidecek</div>' : '') +
-        rpHtml(n, can || (k === 'a' && thirdCanSend())) +
+        rpHtml(n, can || (k === 'a' && thirdCanSend()) || thirdOwn(n)) +
         '</div>';
     }).join('');
   };
@@ -8791,9 +8791,11 @@ function votePoll(id, i) {
   pollSyncOut(c, true);
 }
 // Yanıt yetkisi: 6687 her iki sayfada; 3828 yalnızca 2. sayfadaki gönderilerde (isim sohbet isim kutusundan, onay rozeti hazır)
+// 3828: 3. sayfadaki kendi gönderisini de yanıtlayabilir (gönderiyi atan cihaz kimliği 'thirdOwnId' ile hatırlanır)
+function thirdOwn(c) { try { return !!c && c.k === 'b' && thirdCanSend() && lsGet('thirdOwnId') === c.id; } catch (e) { return false; } }
 function rpAllowed(id) {
   const c = cardList.find((x) => x.id === id);
-  return !!c && (notifCanSend() || (thirdCanSend() && c.k === 'a'));
+  return !!c && (notifCanSend() || (thirdCanSend() && (c.k === 'a' || thirdOwn(c))));
 }
 function setPollCount(id, i, val) {
   if (!notifCanSend()) return;
@@ -9006,6 +9008,7 @@ function closeCardCompose() {
     if (!b && !c && !pg.pl) return;
     const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), n: n, b: b, c: c, z: cdFmtNow(), u: 0, d: 0, r: 0, vf: 1, pl: pg.pl, ts: Date.now(), k: 'b' };
     cardList = cardList.filter((x) => x.k !== 'b'); // önceki gönderi silinir, yalnızca sonuncu kalır
+    try { lsSet('thirdOwnId', item.id); } catch (e) {}
     cardList.push({ id: item.id, k: 'b', n: n, b: b, c: c, z: item.z, u: 0, d: 0, v: 0, f: [], r: 0, vf: 1, pl: pg.pl, at: item.ts, own: true, pending: false });
     thirdBump(); persistThird(); sendThird('third');
     closeCardCompose();
