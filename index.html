@@ -7798,8 +7798,25 @@ cardOutbox = cardOutbox.filter((o) => !(o.op === 'add' && o.item && o.item.k ===
 cardOutbox.forEach((o) => { if (o.op === 'add') cardList.push({ id: o.item.id, k: o.item.k === 'b' ? 'b' : 'a', n: o.item.n, b: o.item.b, c: o.item.c, z: o.item.z, u: o.item.u || 0, d: o.item.d || 0, f: cdFireSan(o.item.f), r: o.item.r || 0, vf: o.item.vf ? 1 : 0, rp: rpSanList(o.item.rp), pl: plSan(o.item.pl), at: o.item.ts, own: true, pending: true }); });
 // ---- 3. sayfa: yalnızca en son gönderi tutulur. localStorage'da saklanır; her bağlantıda iki taraf revizyonu kıyaslar, daha güncel olan kazanır ----
 let thirdRev = 0;
-/* ===== Sayı değişimi: hedef rakama atlamaz, 15 saniyede eşit hızla (doğrusal) o rakama ulaşır. Veri hemen hedefe ayarlanır ve karşıya gider; yalnızca ekranda gösterilen sayı akar, iki tarafta aynı anda başlar ===== */
-const CD_ANIM_MS = 15000;
+/* ===== Sayı değişimi: hedef rakama atlamaz, 1 dakikada düzensiz hızla (hızlanır, yavaşlar, 2-3 sn durur, birkaçı birden gelir) o rakama ulaşır. Eğri; (kart, anahtar, eski, yeni) değerinden türetilen tohumla üretilir, böylece iki tarafta aynıdır. Veri hemen hedefe ayarlanır ve karşıya gider; yalnızca ekranda gösterilen sayı akar ===== */
+const CD_ANIM_MS = 60000;
+function cdCurve(str) {
+  let h = 2166136261; for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+  const r = () => { h = (h + 0x6D2B79F5) | 0; let t = Math.imul(h ^ (h >>> 15), 1 | h); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const n = 10 + Math.floor(r() * 5), dt = [], dp = []; let pz = 0, wt = 0, wp = 0;
+  for (let i = 0; i < n; i++) {
+    if (pz < 3 && i > 0 && i < n - 1 && r() < 0.3) { pz++; dt.push((2 + r()) / 60); dp.push(0); }
+    else { const a = 0.3 + r(), b = 0.05 + r() * r() * 2; dt.push(-a); dp.push(b); wt += a; wp += b; }
+  }
+  const fix = 1 - dt.reduce((x, y) => x + (y > 0 ? y : 0), 0), T = [0], P = [0];
+  for (let i = 0; i < n; i++) { T.push(T[i] + (dt[i] > 0 ? dt[i] : -dt[i] / wt * fix)); P.push(P[i] + dp[i] / wp); }
+  T[n] = 1; P[n] = 1; return [T, P];
+}
+function cdEase(c, p) {
+  const T = c[0], P = c[1]; let i = 0;
+  while (i < T.length - 2 && p >= T[i + 1]) i++;
+  return P[i] + (P[i + 1] - P[i]) * (p - T[i]) / (T[i + 1] - T[i]);
+}
 const cdAnim = {}; // kartId -> { u|d|v: { f: başlangıç, t: hedef, t0: başlangıç zamanı } }
 let cdAnimTimer = null;
 function cdShown(id, key, target) {
@@ -7807,13 +7824,13 @@ function cdShown(id, key, target) {
   if (!a) return target;
   const p = (Date.now() - a.t0) / CD_ANIM_MS;
   if (p >= 1) { delete o[key]; return a.t; }
-  return Math.round(a.f + (a.t - a.f) * p);
+  return Math.round(a.f + (a.t - a.f) * cdEase(a.c, p));
 }
 function cdAnimTo(id, key, oldT, newT) {
   if (oldT === newT) return;
   const cur = cdShown(id, key, oldT);
   if (cur === newT) { if (cdAnim[id]) delete cdAnim[id][key]; return; }
-  (cdAnim[id] = cdAnim[id] || {})[key] = { f: cur, t: newT, t0: Date.now() };
+  (cdAnim[id] = cdAnim[id] || {})[key] = { f: cur, t: newT, t0: Date.now(), c: cdCurve(id + key + oldT + '>' + newT) };
   if (!cdAnimTimer) cdAnimTimer = setInterval(cdAnimTick, 100);
 }
 function cdAnimTick() {
@@ -8073,7 +8090,7 @@ function renderCards() {
     }).join('');
   };
   draw('cd-list', 'a', 'Gönderi Yok');
-  draw('td-list', 'b', 'Gönderin yok');
+  draw('td-list', 'b', 'Gönderin Yok');
 }
 function dismissCardLocal(id) {
   const i = cardList.findIndex((n) => n.id === id);
