@@ -1175,6 +1175,39 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   /* Sağ kenardaki yüzen tuşlar çubuğa değmesin */
   #scroll-down-btn, #td-add, #cd-add, #bp-add { right: 18px; }
 }
+
+/* ===== .durum: sistem durumu penceresi ve sohbet kartı ===== */
+#durum-wait { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 25000; display: none; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; background: var(--c-000); opacity: 0; transition: opacity 1.4s ease; text-align: center; -webkit-user-select: none; user-select: none; }
+#durum-wait.show { display: flex; }
+#durum-wait.on { opacity: 0.96; }
+#durum-wait span { color: var(--c-cc); font-size: 16px; font-weight: 700; animation: durum-pulse 1.6s ease-in-out infinite; }
+@keyframes durum-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { #durum-wait span { animation: none; } }
+#durum-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 25500; background: var(--ov-85); display: none; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
+#durum-modal.show { display: flex; }
+#durum-box { background: var(--c-111); border: 1px solid var(--c-33); border-radius: 8px; padding: 16px; width: 100%; max-width: 340px; max-height: 100%; box-sizing: border-box; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.dm-title { font-size: 15px; font-weight: 700; color: var(--c-fff); text-align: center; }
+#dm-lvls { display: flex; flex-direction: column; gap: 6px; }
+.dm-lvl { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 1px solid var(--c-33); border-radius: 6px; background: var(--c-1a); color: var(--c-fff); font-size: 15px; font-family: inherit; cursor: pointer; text-align: left; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.dm-tick { position: relative; flex: 0 0 22px; width: 22px; height: 22px; box-sizing: border-box; border: 2px solid var(--lc); border-radius: 5px; }
+.dm-lvl.on { border-color: var(--lc); }
+.dm-lvl.on .dm-tick { background: var(--lc); }
+.dm-lvl.on .dm-tick::after { content: ''; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.dm-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--c-dd); font-size: 14px; }
+.dm-row input { width: 120px; flex: 0 0 120px; box-sizing: border-box; border: 1px solid var(--c-33); border-radius: 6px; background: var(--c-000); color: var(--c-fff); outline: none; font-size: 16px; padding: 7px 9px; text-align: right; font-family: inherit; caret-color: var(--accent); -webkit-user-select: text; user-select: text; }
+.dm-row input.bad { border-color: var(--dng); }
+#dm-err { min-height: 16px; font-size: 12px; color: var(--dng); text-align: center; }
+#dm-ok { padding: 12px; font-size: 16px; border: 1px solid var(--accent); border-radius: 4px; background: var(--accent); color: var(--on-accent); font-weight: 700; cursor: pointer; font-family: inherit; }
+.durum-card { align-self: stretch; flex: 0 0 auto; box-sizing: border-box; margin: 6px 8px; padding: 10px 12px 12px; border-radius: 12px; background: var(--c-111); border: 1px solid var(--c-33); color: var(--c-fff); display: flex; flex-direction: column; align-items: center; gap: 9px; font-size: 13px; line-height: 1.3; }
+.dg-total { font-size: 13px; font-weight: 700; color: var(--c-cc); text-align: center; }
+.dg-bar { position: relative; width: 100%; height: 30px; border-radius: 15px; overflow: hidden; background: color-mix(in srgb, var(--c-fff) 30%, var(--c-000)); }
+.dg-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--ok); transition: width 1.6s cubic-bezier(.22,.8,.3,1); }
+.dg-mid { position: absolute; top: 0; bottom: 0; left: 50%; display: flex; align-items: center; gap: 6px; transform: translateX(-50%); font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.65); white-space: nowrap; transition: left 1.6s cubic-bezier(.22,.8,.3,1); }
+.dg-leg { display: flex; justify-content: space-between; gap: 8px; width: 100%; font-size: 12px; color: var(--c-cc); }
+.dg-leg i, .dg-lv i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin: 0 5px 0 0; vertical-align: -1px; }
+.dg-leg span:last-child i { margin: 0 0 0 5px; }
+.dg-lv { font-size: 11px; color: var(--c-88); }
+#chat-area:not(.ch-op) > .durum-card[data-ch="op"], #chat-area.ch-op > .durum-card:not([data-ch="op"]) { display: none !important; }
 </style>
 </head>
 <body>
@@ -1635,6 +1668,20 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 <div id="privacy-cover"><div id="privacy-eye" title="Göster"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg></div></div>
 <div id="msg-menu-backdrop"><div id="msg-menu"></div></div>
 
+<div id="durum-wait"><span>Bekleyin, durum yükleniyor...</span></div>
+<div id="durum-modal"><div id="durum-box">
+  <div class="dm-title">Sistem Yoğunluğu</div>
+  <div id="dm-lvls">
+    <button type="button" class="dm-lvl" data-l="0" style="--lc:#2fbf5b"><span class="dm-tick"></span><span>Hafif</span></button>
+    <button type="button" class="dm-lvl" data-l="1" style="--lc:#e6b800"><span class="dm-tick"></span><span>Orta</span></button>
+    <button type="button" class="dm-lvl" data-l="2" style="--lc:#e5484d"><span class="dm-tick"></span><span>Yoğun</span></button>
+  </div>
+  <label class="dm-row"><span>Toplam Kullanıcı</span><input id="dm-t" type="text" inputmode="numeric" autocomplete="off" maxlength="9" enterkeyhint="done"></label>
+  <label class="dm-row"><span>Aktif Kullanıcı</span><input id="dm-a" type="text" inputmode="numeric" autocomplete="off" maxlength="9" enterkeyhint="done"></label>
+  <label class="dm-row"><span>Çevrimdışı Kullanıcı</span><input id="dm-o" type="text" inputmode="numeric" autocomplete="off" maxlength="9" enterkeyhint="done"></label>
+  <div id="dm-err"></div>
+  <button type="button" id="dm-ok">Onayla</button>
+</div></div>
 <script>
 
 const setupPanel     = document.getElementById('setup-panel');
@@ -2670,6 +2717,7 @@ function setupConnection(c) {
     sendFireSync();
     flushOutbox(true);
     flushMediaOutbox();
+    try { window.durumFlush(); } catch (e) {}
     try { if (ytCurrent && ytCurrent._announce) ytCurrent._announce(); } catch (e) {}
     if (pingInterval) clearInterval(pingInterval);
     pingInterval = setInterval(() => {
@@ -2700,6 +2748,8 @@ function setupConnection(c) {
     data = mapStringsDeep(data, emojiDecode);
     if (data.type === 'ping')        { missedPings = 0; c.send({ type: 'pong' }); return; }
     if (data.type === 'pong')        { missedPings = 0; return; }
+    if (data.type === 'durum-req')   { try { window.durumOnReq(data, rxCh); } catch (e) {} return; }
+    if (data.type === 'durum-res')   { try { window.durumOnRes(data); } catch (e) {} return; }
     if (data.type === 'live')        { receiveLive(data); return; }
     if (data.type === 'live-stop')   { removeLive(); return; }
     if (data.type === 'typing')      { if (liveEl && liveEl.isConnected) return; showTypingIndicator(typeof data.senderNick === 'string' ? data.senderNick : null); return; }
@@ -2821,6 +2871,7 @@ function setupConnection(c) {
 
 function handleDisconnect() {
   conn = null;
+  try { window.durumOnDisc(); } catch (e) {}
   clearLiveIdle();
   liveLastSent = null;
   removeLive();
@@ -5099,6 +5150,8 @@ function sendMessage() {
   const textToSend = messageInput.value.trim();
   const currentNick = fullNick();
   if (textToSend === '') return;
+  if (window.durumWaiting && window.durumWaiting()) return;
+  if (!replyingTo && window.durumTry && window.durumTry(textToSend)) return;
   const offlineOp = !isConnected() && curCh === 'op';   // Operatör kanalı: bağlantı yoksa mesaj beklemeye alınır
   if (!isConnected() && !offlineOp) { setStatus('Bağlı değil, mesaj gönderilmedi', false); return; }
 
@@ -7981,10 +8034,43 @@ function cdAnimTo(id, key, oldT, newT) {
   if (oldT === newT) return;
   const cur = cdShown(id, key, oldT);
   if (cur === newT) { if (cdAnim[id]) delete cdAnim[id][key]; return; }
-  (cdAnim[id] = cdAnim[id] || {})[key] = { f: cur, t: newT, t0: Date.now(), ms: Math.abs(newT - oldT) > CD_ANIM_LONG_DIFF ? CD_ANIM_LONG_MS : CD_ANIM_MS, c: cdCurve(id + key + oldT + '>' + newT) };
+  (cdAnim[id] = cdAnim[id] || {})[key] = { f: cur, t: newT, t0: Date.now(), ms: Math.abs(newT - oldT) > CD_ANIM_LONG_DIFF ? CD_ANIM_LONG_MS : CD_ANIM_MS, c: cdCurve(id + key + oldT + '>' + newT), s: id + key + oldT + '>' + newT };
   if (!cdAnimTimer) cdAnimTimer = setInterval(cdAnimTick, 100);
+  cdAnimSave();
 }
+/* Animasyon durumu localStorage'a yazılır: sayfa yenilenince kaldığı yerden (gerçek zamana göre) devam eder. Sayfa 10 dakikadan uzun süre kapalı kaldıysa direkt son hâl gösterilir. */
+let cdSaveAt = 0;
+function cdAnimSave() {
+  cdSaveAt = Date.now();
+  try {
+    const out = {}; let any = false;
+    Object.keys(cdAnim).forEach((id) => { Object.keys(cdAnim[id]).forEach((k) => { const a = cdAnim[id][k]; if (!a || !a.s) return; (out[id] = out[id] || {})[k] = { f: a.f, t: a.t, t0: a.t0, ms: a.ms, s: a.s }; any = true; }); });
+    if (any) lsSet('cdAnimState', JSON.stringify({ at: Date.now(), a: out })); else lsRemove('cdAnimState');
+  } catch (e) {}
+}
+function cdAnimRestore() {
+  let st = null;
+  try { st = JSON.parse(lsGet('cdAnimState') || 'null'); } catch (e) {}
+  lsRemove('cdAnimState');
+  if (!st || typeof st.at !== 'number' || !st.a || typeof st.a !== 'object') return;
+  const now = Date.now();
+  if (now - st.at > 600000) return;   // 10 dakikadan uzun süre geçtiyse animasyon oynatılmaz, son hâl görünür
+  Object.keys(st.a).forEach((id) => {
+    if (!cardList.some((x) => x.id === id)) return;
+    const o = st.a[id]; if (!o || typeof o !== 'object') return;
+    Object.keys(o).forEach((k) => {
+      const a = o[k];
+      if (!a || typeof a.s !== 'string' || !isFinite(a.f) || !isFinite(a.t) || !isFinite(a.t0) || !isFinite(a.ms) || a.ms <= 0) return;
+      if ((now - a.t0) / a.ms >= 1) return;
+      (cdAnim[id] = cdAnim[id] || {})[k] = { f: a.f, t: a.t, t0: a.t0, ms: a.ms, c: cdCurve(a.s), s: a.s };
+    });
+  });
+  if (Object.keys(cdAnim).length && !cdAnimTimer) cdAnimTimer = setInterval(cdAnimTick, 100);
+}
+window.addEventListener('pagehide', cdAnimSave);
+document.addEventListener('visibilitychange', () => { if (document.hidden) cdAnimSave(); });
 function cdAnimTick() {
+  if (Date.now() - cdSaveAt > 2000) cdAnimSave();
   const R = { u: '1', d: '2', v: '3' };
   let any = false;
   Object.keys(cdAnim).forEach((id) => {
@@ -8008,7 +8094,7 @@ function cdAnimTick() {
     }
     if (!Object.keys(cdAnim[id]).length) delete cdAnim[id];
   });
-  if (!any && !Object.keys(cdAnim).length) { clearInterval(cdAnimTimer); cdAnimTimer = null; }
+  if (!any && !Object.keys(cdAnim).length) { clearInterval(cdAnimTimer); cdAnimTimer = null; cdAnimSave(); }
 }
 function thirdCard() { return cardList.find((x) => x.k === 'b') || null; }
 function thirdPayload() {
@@ -9887,6 +9973,235 @@ function switchChannel(ch) {
   document.addEventListener('mouseup', end, true);
   document.addEventListener('pointercancel', end, true);
 })();
+
+// ===== .durum: karşı tarafa sistem durumu penceresi =====
+(function initDurum() {
+  const waitEl = document.getElementById('durum-wait');
+  const modal = document.getElementById('durum-modal');
+  const lvlBtns = Array.prototype.slice.call(document.querySelectorAll('#dm-lvls .dm-lvl'));
+  const F = { t: document.getElementById('dm-t'), a: document.getElementById('dm-a'), o: document.getElementById('dm-o') };
+  const errEl = document.getElementById('dm-err');
+  const okBtn = document.getElementById('dm-ok');
+  const LV = [{ n: 'Hafif', c: '#2fbf5b' }, { n: 'Orta', c: '#e6b800' }, { n: 'Yoğun', c: '#e5484d' }];
+  let waitId = null, pend = null, lvl = -1, order = ['t', 'a', 'o'], hadFocus = false, usedField = false;
+
+  function jget(k, d) { try { const v = JSON.parse(lsGet(k) || 'null'); return v == null ? d : v; } catch (e) { return d; } }
+  function seen(id) { return jget('durumSeen', []).indexOf(id) >= 0; }
+  function markSeen(id) { const a = jget('durumSeen', []); if (a.indexOf(id) < 0) a.push(id); lsSet('durumSeen', JSON.stringify(a.slice(-30))); }
+  function newId() { return 'dm-' + Date.now() + '-' + Math.floor(Math.random() * 100000); }
+
+  // ---- gönderen taraf ----
+  function waitStart(id) {
+    waitId = id;
+    waitEl.classList.add('show');
+    void waitEl.offsetWidth;
+    waitEl.classList.add('on');
+  }
+  function waitEnd() {
+    waitId = null;
+    waitEl.classList.remove('on');
+    waitEl.classList.remove('show');
+  }
+  window.durumWaiting = () => !!waitId;
+  // Tekrar .durum için 1 dakikalık bekleme: sayaç gönder tuşunda görünür, o sürede .durum gönderilemez. Başka bir şey yazılınca tuş normale döner
+  const CD_MS = 60000;
+  let cdTimer = null, btnShown = false;
+  function cdLeft() { const l = (Number(lsGet('durumCdUntil')) || 0) - Date.now(); return l > 0 ? Math.ceil(l / 1000) : 0; }
+  function btnSync() {
+    const left = cdLeft();
+    const isCmd = messageInput.value.trim().toLowerCase() === '.durum';
+    const busy = sendBtn.classList.contains('longpress') || sendBtn.classList.contains('rec');
+    if (left > 0 && isCmd && !busy) { const tx = String(left); if (sendBtn.textContent !== tx) sendBtn.textContent = tx; btnShown = true; }
+    else if (btnShown && !busy) { sendBtn.textContent = SEND_ICON; btnShown = false; }
+  }
+  function cdEnsure() {
+    if (cdTimer) return;
+    cdTimer = setInterval(() => {
+      btnSync();
+      if (cdLeft() <= 0 && !btnShown) { clearInterval(cdTimer); cdTimer = null; }
+    }, 250);
+  }
+  messageInput.addEventListener('input', btnSync);
+  window.durumTry = function (text) {
+    if (String(text).trim().toLowerCase() !== '.durum') return false;
+    if (cdLeft() > 0) { btnSync(); cdEnsure(); return true; }   // bekleme süresi dolmadan gönderilmez, yazı kutuda kalır
+    if (!isConnected()) { setStatus('Bağlı değil, mesaj gönderilmedi', false); return true; }
+    if (myTypingTimeout) clearTimeout(myTypingTimeout);
+    if (isTypingSent) { try { conn.send({ type: 'typing-stop' }); } catch (e) {} }
+    isTypingSent = false;
+    if (liveActive) { try { conn.send({ type: 'live-stop' }); } catch (e) {} }
+    liveActive = false; liveId = null;
+    const id = newId();
+    try { conn.send(chTag({ type: 'durum-req', id: id })); } catch (e) { return true; }
+    messageInput.value = '';
+    saveDraft();
+    liveSpaceCount = 0;
+    clearLiveIdle();
+    liveLastSent = null;
+    adjustInputHeight();
+    lsSet('durumCdUntil', String(Date.now() + CD_MS));
+    cdEnsure();
+    waitStart(id);
+    return true;
+  };
+  window.durumOnDisc = function () { if (waitId) waitEnd(); };
+  waitEl.addEventListener('pointerdown', (e) => e.preventDefault());
+
+  if (cdLeft() > 0) { cdEnsure(); btnSync(); }
+
+  // ---- sohbet kartı ----
+  function addCard(res, ch) {
+    const t = Math.max(0, res.t | 0), a = Math.max(0, res.a | 0), o = Math.max(0, res.o | 0);
+    const pa = t > 0 ? Math.round(a / t * 100) : 0;
+    const po = t > 0 ? 100 - pa : 0;
+    const lv = LV[res.lvl] || null;
+    const el = document.createElement('div');
+    el.className = 'durum-card';
+    el.dataset.ch = chNorm(ch);
+    el.innerHTML =
+      '<div class="dg-total">Toplam Kullanıcı Sayısı: ' + t + '</div>' +
+      '<div class="dg-bar"><div class="dg-fill"></div><div class="dg-mid"><span>%' + pa + '</span><span>%' + po + '</span></div></div>' +
+      '<div class="dg-leg"><span><i style="background:var(--ok)"></i>Aktif: ' + a + '</span><span>Çevrimdışı: ' + o + '<i style="background:color-mix(in srgb, var(--c-fff) 30%, var(--c-000))"></i></span></div>' +
+      (lv ? '<div class="dg-lv"><i style="background:' + lv.c + '"></i>Sistem Yoğunluğu: ' + lv.n + '</div>' : '');
+    chatArea.appendChild(el);
+    const fill = el.querySelector('.dg-fill'), mid = el.querySelector('.dg-mid');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      fill.style.width = pa + '%';
+      mid.style.left = 'clamp(22%, ' + pa + '%, 78%)';
+    }));
+    if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
+  }
+  window.durumOnRes = function (d) {
+    if (!d || typeof d.id !== 'string') return;
+    const id = d.id.slice(0, 60);
+    if (waitId === id || (waitId && !seen(id))) waitEnd();
+    if (seen(id)) return;
+    markSeen(id);
+    const n = (v) => { v = Number(v); return isFinite(v) && v >= 0 ? Math.min(v, 2000000000) : 0; };
+    addCard({ lvl: d.lvl | 0, t: n(d.t), a: n(d.a), o: n(d.o) }, chNorm(rxCh || d.ch));
+  };
+
+  // ---- alan tarafı: zorunlu pencere ----
+  function val(k) { const s = F[k].value; return s === '' ? null : parseInt(s, 10); }
+  function setv(k, n) { F[k].value = String(Math.max(0, n)); F[k].classList.remove('bad'); }
+  function solve(k, force) {
+    const X = val(k); if (X === null) return;
+    const rest = order.filter((x) => x !== k), R = rest[0], D = rest[1];
+    const r = val(R); if (r === null) return;
+    let nr = r, nd;
+    if (k === 't') { nd = X - r; if (nd < 0) { if (!force) return; nr = X; nd = 0; } }
+    else if (R === 't') { nd = r - X; if (nd < 0) { if (!force) return; nr = X; nd = 0; } }
+    else { nd = X + r; }
+    setv(R, nr); setv(D, nd);
+  }
+  function fillEmpty() {
+    const e = ['t', 'a', 'o'].filter((k) => val(k) === null);
+    if (e.length !== 1) return;
+    const t = val('t'), a = val('a'), o = val('o');
+    if (e[0] === 't') setv('t', a + o);
+    else if (e[0] === 'a') { if (o > t) { setv('t', o); setv('a', 0); } else setv('a', t - o); }
+    else { if (a > t) { setv('t', a); setv('o', 0); } else setv('o', t - a); }
+  }
+  function settle() {
+    const top = order[0];
+    if (val(top) !== null) solve(top, true);
+    fillEmpty();
+    if (['t', 'a', 'o'].every((k) => val(k) !== null) && val('t') !== val('a') + val('o')) setv('t', val('a') + val('o'));
+  }
+  ['t', 'a', 'o'].forEach((k) => {
+    const el = F[k];
+    let wasFocused = false;
+    const toEnd = () => { const n = el.value.length; try { el.setSelectionRange(n, n); } catch (e) {} };
+    el.addEventListener('pointerdown', () => { wasFocused = document.activeElement === el; });
+    el.addEventListener('pointerup', () => { if (!wasFocused) setTimeout(toEnd, 0); });
+    el.addEventListener('focus', () => { usedField = true; setTimeout(toEnd, 0); });
+    el.addEventListener('input', () => {
+      usedField = true;
+      el.classList.remove('bad');
+      el.value = el.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 9);
+      order = [k].concat(order.filter((x) => x !== k));
+      errEl.textContent = '';
+      if (val(k) !== null) solve(k, false);
+    });
+    el.addEventListener('blur', () => { if (modal.classList.contains('show')) { if (val(order[0]) !== null) solve(order[0], true); fillEmpty(); } });
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); settle(); } });
+  });
+  lvlBtns.forEach((b) => {
+    b.addEventListener('pointerdown', (e) => e.preventDefault());
+    b.addEventListener('click', () => {
+      lvl = parseInt(b.dataset.l, 10);
+      lvlBtns.forEach((x) => x.classList.toggle('on', x === b));
+      errEl.textContent = '';
+    });
+  });
+  // pencereden çıkılamaz: dışa tıklama/Esc etkisiz, mesaj kutusunun odağı çalınmaz
+  modal.addEventListener('pointerdown', (e) => { if (!(e.target && e.target.tagName === 'INPUT')) e.preventDefault(); });
+  document.addEventListener('keydown', (e) => {
+    if (!modal.classList.contains('show')) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+  okBtn.addEventListener('pointerdown', (e) => e.preventDefault());
+
+  function openModal() {
+    const last = jget('durumLast', null);
+    ['t', 'a', 'o'].forEach((k) => { F[k].value = (last && isFinite(last[k]) && last[k] >= 0) ? String(Math.floor(last[k])) : ''; F[k].classList.remove('bad'); });
+    order = ['t', 'a', 'o'];
+    lvl = -1; lvlBtns.forEach((x) => x.classList.remove('on'));
+    errEl.textContent = '';
+    hadFocus = document.activeElement === messageInput;
+    usedField = false;
+    modal.classList.add('show');
+    if (hadFocus) { try { messageInput.focus({ preventScroll: true }); } catch (e) {} }
+  }
+  function closeModal() {
+    modal.classList.remove('show');
+    if (hadFocus || usedField) { try { messageInput.focus({ preventScroll: true }); } catch (e) {} }
+  }
+  window.durumOnReq = function (d, ch) {
+    if (!d || typeof d.id !== 'string') return;
+    const id = d.id.slice(0, 60);
+    if (seen(id)) return;
+    if (pend) return;
+    pend = { id: id, ch: chNorm(ch || d.ch) };
+    lsSet('durumPend', JSON.stringify(pend));
+    openModal();
+    try { noteIncomingMessage(); } catch (e) {}
+  };
+  okBtn.addEventListener('click', () => {
+    if (!pend) return;
+    settle();
+    const t = val('t'), a = val('a'), o = val('o');
+    ['t', 'a', 'o'].forEach((k) => F[k].classList.toggle('bad', val(k) === null));
+    if (lvl < 0 || t === null || a === null || o === null) {
+      errEl.textContent = lvl < 0 && t !== null && a !== null && o !== null ? 'Sistem yoğunluğunu seçin.' : 'Tüm alanları doldurun ve yoğunluğu seçin.';
+      return;
+    }
+    const res = { type: 'durum-res', id: pend.id, lvl: lvl, t: t, a: a, o: o };
+    if (pend.ch === 'op') res.ch = 'op';
+    lsSet('durumLast', JSON.stringify({ t: t, a: a, o: o }));
+    lsRemove('durumPend');
+    markSeen(pend.id);
+    const ch = pend.ch;
+    pend = null;
+    let sent = false;
+    if (isConnected()) { try { conn.send(res); sent = true; } catch (e) {} }
+    if (!sent) { const q = jget('durumOut', []); q.push(res); lsSet('durumOut', JSON.stringify(q.slice(-10))); }
+    addCard({ lvl: lvl, t: t, a: a, o: o }, ch);
+    closeModal();
+  });
+  window.durumFlush = function () {
+    const q = jget('durumOut', []);
+    if (!q.length || !isConnected()) return;
+    lsRemove('durumOut');
+    q.forEach((r) => { try { conn.send(r); } catch (e) {} });
+  };
+  // yenilemede bekleyen pencere geri gelir
+  const p0 = jget('durumPend', null);
+  if (p0 && typeof p0.id === 'string' && !seen(p0.id)) { pend = { id: p0.id, ch: chNorm(p0.ch) }; openModal(); }
+  else lsRemove('durumPend');
+})();
+
+cdAnimRestore();
 </script>
 </body>
 </html>
