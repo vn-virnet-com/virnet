@@ -2602,7 +2602,7 @@ codesModal.addEventListener('click', (e) => { if (e.target === codesModal) close
   const blk = document.getElementById('blk-setup'), modal = document.getElementById('stor-modal');
   if (!blk || !modal) return;
   const title = blk.querySelector('.set-title');
-  const QUOTA = 5 * 1024 * 1024; // tahmini: tarayıcılar kotayı bildirmez, çoğu ~5 MB verir (karakter başına 2 bayt sayılır)
+  const QUOTA = 10 * 1024 * 1024; // Chromium (Chrome/Opera Android): origin başına 10 MiB, anahtar+değer UTF-16 bayt olarak sayılır
   const fmt = (b) => b < 1024 ? b + ' B' : (b / 1024 < 1024 ? (b / 1024).toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' KB' : (b / 1048576).toLocaleString('tr-TR', { maximumFractionDigits: 2 }) + ' MB');
   function fill() {
     const rows = []; let tot = 0;
@@ -2619,7 +2619,7 @@ codesModal.addEventListener('click', (e) => { if (e.target === codesModal) close
     f.style.width = pct + '%';
     f.classList.toggle('warn', pct >= 70 && pct < 90);
     f.classList.toggle('bad', pct >= 90);
-    document.getElementById('stor-sum').textContent = fmt(tot) + ' / ~5 MB (%' + pct.toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ') · ' + rows.length + ' kayıt';
+    document.getElementById('stor-sum').textContent = fmt(tot) + ' / ~10 MB (%' + pct.toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ') · ' + rows.length + ' kayıt';
     const list = document.getElementById('stor-list');
     list.textContent = '';
     rows.forEach((r) => {
