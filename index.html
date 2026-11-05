@@ -809,7 +809,7 @@ body.nick-hidden #nick-color-grid { display: grid; }
 
 /* ---- Şerit içi renk seçici (Yeni mesaj yolda şeridi) ---- */
 #sb-mid { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; justify-content: center; margin: 0 -7px; }  /* tuşların görünmez 13px iç boşluğuna taşar: simgelere yaklaşık 6px kalır */
-#np-dots { position: relative; touch-action: manipulation; flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: stretch; justify-content: stretch; gap: 0; margin: 0; overflow: hidden; pointer-events: auto; }
+#np-dots { position: relative; touch-action: manipulation; flex: 1 1 0; min-width: 0; align-self: center; height: 16.5px; display: flex; align-items: stretch; justify-content: stretch; gap: 1px; margin: 0; overflow: hidden; pointer-events: auto; }  /* yükseklik: ayarlar simgesinin dişlisinin üstten alta çizgi yüksekliği (24'lük çizimde 22 birim × 18/24) */
 #np-dots::-webkit-scrollbar { display: none; }
 #nick-ghost { display: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-size: 13.5px; color: var(--c-88); opacity: 0.55; pointer-events: none; user-select: none; -webkit-user-select: none; }
 body.nick-hidden #nick-ghost { display: block; }
@@ -2354,8 +2354,18 @@ function recallNickColor() {
   return true;
 }
 
+// İsmin başına elle yazılan renk harfi (k. t. ma. vb.) artık renk belirlemez: yazılınca silinir. Renk yalnızca palet ile seçilir.
+function stripTypedPrefix(str) {
+  let t = String(str || '');
+  for (;;) {
+    const dot = t.indexOf('.');
+    if ((dot === 1 || dot === 2) && COLOR_MAP[t.substring(0, dot).toLowerCase()]) t = t.substring(dot + 1);
+    else break;
+  }
+  return t;
+}
 function fullNick() {
-  const n = nickInput.value.trim();
+  const n = stripTypedPrefix(nickInput.value.trim());
   if (n === '') return '';
   return nickColorKey ? (nickColorKey + '.' + n) : n;
 }
@@ -2518,6 +2528,14 @@ nickInput.addEventListener('blur', () => {
   if (pick && !editingId) rememberNickColor();
 });
 nickInput.addEventListener('input', () => {
+  {
+    const before = nickInput.value, after = stripTypedPrefix(before);
+    if (after !== before) {
+      const pos = Math.max(0, (nickInput.selectionStart == null ? before.length : nickInput.selectionStart) - (before.length - after.length));
+      nickInput.value = after;
+      try { nickInput.setSelectionRange(pos, pos); } catch (e) {}
+    }
+  }
   if (!editingId) {
     lsSet('nick', nickInput.value);
     if (recallNickColor()) {
