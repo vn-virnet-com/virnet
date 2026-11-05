@@ -9472,18 +9472,20 @@ if (window.visualViewport) {
 }
 
 (function initSettingsMenu() {
-  // Simge yanıp sönerken (diğer kanaldan mesaj gelmiş) basılı tutunca o kanala otomatik geçer
+  // Ayarlar simgesine basılı tutunca diğer kanala geçer (yalnızca 6687 PIN'i ile girenlerde, her zaman)
   let lpTimer = 0, lpFired = false;
   const lpClear = () => { if (lpTimer) { clearTimeout(lpTimer); lpTimer = 0; } };
   settingsBtn.addEventListener('pointerdown', (e) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     lpFired = false; lpClear();
-    if (!settingsBtn.classList.contains('unseen')) return;
+    // Yalnızca 6687 ile girenler kullanabilir (3828 ile girenler hiç kullanamaz); simge yanıp sönmese de her zaman çalışır
+    let lpLive = false;
+    try { lpLive = sessionStorage.getItem('pinLive') === '1'; } catch (err) {}
+    if (!lpLive) return;
     const target = curCh === 'op' ? 'main' : 'op';
-    if (!chUnread[target]) return;
     lpTimer = setTimeout(() => {
       lpTimer = 0;
-      if (!chUnread[target] || curCh === target) return;
+      if (curCh === target) return;
       lpFired = true;
       switchChannel(target);
       startChCooldown();
