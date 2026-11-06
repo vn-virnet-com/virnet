@@ -662,9 +662,7 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
   #pane-notes { border-left: 1px solid var(--c-1a); }
 }
 
-/* Not paneli dikey bölme: üst %50 not alanı, alt %50 üye listesi */
-#notes-top { position: relative; flex: 0 0 50%; height: 50%; min-height: 0; overflow: hidden; }
-#notes-divider { flex: 0 0 2px; height: 2px; background: var(--c-44); }
+/* Sağ panel: tamamı üye listesi */
 #notes-bottom { position: relative; flex: 1 1 0; min-height: 0; overflow: hidden; background: var(--c-000); display: flex; flex-direction: column; }
 
 /* ---- Üye listesi (alt bölme): 3 sütun ---- */
@@ -743,25 +741,6 @@ body.mb-admin .mb-item .mb-dotbtn, body.mb-admin .mb-item .mb-lock { touch-actio
 .mb-item.mb-armed { user-select: none; -webkit-user-select: none; box-shadow: 0 0 0 1px var(--dng-bg); z-index: 1; }
 .mb-item.mb-snap { transition: transform .18s ease, opacity .18s ease; }
 @media (min-width: 769px) { #mb-search { font-size: 13px; } }
-
-#notes-view, #notes-edit {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  padding: 10px 8px 40px; font-size: 15px; line-height: 1.25; color: var(--c-fff); background: var(--c-000);
-  white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; text-align: center;
-}
-#notes-view { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-#notes-view, #notes-view *, #notes-edit { font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, 'Courier New', monospace, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji'; }
-#notes-edit {
-  display: none; border: none; outline: none; resize: none; overflow-y: auto;
-  border-radius: 0; caret-color: var(--accent);
-}
-
-#notes-save-bar {
-  position: absolute; top: 0; left: 0; right: 0; height: 36px; z-index: 30; display: none;
-  align-items: center; justify-content: center; background: var(--c-1a); border-bottom: 1px solid var(--c-33);
-  color: var(--c-fff); font-size: 14px; font-weight: 700; cursor: pointer; user-select: none; -webkit-user-select: none;
-}
-#notes-save-bar.done { cursor: default; color: var(--ok); }
 
 .new-badge {
   position: absolute; top: 50%; margin-top: -14px; z-index: 25; display: none; align-items: center; gap: 4px; opacity: 0.55;
@@ -1600,12 +1579,6 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 </div>
 </div>
 <div id="pane-notes" class="pane">
-  <div id="notes-top">
-    <div id="notes-view"></div>
-    <textarea id="notes-edit" spellcheck="false" autocomplete="off" autocorrect="off" enterkeyhint="done"></textarea>
-    <div id="notes-save-bar">Kaydet</div>
-  </div>
-  <div id="notes-divider"></div>
   <div id="notes-bottom">
     <div id="mb-bar">
       <input id="mb-search" type="text" name="mb-search-x" placeholder="Ara..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
@@ -1878,8 +1851,6 @@ const settingsMenu     = document.getElementById('settings-menu');
 const settingsBackdrop = document.getElementById('settings-backdrop');
 const panes          = document.getElementById('panes');
 const slider         = document.getElementById('slider');
-const notesView      = document.getElementById('notes-view');
-const notesEdit      = document.getElementById('notes-edit');
 const notesBtn       = document.getElementById('notes-btn');
 const notesPop       = document.getElementById('notes-pop');
 const bellBtn        = document.getElementById('bell-btn');
@@ -1924,19 +1895,13 @@ let kbGuard = false;
 let menuRestoreFocus = false;
 
 let view = 'chat';
-let unreadNotes = false;
 let unreadMsgs = false;
-let editingNotes = false;
 let popEditing = false;
 let notesUnseen = lsGet('qnoteUnseen') === '1';
 let qText = lsGet('qnoteText') || '';
 let qRev  = parseInt(lsGet('qnoteRev') || '0', 10) || 0;
 let qBy   = lsGet('qnoteBy') || '';
 let lastQInput = 0;
-
-let notesText = lsGet('notesText') || '';
-let notesRev  = parseInt(lsGet('notesRev') || '0', 10) || 0;
-let notesBy   = lsGet('notesBy') || '';
 
 let typingTimeout = null;
 let typingMsgEl = null;
@@ -2919,7 +2884,6 @@ function setupConnection(c) {
     setChatEnabled(true);
     if (liveMode) sendLive();
     adjustInputHeight();
-    sendNotes('notes-hello');
     sendQNote('qnote-hello');
     sendMembers('members-hello');
     flushNotifOutbox();
@@ -2966,7 +2930,7 @@ function setupConnection(c) {
     if (data.type === 'typing-stop') { hideTypingIndicator(); return; }
     if (data.type === 'rec')      { showRecIndicator(); return; }
     if (data.type === 'rec-stop') { hideRecIndicator(); return; }
-    if (data.type === 'notes' || data.type === 'notes-hello') { receiveNotes(data); return; }
+    if (data.type === 'notes' || data.type === 'notes-hello') return; // eski sürümden gelen ortak not mesajları yok sayılır
     if (data.type === 'members' || data.type === 'members-hello') { receiveMembers(data); return; }
     if (data.type === 'notif') { receiveNotif(data); return; }
     if (data.type === 'notif-del') { receiveNotifDel(data); return; }
@@ -5284,7 +5248,7 @@ fitToViewport();
 messageInput.addEventListener('blur', () => {
   if (!(kbGuard || menuRestoreFocus)) return;
   setTimeout(() => {
-    if (!(kbGuard || menuRestoreFocus) || messageInput.disabled || editingNotes || popEditing) return;
+    if (!(kbGuard || menuRestoreFocus) || messageInput.disabled || popEditing) return;
     try { messageInput.focus({ preventScroll: true }); } catch (e) {}
   }, 0);
 });
@@ -7427,8 +7391,7 @@ function restartBadgeBlink(el) {
 function updateBadges() {
   const mob = isMobileLayout();
   newNotesBadge.classList.remove('show');
-  profileBtn.classList.toggle('unseen', mob && view === 'chat' && unreadNotes);
-  newMsgBadge.classList.toggle('show', mob && view === 'notes' && unreadMsgs && !editingNotes);
+  newMsgBadge.classList.toggle('show', mob && view === 'notes' && unreadMsgs);
 }
 
 let reopenKb = false;
@@ -7438,7 +7401,7 @@ function setView(v) {
   view = v;
   slider.classList.remove('dragging');
   slider.style.transform = (v === 'notes') ? 'translateX(-50%)' : 'translateX(0px)';
-  if (v === 'notes') unreadNotes = false; else unreadMsgs = false;
+  if (v !== 'notes') unreadMsgs = false;
   if (isMobileLayout() && changed) {
     kbGuard = false; menuRestoreFocus = false;
     if (kbCloseTimer) { clearTimeout(kbCloseTimer); kbCloseTimer = null; }
@@ -7480,7 +7443,7 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
   panes.addEventListener('touchstart', (e) => {
     st = null;
     if (!isMobileLayout() || e.touches.length !== 1) return;
-    if (editingNotes || msgMenuBackdrop.classList.contains('show')) return;
+    if (msgMenuBackdrop.classList.contains('show')) return;
     const tg = e.target;
     if (tg && tg.closest && tg.closest('#live-toggle, #notes-btn, #bell-btn, #profile-btn, #np-dots, #send-btn, input, textarea, #cancel-reply-btn')) return;
     const t = e.touches[0];
@@ -7609,114 +7572,6 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
   coverEye.addEventListener('click', (e) => { e.stopPropagation(); if (window.pinAsk) window.pinAsk(show); else show(); });
   cover.addEventListener('contextmenu', (e) => e.preventDefault());
 })();
-
-function persistNotes() {
-  lsSet('notesText', notesText);
-  lsSet('notesRev', String(notesRev));
-  lsSet('notesBy', notesBy);
-}
-
-function renderNotes() {
-  notesView.innerHTML = renderBodyHtml(notesText);
-}
-
-function sendNotes(type) {
-  if (!isConnected()) return;
-  try { conn.send({ type: type, text: notesText, rev: notesRev, by: notesBy }); } catch (e) {}
-}
-
-function receiveNotes(d) {
-  if (!d || typeof d.text !== 'string' || typeof d.rev !== 'number' || !isFinite(d.rev)) return;
-  const by = (typeof d.by === 'string') ? d.by : '';
-  const newer = d.rev > notesRev || (d.rev === notesRev && by > notesBy);
-  if (!newer) return;
-  const changed = d.text !== notesText;
-  notesText = d.text; notesRev = d.rev; notesBy = by;
-  persistNotes();
-  if (!changed) return;
-  if (!editingNotes) renderNotes();
-  if (isMobileLayout() && view === 'chat') { unreadNotes = true; updateBadges(); restartBadgeBlink(profileBtn); }
-  if (!isMobileLayout()) startPaneBlink();
-}
-
-// ---- Masaüstü: yan panel güncellenince yanıp sönme (fare hareketi ya da 1 tık ile durur) ----
-const paneNotesEl = document.getElementById('pane-notes');
-function startPaneBlink() {
-  if (!paneNotesEl || isMobileLayout()) return;
-  paneNotesEl.classList.add('pane-unseen');
-}
-function stopPaneBlink() { if (paneNotesEl) paneNotesEl.classList.remove('pane-unseen'); }
-if (paneNotesEl) {
-  // Fare zaten panelin üstündeyse de durması için fareyi gerçekten oynatmak gerekir (tarayıcının sahte hareket olaylarını sayma)
-  paneNotesEl.addEventListener('mousemove', (e) => {
-    if (e.isTrusted === false) return;
-    if (!e.movementX && !e.movementY) return;
-    stopPaneBlink();
-  });
-  paneNotesEl.addEventListener('pointerdown', stopPaneBlink, true);
-  paneNotesEl.addEventListener('click', stopPaneBlink, true);
-}
-if (mqMobile.addEventListener) mqMobile.addEventListener('change', stopPaneBlink);
-else if (mqMobile.addListener) mqMobile.addListener(stopPaneBlink);
-
-const notesSaveBar = document.getElementById('notes-save-bar');
-let saveBarTimers = [];
-function clearSaveBarTimers() { saveBarTimers.forEach(clearTimeout); saveBarTimers = []; }
-function showSaveBar() {
-  clearSaveBarTimers();
-  notesSaveBar.textContent = 'Kaydet';
-  notesSaveBar.classList.remove('done');
-  notesSaveBar.style.display = 'flex';
-  notesEdit.style.top = '36px';
-}
-function hideSaveBar() {
-  clearSaveBarTimers();
-  notesSaveBar.style.display = 'none';
-  notesEdit.style.top = '0px';
-}
-notesSaveBar.addEventListener('pointerdown', (e) => e.preventDefault());
-notesSaveBar.addEventListener('click', () => {
-  if (!editingNotes) return;
-  notesSaveBar.textContent = 'Kaydediliyor...';
-  finishNotesEdit();
-  saveBarTimers.push(setTimeout(() => {
-    notesSaveBar.textContent = 'Kaydedildi';
-    notesSaveBar.classList.add('done');
-  }, 250));
-  saveBarTimers.push(setTimeout(hideSaveBar, 1200));
-});
-
-function enterNotesEdit() {
-  if (editingNotes) return;
-  editingNotes = true;
-  showSaveBar();
-  notesEdit.value = notesText;
-  notesView.style.display = 'none';
-  notesEdit.style.display = 'block';
-  updateBadges();
-  notesEdit.focus();
-  const l = notesEdit.value.length;
-  try { notesEdit.setSelectionRange(l, l); } catch (e) {}
-  notesEdit.scrollTop = notesEdit.scrollHeight;
-}
-
-function finishNotesEdit() {
-  if (!editingNotes) return;
-  const v = notesEdit.value;
-  if (v !== notesText) {
-    notesText = v;
-    notesRev = Math.max(Date.now(), notesRev + 1);
-    notesBy = myId || '';
-    persistNotes();
-    sendNotes('notes');
-  }
-  editingNotes = false;
-  notesEdit.style.display = 'none';
-  notesView.style.display = 'block';
-  try { notesEdit.blur(); } catch (e) {}
-  renderNotes();
-  updateBadges();
-}
 
 function persistQNote() {
   lsSet('qnoteText', qText);
@@ -9467,7 +9322,7 @@ function bpSetPage(p, instant) {
     const ids = ['viewer', 'confirm-modal', 'photo-src-modal', 'ytsearch-modal', 'reset-modal', 'refresh-modal', 'codes-modal', 'stor-modal', 'idle-modal', 'privacy-cover'];
     for (let i = 0; i < ids.length; i++) { const el = document.getElementById(ids[i]); if (el && el.classList.contains('show')) return true; }
     if (document.getElementById('bp-compose').classList.contains('show')) return true;
-    if (editingNotes || popEditing) return true;
+    if (popEditing) return true;
     if (isMobileLayout() && view !== 'chat') return true;
     return false;
   }
@@ -9535,58 +9390,6 @@ function bpSetPage(p, instant) {
   document.addEventListener('pointerup', (e) => { lastPtr = Date.now(); if (!onArrow(e.target)) restoreSoon(); });
   document.addEventListener('click', (e) => { if (!onArrow(e.target)) restoreSoon(); });
 })();
-
-(function initNotesGesture() {
-  const TAP_MAX = 400, TAP_GAP = 600, HOLD_START_GAP = 800, HOLD_MS = 1000, MOVE = 10;
-  let taps = [], holdTimer = null, holding = false, moved = false, downT = 0, sx = 0, sy = 0;
-  const cancelHold = () => { if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; } };
-
-  notesView.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-    const t = Date.now();
-    downT = t; sx = e.clientX; sy = e.clientY; moved = false; holding = false;
-    cancelHold();
-    if (taps.length === 2 && t - taps[1] <= HOLD_START_GAP) {
-      holding = true;
-      holdTimer = setTimeout(() => {
-        holdTimer = null; holding = false; taps = [];
-        if (navigator.vibrate) { try { navigator.vibrate(30); } catch (err) {} }
-        enterNotesEdit();
-      }, HOLD_MS);
-    } else if (taps.length) {
-      taps = taps.length && t - taps[taps.length - 1] <= TAP_GAP ? taps : [];
-    }
-  });
-  notesView.addEventListener('pointermove', (e) => {
-    if (Math.abs(e.clientX - sx) > MOVE || Math.abs(e.clientY - sy) > MOVE) {
-      moved = true;
-      if (holding) { cancelHold(); holding = false; taps = []; }
-    }
-  });
-  notesView.addEventListener('pointerup', () => {
-    cancelHold();
-    const t = Date.now();
-    if (holding) { holding = false; taps = []; return; }
-    if (moved || t - downT > TAP_MAX) { taps = []; return; }
-    if (taps.length && t - taps[taps.length - 1] > TAP_GAP) taps = [];
-    taps.push(t);
-    if (taps.length > 2) taps = [t];
-  });
-  notesView.addEventListener('pointercancel', () => { cancelHold(); holding = false; taps = []; });
-
-  notesView.addEventListener('selectstart', (e) => { if (holding || taps.length === 2) e.preventDefault(); });
-  notesView.addEventListener('contextmenu', (e) => { if (holding || taps.length === 2) e.preventDefault(); });
-  notesView.addEventListener('mousedown', (e) => { if (e.detail > 1) e.preventDefault(); });
-})();
-
-if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', () => {
-    if (!editingNotes) return;
-    setTimeout(() => {
-      if (notesEdit.selectionStart === notesEdit.value.length) notesEdit.scrollTop = notesEdit.scrollHeight;
-    }, 60);
-  });
-}
 
 (function initSettingsMenu() {
   // Ayarlar simgesine basılı tutunca diğer kanala geçer (yalnızca 6687 PIN'i ile girenlerde, her zaman)
@@ -9812,7 +9615,7 @@ if (window.visualViewport) {
   const SEL = 'button:not(:disabled), [role="button"], [role="switch"], [role="option"], .seg-btn, .set-title, ' +
     '#settings-btn, #eye-btn, #refresh-btn, #notes-btn, #bell-btn, #profile-btn, #auto-chip-x, #live-toggle, ' +
     '#scroll-down-btn, #send-btn, #cancel-reply-btn, #privacy-eye, #viewer-close, #viewer-dl, #bp-add, .bp-del, ' +
-    '#bp-actions span, #notes-save-bar, .new-badge, .once-btn, #confirm-once-row, #photo-src-box button, #reset-check-row, .ncg-item, ' +
+    '#bp-actions span, .new-badge, .once-btn, #confirm-once-row, #photo-src-box button, #reset-check-row, .ncg-item, ' +
     '.react-box, .cm-item, .pin-key:not(.ghost), #msg-menu button';
   function tap(e, fromClick) {
     if (!isMobileLayout()) return;
@@ -10107,7 +9910,6 @@ if (window.visualViewport) {
   requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove('no-anim')));
 })();
 
-renderNotes();
 renderQNote();
 updateBadges();
 
