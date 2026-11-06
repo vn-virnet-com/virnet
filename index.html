@@ -679,7 +679,7 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 #mb-search::placeholder { color: var(--c-77); }
 .mb-strip { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; height: 22px; margin: 0 6px 4px; border-radius: 6px; background: var(--c-22); color: var(--c-88); font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; }
 .mb-strip b { margin-left: 5px; color: var(--c-fff); font-weight: 700; }
-.mb-strip2 { position: relative; margin-bottom: 6px; }
+.mb-strip2 { position: relative; margin-bottom: 4px; }
 /* Çevrimiçi / çevrimdışı oranı: altta ince birleşik çizgi, sol yeşil (çevrimiçi), sağ gri (çevrimdışı) */
 .mb-ratio { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: #6b6b6b; pointer-events: none; }
 .mb-ratio > i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .35s ease; }
@@ -694,6 +694,12 @@ body.mb-admin .mb-strip2 > span { cursor: pointer; }
 .mb-item.mb-bot .mb-name .mb-inline { width: 100%; }
 .mb-strip2 > span { flex: 1 1 0; min-width: 0; text-align: center; overflow: hidden; text-overflow: ellipsis; }
 .mb-strip2 > span + span { border-left: 1px solid var(--c-44); }
+/* Erkekler / Kızlar sayacı: çevrimiçi/çevrimdışı kutusuyla aynı düzen; oran çizgisi solda mavi (erkek), sağda pembe-mor (kız) */
+.mb-strip3 { position: relative; margin-bottom: 6px; }
+.mb-strip3 > span { flex: 1 1 0; min-width: 0; text-align: center; overflow: hidden; text-overflow: ellipsis; }
+.mb-strip3 > span + span { border-left: 1px solid var(--c-44); }
+.mb-strip3 .mb-ratio { background: #c957d8; }
+.mb-strip3 .mb-ratio > i { background: #3b8cff; }
 #mb-list { position: relative; flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 0 6px 6px; }
 .mb-col { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 /* Sütunlar arasına dikey ince çizgi (6px boşluğun tam ortası) */
@@ -1615,6 +1621,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     </div>
     <div class="mb-strip mb-strip1">Toplam Kullanıcı:<b id="mb-total">0</b></div>
     <div class="mb-strip mb-strip2"><span>Çevrimiçi:<b id="mb-on">0</b></span><span>Çevrimdışı:<b id="mb-off">0</b></span><div class="mb-ratio" aria-hidden="true"><i id="mb-ratio-fill"></i></div></div>
+    <div class="mb-strip mb-strip3"><span>Erkekler:<b id="mb-male">0</b></span><span>Kızlar:<b id="mb-female">0</b></span><div class="mb-ratio" aria-hidden="true"><i id="mb-gratio-fill"></i></div></div>
     <div id="mb-list">
       <div class="mb-col" data-g="e">
         <div class="mb-colhead"><span>Erkekler</span><button type="button" class="mb-coladd" data-g="e" title="Yeni üye" aria-label="Erkekler: yeni üye">+</button></div>
@@ -2358,6 +2365,17 @@ function restoreDraft() {
   messageInput.value = v;
   liveSpaceCount = liveSpaces(v);
   adjustInputHeight();
+}
+// Metin kutusunu programla doldurur (göndermez). Kutu kapalıysa (bağlantı yok) taslak olarak bekler, açılınca yerine gelir
+function fillChatInput(text) {
+  if (editingId) endEdit();
+  stopLive();
+  if (messageInput.disabled) { chatDraft = text; return; }
+  messageInput.value = text;
+  liveSpaceCount = liveSpaces(text);
+  saveDraft();
+  adjustInputHeight();
+  try { messageInput.focus({ preventScroll: true }); const l = text.length; messageInput.setSelectionRange(l, l); } catch (e) {}
 }
 function setChatEnabled(enabled) {
   chatConnUp = !!enabled;
@@ -10149,6 +10167,7 @@ function receiveMembers(d) {
   const MB_SEND_DELAY = 1000; // ms
   let sendTimer = null, pendingRender = false;
   const elTotal = document.getElementById('mb-total'), elOn = document.getElementById('mb-on'), elOff = document.getElementById('mb-off');
+  const elMale = document.getElementById('mb-male'), elFemale = document.getElementById('mb-female');
   // Sayılar: yalnızca tamamlanmış üyeler (taslaklar sayılmaz)
   // Botlar sayılara dahil değildir (durumları yok)
   const statMembers = () => mbData.filter((m) => !m._draft && m.g !== 'b');
@@ -10157,6 +10176,10 @@ function receiveMembers(d) {
     const on = pub.filter((m) => m.on).length;
     const put = (el, v) => { if (el && !el.querySelector('input')) el.textContent = String(v); }; // yazılırken ezme
     put(elTotal, pub.length); put(elOn, on); put(elOff, pub.length - on);
+    const nm = pub.filter((m) => m.g === 'e').length, nf = pub.filter((m) => m.g === 'k').length;
+    put(elMale, nm); put(elFemale, nf);
+    const rg = document.getElementById('mb-gratio-fill');
+    if (rg) rg.style.width = ((nm + nf) ? (nm * 100 / (nm + nf)) : 0).toFixed(2) + '%';
     // Son güncelleme saati (liste sürümü = değişikliğin yapıldığı an; iki cihazda aynıdır)
     const st = document.getElementById('mb-stamp');
     if (st) {
@@ -10217,6 +10240,19 @@ function receiveMembers(d) {
     });
     try { i.focus(); i.select(); } catch (e) {}
   }
+  // 3828 ile girenler: kullanıcı kartına (erkek / kız) tıklayınca sohbete geçer, Operatör kanalındaysa normal kanala döner
+  // ve mesaj kutusuna ".ara <kartın üstündeki isim>" yazılır (gönderilmez)
+  list.addEventListener('click', (e) => {
+    if (!thirdCanSend()) return;
+    const card = e.target && e.target.closest ? e.target.closest('.mb-item') : null;
+    if (!card || card.classList.contains('mb-bot')) return;
+    const m = mbData.find((x) => x.id === card.dataset.id);
+    const name = m ? String(m.name || '').trim() : '';
+    if (!m || m._draft || !name) return;
+    if (curCh === 'op') switchChannel('main');
+    if (isMobileLayout() && view !== 'chat') setView('chat');
+    fillChatInput('.ara ' + name);
+  });
   if (elOn) { elOn.classList.add('mb-stat-b'); elOn.parentNode.addEventListener('click', () => editStat(elOn, true)); }
   if (elOff) { elOff.classList.add('mb-stat-b'); elOff.parentNode.addEventListener('click', () => editStat(elOff, false)); }
 
