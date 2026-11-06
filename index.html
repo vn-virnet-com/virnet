@@ -694,6 +694,8 @@ body.mb-admin .mb-strip2 > span { cursor: pointer; }
 .mb-item.mb-bot .mb-name .mb-inline { width: 100%; }
 .mb-strip2 > span { flex: 1 1 0; min-width: 0; text-align: center; overflow: hidden; text-overflow: ellipsis; }
 .mb-strip2 > span + span { border-left: 1px solid var(--c-44); }
+/* Oran çizgisi yazılara fazla yakındı: kutu 1px uzar (yazı yerinde kalır), çizgi 1px aşağı iner */
+.mb-strip2, .mb-strip3 { height: 23px; padding-bottom: 1px; box-sizing: border-box; }
 /* Erkekler / Kızlar sayacı: çevrimiçi/çevrimdışı kutusuyla aynı düzen; oran çizgisi solda mavi (erkek), sağda pembe-mor (kız) */
 .mb-strip3 { position: relative; margin-bottom: 6px; }
 .mb-strip3 > span { flex: 1 1 0; min-width: 0; text-align: center; overflow: hidden; text-overflow: ellipsis; }
