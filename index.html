@@ -5769,7 +5769,7 @@ document.getElementById('ytsearch-slots').addEventListener('click', ytsShowSlots
 
 /* ===== Oynatma listesi: karışık çalma (tek başına dinleme) ===== */
 const YTPL_KEY = 'ytShuffle';
-const YTPL_MAX_AGE = 12 * 3600 * 1000; // son kayıttan bu kadar süre geçtiyse kaldığı yerden otomatik devam etmez
+const YTPL_MAX_AGE = 10 * 60 * 1000; // şarkı en son bu kadar süre önce çalıyorduysa geri açılınca şerit/şarkı geri gelmez, kayıt silinir
 const ytPlEl = {
   strip: document.getElementById('ytpl-strip'), cover: document.getElementById('ytpl-cover'),
   name: document.getElementById('ytpl-name'), sub: document.getElementById('ytpl-sub'),
@@ -5796,7 +5796,9 @@ function ytPlSave() {
   if (!g || !g.isConnected || !g._getState || g._ytId !== ytPl.order[ytPl.pos]) return;
   try {
     const s = g._getState();
-    if (s.st === 1 || s.st === 2) { ytPl.t = s.cur || 0; ytPl.playing = s.st === 1; ytPl.at = Date.now(); ytPlPersist(); }
+    // 'at' yalnızca şarkı çalarken yenilenir; duraklatılmışsa konum kaydedilir ama süre işlemeye devam eder (10 dk dolunca geri gelmez)
+    if (s.st === 1) { ytPl.t = s.cur || 0; ytPl.playing = true; ytPl.at = Date.now(); ytPlPersist(); }
+    else if (s.st === 2) { ytPl.t = s.cur || 0; ytPl.playing = false; ytPlPersist(); }
     else if (s.st === 3) { ytPl.at = Date.now(); ytPlPersist(); }
   } catch (e) {}
 }
@@ -5901,6 +5903,26 @@ function ytPlStop() {
   ytPlUI();
   try { ytMsSync(); } catch (e) {}
 }
+// Şerit 10 dakika boyunca çalmadan (duraklatılmış / durmuş) açık kalırsa kapanır, şarkı ve kaydı silinir; şerit gider
+const YT_IDLE_MAX = 10 * 60 * 1000;
+let ytIdleSince = 0;
+setInterval(() => {
+  try {
+    const c = ytDockCard || ytsGhost;
+    if (!c || !c.isConnected || !c._getState) { ytIdleSince = 0; return; }
+    if (c._getState().playing) { ytIdleSince = 0; return; }
+    if (!ytIdleSince) { ytIdleSince = Date.now(); return; }
+    if (Date.now() - ytIdleSince < YT_IDLE_MAX) return;
+    ytIdleSince = 0;
+    ytDockDismissed = c; ytDockDismissedAt = Date.now(); ytDockCard = null;
+    try { if (c._stopAll) c._stopAll(); } catch (e) {}
+    try { if (c._pause) c._pause(); } catch (e) {}
+    try { ytDockHide(); } catch (e) {}
+    if (ytPl) { try { ytPlStop(); } catch (e) {} }
+    try { localStorage.removeItem(YTPL_KEY); sessionStorage.removeItem('soloSong'); } catch (e) {}
+    if (c._ghost && c === ytsGhost) { ytsGhost = null; try { c.remove(); } catch (e) {} }
+  } catch (e) {}
+}, 5000);
 function ytPlOnPlay(card) { if (ytPl && card === ytsGhost) ytPlFails = 0; }
 function ytPlOnEnd(card) {
   if (!ytPl || card !== ytsGhost) return;
