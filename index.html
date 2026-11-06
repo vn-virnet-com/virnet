@@ -668,17 +668,23 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 #notes-bottom { position: relative; flex: 1 1 0; min-height: 0; overflow: hidden; background: var(--c-000); display: flex; flex-direction: column; }
 
 /* ---- Üye listesi (alt bölme): 3 sütun ---- */
-#mb-bar { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 6px; }
+#mb-bar { position: relative; flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 6px; }
 #mb-search {
   flex: 1 1 auto; min-width: 0; height: 30px; padding: 0 10px; border: 1px solid var(--c-33); border-radius: 8px;
   background: var(--c-111); color: var(--c-fff); outline: none; font-size: 16px; caret-color: var(--accent);
   font-family: 'Lexend', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
 }
+#mb-search { padding-right: 74px; }
 #mb-search:focus { border-color: var(--c-55); }
+/* Son güncelleme: arama çubuğunun en sağında küçük "SG • SS:DD" */
+#mb-stamp { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 9px; font-weight: 600; line-height: 1; letter-spacing: .2px; color: var(--c-77); white-space: nowrap; pointer-events: none; user-select: none; -webkit-user-select: none; }
 #mb-search::placeholder { color: var(--c-77); }
 .mb-strip { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; height: 22px; margin: 0 6px 4px; border-radius: 6px; background: var(--c-22); color: var(--c-88); font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; }
 .mb-strip b { margin-left: 5px; color: var(--c-fff); font-weight: 700; }
-.mb-strip2 { margin-bottom: 6px; }
+.mb-strip2 { position: relative; margin-bottom: 6px; }
+/* Çevrimiçi / çevrimdışı oranı: altta ince birleşik çizgi, sol yeşil (çevrimiçi), sağ gri (çevrimdışı) */
+.mb-ratio { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: #6b6b6b; pointer-events: none; }
+.mb-ratio > i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .35s ease; }
 body.mb-admin .mb-strip2 > span { cursor: pointer; }
 .mb-strip b.mb-stat-b { display: inline-flex; align-items: center; }
 .mb-stat-in { width: 4ch; height: 20px; margin: 0; padding: 0; border: none; border-radius: 0; background: transparent; color: var(--c-fff); font: inherit; font-size: 16px; font-weight: 700; line-height: 20px; text-align: center; outline: none; box-shadow: 0 1px 0 var(--accent); caret-color: var(--accent); user-select: text; -webkit-user-select: text; }
@@ -690,8 +696,13 @@ body.mb-admin .mb-strip2 > span { cursor: pointer; }
 .mb-item.mb-bot .mb-name .mb-inline { width: 100%; }
 .mb-strip2 > span { flex: 1 1 0; min-width: 0; text-align: center; overflow: hidden; text-overflow: ellipsis; }
 .mb-strip2 > span + span { border-left: 1px solid var(--c-44); }
-#mb-list { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 0 6px 6px; }
-.mb-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+#mb-list { position: relative; flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 0 6px 6px; }
+.mb-col { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+/* Sütunlar arasına dikey ince çizgi (6px boşluğun tam ortası) */
+.mb-col + .mb-col::before { content: ""; position: absolute; left: -3.5px; top: 0; bottom: 0; width: 1px; background: var(--c-33); pointer-events: none; }
+/* Çevrimiçiler bitip çevrimdışılar başlarken araya giren ayraç */
+.mb-sep { display: flex; align-items: center; gap: 6px; margin: 8px 0 6px; color: var(--c-77); font-size: 10px; font-weight: 600; line-height: 1; white-space: nowrap; user-select: none; -webkit-user-select: none; }
+.mb-sep::before, .mb-sep::after { content: ""; flex: 1 1 0; height: 1px; background: var(--c-44); }
 .mb-colhead { position: relative; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; min-height: 27px; padding: 0 24px 5px; font-size: 12px; font-weight: 700; color: var(--c-cc); text-align: center; }
 .mb-colhead > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mb-coladd {
@@ -726,7 +737,9 @@ body.mb-admin .mb-name, body.mb-admin .mb-user { cursor: text; }
   caret-color: var(--accent); user-select: text; -webkit-user-select: text;
 }
 /* Silme: üye kutucuğuna çok kısa basılı tutup sola kaydırınca silinir (yalnızca yönetici) */
-body.mb-admin .mb-item { touch-action: pan-y; }
+body.mb-admin .mb-item, body.mb-admin .mb-item * { touch-action: pan-y; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
+body.mb-admin .mb-item .mb-inline { touch-action: manipulation; user-select: text; -webkit-user-select: text; }
+body.mb-admin .mb-item .mb-dotbtn, body.mb-admin .mb-item .mb-lock { touch-action: manipulation; }
 .mb-item.mb-armed { user-select: none; -webkit-user-select: none; box-shadow: 0 0 0 1px var(--dng-bg); z-index: 1; }
 .mb-item.mb-snap { transition: transform .18s ease, opacity .18s ease; }
 @media (min-width: 769px) { #mb-search { font-size: 13px; } }
@@ -1596,9 +1609,10 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   <div id="notes-bottom">
     <div id="mb-bar">
       <input id="mb-search" type="text" name="mb-search-x" placeholder="Ara..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
+      <span id="mb-stamp" aria-label="Son güncelleme"></span>
     </div>
     <div class="mb-strip mb-strip1">Toplam Kullanıcı:<b id="mb-total">0</b></div>
-    <div class="mb-strip mb-strip2"><span>Çevrimiçi:<b id="mb-on">0</b></span><span>Çevrimdışı:<b id="mb-off">0</b></span></div>
+    <div class="mb-strip mb-strip2"><span>Çevrimiçi:<b id="mb-on">0</b></span><span>Çevrimdışı:<b id="mb-off">0</b></span><div class="mb-ratio" aria-hidden="true"><i id="mb-ratio-fill"></i></div></div>
     <div id="mb-list">
       <div class="mb-col" data-g="e">
         <div class="mb-colhead"><span>Erkekler</span><button type="button" class="mb-coladd" data-g="e" title="Yeni üye" aria-label="Erkekler: yeni üye">+</button></div>
@@ -10217,6 +10231,14 @@ function receiveMembers(d) {
     const on = pub.filter((m) => m.on).length;
     const put = (el, v) => { if (el && !el.querySelector('input')) el.textContent = String(v); }; // yazılırken ezme
     put(elTotal, pub.length); put(elOn, on); put(elOff, pub.length - on);
+    // Son güncelleme saati (liste sürümü = değişikliğin yapıldığı an; iki cihazda aynıdır)
+    const st = document.getElementById('mb-stamp');
+    if (st) {
+      if (mbRev > 1e12) { const d = new Date(mbRev); st.textContent = 'SG \u2022 ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+      else st.textContent = '';
+    }
+    const rf = document.getElementById('mb-ratio-fill');
+    if (rf) rf.style.width = (pub.length ? (on * 100 / pub.length) : 0).toFixed(2) + '%';
   }
   // Yönetici (6687): çevrimiçi / çevrimdışı sayısına basınca yazma kutusu olur. Toplamdan büyük sayı yazılamaz.
   // Sayı artırılınca, o sayıya ulaşmak için diğer gruptan rastgele üyeler bu gruba geçer (liste karşıya gittiği için iki tarafta aynı kişiler olur).
@@ -10301,6 +10323,25 @@ function receiveMembers(d) {
   // Sayfa kapanırken / arka plana giderken bekleyen düzenleme kaybolmasın
   window.addEventListener('pagehide', flushSend);
   document.addEventListener('visibilitychange', () => { if (document.hidden) flushSend(); });
+  // Bir sütunda çevrimiçiler bitip çevrimdışılar başlıyorsa, son çevrimiçi ile ilk çevrimdışı arasına "Çevrimdışı" ayracı koyar
+  function updateSeps() {
+    ['e', 'k'].forEach((g) => {
+      const box = colist[g]; if (!box) return;
+      box.querySelectorAll('.mb-sep').forEach((x) => x.remove());
+      let sawOn = false, firstOff = null;
+      Array.from(box.querySelectorAll('.mb-item')).forEach((el) => {
+        if (el.style.display === 'none') return;
+        const m = byId(el.dataset.id);
+        if (!m || m._draft) return;
+        if (m.on) { if (!firstOff) sawOn = true; }
+        else if (!firstOff) firstOff = el;
+      });
+      if (sawOn && firstOff) {
+        const sep = document.createElement('div'); sep.className = 'mb-sep'; sep.textContent = 'Çevrimdışı';
+        box.insertBefore(sep, firstOff);
+      }
+    });
+  }
   function applyFilter() {
     const q = norm(search.value.trim());
     list.querySelectorAll('.mb-item').forEach((el) => {
@@ -10308,6 +10349,7 @@ function receiveMembers(d) {
       const hit = !!m && (!q || norm(m.name).indexOf(q) !== -1 || (m.g !== 'b' && norm(m.user).indexOf(q) !== -1));
       el.style.display = hit ? '' : 'none';
     });
+    updateSeps();
   }
   // Kutucukları yeniden çizmeden sıraya dizer (odaktaki alan bozulmasın diye yalnızca yazma bitince / durum değişince çağrılır)
   function resort() {
@@ -10317,6 +10359,7 @@ function receiveMembers(d) {
         if (el) colist[g].appendChild(el);
       });
     });
+    updateSeps();
   }
   // Taslak üye, kutucukta yazma bitince (odak kutucuktan çıkınca) tamamlanır: boşsa atılır, doluysa karşıya gider ve yerine geçer
   function finalizeDrafts(ae) {
@@ -10473,7 +10516,8 @@ function receiveMembers(d) {
       blk.addEventListener('touchmove', (e) => { if (armed && e.cancelable) e.preventDefault(); }, { passive: false });
       // Kaydırma sonrası gelen sahte tıklama ismi/kullanıcı adını düzenlemeye açmasın
       blk.addEventListener('click', (e) => { if (swiped) { e.stopPropagation(); e.preventDefault(); swiped = false; } }, true);
-      blk.addEventListener('contextmenu', (e) => { if (armed) e.preventDefault(); });
+      blk.addEventListener('contextmenu', (e) => { if (!(e.target.closest && e.target.closest('input'))) e.preventDefault(); });
+      blk.addEventListener('selectstart', (e) => { if (!(e.target.closest && e.target.closest('input')) && (timer || armed)) e.preventDefault(); });
     })();
     return blk;
   }
