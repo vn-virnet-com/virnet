@@ -662,6 +662,50 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
   #pane-notes { border-left: 1px solid var(--c-1a); }
 }
 
+/* Not paneli dikey bölme: üst %60 not alanı, alt %40 boş alan (ileride doldurulacak) */
+#notes-top { position: relative; flex: 0 0 60%; height: 60%; min-height: 0; overflow: hidden; }
+#notes-divider { flex: 0 0 3px; height: 3px; background: var(--c-44); }
+#notes-bottom { position: relative; flex: 1 1 0; min-height: 0; overflow: hidden; background: var(--c-000); display: flex; flex-direction: column; }
+
+/* ---- Üye listesi (alt bölme) ---- */
+#mb-bar { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 6px; }
+#mb-search {
+  flex: 1 1 auto; min-width: 0; height: 30px; padding: 0 10px; border: 1px solid var(--c-33); border-radius: 8px;
+  background: var(--c-111); color: var(--c-fff); outline: none; font-size: 16px; caret-color: var(--accent);
+  font-family: 'Lexend', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+}
+#mb-search:focus { border-color: var(--c-55); }
+#mb-search::placeholder { color: var(--c-77); }
+#mb-add {
+  display: none; flex: 0 0 30px; width: 30px; height: 30px; padding: 0; border: 1px solid var(--c-33); border-radius: 8px;
+  background: var(--c-22); color: var(--c-fff); font-size: 20px; line-height: 1; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+body.mb-admin #mb-add { display: block; }
+#mb-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 6px 8px; }
+#mb-list .set-block + .set-block, #mb-list .set-block.collapsed + .set-block { margin-top: 6px; }
+#mb-list.ro .set-title { cursor: default; }
+.mb-text { flex: 1 1 auto; min-width: 0; }
+.mb-name { font-size: 13px; font-weight: 700; color: var(--c-fff); line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mb-user { margin-top: 3px; padding-top: 3px; border-top: 1px solid var(--c-44); font-size: 11px; font-weight: 400; color: var(--c-88); line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mb-name.ph, .mb-user.ph { font-style: italic; font-weight: 400; opacity: .6; }
+.mb-dot { flex: 0 0 10px; width: 10px; height: 10px; margin-left: 10px; border-radius: 50%; background: #6b6b6b; }
+.mb-dot.on { background: var(--ok); }
+.mb-lbl { display: block; margin: 8px 0 3px; font-size: 11px; font-weight: 600; color: var(--c-88); }
+.mb-lbl:first-child { margin-top: 2px; }
+.mb-in {
+  display: block; width: 100%; height: 34px; padding: 0 9px; border: 1px solid var(--c-33); border-radius: 6px;
+  background: var(--c-111); color: var(--c-fff); outline: none; font-size: 16px; caret-color: var(--accent);
+  font-family: 'Lexend', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+}
+.mb-in:focus { border-color: var(--c-55); }
+.mb-seg { flex-direction: row; }
+.mb-seg .seg-btn { flex: 1 1 0; width: auto; }
+.mb-seg .seg-btn + .seg-btn { border-top: none; border-left: 1px solid var(--c-33); }
+.mb-delseg { margin-top: 10px; }
+.mb-empty { padding: 14px 6px; text-align: center; font-size: 12px; color: var(--c-77); }
+@media (min-width: 769px) { #mb-search, .mb-in { font-size: 13px; } }
+
 #notes-view, #notes-edit {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
   padding: 10px 8px 40px; font-size: 15px; line-height: 1.25; color: var(--c-fff); background: var(--c-000);
@@ -1554,9 +1598,19 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 </div>
 </div>
 <div id="pane-notes" class="pane">
-  <div id="notes-view"></div>
-  <textarea id="notes-edit" spellcheck="false" autocomplete="off" autocorrect="off" enterkeyhint="done"></textarea>
-  <div id="notes-save-bar">Kaydet</div>
+  <div id="notes-top">
+    <div id="notes-view"></div>
+    <textarea id="notes-edit" spellcheck="false" autocomplete="off" autocorrect="off" enterkeyhint="done"></textarea>
+    <div id="notes-save-bar">Kaydet</div>
+  </div>
+  <div id="notes-divider"></div>
+  <div id="notes-bottom">
+    <div id="mb-bar">
+      <input id="mb-search" type="text" name="mb-search-x" placeholder="Ara..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
+      <button id="mb-add" type="button" title="Yeni üye" aria-label="Yeni üye">+</button>
+    </div>
+    <div id="mb-list"></div>
+  </div>
   <div id="new-msg-badge" class="new-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg><span>Yeni</span></div>
 </div>
 </div>
@@ -2858,6 +2912,7 @@ function setupConnection(c) {
     adjustInputHeight();
     sendNotes('notes-hello');
     sendQNote('qnote-hello');
+    sendMembers('members-hello');
     flushNotifOutbox();
     cardSyncSoon(true);
     flushCardOutbox();
@@ -2907,6 +2962,7 @@ function setupConnection(c) {
     if (data.type === 'rec')      { showRecIndicator(); return; }
     if (data.type === 'rec-stop') { hideRecIndicator(); return; }
     if (data.type === 'notes' || data.type === 'notes-hello') { receiveNotes(data); return; }
+    if (data.type === 'members' || data.type === 'members-hello') { receiveMembers(data); return; }
     if (data.type === 'notif') { receiveNotif(data); return; }
     if (data.type === 'notif-del') { receiveNotifDel(data); return; }
     if (data.type === 'notif-ack') { receiveNotifAck(data); return; }
@@ -10112,6 +10168,204 @@ updateBadges();
   }, 250);
 })();
 
+/* ---- Üye listesi (notlar panelinin alt %40'ı) ----
+   Yönetici (yüksek PIN seviyesi = sessionStorage 'pinLive') üye ekler/siler, isim-kullanıcı adı-durum düzenler.
+   Diğer seviye yalnızca kutucukları görür (açılmaz). Veri localStorage'da tutulur ve notlar gibi eşler arası senkronlanır. */
+let mbData = [];
+let mbRev = parseInt(lsGet('membersRev') || '0', 10) || 0;
+let mbBy  = lsGet('membersBy') || '';
+function mbClean(a) {
+  if (!Array.isArray(a)) return [];
+  return a.slice(0, 500).filter((x) => x && typeof x === 'object').map((x) => ({
+    id: String(x.id || '').slice(0, 40) || ('m' + Math.random().toString(36).slice(2, 10)),
+    name: String(x.name || '').slice(0, 60),
+    user: String(x.user || '').slice(0, 40),
+    on: !!x.on
+  }));
+}
+try { const raw = lsGet('membersData'); mbData = mbClean(raw ? JSON.parse(raw) : []); } catch (e) { mbData = []; }
+function mbPersist() {
+  lsSet('membersData', JSON.stringify(mbData));
+  lsSet('membersRev', String(mbRev));
+  lsSet('membersBy', mbBy);
+}
+function sendMembers(type) {
+  if (!isConnected()) return;
+  try { conn.send({ type: type, list: mbData, rev: mbRev, by: mbBy }); } catch (e) {}
+}
+function receiveMembers(d) {
+  if (!d || !Array.isArray(d.list) || typeof d.rev !== 'number' || !isFinite(d.rev)) return;
+  const by = (typeof d.by === 'string') ? d.by : '';
+  const newer = d.rev > mbRev || (d.rev === mbRev && by > mbBy);
+  if (!newer) return;
+  mbData = mbClean(d.list); mbRev = d.rev; mbBy = by;
+  mbPersist();
+  if (window.mbRerender) window.mbRerender();
+}
+(function initMembers() {
+  const list = document.getElementById('mb-list');
+  const search = document.getElementById('mb-search');
+  const addBtn = document.getElementById('mb-add');
+  if (!list || !search || !addBtn) return;
+  const open = new Set();
+  let sendTimer = null, pendingRender = false;
+
+  const isAdmin = () => { try { return sessionStorage.getItem('pinLive') === '1'; } catch (e) { return false; } };
+  // Arama: büyük/küçük harf, Türkçe karakter (ı/i, ş/s, ğ/g...) farkı gözetmez
+  const norm = (v) => String(v || '').toLocaleLowerCase('tr').replace(/ı/g, 'i').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const byId = (id) => mbData.find((m) => m.id === id);
+
+  function changed(now) {
+    mbRev = Math.max(Date.now(), mbRev + 1);
+    mbBy = (typeof myId === 'string' && myId) ? myId : '';
+    mbPersist();
+    clearTimeout(sendTimer);
+    if (now) sendMembers('members'); else sendTimer = setTimeout(() => sendMembers('members'), 250);
+  }
+  function setText(el, val, ph) {
+    el.textContent = val || ph;
+    el.classList.toggle('ph', !val);
+  }
+  function applyFilter() {
+    const q = norm(search.value.trim());
+    let shown = 0;
+    list.querySelectorAll('.mb-item').forEach((el) => {
+      const m = byId(el.dataset.id);
+      const hit = !!m && (!q || norm(m.name).indexOf(q) !== -1 || norm(m.user).indexOf(q) !== -1);
+      el.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    });
+    const e = list.querySelector('.mb-empty');
+    if (e) {
+      e.style.display = shown ? 'none' : '';
+      e.textContent = mbData.length ? 'Sonuç yok' : (isAdmin() ? 'Henüz üye yok. + ile ekleyebilirsin.' : 'Henüz üye yok');
+    }
+  }
+  function buildItem(m, admin) {
+    const blk = document.createElement('div');
+    blk.className = 'set-block mb-item' + (admin && open.has(m.id) ? '' : ' collapsed');
+    blk.dataset.id = m.id;
+
+    const t = document.createElement('div');
+    t.className = 'set-title';
+    const txt = document.createElement('div'); txt.className = 'mb-text';
+    const nm = document.createElement('div'); nm.className = 'mb-name'; setText(nm, m.name, '(isimsiz)');
+    const us = document.createElement('div'); us.className = 'mb-user'; setText(us, m.user, '(kullanıcı adı yok)');
+    txt.appendChild(nm); txt.appendChild(us);
+    const dot = document.createElement('span'); dot.className = 'mb-dot' + (m.on ? ' on' : '');
+    dot.title = m.on ? 'Çevrimiçi' : 'Çevrimdışı';
+    t.appendChild(txt); t.appendChild(dot);
+    blk.appendChild(t);
+    if (!admin) return blk;
+
+    const arrow = document.createElement('span'); arrow.className = 'set-arrow'; arrow.setAttribute('aria-hidden', 'true'); arrow.textContent = '›';
+    t.appendChild(arrow);
+    t.setAttribute('role', 'button'); t.tabIndex = 0;
+    t.setAttribute('aria-expanded', open.has(m.id) ? 'true' : 'false');
+
+    const col = document.createElement('div'); col.className = 'set-collapse';
+    const clip = document.createElement('div'); clip.className = 'set-clip';
+    const body = document.createElement('div'); body.className = 'set-body';
+    col.appendChild(clip); clip.appendChild(body); blk.appendChild(col);
+
+    function field(label, key, max, ph) {
+      const l = document.createElement('label'); l.className = 'mb-lbl'; l.textContent = label;
+      const i = document.createElement('input');
+      i.className = 'mb-in'; i.type = 'text'; i.value = m[key]; i.maxLength = max;
+      i.autocomplete = 'off'; i.spellcheck = false; i.name = 'mb-' + key + '-x';
+      i.setAttribute('autocorrect', 'off'); i.setAttribute('autocapitalize', 'off');
+      i.setAttribute('data-lpignore', 'true'); i.setAttribute('data-1p-ignore', 'true'); i.setAttribute('data-bwignore', 'true'); i.setAttribute('data-form-type', 'other');
+      i.setAttribute('enterkeyhint', 'done');
+      i.addEventListener('input', () => {
+        m[key] = i.value;
+        if (key === 'name') setText(nm, m.name, '(isimsiz)'); else setText(us, m.user, '(kullanıcı adı yok)');
+        changed(false);
+      });
+      i.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); try { i.blur(); } catch (er) {} } });
+      body.appendChild(l); body.appendChild(i);
+    }
+    field('İsim', 'name', 60);
+    field('Kullanıcı adı', 'user', 40);
+
+    const sl = document.createElement('label'); sl.className = 'mb-lbl'; sl.textContent = 'Durum';
+    const seg = document.createElement('div'); seg.className = 'seg mb-seg';
+    const bOn = document.createElement('button'); bOn.type = 'button'; bOn.className = 'seg-btn'; bOn.textContent = 'Çevrimiçi';
+    const bOff = document.createElement('button'); bOff.type = 'button'; bOff.className = 'seg-btn'; bOff.textContent = 'Çevrimdışı';
+    const paint = () => {
+      bOn.classList.toggle('active', m.on); bOn.setAttribute('aria-pressed', m.on ? 'true' : 'false');
+      bOff.classList.toggle('active', !m.on); bOff.setAttribute('aria-pressed', m.on ? 'false' : 'true');
+      dot.classList.toggle('on', m.on); dot.title = m.on ? 'Çevrimiçi' : 'Çevrimdışı';
+    };
+    const setOn = (v) => { if (m.on === v) return; m.on = v; paint(); changed(true); };
+    bOn.addEventListener('click', () => setOn(true));
+    bOff.addEventListener('click', () => setOn(false));
+    paint();
+    seg.appendChild(bOn); seg.appendChild(bOff);
+    body.appendChild(sl); body.appendChild(seg);
+
+    const dseg = document.createElement('div'); dseg.className = 'seg mb-delseg';
+    const del = document.createElement('button'); del.type = 'button'; del.className = 'seg-btn danger'; del.textContent = 'Üyeyi sil';
+    let armTimer = null;
+    del.addEventListener('click', () => {
+      if (!del.dataset.armed) {
+        del.dataset.armed = '1'; del.textContent = 'Silmek için tekrar dokun';
+        armTimer = setTimeout(() => { delete del.dataset.armed; del.textContent = 'Üyeyi sil'; }, 3000);
+        return;
+      }
+      clearTimeout(armTimer);
+      mbData = mbData.filter((x) => x.id !== m.id);
+      open.delete(m.id);
+      changed(true);
+      render();
+    });
+    dseg.appendChild(del); body.appendChild(dseg);
+
+    const toggle = () => {
+      const c = blk.classList.toggle('collapsed');
+      t.setAttribute('aria-expanded', c ? 'false' : 'true');
+      if (c) open.delete(m.id); else open.add(m.id);
+    };
+    t.addEventListener('click', toggle);
+    t.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+    return blk;
+  }
+  function render() {
+    pendingRender = false;
+    const admin = isAdmin();
+    document.body.classList.toggle('mb-admin', admin);
+    list.classList.toggle('ro', !admin);
+    const top = list.scrollTop;
+    list.textContent = '';
+    mbData.forEach((m) => list.appendChild(buildItem(m, admin)));
+    const e = document.createElement('div'); e.className = 'mb-empty'; e.style.display = 'none';
+    list.appendChild(e);
+    applyFilter();
+    list.scrollTop = top;
+  }
+  // Yönetici bir alana yazarken uzaktan gelen güncelleme yazımı bozmasın: alan bırakılınca çizilir
+  window.mbRerender = function () {
+    const ae = document.activeElement;
+    if (ae && list.contains(ae) && ae.tagName === 'INPUT') { pendingRender = true; return; }
+    render();
+  };
+  list.addEventListener('focusout', () => { if (pendingRender) setTimeout(() => { const ae = document.activeElement; if (!(ae && list.contains(ae))) render(); }, 0); });
+
+  search.addEventListener('input', applyFilter); // her harfte anında
+  search.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); try { search.blur(); } catch (er) {} } });
+  addBtn.addEventListener('click', () => {
+    if (!isAdmin()) return;
+    const m = { id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: '', user: '', on: false };
+    mbData.unshift(m); open.add(m.id);
+    search.value = '';
+    changed(true);
+    render();
+    list.scrollTop = 0;
+    const inp = list.querySelector('.mb-item[data-id="' + m.id + '"] .mb-in');
+    if (inp) { try { inp.focus({ preventScroll: true }); } catch (e) {} }
+  });
+  window.addEventListener('pin-level', render);
+  render();
+})();
 /* ---- Ayar gruplarını aç/kapat (localStorage'da saklanır) ---- */
 (function () {
   const KEY = 'settingsCollapsed';
