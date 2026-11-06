@@ -711,10 +711,10 @@ body.mb-admin .mb-name, body.mb-admin .mb-user { cursor: text; }
   color: inherit; font: inherit; line-height: inherit; text-align: center; outline: none; box-shadow: 0 1px 0 var(--accent);
   caret-color: var(--accent); user-select: text; -webkit-user-select: text;
 }
-/* Silme düğmesi yalnızca bir alan düzenlenirken görünür */
-.mb-delrow { display: none; margin-top: 6px; }
-.mb-item.editing .mb-delrow { display: flex; }
-.mb-delrow .seg-btn { padding: 6px; font-size: 12px; }
+/* Silme: üye kutucuğuna çok kısa basılı tutup sola kaydırınca silinir (yalnızca yönetici) */
+body.mb-admin .mb-item { touch-action: pan-y; }
+.mb-item.mb-armed { user-select: none; -webkit-user-select: none; box-shadow: 0 0 0 1px var(--dng-bg); z-index: 1; }
+.mb-item.mb-snap { transition: transform .18s ease, opacity .18s ease; }
 @media (min-width: 769px) { #mb-search { font-size: 13px; } }
 
 #notes-view, #notes-edit {
@@ -10296,30 +10296,84 @@ function receiveMembers(d) {
         if (e.key === 'Enter' && key === 'name' && m._draft) { e.preventDefault(); edit(us, 'user', 40); return; } // yeni üyede Enter: kullanıcı adına geç
         if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); try { i.blur(); } catch (er) {} }
       });
-      i.addEventListener('blur', () => { if (i.parentNode === el) el.textContent = m[key]; });
+      i.addEventListener('blur', () => {
+        if (i.parentNode === el) el.textContent = m[key];
+        // Kutu DOM'dan çıkarıldığı için 'focusout' listeye ulaşmaz; bitirme işini doğrudan tetikle
+        setTimeout(onFieldDone, 0);
+      });
       try { i.focus(); const L = i.value.length; i.setSelectionRange(L, L); } catch (e) {}
     }
     nm.addEventListener('click', () => edit(nm, 'name', 60));
     us.addEventListener('click', () => edit(us, 'user', 40));
     blk._editName = () => edit(nm, 'name', 60);
 
-    // Silme: yalnızca düzenlenirken görünür, iki dokunuşla silinir
-    const drow = document.createElement('div'); drow.className = 'seg mb-delrow';
-    const del = document.createElement('button'); del.type = 'button'; del.className = 'seg-btn danger'; del.textContent = 'Üyeyi sil';
-    drow.addEventListener('pointerdown', (e) => e.preventDefault()); // yazma kutusunun odağı gitmesin
-    let armTimer = null;
-    del.addEventListener('click', () => {
-      if (!del.dataset.armed) {
-        del.dataset.armed = '1'; del.textContent = 'Silmek için tekrar dokun';
-        armTimer = setTimeout(() => { delete del.dataset.armed; del.textContent = 'Üyeyi sil'; }, 3000);
-        return;
-      }
-      clearTimeout(armTimer);
-      mbData = mbData.filter((x) => x.id !== m.id);
-      changed(true);
-      render();
-    });
-    drow.appendChild(del); blk.appendChild(drow);
+    // Silme: kutucuğa çok kısa basılı tut, sonra sola kaydır (yeterince kayınca silinir, bırakırsan geri döner)
+    (function swipeDelete() {
+      const HOLD = 220, MOVE_CANCEL = 9;
+      let timer = null, armed = false, pid = null, sx = 0, sy = 0, dx = 0, swiped = false;
+      const reset = (snap) => {
+        clearTimeout(timer); timer = null;
+        if (pid !== null) { try { blk.releasePointerCapture(pid); } catch (e) {} }
+        pid = null;
+        const was = armed; armed = false; dx = 0;
+        blk.classList.remove('mb-armed');
+        if (was && snap) {
+          blk.classList.add('mb-snap');
+          blk.style.transform = ''; blk.style.opacity = '';
+          setTimeout(() => blk.classList.remove('mb-snap'), 220);
+        } else if (was) { blk.style.transform = ''; blk.style.opacity = ''; }
+      };
+      blk.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        if (e.target.closest && (e.target.closest('input') || e.target.closest('.mb-dotbtn'))) return;
+        reset(false); swiped = false;
+        pid = e.pointerId; sx = e.clientX; sy = e.clientY;
+        timer = setTimeout(() => {
+          timer = null; armed = true;
+          blk.classList.add('mb-armed');
+          try { blk.setPointerCapture(pid); } catch (er) {}
+          try { if (navigator.vibrate) navigator.vibrate(8); } catch (er) {}
+        }, HOLD);
+      });
+      blk.addEventListener('pointermove', (e) => {
+        if (e.pointerId !== pid) return;
+        const mx = e.clientX - sx, my = e.clientY - sy;
+        if (!armed) {
+          // Basılı tutma dolmadan kaydırdı / sürükledi: bu bir silme hareketi değil (liste kaydırma veya yazı seçme)
+          if (Math.abs(mx) > MOVE_CANCEL || Math.abs(my) > MOVE_CANCEL) reset(false);
+          return;
+        }
+        dx = Math.min(0, mx);
+        if (dx < -4) swiped = true;
+        blk.style.transform = 'translateX(' + dx + 'px)';
+        blk.style.opacity = String(Math.max(0.35, 1 - Math.abs(dx) / Math.max(1, blk.offsetWidth)));
+        e.preventDefault();
+      });
+      const finish = (e) => {
+        if (e.pointerId !== pid) return;
+        if (!armed) { reset(false); return; }
+        const need = Math.max(36, blk.offsetWidth * 0.45);
+        if (e.type === 'pointerup' && -dx >= need) {
+          const id = m.id;
+          pid = null; armed = false;
+          blk.classList.add('mb-snap');
+          blk.style.transform = 'translateX(-' + (blk.offsetWidth + 20) + 'px)'; blk.style.opacity = '0';
+          setTimeout(() => {
+            const was = mbData.find((x) => x.id === id);
+            mbData = mbData.filter((x) => x.id !== id);
+            if (was && !was._draft) changed(true); else updateStats();
+            render();
+          }, 190);
+        } else reset(true);
+      };
+      blk.addEventListener('pointerup', finish);
+      blk.addEventListener('pointercancel', finish);
+      // Armlıyken dikey/yatay tarayıcı kaydırması başlamasın
+      blk.addEventListener('touchmove', (e) => { if (armed && e.cancelable) e.preventDefault(); }, { passive: false });
+      // Kaydırma sonrası gelen sahte tıklama ismi/kullanıcı adını düzenlemeye açmasın
+      blk.addEventListener('click', (e) => { if (swiped) { e.stopPropagation(); e.preventDefault(); swiped = false; } }, true);
+      blk.addEventListener('contextmenu', (e) => { if (armed) e.preventDefault(); });
+    })();
     return blk;
   }
   function render() {
@@ -10350,16 +10404,15 @@ function receiveMembers(d) {
     if (ae && list.contains(ae) && ae.tagName === 'INPUT') { pendingRender = true; return; }
     render();
   };
-  list.addEventListener('focusout', () => {
-    setTimeout(() => {
-      const ae = document.activeElement;
-      const inField = !!(ae && ae.classList && ae.classList.contains('mb-inline') && list.contains(ae));
-      list.querySelectorAll('.mb-item.editing').forEach((el) => { if (!(inField && el.contains(ae))) el.classList.remove('editing'); });
-      finalizeDrafts(ae);
-      if (inField) return; // başka alana geçildi, bitince sıralanır
-      if (pendingRender) render(); else resort();
-    }, 0);
-  });
+  function onFieldDone() {
+    const ae = document.activeElement;
+    const inField = !!(ae && ae.classList && ae.classList.contains('mb-inline') && list.contains(ae));
+    list.querySelectorAll('.mb-item.editing').forEach((el) => { if (!(inField && el.contains(ae))) el.classList.remove('editing'); });
+    finalizeDrafts(ae);
+    if (inField) return; // başka alana geçildi, bitince sıralanır
+    if (pendingRender) render(); else resort();
+  }
+  list.addEventListener('focusout', () => { setTimeout(onFieldDone, 0); });
 
   search.addEventListener('input', applyFilter); // her harfte anında
   search.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); try { search.blur(); } catch (er) {} } });
