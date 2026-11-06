@@ -666,9 +666,12 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 #notes-bottom { position: relative; flex: 1 1 0; min-height: 0; overflow: hidden; background: var(--c-000); display: flex; flex-direction: column; }
 
 /* ---- Üye listesi (alt bölme): 3 sütun ---- */
-#mb-bar { position: relative; flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 6px; }
+#mb-bar { position: relative; flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 0 6px 6px; }
+.mb-strip1 { margin-top: 6px; }
+.mb-strip.mb-strip1 { flex-direction: column; height: auto; padding: 4px 0; gap: 2px; }
+.mb-s1row { display: flex; align-items: center; justify-content: center; line-height: 14px; }
 #mb-search {
-  flex: 1 1 auto; min-width: 0; height: 30px; padding: 0 10px; border: 1px solid var(--c-33); border-radius: 8px;
+  flex: 1 1 auto; min-width: 0; height: 38px; padding: 0 10px; border: 1px solid var(--c-33); border-radius: 8px;
   background: var(--c-111); color: var(--c-fff); outline: none; font-size: 16px; caret-color: var(--accent);
   font-family: 'Lexend', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
 }
@@ -681,7 +684,10 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 .mb-strip b { margin-left: 5px; color: var(--c-fff); font-weight: 700; }
 .mb-strip2 { position: relative; margin-bottom: 4px; }
 /* Çevrimiçi / çevrimdışı oranı: altta ince birleşik çizgi, sol yeşil (çevrimiçi), sağ gri (çevrimdışı) */
-.mb-ratio { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: #6b6b6b; pointer-events: none; }
+.mb-ratio { position: absolute; left: 0; right: 0; bottom: 0; height: 12px; background: #6b6b6b; pointer-events: none; --lp: 50%; }
+.mb-pct { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; font-size: 9px; font-weight: 700; line-height: 1; color: #fff; text-shadow: 0 0 2px rgba(0,0,0,.45); white-space: nowrap; transition: left .35s ease, right .35s ease; }
+.mb-pct-l { right: calc(100% - var(--lp) + 5px); }
+.mb-pct-r { left: calc(var(--lp) + 5px); }
 .mb-ratio > i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .35s ease; }
 body.mb-admin .mb-strip2 > span { cursor: pointer; }
 .mb-strip b.mb-stat-b { display: inline-flex; align-items: center; }
@@ -695,13 +701,14 @@ body.mb-admin .mb-strip2 > span { cursor: pointer; }
 .mb-strip2 > span { flex: 1 1 0; min-width: 0; text-align: center; overflow: hidden; text-overflow: ellipsis; }
 .mb-strip2 > span + span { border-left: 1px solid var(--c-44); }
 /* Oran çizgisi yazılara fazla yakındı: kutu 1px uzar (yazı yerinde kalır), çizgi 1px aşağı iner */
-.mb-strip2, .mb-strip3 { height: 23px; padding-bottom: 1px; box-sizing: border-box; }
+.mb-strip2, .mb-strip3 { height: 34px; padding-bottom: 12px; box-sizing: border-box; }
 /* Erkekler / Kızlar sayacı: çevrimiçi/çevrimdışı kutusuyla aynı düzen; oran çizgisi solda mavi (erkek), sağda pembe-mor (kız) */
 .mb-strip3 { position: relative; margin-bottom: 6px; }
 .mb-strip3 > span { flex: 1 1 0; min-width: 0; text-align: center; overflow: hidden; text-overflow: ellipsis; }
 .mb-strip3 > span + span { border-left: 1px solid var(--c-44); }
 .mb-strip3 .mb-ratio { background: #c957d8; }
 .mb-strip3 .mb-ratio > i { background: #3b8cff; }
+.mb-pct { font-style: normal; }
 #mb-list { position: relative; flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 0 6px 6px; }
 .mb-col { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 /* Sütunlar arasına dikey ince çizgi (6px boşluğun tam ortası) */
@@ -726,13 +733,14 @@ body.mb-admin .mb-colhead { padding-left: 0; padding-right: 22px; }
 .mb-item { position: relative; }
 /* Özel üye (kızlar sütunundaki anyna / @anynaz): kutucuğun kenarında pembe-kırmızı ince dönen çerçeve */
 @property --mb-ang { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
-.mb-item.mb-anyna::after { content: ""; position: absolute; inset: 0; border-radius: 8px; padding: 1.5px; pointer-events: none; z-index: 1; box-sizing: border-box;
+.mb-item.mb-anyna::after, .mb-item.mb-wish::after { content: ""; position: absolute; inset: 0; border-radius: 8px; padding: 1.5px; pointer-events: none; z-index: 1; box-sizing: border-box;
   background: conic-gradient(from var(--mb-ang), #ff5fae 0%, #ff2d4f 30%, #ff5fae 50%, rgba(255,45,79,.3) 75%, #ff5fae 100%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
   animation: mbAnynaSpin 3s linear infinite; }
+.mb-item.mb-wish::after { background: conic-gradient(from var(--mb-ang), #2f8bff 0%, #19e68c 30%, #2f8bff 50%, rgba(25,230,140,.3) 75%, #2f8bff 100%); }
 @keyframes mbAnynaSpin { to { --mb-ang: 360deg; } }
-@media (prefers-reduced-motion: reduce) { .mb-item.mb-anyna::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .mb-item.mb-anyna::after, .mb-item.mb-wish::after { animation: none; } }
 .mb-lock { position: absolute; top: 0; right: 2px; width: 18px; height: 14px; padding: 0; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--c-55); z-index: 2; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .mb-lock svg { width: 10px; height: 10px; display: block; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .mb-lock.on { color: var(--accent); }
@@ -1617,13 +1625,13 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 </div>
 <div id="pane-notes" class="pane">
   <div id="notes-bottom">
+    <div class="mb-strip mb-strip1"><div class="mb-s1row">Toplam Kullanıcı:<b id="mb-total">0</b></div><div class="mb-s1row">Toplam Bot:<b id="mb-bots">0</b></div></div>
+    <div class="mb-strip mb-strip2"><span>Çevrimiçi:<b id="mb-on">0</b></span><span>Çevrimdışı:<b id="mb-off">0</b></span><div class="mb-ratio" aria-hidden="true"><i id="mb-ratio-fill"></i><em class="mb-pct mb-pct-l" id="mb-on-pct">0%</em><em class="mb-pct mb-pct-r" id="mb-off-pct">0%</em></div></div>
+    <div class="mb-strip mb-strip3"><span>Erkekler:<b id="mb-male">0</b></span><span>Kızlar:<b id="mb-female">0</b></span><div class="mb-ratio" aria-hidden="true"><i id="mb-gratio-fill"></i><em class="mb-pct mb-pct-l" id="mb-male-pct">0%</em><em class="mb-pct mb-pct-r" id="mb-female-pct">0%</em></div></div>
     <div id="mb-bar">
-      <input id="mb-search" type="text" name="mb-search-x" placeholder="Ara..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
+      <input id="mb-search" type="text" name="mb-search-x" placeholder="Kullanıcı Arayın" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
       <span id="mb-stamp" aria-label="Son güncelleme"></span>
     </div>
-    <div class="mb-strip mb-strip1">Toplam Kullanıcı:<b id="mb-total">0</b></div>
-    <div class="mb-strip mb-strip2"><span>Çevrimiçi:<b id="mb-on">0</b></span><span>Çevrimdışı:<b id="mb-off">0</b></span><div class="mb-ratio" aria-hidden="true"><i id="mb-ratio-fill"></i></div></div>
-    <div class="mb-strip mb-strip3"><span>Erkekler:<b id="mb-male">0</b></span><span>Kızlar:<b id="mb-female">0</b></span><div class="mb-ratio" aria-hidden="true"><i id="mb-gratio-fill"></i></div></div>
     <div id="mb-list">
       <div class="mb-col" data-g="e">
         <div class="mb-colhead"><span>Erkekler</span><button type="button" class="mb-coladd" data-g="e" title="Yeni üye" aria-label="Erkekler: yeni üye">+</button></div>
@@ -10169,7 +10177,7 @@ function receiveMembers(d) {
   const MB_SEND_DELAY = 1000; // ms
   let sendTimer = null, pendingRender = false;
   const elTotal = document.getElementById('mb-total'), elOn = document.getElementById('mb-on'), elOff = document.getElementById('mb-off');
-  const elMale = document.getElementById('mb-male'), elFemale = document.getElementById('mb-female');
+  const elMale = document.getElementById('mb-male'), elFemale = document.getElementById('mb-female'), elBots = document.getElementById('mb-bots');
   // Sayılar: yalnızca tamamlanmış üyeler (taslaklar sayılmaz)
   // Botlar sayılara dahil değildir (durumları yok)
   const statMembers = () => mbData.filter((m) => !m._draft && m.g !== 'b');
@@ -10178,10 +10186,18 @@ function receiveMembers(d) {
     const on = pub.filter((m) => m.on).length;
     const put = (el, v) => { if (el && !el.querySelector('input')) el.textContent = String(v); }; // yazılırken ezme
     put(elTotal, pub.length); put(elOn, on); put(elOff, pub.length - on);
+    put(elBots, mbData.filter((m) => !m._draft && m.g === 'b').length);
     const nm = pub.filter((m) => m.g === 'e').length, nf = pub.filter((m) => m.g === 'k').length;
     put(elMale, nm); put(elFemale, nf);
     const rg = document.getElementById('mb-gratio-fill');
-    if (rg) rg.style.width = ((nm + nf) ? (nm * 100 / (nm + nf)) : 0).toFixed(2) + '%';
+    const paintPct = (fill, l, r, a, b) => {
+      const tot = a + b, pl = tot ? Math.round(a * 100 / tot) : 0, pr = tot ? 100 - pl : 0;
+      const raw = tot ? (a * 100 / tot) : 0;
+      if (fill) { fill.style.width = raw.toFixed(2) + '%'; if (fill.parentNode) fill.parentNode.style.setProperty('--lp', Math.min(88, Math.max(12, raw)).toFixed(2) + '%'); }
+      const le = document.getElementById(l), re = document.getElementById(r);
+      if (le) le.textContent = '%' + pl; if (re) re.textContent = '%' + pr;
+    };
+    paintPct(rg, 'mb-male-pct', 'mb-female-pct', nm, nf);
     // Son güncelleme saati (liste sürümü = değişikliğin yapıldığı an; iki cihazda aynıdır)
     const st = document.getElementById('mb-stamp');
     if (st) {
@@ -10189,7 +10205,7 @@ function receiveMembers(d) {
       else st.textContent = '';
     }
     const rf = document.getElementById('mb-ratio-fill');
-    if (rf) rf.style.width = (pub.length ? (on * 100 / pub.length) : 0).toFixed(2) + '%';
+    paintPct(rf, 'mb-on-pct', 'mb-off-pct', on, pub.length - on);
   }
   // Yönetici (6687): çevrimiçi / çevrimdışı sayısına basınca yazma kutusu olur. Toplamdan büyük sayı yazılamaz.
   // Sayı artırılınca, o sayıya ulaşmak için diğer gruptan rastgele üyeler bu gruba geçer (liste karşıya gittiği için iki tarafta aynı kişiler olur).
@@ -10349,6 +10365,7 @@ function receiveMembers(d) {
       const nn = String(m.name || '').trim().toLowerCase().replace(/^@/, '');
       const uu = String(m.user || '').trim().toLowerCase().replace(/^@/, '');
       blk.classList.toggle('mb-anyna', m.g === 'k' && (nn === 'anyna' || nn === 'anynaz' || uu === 'anyna' || uu === 'anynaz'));
+      blk.classList.toggle('mb-wish', m.g === 'b' && nn === 'wish');
     };
     paintAnyna();
 
