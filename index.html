@@ -662,12 +662,12 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
   #pane-notes { border-left: 1px solid var(--c-1a); }
 }
 
-/* Not paneli dikey bölme: üst %60 not alanı, alt %40 boş alan (ileride doldurulacak) */
-#notes-top { position: relative; flex: 0 0 60%; height: 60%; min-height: 0; overflow: hidden; }
-#notes-divider { flex: 0 0 3px; height: 3px; background: var(--c-44); }
+/* Not paneli dikey bölme: üst %50 not alanı, alt %50 üye listesi */
+#notes-top { position: relative; flex: 0 0 50%; height: 50%; min-height: 0; overflow: hidden; }
+#notes-divider { flex: 0 0 2px; height: 2px; background: var(--c-44); }
 #notes-bottom { position: relative; flex: 1 1 0; min-height: 0; overflow: hidden; background: var(--c-000); display: flex; flex-direction: column; }
 
-/* ---- Üye listesi (alt bölme) ---- */
+/* ---- Üye listesi (alt bölme): 3 sütun ---- */
 #mb-bar { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 6px; }
 #mb-search {
   flex: 1 1 auto; min-width: 0; height: 30px; padding: 0 10px; border: 1px solid var(--c-33); border-radius: 8px;
@@ -676,20 +676,25 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 }
 #mb-search:focus { border-color: var(--c-55); }
 #mb-search::placeholder { color: var(--c-77); }
-#mb-add {
-  display: none; flex: 0 0 30px; width: 30px; height: 30px; padding: 0; border: 1px solid var(--c-33); border-radius: 8px;
-  background: var(--c-22); color: var(--c-fff); font-size: 20px; line-height: 1; cursor: pointer;
+#mb-list { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 0 6px 6px; }
+.mb-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.mb-colhead { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 4px; min-height: 24px; padding: 0 2px 5px 4px; font-size: 12px; font-weight: 700; color: var(--c-cc); }
+.mb-colhead > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mb-coladd {
+  display: none; flex: 0 0 22px; width: 22px; height: 22px; padding: 0; border: 1px solid var(--c-33); border-radius: 6px;
+  background: var(--c-22); color: var(--c-fff); font-size: 16px; line-height: 1; cursor: pointer;
   -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none;
 }
-body.mb-admin #mb-add { display: block; }
-#mb-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 6px 8px; }
-#mb-list .set-block + .set-block, #mb-list .set-block.collapsed + .set-block { margin-top: 6px; }
+body.mb-admin .mb-coladd { display: block; }
+.mb-colist { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.mb-colist .set-block + .set-block, .mb-colist .set-block.collapsed + .set-block { margin-top: 6px; }
 #mb-list.ro .set-title { cursor: default; }
+.mb-item .set-title { padding-left: 7px; padding-right: 7px; }
+.mb-item .set-arrow { margin-left: 4px; }
 .mb-text { flex: 1 1 auto; min-width: 0; }
-.mb-name { font-size: 13px; font-weight: 700; color: var(--c-fff); line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mb-user { margin-top: 3px; padding-top: 3px; border-top: 1px solid var(--c-44); font-size: 11px; font-weight: 400; color: var(--c-88); line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mb-name.ph, .mb-user.ph { font-style: italic; font-weight: 400; opacity: .6; }
-.mb-dot { flex: 0 0 10px; width: 10px; height: 10px; margin-left: 10px; border-radius: 50%; background: #6b6b6b; }
+.mb-name { min-height: 16px; text-align: center; font-size: 13px; font-weight: 700; color: var(--c-fff); line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mb-user { min-height: 13px; text-align: center; margin-top: 3px; padding-top: 3px; border-top: 1px solid var(--c-44); font-size: 11px; font-weight: 400; color: var(--c-88); line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mb-dot { flex: 0 0 10px; width: 10px; height: 10px; margin-left: 6px; border-radius: 50%; background: #6b6b6b; }
 .mb-dot.on { background: var(--ok); }
 .mb-lbl { display: block; margin: 8px 0 3px; font-size: 11px; font-weight: 600; color: var(--c-88); }
 .mb-lbl:first-child { margin-top: 2px; }
@@ -699,11 +704,9 @@ body.mb-admin #mb-add { display: block; }
   font-family: 'Lexend', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
 }
 .mb-in:focus { border-color: var(--c-55); }
-.mb-seg { flex-direction: row; }
-.mb-seg .seg-btn { flex: 1 1 0; width: auto; }
-.mb-seg .seg-btn + .seg-btn { border-top: none; border-left: 1px solid var(--c-33); }
+.mb-seg .seg-btn { padding: 7px 6px; font-size: 12px; }
 .mb-delseg { margin-top: 10px; }
-.mb-empty { padding: 14px 6px; text-align: center; font-size: 12px; color: var(--c-77); }
+.mb-delseg .seg-btn { padding: 7px 6px; font-size: 12px; }
 @media (min-width: 769px) { #mb-search, .mb-in { font-size: 13px; } }
 
 #notes-view, #notes-edit {
@@ -1607,9 +1610,21 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   <div id="notes-bottom">
     <div id="mb-bar">
       <input id="mb-search" type="text" name="mb-search-x" placeholder="Ara..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
-      <button id="mb-add" type="button" title="Yeni üye" aria-label="Yeni üye">+</button>
     </div>
-    <div id="mb-list"></div>
+    <div id="mb-list">
+      <div class="mb-col" data-g="e">
+        <div class="mb-colhead"><span>Erkekler</span><button type="button" class="mb-coladd" data-g="e" title="Yeni üye" aria-label="Erkekler: yeni üye">+</button></div>
+        <div class="mb-colist"></div>
+      </div>
+      <div class="mb-col" data-g="k">
+        <div class="mb-colhead"><span>Kızlar</span><button type="button" class="mb-coladd" data-g="k" title="Yeni üye" aria-label="Kızlar: yeni üye">+</button></div>
+        <div class="mb-colist"></div>
+      </div>
+      <div class="mb-col" data-g="b">
+        <div class="mb-colhead"><span>Botlar</span><button type="button" class="mb-coladd" data-g="b" title="Yeni üye" aria-label="Botlar: yeni üye">+</button></div>
+        <div class="mb-colist"></div>
+      </div>
+    </div>
   </div>
   <div id="new-msg-badge" class="new-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg><span>Yeni</span></div>
 </div>
@@ -10168,19 +10183,22 @@ updateBadges();
   }, 250);
 })();
 
-/* ---- Üye listesi (notlar panelinin alt %40'ı) ----
+/* ---- Üye listesi (notlar panelinin alt yarısı): Erkekler / Kızlar / Botlar sütunları ----
    Yönetici (yüksek PIN seviyesi = sessionStorage 'pinLive') üye ekler/siler, isim-kullanıcı adı-durum düzenler.
-   Diğer seviye yalnızca kutucukları görür (açılmaz). Veri localStorage'da tutulur ve notlar gibi eşler arası senkronlanır. */
+   Diğer seviye yalnızca kutucukları görür (açılmaz). Veri localStorage'da tutulur ve notlar gibi eşler arası senkronlanır.
+   Sıralama: çevrimiçiler üstte, kendi içinde ve çevrimdışılar kendi içinde alfabetik. */
 let mbData = [];
 let mbRev = parseInt(lsGet('membersRev') || '0', 10) || 0;
 let mbBy  = lsGet('membersBy') || '';
+const MB_GROUPS = ['e', 'k', 'b'];
 function mbClean(a) {
   if (!Array.isArray(a)) return [];
   return a.slice(0, 500).filter((x) => x && typeof x === 'object').map((x) => ({
     id: String(x.id || '').slice(0, 40) || ('m' + Math.random().toString(36).slice(2, 10)),
     name: String(x.name || '').slice(0, 60),
     user: String(x.user || '').slice(0, 40),
-    on: !!x.on
+    on: !!x.on,
+    g: MB_GROUPS.indexOf(x.g) !== -1 ? x.g : 'e'
   }));
 }
 try { const raw = lsGet('membersData'); mbData = mbClean(raw ? JSON.parse(raw) : []); } catch (e) { mbData = []; }
@@ -10205,15 +10223,21 @@ function receiveMembers(d) {
 (function initMembers() {
   const list = document.getElementById('mb-list');
   const search = document.getElementById('mb-search');
-  const addBtn = document.getElementById('mb-add');
-  if (!list || !search || !addBtn) return;
+  if (!list || !search) return;
+  const colist = {};
+  MB_GROUPS.forEach((g) => { colist[g] = list.querySelector('.mb-col[data-g="' + g + '"] .mb-colist'); });
   const open = new Set();
+  const els = new Map();
   let sendTimer = null, pendingRender = false;
 
   const isAdmin = () => { try { return sessionStorage.getItem('pinLive') === '1'; } catch (e) { return false; } };
   // Arama: büyük/küçük harf, Türkçe karakter (ı/i, ş/s, ğ/g...) farkı gözetmez
   const norm = (v) => String(v || '').toLocaleLowerCase('tr').replace(/ı/g, 'i').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const byId = (id) => mbData.find((m) => m.id === id);
+  const cmp = (a, b) => (a.on === b.on ? 0 : (a.on ? -1 : 1))
+    || String(a.name).localeCompare(String(b.name), 'tr', { sensitivity: 'base' })
+    || String(a.user).localeCompare(String(b.user), 'tr', { sensitivity: 'base' })
+    || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
   function changed(now) {
     mbRev = Math.max(Date.now(), mbRev + 1);
@@ -10222,24 +10246,22 @@ function receiveMembers(d) {
     clearTimeout(sendTimer);
     if (now) sendMembers('members'); else sendTimer = setTimeout(() => sendMembers('members'), 250);
   }
-  function setText(el, val, ph) {
-    el.textContent = val || ph;
-    el.classList.toggle('ph', !val);
-  }
   function applyFilter() {
     const q = norm(search.value.trim());
-    let shown = 0;
     list.querySelectorAll('.mb-item').forEach((el) => {
       const m = byId(el.dataset.id);
       const hit = !!m && (!q || norm(m.name).indexOf(q) !== -1 || norm(m.user).indexOf(q) !== -1);
       el.style.display = hit ? '' : 'none';
-      if (hit) shown++;
     });
-    const e = list.querySelector('.mb-empty');
-    if (e) {
-      e.style.display = shown ? 'none' : '';
-      e.textContent = mbData.length ? 'Sonuç yok' : (isAdmin() ? 'Henüz üye yok. + ile ekleyebilirsin.' : 'Henüz üye yok');
-    }
+  }
+  // Kutucukları yeniden çizmeden sıraya dizer (odaktaki alan bozulmasın diye yalnızca yazma bitince / durum değişince çağrılır)
+  function resort() {
+    MB_GROUPS.forEach((g) => {
+      mbData.filter((m) => m.g === g).sort(cmp).forEach((m) => {
+        const el = els.get(m.id);
+        if (el) colist[g].appendChild(el);
+      });
+    });
   }
   function buildItem(m, admin) {
     const blk = document.createElement('div');
@@ -10249,8 +10271,8 @@ function receiveMembers(d) {
     const t = document.createElement('div');
     t.className = 'set-title';
     const txt = document.createElement('div'); txt.className = 'mb-text';
-    const nm = document.createElement('div'); nm.className = 'mb-name'; setText(nm, m.name, '(isimsiz)');
-    const us = document.createElement('div'); us.className = 'mb-user'; setText(us, m.user, '(kullanıcı adı yok)');
+    const nm = document.createElement('div'); nm.className = 'mb-name'; nm.textContent = m.name;
+    const us = document.createElement('div'); us.className = 'mb-user'; us.textContent = m.user;
     txt.appendChild(nm); txt.appendChild(us);
     const dot = document.createElement('span'); dot.className = 'mb-dot' + (m.on ? ' on' : '');
     dot.title = m.on ? 'Çevrimiçi' : 'Çevrimdışı';
@@ -10268,7 +10290,7 @@ function receiveMembers(d) {
     const body = document.createElement('div'); body.className = 'set-body';
     col.appendChild(clip); clip.appendChild(body); blk.appendChild(col);
 
-    function field(label, key, max, ph) {
+    function field(label, key, max) {
       const l = document.createElement('label'); l.className = 'mb-lbl'; l.textContent = label;
       const i = document.createElement('input');
       i.className = 'mb-in'; i.type = 'text'; i.value = m[key]; i.maxLength = max;
@@ -10278,7 +10300,7 @@ function receiveMembers(d) {
       i.setAttribute('enterkeyhint', 'done');
       i.addEventListener('input', () => {
         m[key] = i.value;
-        if (key === 'name') setText(nm, m.name, '(isimsiz)'); else setText(us, m.user, '(kullanıcı adı yok)');
+        (key === 'name' ? nm : us).textContent = m[key];
         changed(false);
       });
       i.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); try { i.blur(); } catch (er) {} } });
@@ -10296,7 +10318,7 @@ function receiveMembers(d) {
       bOff.classList.toggle('active', !m.on); bOff.setAttribute('aria-pressed', m.on ? 'false' : 'true');
       dot.classList.toggle('on', m.on); dot.title = m.on ? 'Çevrimiçi' : 'Çevrimdışı';
     };
-    const setOn = (v) => { if (m.on === v) return; m.on = v; paint(); changed(true); };
+    const setOn = (v) => { if (m.on === v) return; m.on = v; paint(); changed(true); resort(); };
     bOn.addEventListener('click', () => setOn(true));
     bOff.addEventListener('click', () => setOn(false));
     paint();
@@ -10334,13 +10356,19 @@ function receiveMembers(d) {
     const admin = isAdmin();
     document.body.classList.toggle('mb-admin', admin);
     list.classList.toggle('ro', !admin);
-    const top = list.scrollTop;
-    list.textContent = '';
-    mbData.forEach((m) => list.appendChild(buildItem(m, admin)));
-    const e = document.createElement('div'); e.className = 'mb-empty'; e.style.display = 'none';
-    list.appendChild(e);
+    els.clear();
+    MB_GROUPS.forEach((g) => {
+      const box = colist[g];
+      const top = box.scrollTop;
+      box.textContent = '';
+      mbData.filter((m) => m.g === g).sort(cmp).forEach((m) => {
+        const el = buildItem(m, admin);
+        els.set(m.id, el);
+        box.appendChild(el);
+      });
+      box.scrollTop = top;
+    });
     applyFilter();
-    list.scrollTop = top;
   }
   // Yönetici bir alana yazarken uzaktan gelen güncelleme yazımı bozmasın: alan bırakılınca çizilir
   window.mbRerender = function () {
@@ -10348,20 +10376,31 @@ function receiveMembers(d) {
     if (ae && list.contains(ae) && ae.tagName === 'INPUT') { pendingRender = true; return; }
     render();
   };
-  list.addEventListener('focusout', () => { if (pendingRender) setTimeout(() => { const ae = document.activeElement; if (!(ae && list.contains(ae))) render(); }, 0); });
+  list.addEventListener('focusout', () => {
+    setTimeout(() => {
+      const ae = document.activeElement;
+      if (ae && list.contains(ae) && ae.tagName === 'INPUT') return; // başka alana geçildi, bitince sıralanır
+      if (pendingRender) render(); else resort();
+    }, 0);
+  });
 
   search.addEventListener('input', applyFilter); // her harfte anında
   search.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); try { search.blur(); } catch (er) {} } });
-  addBtn.addEventListener('click', () => {
-    if (!isAdmin()) return;
-    const m = { id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: '', user: '', on: false };
-    mbData.unshift(m); open.add(m.id);
-    search.value = '';
-    changed(true);
-    render();
-    list.scrollTop = 0;
-    const inp = list.querySelector('.mb-item[data-id="' + m.id + '"] .mb-in');
-    if (inp) { try { inp.focus({ preventScroll: true }); } catch (e) {} }
+  list.querySelectorAll('.mb-coladd').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (!isAdmin()) return;
+      const g = btn.dataset.g;
+      const m = { id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: '', user: '', on: false, g: g };
+      mbData.push(m); open.add(m.id);
+      search.value = '';
+      changed(true);
+      render();
+      colist[g].scrollTop = 0;
+      const el = els.get(m.id);
+      if (el) { try { el.scrollIntoView({ block: 'nearest' }); } catch (e) {} }
+      const inp = el && el.querySelector('.mb-in');
+      if (inp) { try { inp.focus({ preventScroll: true }); } catch (e) {} }
+    });
   });
   window.addEventListener('pin-level', render);
   render();
