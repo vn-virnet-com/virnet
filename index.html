@@ -10477,6 +10477,19 @@ function receiveMembers(d) {
     })();
     return blk;
   }
+  // Botların kutusu, normal (erkek/kız) bir kutunun ölçülen piksel yüksekliğiyle birebir aynı yapılır
+  function syncBotSize() {
+    const box = colist.b;
+    if (!box || !box.querySelector('.mb-bot')) return;
+    const probe = buildItem({ id: 'probe', name: 'Ag', user: 'Ag', on: false, g: 'e' }, isAdmin());
+    probe.style.visibility = 'hidden';
+    box.appendChild(probe);
+    const pt = probe.querySelector('.set-title');
+    const h = pt ? pt.getBoundingClientRect().height : 0;
+    box.removeChild(probe);
+    if (!(h > 0)) return;
+    box.querySelectorAll('.mb-bot > .set-title').forEach((t) => { t.style.boxSizing = 'border-box'; t.style.height = h + 'px'; t.style.minHeight = '0'; });
+  }
   function render() {
     pendingRender = false;
     finalizeDrafts(document.activeElement);
@@ -10495,6 +10508,7 @@ function receiveMembers(d) {
       });
       box.scrollTop = top;
     });
+    syncBotSize();
     applyFilter();
     updateStats();
   }
@@ -10534,7 +10548,11 @@ function receiveMembers(d) {
   });
   document.addEventListener('click', (e) => {
     const ae = document.activeElement;
-    if (ae && ae.classList && ae.classList.contains('mb-stat-in')) { if (!(e.target === ae)) { try { ae.blur(); } catch (er) {} } return; }
+    if (ae && ae.classList && ae.classList.contains('mb-stat-in')) {
+      const own = ae.parentNode && ae.parentNode.parentNode; // sayıyı taşıyan şerit parçası: onu açan tıklama kutuyu kapatmasın
+      if (!(own && own.contains(e.target))) { try { ae.blur(); } catch (er) {} }
+      return;
+    }
     if (!(ae && ae.classList && ae.classList.contains('mb-inline') && list.contains(ae))) return;
     if (e.target && e.target.closest && e.target.closest('.mb-item') === ae.closest('.mb-item')) return;
     if (e.target && e.target.closest && e.target.closest('#mb-list .mb-coladd')) return;
@@ -10542,6 +10560,9 @@ function receiveMembers(d) {
   });
   window.addEventListener('pin-level', render);
   render();
+  // Panel gizliyken ölçüm 0 çıkabilir / ekran boyutu değişebilir: görünür olunca veya boyut değişince yeniden eşitle
+  window.addEventListener('resize', syncBotSize);
+  try { if (window.ResizeObserver) new ResizeObserver(() => syncBotSize()).observe(list); } catch (e) {}
 })();
 /* ---- Ayar gruplarını aç/kapat (localStorage'da saklanır) ---- */
 (function () {
