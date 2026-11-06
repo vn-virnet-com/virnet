@@ -10605,9 +10605,6 @@ function switchChannel(ch) {
   document.addEventListener('pointercancel', end, true);
 })();
 
-// Kaldırılan özelliğin tarayıcıda bıraktığı eski kayıtları temizle (tek seferlik; istenirse bu satır silinebilir)
-['durumSeen', 'durumWait', 'durumOut', 'durumLast', 'durumCdUntil', 'durumPend'].forEach(lsRemove);
-
 cdAnimRestore();
 </script>
 </body>
