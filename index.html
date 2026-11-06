@@ -683,9 +683,11 @@ body.mb-admin .mb-strip2 > span { cursor: pointer; }
 .mb-strip b.mb-stat-b { display: inline-flex; align-items: center; }
 .mb-stat-in { width: 4ch; height: 20px; margin: 0; padding: 0; border: none; border-radius: 0; background: transparent; color: var(--c-fff); font: inherit; font-size: 16px; font-weight: 700; line-height: 20px; text-align: center; outline: none; box-shadow: 0 1px 0 var(--accent); caret-color: var(--accent); user-select: text; -webkit-user-select: text; }
 /* Botlar: durum noktası ve kullanıcı adı yok; yalnızca isim, kutunun tam ortasında ve biraz büyük */
-.mb-item.mb-bot .set-title { justify-content: center; min-height: 52px; }
-.mb-item.mb-bot .mb-text { display: flex; align-items: center; justify-content: center; }
-.mb-item.mb-bot .mb-name { width: 100%; font-size: 16px; line-height: 1.3; }
+/* Boyut diğer kutucuklarla birebir aynı kalsın diye görünmez bir kullanıcı adı satırı yer tutar; isim kutunun tam ortasına oturur */
+.mb-item.mb-bot .set-title { position: relative; }
+.mb-item.mb-bot .mb-user { visibility: hidden; border-top-color: transparent; }
+.mb-item.mb-bot .mb-name { position: absolute; left: 7px; right: 7px; top: 0; bottom: 0; min-height: 0; margin: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; line-height: 1.2; }
+.mb-item.mb-bot .mb-name .mb-inline { width: 100%; }
 .mb-strip2 > span { flex: 1 1 0; min-width: 0; text-align: center; overflow: hidden; text-overflow: ellipsis; }
 .mb-strip2 > span + span { border-left: 1px solid var(--c-44); }
 #mb-list { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 0 6px 6px; }
@@ -10342,7 +10344,8 @@ function receiveMembers(d) {
     const txt = document.createElement('div'); txt.className = 'mb-text';
     const nm = document.createElement('div'); nm.className = 'mb-name'; nm.textContent = m.name;
     const us = document.createElement('div'); us.className = 'mb-user'; us.textContent = m.user;
-    txt.appendChild(nm); if (!isBot) txt.appendChild(us);
+    if (isBot) us.textContent = '';
+    txt.appendChild(nm); txt.appendChild(us);
     t.appendChild(txt);
     const dot = document.createElement('span'); dot.className = 'mb-dot' + (m.on ? ' on' : '');
     dot.title = m.on ? 'Çevrimiçi' : 'Çevrimdışı';
