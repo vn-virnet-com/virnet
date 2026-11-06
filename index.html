@@ -698,6 +698,8 @@ body.mb-admin .mb-strip2 > span { cursor: pointer; }
 .mb-col { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 /* Sütunlar arasına dikey ince çizgi (6px boşluğun tam ortası) */
 .mb-col + .mb-col::before { content: ""; position: absolute; left: -3.5px; top: 0; bottom: 0; width: 1px; background: var(--c-33); pointer-events: none; }
+/* Masaüstünde kaydırma çubukları sütunları zaten ayırıyor; çizgi gösterilmez */
+@media (min-width: 769px) { .mb-col + .mb-col::before { display: none; } }
 /* Çevrimiçiler bitip çevrimdışılar başlarken araya giren ayraç */
 .mb-sep { display: flex; align-items: center; gap: 6px; margin: 8px 0 6px; color: var(--c-77); font-size: 10px; font-weight: 600; line-height: 1; white-space: nowrap; user-select: none; -webkit-user-select: none; }
 .mb-sep::before, .mb-sep::after { content: ""; flex: 1 1 0; height: 1px; background: var(--c-44); }
@@ -709,9 +711,20 @@ body.mb-admin .mb-strip2 > span { cursor: pointer; }
   -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none;
 }
 body.mb-admin .mb-coladd { display: block; }
+/* Artı görünürken başlık, sol kenar ile artı arasındaki alanın tam ortasında durur */
+body.mb-admin .mb-colhead { padding-left: 0; padding-right: 22px; }
 .mb-colist { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .mb-colist .set-block + .set-block { margin-top: 6px; }
 .mb-item { position: relative; }
+/* Özel üye (kızlar sütunundaki anyna / @anynaz): kutucuğun kenarında pembe-kırmızı ince dönen çerçeve */
+@property --mb-ang { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.mb-item.mb-anyna::after { content: ""; position: absolute; inset: 0; border-radius: 8px; padding: 1.5px; pointer-events: none; z-index: 1; box-sizing: border-box;
+  background: conic-gradient(from var(--mb-ang), #ff5fae 0%, #ff2d4f 30%, #ff5fae 50%, rgba(255,45,79,.3) 75%, #ff5fae 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: mbAnynaSpin 3s linear infinite; }
+@keyframes mbAnynaSpin { to { --mb-ang: 360deg; } }
+@media (prefers-reduced-motion: reduce) { .mb-item.mb-anyna::after { animation: none; } }
 .mb-lock { position: absolute; top: 0; right: 2px; width: 18px; height: 14px; padding: 0; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--c-55); z-index: 2; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .mb-lock svg { width: 10px; height: 10px; display: block; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .mb-lock.on { color: var(--accent); }
@@ -838,6 +851,12 @@ body.mb-admin .leap-num { cursor: pointer; }
 .leap-num.editing { opacity: 1; }
 .leap-in { width: 17ch; max-width: 100%; height: 16px; margin: 0; padding: 0; border: none; border-radius: 0; background: transparent; color: var(--c-fff); font: inherit; font-size: 16px; font-weight: 600; line-height: 16px; text-align: right; outline: none; box-shadow: 0 1px 0 var(--accent); caret-color: var(--accent); user-select: text; -webkit-user-select: text; }
 :root[data-theme="cream"] .leap-bar { background: var(--c-000); box-shadow: inset 0 0 0 1px var(--c-4a); }
+/* Leap çubuğu: trend etiketlerindeki sarı gradyan ve kayan parıltının aynısı, alev simgesi olmadan */
+.leap-bar, :root[data-theme="cream"] .leap-bar { position: relative; color: var(--warn); background: linear-gradient(180deg, color-mix(in srgb, var(--warn) 24%, var(--c-1a)), color-mix(in srgb, var(--warn) 10%, var(--c-1a))); border: 1px solid color-mix(in srgb, var(--warn) 70%, transparent); box-shadow: 0 0 9px color-mix(in srgb, var(--warn) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.12); }
+.leap-bar::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(110deg, transparent 30%, color-mix(in srgb, var(--warn) 55%, transparent) 50%, transparent 70%); background-size: 260% 100%; background-position: 130% 0; animation: cdTagShine 2.6s ease-in-out infinite; }
+.leap-bar > * { position: relative; }
+.leap-in { color: var(--warn); }
+@media (prefers-reduced-motion: reduce) { .leap-bar::before { animation: none; } }
 .set-block.collapsed .set-body { transform: translateY(-110%); opacity: 0; transition: transform .25s ease, opacity .2s ease; }
 .set-block.collapsed + .set-block { margin-top: 8px; }
 .set-title { font-size: 13px; padding-left: 7px; }
@@ -10288,6 +10307,12 @@ function receiveMembers(d) {
     blk.className = 'set-block mb-item' + (m.g === 'b' ? ' mb-bot' : '');
     blk.dataset.id = m.id;
     const isBot = m.g === 'b';
+    const paintAnyna = () => {
+      const nn = String(m.name || '').trim().toLowerCase().replace(/^@/, '');
+      const uu = String(m.user || '').trim().toLowerCase().replace(/^@/, '');
+      blk.classList.toggle('mb-anyna', m.g === 'k' && (nn === 'anyna' || nn === 'anynaz' || uu === 'anyna' || uu === 'anynaz'));
+    };
+    paintAnyna();
 
     const t = document.createElement('div');
     t.className = 'set-title';
@@ -10342,7 +10367,7 @@ function receiveMembers(d) {
       i.setAttribute('enterkeyhint', 'done');
       el.textContent = ''; el.appendChild(i);
       blk.classList.add('editing');
-      i.addEventListener('input', () => { m[key] = i.value; if (!m._draft) changed(false); });
+      i.addEventListener('input', () => { m[key] = i.value; paintAnyna(); if (!m._draft) changed(false); });
       i.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && key === 'name' && m._draft && !isBot) { e.preventDefault(); edit(us, 'user', 40); return; } // yeni üyede Enter: kullanıcı adına geç
         if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); try { i.blur(); } catch (er) {} }
