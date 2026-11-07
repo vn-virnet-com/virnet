@@ -850,8 +850,7 @@ body.mb-admin .leap-num { cursor: pointer; }
 .leap-ext.open { grid-template-rows: 1fr; margin-bottom: 10px; }
 .leap-ext-clip { overflow: hidden; min-height: 0; }
 .leap-ext-row { padding: 2px 0 0; }
-.leap-delta { display: block; width: 100%; height: 34px; padding: 0 10px; border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); border-radius: 8px; background: var(--c-111); color: var(--c-fff); font-size: 16px; font-weight: 600; text-align: right; outline: none; font-variant-numeric: tabular-nums; -webkit-user-select: text; user-select: text; caret-color: var(--warn); }
-.leap-delta::placeholder { color: var(--c-77); font-weight: 400; }
+.leap-delta { display: block; width: 100%; height: 34px; padding: 0 10px; border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); border-radius: 8px; background: var(--c-111); color: var(--c-fff); font-size: 16px; font-weight: 600; text-align: left; outline: none; font-variant-numeric: tabular-nums; -webkit-user-select: text; user-select: text; caret-color: var(--warn); }
 .leap-delta:focus { border-color: var(--warn); }
 .set-block.collapsed .set-body { transform: translateY(-110%); opacity: 0; transition: transform .25s ease, opacity .2s ease; }
 .set-block.collapsed + .set-block { margin-top: 8px; }
@@ -1637,7 +1636,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 <div id="settings-scroll">
   <div class="leap-bar" id="leap-bar"><span class="leap-name">Leap</span><span class="leap-num" id="leap-num">0</span></div>
   <div class="leap-ext" id="leap-ext" inert><div class="leap-ext-clip"><div class="leap-ext-row">
-    <input class="leap-delta" id="leap-delta" type="text" autocomplete="off" spellcheck="false" name="leap-d" placeholder="Ekle: 400 veya -400" autocorrect="off" autocapitalize="off" enterkeyhint="done" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
+    <input class="leap-delta" id="leap-delta" type="text" autocomplete="off" spellcheck="false" name="leap-d" autocorrect="off" autocapitalize="off" enterkeyhint="done" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
   </div></div></div>
   <div class="set-block" id="blk-live" style="display:none">
     <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Mesajlar</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
