@@ -10106,7 +10106,9 @@ function receiveLeap(d) {
     i.addEventListener('keydown', onKey);
     dIn.value = '';
     ext.removeAttribute('inert'); ext.classList.add('open'); bar.classList.add('open');
-    try { i.focus(); i.select(); } catch (e) {}
+    const toEnd = () => { try { const L = i.value.length; i.setSelectionRange(L, L); } catch (e) {} };
+    try { i.focus(); } catch (e) {}
+    toEnd(); setTimeout(toEnd, 0);   // seçili gelmesin, imleç sayının sonunda olsun
   }
 
   function finish(apply) {
