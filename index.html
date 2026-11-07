@@ -2927,6 +2927,7 @@ function setupConnection(c) {
     sendMembers('members-hello');
     sendLeap('leap-hello');
     flushNotifOutbox();
+    sendCardClearOnce();
     cardSyncSoon(true);
     flushCardOutbox();
     sendThird('third-hello');
@@ -2979,6 +2980,7 @@ function setupConnection(c) {
     if (data.type === 'cmp') { receiveCmp(data); return; }
     if (data.type === 'cmp-stop') { cmpPeerClear(); return; }
     if (data.type === 'card') { receiveCard(data); return; }
+    if (data.type === 'card-clear') { receiveCardClear(); return; }
     if (data.type === 'card-state') { receiveCardState(data); return; }
     if (data.type === 'card-del') { receiveCardDel(data); return; }
     if (data.type === 'card-react') { receiveCardReact(data); return; }
@@ -8183,6 +8185,27 @@ function receiveCardState(d) {
 try { const a = JSON.parse(lsGet('cardOutbox') || '[]'); if (Array.isArray(a)) cardOutbox = a.filter((o) => o && ((o.op === 'add' && o.item && typeof o.item.id === 'string') || ((o.op === 'del' || o.op === 'react' || o.op === 'count' || o.op === 'reply' || o.op === 'poll') && typeof o.id === 'string'))); } catch (e) {}
 cardOutbox = cardOutbox.filter((o) => !(o.op === 'add' && o.item && o.item.k === 'b'));
 cardRestore();
+// Keşfet (2. sayfa) geçmişi: sayfa her açıldığında / yenilendiğinde, hangi cihazdan girilirse girilsin tüm gönderiler silinir. Silinenler mezar taşına yazılır ki karşı taraftan eski hâlleriyle geri gelmesin. 3. sayfa (Oluştur) etkilenmez
+function cardWipeAll() {
+  const now = Date.now();
+  cardList.forEach((x) => { if (x.k === 'a') cardDel[x.id] = now; });
+  cardOutbox.forEach((o) => { const id = (o.op === 'add' && o.item) ? o.item.id : o.id; if (typeof id === 'string') cardDel[id.slice(0, 40)] = now; });
+  cardList = cardList.filter((x) => x.k === 'b');
+  cardOutbox = [];
+  persistCardOutbox();
+  cardPersist();
+}
+cardWipeAll();
+let cardClearSent = false;
+function sendCardClearOnce() { // bu sayfa yüklendikten sonraki ilk bağlantıda karşı tarafın Keşfet geçmişini de temizletir
+  if (cardClearSent || !isConnected()) return;
+  try { conn.send({ type: 'card-clear', t: Date.now() }); cardClearSent = true; } catch (e) {}
+}
+function receiveCardClear() {
+  cardWipeAll();
+  cardSyncSoon(false); // mezar taşları karşıya gitsin
+  if (bellPop.classList.contains('show')) renderCards();
+}
 cardOutbox.forEach((o) => { if (o.op !== 'add') return; const e = cardList.find((x) => x.id === o.item.id); if (e) { e.pending = true; e.own = true; return; } const c = cardSan(o.item); if (c && !cardDel[c.id]) { c.own = true; c.pending = true; cardList.push(c); } });
 // ---- 3. sayfa: yalnızca en son gönderi tutulur. localStorage'da saklanır; her bağlantıda iki taraf revizyonu kıyaslar, daha güncel olan kazanır ----
 let thirdRev = 0;
@@ -8705,7 +8728,7 @@ function renderCards() {
     const arr = cardList.filter((x) => x.k === k);
     if (!arr.length) { list.innerHTML = '<div class="bp-empty">' + emptyTxt + '</div>'; return; }
     list.innerHTML = arr.map((n) => {
-      const del = can && (k === 'b' || n.own); // 3. sayfadaki gönderiyi 6687 şifreli kişi silebilir
+      const del = can; // 6687 şifreli kişi 2. ve 3. sayfadaki tüm gönderileri (karşı tarafınkiler dahil) silebilir
       return '<div class="bp-card' + (del ? ' has-del' : '') + '" data-id="' + escapeHtml(n.id) + '">' +
         (del ? '<div class="bp-del" title="Sil">' + BP_TRASH + '</div>' : '') +
         ((n.n || n.vf || k === 'b') && (n.n || n.vf) ? '<div class="cd-row cd-name">' + ((n.vf || k === 'b') ? VF_BADGE : '') + (n.n ? '<span class="cd-nm">' + escapeHtml(n.n) + '</span>' : '') + '</div>' : '') +
@@ -8735,7 +8758,8 @@ function dismissCardLocal(id) {
   renderCards();
 }
 function deleteOwnCard(id) {
-  const i = cardList.findIndex((n) => n.id === id && n.own);
+  if (!notifCanSend()) return;
+  const i = cardList.findIndex((n) => n.id === id && n.k !== 'b');
   if (i < 0) return;
   cardList.splice(i, 1);
   cardDel[id] = Date.now();
