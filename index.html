@@ -844,19 +844,15 @@ body.mb-admin .leap-num { cursor: pointer; }
 .leap-bar > * { position: relative; }
 .leap-in { color: var(--warn); }
 @media (prefers-reduced-motion: reduce) { .leap-bar::before { animation: none; } }
-/* Leap uzantısı: sayıya tıklayınca çubuğun altında açılır; yazılan değer (+/-) mevcut sayıya eklenir */
+/* Leap uzantısı: sayıya tıklayınca sayı kutuya döner, altında ikinci bir kutu açılır; oraya yazılan (+/-) rakam toplama eklenir */
 .leap-bar.open { margin-bottom: 4px; }
 .leap-ext { display: grid; grid-template-rows: 0fr; margin-bottom: 0; transition: grid-template-rows .22s ease, margin-bottom .22s ease; }
 .leap-ext.open { grid-template-rows: 1fr; margin-bottom: 10px; }
 .leap-ext-clip { overflow: hidden; min-height: 0; }
-.leap-ext-row { display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 8px; background: var(--c-22); border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent); }
-.leap-sign, .leap-apply { flex: 0 0 auto; height: 32px; border: none; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
-.leap-sign { width: 34px; font-size: 18px; background: var(--c-33); color: var(--warn); }
-.leap-sign.neg { background: var(--dng-bg); color: #fff; }
-.leap-apply { padding: 0 12px; background: var(--warn); color: #000; }
-.leap-delta { flex: 1 1 auto; min-width: 0; height: 32px; padding: 0 8px; border: 1px solid var(--c-33); border-radius: 6px; background: var(--c-111); color: var(--c-fff); font-size: 16px; font-weight: 600; text-align: right; outline: none; font-variant-numeric: tabular-nums; }
+.leap-ext-row { padding: 2px 0 0; }
+.leap-delta { display: block; width: 100%; height: 34px; padding: 0 10px; border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); border-radius: 8px; background: var(--c-111); color: var(--c-fff); font-size: 16px; font-weight: 600; text-align: right; outline: none; font-variant-numeric: tabular-nums; -webkit-user-select: text; user-select: text; caret-color: var(--warn); }
+.leap-delta::placeholder { color: var(--c-77); font-weight: 400; }
 .leap-delta:focus { border-color: var(--warn); }
-.leap-prev { flex: 0 0 auto; max-width: 38%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 600; color: var(--c-88); font-variant-numeric: tabular-nums; }
 .set-block.collapsed .set-body { transform: translateY(-110%); opacity: 0; transition: transform .25s ease, opacity .2s ease; }
 .set-block.collapsed + .set-block { margin-top: 8px; }
 .set-title { font-size: 13px; padding-left: 7px; }
@@ -1641,10 +1637,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 <div id="settings-scroll">
   <div class="leap-bar" id="leap-bar"><span class="leap-name">Leap</span><span class="leap-num" id="leap-num">0</span></div>
   <div class="leap-ext" id="leap-ext" inert><div class="leap-ext-clip"><div class="leap-ext-row">
-    <button type="button" class="leap-sign" id="leap-sign" aria-label="Artı / eksi">+</button>
-    <input class="leap-delta" id="leap-delta" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" name="leap-d" placeholder="0" autocorrect="off" autocapitalize="off" enterkeyhint="done" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
-    <span class="leap-prev" id="leap-prev"></span>
-    <button type="button" class="leap-apply" id="leap-apply">Ekle</button>
+    <input class="leap-delta" id="leap-delta" type="text" autocomplete="off" spellcheck="false" name="leap-d" placeholder="Ekle: 400 veya -400" autocorrect="off" autocapitalize="off" enterkeyhint="done" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
   </div></div></div>
   <div class="set-block" id="blk-live" style="display:none">
     <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Mesajlar</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
@@ -10069,71 +10062,97 @@ function receiveLeap(d) {
   if (!el) return;
   const bar = document.getElementById('leap-bar');
   const ext = document.getElementById('leap-ext');
-  const signBtn = document.getElementById('leap-sign');
-  const inp = document.getElementById('leap-delta');
-  const prev = document.getElementById('leap-prev');
-  const applyBtn = document.getElementById('leap-apply');
+  const dIn = document.getElementById('leap-delta');
+  const MAXV = 999999999999999;
+  const NEG = /^\s*[-\u2212\u2013\u2014]/;   // -, −, –, — (iOS bazen tireyi değiştirir)
   renderLeap();
-  let neg = false;
-  function digits() { return inp.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, LEAP_MAX_DIGITS); }
-  function calc() {
-    const dg = digits();
-    if (dg === '') return null;
-    const d = parseInt(dg, 10) * (neg ? -1 : 1);
-    return Math.min(999999999999999, Math.max(0, leapVal + d));
+  let active = false, nIn = null, startVal = 0;
+
+  function onBlur() {
+    setTimeout(() => {
+      if (!active) return;
+      const a = document.activeElement;
+      if (a === nIn || a === dIn) return;   // iki kutu arasında geçiş: kapatma
+      finish(true);
+    }, 60);
   }
-  function updPrev() {
-    const n = calc();
-    prev.textContent = (n === null) ? '' : '→ ' + leapFmt(n);
+  function onKey(e) {
+    if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+    else if (e.key === 'Escape') { e.preventDefault(); finish(false); }
   }
-  function setNeg(v) {
-    neg = !!v;
-    signBtn.textContent = neg ? '−' : '+';
-    signBtn.classList.toggle('neg', neg);
-    updPrev();
-  }
-  function openExt() {
+  dIn.addEventListener('blur', onBlur);
+  dIn.addEventListener('keydown', onKey);
+  dIn.addEventListener('input', () => {
+    // Eksi işareti kutuda görünür kalır; rakamlar noktalı gösterilir
+    const v = dIn.value;
+    const dg = v.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, LEAP_MAX_DIGITS);
+    dIn.value = (NEG.test(v) ? '-' : '') + (dg === '' ? '' : leapFmt(dg));
+  });
+
+  function open() {
+    if (active) return;
+    active = true; startVal = leapVal;
+    const i = document.createElement('input');
+    nIn = i;
+    i.className = 'leap-in'; i.type = 'text'; i.autocomplete = 'off'; i.spellcheck = false; i.name = 'leap-x';
+    i.setAttribute('autocorrect', 'off'); i.setAttribute('autocapitalize', 'off'); i.setAttribute('enterkeyhint', 'done');
+    i.setAttribute('data-lpignore', 'true'); i.setAttribute('data-1p-ignore', 'true'); i.setAttribute('data-bwignore', 'true'); i.setAttribute('data-form-type', 'other');
+    i.value = leapFmt(leapVal);
+    el.textContent = ''; el.classList.add('editing'); el.appendChild(i);
+    i.addEventListener('input', () => {
+      const dg = i.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, LEAP_MAX_DIGITS);
+      i.value = dg === '' ? '' : leapFmt(dg);
+    });
+    i.addEventListener('blur', onBlur);
+    i.addEventListener('keydown', onKey);
+    dIn.value = '';
     ext.removeAttribute('inert'); ext.classList.add('open'); bar.classList.add('open');
-    neg = false; setNeg(false); inp.value = ''; updPrev();
-    try { inp.focus({ preventScroll: true }); } catch (e) { try { inp.focus(); } catch (e2) {} }
+    try { i.focus(); i.select(); } catch (e) {}
   }
-  function closeExt() {
+
+  function finish(apply) {
+    if (!active) return;
+    active = false;
+    let n = leapVal, changed = false;
+    if (apply) {
+      // 1) sayının kendisi elle değiştirildiyse o değer alınır
+      const dg = nIn.value.replace(/\D/g, '');
+      if (dg !== '') {
+        const v = parseInt(dg, 10);
+        if (isFinite(v) && v !== startVal) { n = v; changed = true; }
+      }
+      // 2) alttaki kutudaki rakam (eksi olabilir) üstüne eklenir
+      const dv = dIn.value, dd = dv.replace(/\D/g, '');
+      if (dd !== '') {
+        let d = parseInt(dd, 10);
+        if (NEG.test(dv)) d = -d;
+        if (d !== 0) { n = Math.min(MAXV, Math.max(0, n + d)); changed = true; }
+      }
+    }
+    nIn = null;
+    el.classList.remove('editing'); el.textContent = '';
     ext.classList.remove('open'); bar.classList.remove('open'); ext.setAttribute('inert', '');
-    try { inp.blur(); } catch (e) {}
-    inp.value = ''; prev.textContent = '';
-  }
-  function apply() {
-    const n = calc();
-    if (n !== null && n !== leapVal) {
+    try { dIn.blur(); } catch (e) {}
+    dIn.value = '';
+    if (changed && n !== leapVal) {
       leapVal = n;
       leapRev = Math.max(Date.now(), leapRev + 1);
       leapBy = (typeof myId === 'string' && myId) ? myId : '';
-      leapPersist(); sendLeap('leap'); renderLeap();
+      leapPersist(); sendLeap('leap');
     }
-    closeExt();
+    renderLeap();
   }
+
   el.addEventListener('click', () => {
-    if (!notifCanSend()) return; // yalnızca 6687
-    if (ext.classList.contains('open')) closeExt(); else openExt();
+    if (!notifCanSend()) return;   // yalnızca 6687
+    open();
   });
-  inp.addEventListener('input', () => {
-    // Klavyeden yazılan "-" / "+" işareti de çalışsın
-    if (inp.value.indexOf('-') !== -1 || inp.value.indexOf('\u2212') !== -1) neg = true;
-    else if (inp.value.indexOf('+') !== -1) neg = false;
-    const dg = digits();
-    inp.value = dg === '' ? '' : leapFmt(dg);
-    setNeg(neg);
+  // Dokunmatikte boşluğa basınca kutu kapanmayabilir: dışarı dokununca uygula
+  document.addEventListener('click', (e) => {
+    if (!active) return;
+    if (el.contains(e.target) || ext.contains(e.target)) return;
+    finish(true);
   });
-  inp.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); apply(); }
-    else if (e.key === 'Escape') { e.preventDefault(); closeExt(); }
-  });
-  // Tuşlara basınca klavye/odak kapanmasın
-  [signBtn, applyBtn].forEach((b) => b.addEventListener('pointerdown', (e) => e.preventDefault()));
-  signBtn.addEventListener('click', () => { setNeg(!neg); try { inp.focus({ preventScroll: true }); } catch (e) {} });
-  applyBtn.addEventListener('click', apply);
-  // Başka biri sayıyı güncellerse önizleme de tazelensin
-  setInterval(() => { if (ext.classList.contains('open')) updPrev(); }, 500);
 })();
 
 /* ---- Üye listesi (notlar panelinin alt yarısı): Erkekler / Kızlar / Botlar sütunları ----
