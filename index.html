@@ -1317,6 +1317,29 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   #scroll-down-btn, #td-add, #cd-add, #bp-add { right: 18px; }
 }
 
+/* Saat başı kedi + ip yumağı animasyonu */
+.cf-cat,.cf-yarn{position:fixed;left:0;top:0;z-index:29000;pointer-events:none;will-change:transform;transform:translate(-300px,0)}
+.cf-cat{width:75px;height:52px;transform-origin:50% 100%}
+.cf-cat .v{width:100%;height:100%;transform-origin:50% 100%}
+.cf-cat svg{width:100%;height:100%;display:none;overflow:visible}
+.cf-cat[data-v=s] .s,.cf-cat[data-v=b] .b,.cf-cat[data-v=f] .f{display:block}
+.cf-cat .lg,.cf-cat .tl{transform-box:fill-box}
+.cf-cat .lg{transform-origin:50% 6%}
+.cf-cat .tl{transform-origin:90% 90%;animation:cf-tail 1.4s ease-in-out infinite alternate}
+.cf-cat.run{--ld:.24s;--am:40deg}.cf-cat.walk{--ld:.62s;--am:16deg}
+.cf-cat.run .tl{animation:cf-tail .24s ease-in-out infinite alternate}
+.cf-cat.run .la,.cf-cat.run .ld,.cf-cat.walk .la,.cf-cat.walk .ld{animation:cf-A var(--ld) linear infinite}
+.cf-cat.run .lb,.cf-cat.run .lc,.cf-cat.walk .lb,.cf-cat.walk .lc{animation:cf-B var(--ld) linear infinite}
+.cf-cat.jump .la,.cf-cat.jump .lb{transform:rotate(58deg)}
+.cf-cat.jump .lc,.cf-cat.jump .ld{transform:rotate(-58deg)}
+.cf-cat.jump .tl{transform:rotate(14deg);animation:none}
+@keyframes cf-A{0%,100%{transform:rotate(var(--am))}50%{transform:rotate(calc(var(--am)*-1))}}
+@keyframes cf-B{0%,100%{transform:rotate(calc(var(--am)*-1))}50%{transform:rotate(var(--am))}}
+@keyframes cf-tail{from{transform:rotate(-8deg)}to{transform:rotate(10deg)}}
+.cf-yarn{width:32px;height:32px}
+.cf-yarn .rl,.cf-yarn .rl svg{width:100%;height:100%;display:block}
+.cf-yarn .th{position:absolute;left:-36px;bottom:1px;width:46px;height:14px;transform-origin:right center;animation:cf-thr .45s ease-in-out infinite alternate}
+@keyframes cf-thr{from{transform:skewY(-9deg) scaleX(1)}to{transform:skewY(7deg) scaleX(.82)}}
 </style>
 </head>
 <body>
@@ -10900,6 +10923,155 @@ function switchChannel(ch) {
   document.addEventListener('pointerup', end, true);
   document.addEventListener('mouseup', end, true);
   document.addEventListener('pointercancel', end, true);
+})();
+
+/* Saat başı kedi + ip yumağı: her SS:00'da rastgele 1 animasyon. Test: ayarlardaki "Kurulum" başlığına 5 hızlı dokunuş -> 10 sn sonra oynar */
+(function catYarnInit() {
+  try {
+    let busy = false, lastH = -1;
+    const G = '#f2a24a', O = '#c47320', FAR = '#e2903a', D = '#d97a1e', CR = '#fde7c4', PK = '#ffc9d6';
+    const st = (f) => `fill="${f}" stroke="${O}" stroke-width="1" stroke-linejoin="round"`;
+    const ear = (a, b, c, i) => `<polygon points="${a}" ${st(G)}/><polygon points="${b}" fill="${PK}"/>`;
+    const tail = (d) => `<g class="tl"><path d="${d}" fill="none" stroke="${O}" stroke-width="6.4" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${G}" stroke-width="4.6" stroke-linecap="round"/></g>`;
+    const leg = (c, x, f) => `<rect class="lg ${c}" x="${x}" y="27" width="5" height="14" rx="2.5" ${st(f)}/>`;
+    const SIDE = '<svg class="s" viewBox="0 0 64 44">' + tail('M13 25 C1 24 0 11 7 8') + leg('lb', 14, FAR) + leg('ld', 42, FAR) +
+      `<ellipse cx="30" cy="24" rx="18" ry="9.5" ${st(G)}/><path d="M22 16.5v6M29 15v7M36 15.5v6" stroke="${D}" stroke-width="1.6" stroke-linecap="round"/>` + leg('la', 20, G) + leg('lc', 37, G) +
+      '<g class="hd" style="transform-origin:44px 22px">' +
+      `<polygon points="42,12 43,2 49.5,8.5" ${st(G)}/><polygon points="50,8.5 56.5,2 57.5,12.5" ${st(G)}/><polygon points="44,10 44.4,5.2 47.4,8.4" fill="${PK}"/><polygon points="52.4,8.2 55.6,5 55.8,10.4" fill="${PK}"/>` +
+      `<circle cx="49.5" cy="17.5" r="9.2" ${st(G)}/><path d="M47 9.8v3M50 9.4v3.4M53 9.8v3" stroke="${D}" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="55.4" cy="20.4" rx="4" ry="3" fill="${CR}"/>` +
+      '<circle cx="53.6" cy="16.2" r="2.9" fill="#b6e36a" stroke="#6aa32c" stroke-width="0.5"/><ellipse cx="54" cy="16.2" rx="0.9" ry="2.1" fill="#222"/><circle cx="53" cy="15.2" r="0.7" fill="#fff"/>' +
+      '<polygon points="57.6,18.6 60,18.6 58.8,20.2" fill="#ff9db2"/><path d="M58.8 20.2 Q57.8 22 56.2 21.6" fill="none" stroke="#b5651d" stroke-width="0.7" stroke-linecap="round"/><path d="M58 19.6 L63.5 17.6 M58 20.8 L63.5 21.6" stroke="#fff" stroke-width="0.6" stroke-linecap="round"/></g></svg>';
+    const earsF = (pink) => `<polygon points="24,13 25,3 31,9" ${st(G)}/><polygon points="33,9 39,3 40,13" ${st(G)}/>` + (pink ? `<polygon points="25.6,10.6 26,5.8 29.2,8.6" fill="${PK}"/><polygon points="34.8,8.6 38,5.8 38.4,10.6" fill="${PK}"/>` : '');
+    const BACK = '<svg class="b" viewBox="0 0 64 44">' + tail('M38 38 C54 38 58 24 50 20') + `<ellipse cx="32" cy="29" rx="11.5" ry="11.5" ${st(G)}/><path d="M27 22v6M32 21v7M37 22v6" stroke="${D}" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="26" cy="41" rx="4.5" ry="2.4" ${st(CR)}/><ellipse cx="38" cy="41" rx="4.5" ry="2.4" ${st(CR)}/>` +
+      `<g class="hd" style="transform-origin:32px 22px">${earsF(0)}<circle cx="32" cy="16" r="9.2" ${st(G)}/><path d="M28 8.6v3.4M32 8v4M36 8.6v3.4" stroke="${D}" stroke-width="1.3" stroke-linecap="round"/></g></svg>`;
+    const FRONT = '<svg class="f" viewBox="0 0 64 44">' + tail('M26 38 C10 38 6 24 14 20') + `<ellipse cx="32" cy="29" rx="11" ry="11.5" ${st(G)}/><ellipse cx="32" cy="31" rx="5.5" ry="7" fill="${CR}"/><ellipse cx="27" cy="41" rx="4" ry="2.4" ${st(CR)}/><ellipse cx="37" cy="41" rx="4" ry="2.4" ${st(CR)}/>` +
+      `<g class="hd" style="transform-origin:32px 22px">${earsF(1)}<circle cx="32" cy="16" r="9.2" ${st(G)}/><path d="M29.4 8.8v2.8M32 8.4v3.2M34.6 8.8v2.8" stroke="${D}" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="32" cy="20.2" rx="5" ry="3.4" fill="${CR}"/>` +
+      '<circle cx="27.8" cy="15.4" r="2.6" fill="#b6e36a" stroke="#6aa32c" stroke-width="0.5"/><circle cx="36.2" cy="15.4" r="2.6" fill="#b6e36a" stroke="#6aa32c" stroke-width="0.5"/><ellipse cx="27.8" cy="15.4" rx="0.8" ry="1.9" fill="#222"/><ellipse cx="36.2" cy="15.4" rx="0.8" ry="1.9" fill="#222"/><circle cx="27.2" cy="14.4" r="0.6" fill="#fff"/><circle cx="35.6" cy="14.4" r="0.6" fill="#fff"/>' +
+      '<polygon points="30.6,18.2 33.4,18.2 32,19.7" fill="#ff9db2"/><path d="M32 19.7Q30.2 21.7 28.4 20.8M32 19.7Q33.8 21.7 35.6 20.8" fill="none" stroke="#b5651d" stroke-width="0.6" stroke-linecap="round"/><path d="M26.6 20l-6-1.4M26.6 21.2l-6 1.4M37.4 20l6-1.4M37.4 21.2l6 1.4" stroke="#fff" stroke-width="0.5" stroke-linecap="round"/></g></svg>';
+    const YARN = '<svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="22" fill="#d93636"/><g fill="none" stroke-linecap="round"><path d="M5 17C16 8 32 10 41 20M3 26C15 17 33 20 43 30M8 37C18 28 32 29 38 38M16 4C11 17 14 32 24 44M30 3C26 14 28 30 36 42" stroke="#9c1c1c" stroke-width="2.2"/><path d="M9 11C17 5 30 6 37 12M6 30C13 24 22 24 28 28" stroke="#ff8a8a" stroke-width="2"/></g></svg>';
+    const THR = '<svg class="th" viewBox="0 0 46 14"><path d="M46 3C38 3 36 11 27 10C18 9 20 3 12 6C6 8 4 12 0 11" fill="none" stroke="#d93636" stroke-width="2.4" stroke-linecap="round"/></svg>';
+
+    const lin = (k) => k, eo = (k) => 1 - Math.pow(1 - k, 3), ei = (k) => k * k, eio = (k) => k * k * (3 - 2 * k);
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    function ground() {   // zemin = alttaki metin kutusu/tuş şeridinin üst kenarı
+      const ia = document.getElementById('input-area');
+      if (ia && getComputedStyle(ia).display !== 'none') return ia.getBoundingClientRect().top;
+      return innerHeight - 80;
+    }
+    async function play(n) {
+      if (busy) return; busy = true;
+      const W = innerWidth, Y = ground(), NOSE = 36, YR = 16;
+      const cat = document.createElement('div'); cat.className = 'cf-cat'; cat.dataset.v = 's';
+      cat.innerHTML = `<div class="v">${SIDE}${BACK}${FRONT}</div>`;
+      const yarn = document.createElement('div'); yarn.className = 'cf-yarn';
+      yarn.innerHTML = `${THR}<div class="rl">${YARN}</div>`;
+      document.body.appendChild(yarn); document.body.appendChild(cat);
+      const V = cat.firstChild, RL = yarn.lastChild, HD = cat.querySelectorAll('.hd');
+      const C = { x: -300, jy: 0, rot: 0, sx: 1, hd: [0, 0, 0], mode: '' }, Yr = { x: -300, hop: 0 };
+      const setMode = (m) => { if (C.mode !== m) { C.mode = m; cat.className = 'cf-cat ' + m; } };
+      const render = () => {
+        const bob = C.mode === 'run' ? Math.abs(Math.sin(C.x / 22 * Math.PI)) * 3.4 : C.mode === 'walk' ? Math.abs(Math.sin(C.x / 15 * Math.PI)) * 1.1 : 0;
+        cat.style.transform = `translate(${(C.x - 37.5).toFixed(1)}px,${(Y + 3.5 - 52 - bob - C.jy).toFixed(1)}px) rotate(${C.rot.toFixed(1)}deg)`;
+        V.style.transform = `scaleX(${C.sx.toFixed(3)})`;
+        const h = `translate(${C.hd[0]}px,${C.hd[1]}px) rotate(${C.hd[2]}deg)`;
+        HD.forEach((e) => { e.style.transform = h; });
+        yarn.style.transform = `translate(${(Yr.x - YR).toFixed(1)}px,${(Y - 32 - Yr.hop).toFixed(1)}px)`;
+        RL.style.transform = `rotate(${(Yr.x * 3.58).toFixed(1)}deg)`;
+      };
+      const T = (ms, f, ez = lin) => new Promise((res) => {
+        const t0 = performance.now();
+        (function fr(now) { const k = clamp((now - t0) / ms, 0, 1); f(ez(k), k); render(); k < 1 ? requestAnimationFrame(fr) : res(); })(t0);
+      });
+      const lerpHd = (to, ms, ez = eio) => { const a = C.hd.slice(); return T(ms, (k) => { C.hd = a.map((v, i) => v + (to[i] - v) * k); }, ez); };
+      const turn = async (to) => {   // yumuşak dönüş: gövde daralır, görünüm değişir, genişler
+        await T(200, (k) => { C.sx = 1 - .7 * k; }, ei);
+        cat.dataset.v = to; C.hd = [0, 0, 0];
+        await T(240, (k) => { C.sx = .3 + .7 * k; }, eo);
+      };
+      const arrive = async (to, from, ms) => {   // koşarak gelir, yavaşlayıp durur
+        setMode('run');
+        await T(ms, (k, r) => { C.x = from + (to - from) * k; if (r > .6) setMode('walk'); }, eo);
+        setMode('');
+      };
+      const butt = async (yTo, ms) => {   // kafa vuruşu: geri çekil, öne atıl, yumağı it
+        await T(260, (k) => { C.hd = [-1.2 * k, k, 10 * k]; }, eo);
+        const cx = C.x;
+        await T(120, (k) => { C.x = cx + 24 * k; C.hd = [-1.2 + 4.2 * k, 1 - 2 * k, 10 - 17 * k]; }, ei);
+        lerpHd([0, 0, 0], 400, eo);
+        const yx = Yr.x;
+        return T(ms, (k, r) => { Yr.x = yx + (yTo - yx) * k; Yr.hop = 14 * Math.sin(Math.min(1, r * 1.6) * Math.PI) * (1 - r); }, eo);
+      };
+      try {
+        if (n === 0) {            // 1) kedi ipe yetişemez
+          const ms = 2000, x1 = W + 220;
+          await T(ms, (k) => {
+            Yr.x = -40 + (x1 + 40) * k; Yr.hop = Math.abs(Math.sin(Yr.x / 34 * Math.PI)) * 3;
+            const j = clamp((k - .5) / .22, 0, 1), air = k > .5 && k < .72;
+            const lunge = k < .5 ? 0 : k < .72 ? 18 * eio(j) : 18 * (1 - clamp((k - .72) / .14, 0, 1));
+            C.x = Yr.x - YR - NOSE - (58 - 34 * k) + lunge;
+            C.jy = air ? 4 * 24 * j * (1 - j) : 0; C.rot = air ? -12 + 24 * j : 0;
+            setMode(air ? 'jump' : 'run');
+          });
+        } else if (n === 2) {     // 3) yumak kaybolur; kedi bulamaz, bakınır, yürüyüp çıkar
+          const xc = W * .5;
+          const yp = T(1300, (k) => { Yr.x = -40 + (W + 110) * k; Yr.hop = 8 * Math.abs(Math.sin(k * 4 * Math.PI)); }, ei);
+          await sleep(850);
+          await Promise.all([yp, arrive(xc, -60, 700)]);
+          await sleep(450);
+          await turn('b');
+          await lerpHd([-2, 0, -16], 600); await sleep(500);
+          await lerpHd([2, 0, 16], 900); await sleep(500);
+          await lerpHd([0, 0, 0], 500);
+          await turn('f');
+          await lerpHd([0, 0, -10], 600); await sleep(300);
+          await lerpHd([0, 0, 10], 900); await sleep(300);
+          await lerpHd([0, 0, 0], 500); await sleep(300);
+          await turn('s');
+          setMode('walk');
+          const x0 = C.x, d = W + 80 - x0;
+          await T(clamp(d / 85 * 1000, 2500, 5000), (k) => { C.x = x0 + d * k; });
+        } else {                  // 2) yavaş yumak; kedi kafasıyla iki kez itip uzaklaştırır
+          const xm = W * .5, GAP = 26;
+          await T(3800, (k) => { Yr.x = -40 + (xm + 40) * k; }, eo);
+          await sleep(1000);
+          const cl = xm - YR - NOSE - GAP;
+          await arrive(cl, -60, 750);
+          await sleep(250);
+          const x2 = xm + (W - xm) * .45 + 50;
+          const p1 = butt(x2, 1100);
+          await sleep(480);
+          const c1 = C.x, c2 = x2 - YR - NOSE - GAP;
+          setMode('run');
+          await T(750, (k) => { C.x = c1 + (c2 - c1) * k; }, eo);
+          setMode('');
+          await p1; await sleep(150);
+          const p2 = butt(W + 160, 900);
+          await sleep(450);
+          const c3 = C.x; setMode('run');
+          await T(900, (k) => { C.x = c3 + (W + 120 - c3) * k; }, ei);
+          await p2;
+        }
+      } catch (e) {}
+      cat.remove(); yarn.remove(); busy = false;
+    }
+    window.__catYarnPlay = play;
+    setInterval(() => {
+      const d = new Date();
+      if (d.getMinutes() === 0 && d.getSeconds() < 3 && lastH !== d.getHours()) {
+        lastH = d.getHours();
+        if (!document.hidden) play(Math.random() * 3 | 0);
+      }
+    }, 1000);
+    let ck = [];
+    document.addEventListener('click', (e) => {
+      const t = e.target.closest && e.target.closest('#blk-setup > .set-title');
+      if (!t) return;
+      const now = Date.now();
+      ck = ck.filter((x) => now - x < 2500); ck.push(now);
+      if (ck.length >= 5) { ck = []; setTimeout(() => play(Math.random() * 3 | 0), 10000); }
+    }, true);
+  } catch (e) {}
 })();
 
 cdAnimRestore();
