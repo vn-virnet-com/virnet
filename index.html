@@ -10934,7 +10934,7 @@ function switchChannel(ch) {
 /* Saat başı kedi + ip yumağı: her SS:00'da rastgele 1 animasyon. Test: ayarlardaki "Kurulum" başlığına 5 hızlı dokunuş -> 10 sn sonra oynar */
 (function catYarnInit() {
   try {
-    let busy = false, lastH = -1;
+    let busy = false;
     const G = '#f2a24a', O = '#c47320', FAR = '#e2903a', D = '#d97a1e', CR = '#fde7c4', PK = '#ffc9d6';
     const st = (f) => `fill="${f}" stroke="${O}" stroke-width="1" stroke-linejoin="round"`;
     const ear = (a, b, c, i) => `<polygon points="${a}" ${st(G)}/><polygon points="${b}" fill="${PK}"/>`;
@@ -11080,11 +11080,19 @@ function switchChannel(ch) {
           setMode('walk');
           await T(clamp(d0 / 95 * 1000, 2500, 6000), (k) => { C.x = x0 + d0 * k; }, (k) => 1 - (1 - k) * (1 - k));
           setMode(''); await sleep(600);
-          await T(450, (k) => { C.sy = 1 - .2 * k; C.hd = [0, 2.5 * k, 6 * k]; }, eio);      // çömelir
+          const DEG = Math.PI / 180, legs = cat.querySelectorAll('.lg'), LD = 9.4;   // LD: yatarken gövdenin ineceği mesafe (px)
+          await T(1000, (k) => { C.th = 85 * DEG * k; }, eio);              // önce yüzünü bize çevirir
+          await sleep(350);
+          await T(2600, (k) => {                                           // yavaşça yere çöker: bacaklar katlanır, gövde ve kafa iner
+            legs.forEach((l) => { l.style.transform = `scaleY(${(1 - .57 * k).toFixed(3)})`; });
+            C.jy = -LD * k; C.hd = [k, 6.5 * k, 0];
+          }, eio);
+          await sleep(250);
           cat.dataset.v = 'x'; const sd = cat.querySelector('.s'), sl = cat.querySelector('.z');
-          sl.style.opacity = 0;
-          await T(500, (k) => { sd.style.opacity = 1 - k; sl.style.opacity = k; C.sy = .8 + .2 * k; C.hd = [0, 2.5 * (1 - k), 6 * (1 - k)]; }, eio);
-          cat.dataset.v = 'z'; sd.style.opacity = ''; sl.style.opacity = ''; C.hd = [0, 0, 0];
+          sl.style.opacity = 0; sl.style.transform = `translateY(-${LD}px)`;   // alçalmış kediyle aynı hizada başlasın
+          await T(700, (k) => { sd.style.opacity = 1 - k; sl.style.opacity = k; }, eio);
+          cat.dataset.v = 'z'; sd.style.opacity = ''; sl.style.opacity = ''; sl.style.transform = '';
+          legs.forEach((l) => { l.style.transform = ''; }); C.jy = 0; C.hd = [0, 0, 0]; C.th = 0;
           let zi = 0;
           const zz = () => {      // kafasının iki yanında küçük zzZ'ler çıkıp silinir
             const side = zi % 2 ? 1 : -1, ch = ['z', 'Z', 'z'][zi % 3], sz = 11 + (zi % 3) * 3; zi++;
@@ -11095,18 +11103,47 @@ function switchChannel(ch) {
           };
           zz(); const zt = setInterval(zz, 620);
           cat.style.pointerEvents = 'auto'; cat.style.cursor = 'pointer';
-          await new Promise((res) => {   // dokunana kadar uyur (en fazla 3 dk)
-            const tm = setTimeout(res, 180000);
+          const touched = await new Promise((res) => {   // dokunana kadar uyur (en fazla 1 dk)
+            const tm = setTimeout(() => res(false), 60000);
             const nf = (ev) => ev.preventDefault();   // dokunuş metin kutusunun odağını almasın
             cat.addEventListener('mousedown', nf);
-            cat.addEventListener('pointerdown', (ev) => { nf(ev); clearTimeout(tm); res(); }, { once: true });
+            cat.addEventListener('pointerdown', (ev) => { nf(ev); clearTimeout(tm); res(true); }, { once: true });
           });
           clearInterval(zt); cat.style.pointerEvents = ''; cat.style.cursor = '';
           cat.querySelectorAll('.cf-z').forEach((e) => e.remove());
-          cat.dataset.v = 's'; C.sy = 1;
-          setMode('jump'); const cx = C.x;                                 // bir anda sıçrar
-          await T(380, (k, r) => { C.jy = 4 * 40 * r * (1 - r); C.x = cx + 26 * r; C.rot = -12 * Math.sin(r * Math.PI); }, lin);
-          C.jy = 0; C.rot = 0; setMode('run'); const c1 = C.x;            // koşarak kaçar
+          if (touched) {                                                   // dokunuldu: bir anda sıçrar
+            cat.dataset.v = 's'; C.sy = 1;
+            setMode('jump'); const cx = C.x;
+            await T(380, (k, r) => { C.jy = 4 * 40 * r * (1 - r); C.x = cx + 26 * r; C.rot = -12 * Math.sin(r * Math.PI); }, lin);
+            C.jy = 0; C.rot = 0;
+          } else {                                                         // kendiliğinden uyandı: yavaşça kalkar, esner
+            const sd2 = cat.querySelector('.s'), sl2 = cat.querySelector('.z');
+            legs.forEach((l) => { l.style.transform = 'scaleY(.43)'; });   // yatış pozuyla aynı hizada başla
+            C.jy = -LD; C.hd = [1, 6.5, 0]; C.th = 85 * DEG;
+            cat.dataset.v = 'x'; sd2.style.opacity = 0; sl2.style.opacity = 1; sl2.style.transform = `translateY(-${LD}px)`;
+            await T(700, (k) => { sd2.style.opacity = k; sl2.style.opacity = 1 - k; }, eio);
+            cat.dataset.v = 's'; sd2.style.opacity = ''; sl2.style.opacity = ''; sl2.style.transform = '';
+            await sleep(500);
+            await T(2400, (k) => {                                         // yavaşça ayağa kalkar
+              legs.forEach((l) => { l.style.transform = `scaleY(${(.43 + .57 * k).toFixed(3)})`; });
+              C.jy = -LD * (1 - k); C.hd = [1 - k, 6.5 * (1 - k), 0];
+            }, eio);
+            legs.forEach((l) => { l.style.transform = ''; }); C.jy = 0; C.hd = [0, 0, 0];
+            await sleep(500);
+            const fl = cat.querySelectorAll('.lc,.ld'), hl = cat.querySelectorAll('.la,.lb');   // kedi esnemesi: ön bacaklar önde, popo havada
+            cat.style.transformOrigin = '28% 100%';
+            const pose = (k) => {
+              C.rot = 15 * k; C.hd = [3 * k, 5 * k, 0];
+              fl.forEach((l) => { l.style.transform = `rotate(${(-70 * k).toFixed(1)}deg)`; });
+              hl.forEach((l) => { l.style.transform = `rotate(${(-15 * k).toFixed(1)}deg)`; });
+            };
+            await T(1100, pose, eio); await sleep(1600);
+            await T(800, (k) => pose(1 - k), eio);
+            legs.forEach((l) => { l.style.transform = ''; }); cat.style.transformOrigin = ''; C.rot = 0; C.hd = [0, 0, 0];
+            await T(700, (k) => { C.th = 85 * DEG * (1 - k); }, eio);     // yüzünü yine sağa çevirir
+            await sleep(250);
+          }
+          setMode('run'); const c1 = C.x;                                  // sağa doğru koşup çıkar
           await T(1000, (k) => { C.x = c1 + (W + 140 - c1) * k; }, ei);
         } else if (n === 2) {     // 3) yumak kaybolur; kedi bulamaz, bakınır, yürüyüp çıkar
           const xc = W * .5;
@@ -11147,13 +11184,24 @@ function switchChannel(ch) {
       alive = false; fx.remove(); busy = false;
     }
     window.__catYarnPlay = play;
-    setInterval(() => {
-      const d = new Date();
-      if (d.getMinutes() === 0 && d.getSeconds() < 3 && lastH !== d.getHours()) {
-        lastH = d.getHours();
-        if (!document.hidden) play(d.getHours() === 0 ? 3 : Math.random() * 3 | 0);   // 00:00 = uyuyan kedi, diğer saatler rastgele 1-3
+    // Zamanlayıcı: 00:00'da SADECE uyuyan kedi (rastgele animasyon yok); diğer saat başlarında rastgele 1-3.
+    // Gece kedisi sağlam: o an başka animasyon oynuyorsa ya da sekme arka plandaysa vazgeçmez, 00:00-00:29 arasında
+    // uygun olduğu ilk saniyede gelir. Gün başına bir kez oynar. busy kilidi sayesinde iki kedi asla aynı anda ekranda olmaz.
+    let midDone = '', hrDone = '';
+    const tick = () => {
+      const d = new Date(), h = d.getHours(), m = d.getMinutes();
+      const dk = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+      if (h === 0) {
+        if (m < 30 && midDone !== dk && !busy && !document.hidden) { midDone = dk; play(3); }
+        return;
       }
-    }, 1000);
+      if (m === 0 && hrDone !== dk + '-' + h) {
+        hrDone = dk + '-' + h;
+        if (!busy && !document.hidden) play(Math.random() * 3 | 0);
+      }
+    };
+    setInterval(tick, 1000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
     let ck = [], pend = null;   // "Kurulum" başlığı: 5 hızlı dokunuş = rastgele animasyon, 6 = gece uyku animasyonu (10 sn sonra)
     document.addEventListener('click', (e) => {
       const t = e.target.closest && e.target.closest('#blk-setup > .set-title');
