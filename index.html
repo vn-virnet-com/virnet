@@ -11023,7 +11023,7 @@ function switchChannel(ch) {
       if (busy) return; busy = true;
       let rc = (document.getElementById('pane-chat') || {}).getBoundingClientRect ? document.getElementById('pane-chat').getBoundingClientRect() : null;
       if (!rc || innerWidth < 769 || !rc.width) rc = { left: 0, width: innerWidth };   // masaüstünde sadece sohbet alanı
-      const W = rc.width, Y = ground(), NOSE = 36, YR = 16;
+      const W = rc.width, NOSE = 36, YR = 16; let Y = ground(), alive = true;
       const cat = document.createElement('div'); cat.className = 'cf-cat'; cat.dataset.v = 's';
       cat.innerHTML = `<div class="v">${SIDE}${SLEEP}</div>`;
       const yarn = document.createElement('div'); yarn.className = 'cf-yarn';
@@ -11034,6 +11034,7 @@ function switchChannel(ch) {
       const C = { x: -300, jy: 0, rot: 0, sx: 1, th: 0, sy: 1, hd: [0, 0, 0], mode: '' }, Yr = { x: -300, hop: 0 };
       const setMode = (m) => { if (C.mode !== m) { C.mode = m; cat.className = 'cf-cat ' + m; } };
       const render = () => {
+        Y = ground();   // klavye açılıp kapanınca zemin (metin kutusu) kayar; kedi her karede onu izler
         const bob = C.mode === 'run' ? Math.abs(Math.sin(C.x / 22 * Math.PI)) * 3.4 : C.mode === 'walk' ? Math.abs(Math.sin(C.x / 15 * Math.PI)) * 1.1 : 0;
         cat.style.transform = `translate(${(C.x - 37.5).toFixed(1)}px,${(Y + 3.5 - 52 - bob - C.jy).toFixed(1)}px) rotate(${C.rot.toFixed(1)}deg)`;
         V.style.transform = `scale(${C.sx.toFixed(3)},${C.sy.toFixed(3)})`;
@@ -11043,6 +11044,7 @@ function switchChannel(ch) {
         yarn.style.transform = `translate(${(Yr.x - YR).toFixed(1)}px,${(Y - 32 - Yr.hop).toFixed(1)}px)`;
         RL.style.transform = `rotate(${(Yr.x * 3.58).toFixed(1)}deg)`;
       };
+      (function lp() { if (!alive) return; render(); requestAnimationFrame(lp); })();   // uyurken de zemini takip et
       const T = (ms, f, ez = lin) => new Promise((res) => {
         const t0 = performance.now();
         (function fr(now) { const k = clamp((now - t0) / ms, 0, 1); f(ez(k), k); render(); k < 1 ? requestAnimationFrame(fr) : res(); })(t0);
@@ -11142,7 +11144,7 @@ function switchChannel(ch) {
           await p2;
         }
       } catch (e) {}
-      fx.remove(); busy = false;
+      alive = false; fx.remove(); busy = false;
     }
     window.__catYarnPlay = play;
     setInterval(() => {
