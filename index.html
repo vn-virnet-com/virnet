@@ -11086,8 +11086,9 @@ function switchChannel(ch) {
           };
           zz(); const zt = setInterval(zz, 620);
           cat.style.pointerEvents = 'auto'; cat.style.cursor = 'pointer';
-          const touched = await new Promise((res) => {   // dokunana kadar uyur (en fazla 1 dk)
-            const tm = setTimeout(() => res(false), 60000);
+          const touched = await new Promise((res) => {   // dokunana kadar uyur (dokunulmazsa 00:59'a kadar)
+            const _e = new Date(); _e.setHours(0, 59, 0, 0);   // dokunulmazsa 00:59'a kadar uyur
+            const tm = setTimeout(() => res(false), Math.max(0, _e - Date.now()));
             const nf = (ev) => ev.preventDefault();   // dokunuş metin kutusunun odağını almasın
             cat.addEventListener('mousedown', nf);
             cat.addEventListener('pointerdown', (ev) => { nf(ev); clearTimeout(tm); res(true); }, { once: true });
