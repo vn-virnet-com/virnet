@@ -853,10 +853,10 @@ body.mb-admin .leap-num { cursor: pointer; }
 body.no-anim .set-collapse, body.no-anim .set-body, body.no-anim .set-arrow { transition: none !important; }
 body.no-anim #app, body.no-anim #settings-menu { transition: none !important; }
 .live-msg .msg-body { cursor: default; }
-/* Dinamik mesaj (alıcı tarafı): yeni gelen kısım yumuşak yükseliş ile gelir (hafif aşağıdan yukarı, bulanıklık ve şeffaflık birlikte açılır, 0,45 sn). Satır akışı bozulmasın diye inline 'top' kayması kullanılır */
-@keyframes live-word-in { from { opacity: 0; top: 5px; filter: blur(2px); } to { opacity: 1; top: 0; filter: blur(0); } }
-.live-msg .live-new, .msg .live-new { position: relative; animation: live-word-in 450ms cubic-bezier(.2,.7,.3,1) both; }
-@media (prefers-reduced-motion: reduce) { .live-msg .live-new, .msg .live-new { animation: none; top: 0; filter: none; } }
+/* Dinamik mesaj (alıcı tarafı): yeni gelen kısım 0,5 sn'de yavaşça normal tonunda belirir (parlama yok) */
+@keyframes live-word-in { from { opacity: 0; } to { opacity: 1; } }
+.live-msg .live-new, .msg .live-new { animation: live-word-in 500ms ease-out both; }
+@media (prefers-reduced-motion: reduce) { .live-msg .live-new, .msg .live-new { animation: none; } }
 @keyframes live-pulse { 0%, 100% { background-color: var(--c-111); } 50% { background-color: var(--c-22); } }
 body.live-on #message-input { animation: live-pulse 3s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { body.live-on #message-input { animation: none; } }
@@ -2213,8 +2213,8 @@ function removeLive() {
     layoutNicks();
   }
 }
-// ---- Dinamik mesaj: yeni gelen karakterler 0,45 sn'lik yumuşak yükseliş efektiyle görünür (son mesaj gönderilince kalan kısım da aynı efektle gelir) ----
-const LIVE_FADE_MS = 450;
+// ---- Dinamik mesaj: yeni gelen karakterler 0,5 sn'lik fade + parlama ile görünür ----
+const LIVE_FADE_MS = 500;
 let liveAnim = { id: null, vis: '', ts: [] };
 function animateLiveWords(body, id) {
   if (liveAnim.id !== id) liveAnim = { id: id, vis: '', ts: [] };
