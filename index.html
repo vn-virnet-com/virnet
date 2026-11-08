@@ -706,16 +706,6 @@ body.mb-admin .mb-colhead { padding-left: 0; padding-right: 22px; }
 .mb-colist { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .mb-colist .set-block + .set-block { margin-top: 6px; }
 .mb-item { position: relative; }
-/* Özel üye (kızlar sütunundaki anyna / @anynaz): kutucuğun kenarında pembe-kırmızı ince dönen çerçeve */
-@property --mb-ang { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
-.mb-item.mb-anyna::after, .mb-item.mb-wish::after { content: ""; position: absolute; inset: 0; border-radius: 8px; padding: 1.5px; pointer-events: none; z-index: 1; box-sizing: border-box;
-  background: conic-gradient(from var(--mb-ang), #ff5fae 0%, #ff2d4f 30%, #ff5fae 50%, rgba(255,45,79,.3) 75%, #ff5fae 100%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  animation: mbAnynaSpin 3s linear infinite; }
-.mb-item.mb-wish::after { background: conic-gradient(from var(--mb-ang), #2f8bff 0%, #19e68c 30%, #2f8bff 50%, rgba(25,230,140,.3) 75%, #2f8bff 100%); }
-@keyframes mbAnynaSpin { to { --mb-ang: 360deg; } }
-@media (prefers-reduced-motion: reduce) { .mb-item.mb-anyna::after, .mb-item.mb-wish::after { animation: none; } }
 .mb-lock { position: absolute; top: 0; right: 2px; width: 18px; height: 14px; padding: 0; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--c-55); z-index: 2; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .mb-lock svg { width: 10px; height: 10px; display: block; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .mb-lock.on { color: var(--accent); }
@@ -10480,13 +10470,6 @@ function receiveMembers(d) {
     blk.className = 'set-block mb-item' + (m.g === 'b' ? ' mb-bot' : '');
     blk.dataset.id = m.id;
     const isBot = m.g === 'b';
-    const paintAnyna = () => {
-      const nn = String(m.name || '').trim().toLowerCase().replace(/^@/, '');
-      const uu = String(m.user || '').trim().toLowerCase().replace(/^@/, '');
-      blk.classList.toggle('mb-anyna', m.g === 'k' && (nn === 'anyna' || nn === 'anynaz' || uu === 'anyna' || uu === 'anynaz'));
-      blk.classList.toggle('mb-wish', m.g === 'b' && nn === 'wish');
-    };
-    paintAnyna();
 
     const t = document.createElement('div');
     t.className = 'set-title';
@@ -10541,7 +10524,7 @@ function receiveMembers(d) {
       i.setAttribute('enterkeyhint', 'done');
       el.textContent = ''; el.appendChild(i);
       blk.classList.add('editing');
-      i.addEventListener('input', () => { m[key] = i.value; paintAnyna(); if (!m._draft) changed(false); });
+      i.addEventListener('input', () => { m[key] = i.value; if (!m._draft) changed(false); });
       i.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && key === 'name' && m._draft && !isBot) { e.preventDefault(); edit(us, 'user', 40); return; } // yeni üyede Enter: kullanıcı adına geç
         if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); try { i.blur(); } catch (er) {} }
