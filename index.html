@@ -1317,6 +1317,24 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   #scroll-down-btn, #td-add, #cd-add, #bp-add { right: 18px; }
 }
 
+/* Saat başı kedi + ip yumağı animasyonu */
+.cf-fx{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:29000}
+.cf-yarn,.cf-cat{position:absolute;left:0;transform:translateX(-400px);will-change:transform}
+.cf-yarn{width:30px;height:30px}.cf-yarn .in,.cf-yarn svg{width:100%;height:100%;display:block}
+.cf-cat{width:110px;height:70px}.cf-cat .bob,.cf-cat svg{width:100%;height:100%}
+.cf-cat svg{display:none;overflow:visible}
+.cf-cat[data-v=s] .s,.cf-cat[data-v=b] .b,.cf-cat[data-v=f] .f{display:block}
+.cf-cat .hd{transition:transform .25s}
+.cf-cat.run .bob{animation:cf-bob .16s ease-in-out infinite alternate}
+.cf-cat.run .la{animation:cf-leg .16s ease-in-out infinite alternate}
+.cf-cat.run .lb{animation:cf-leg .16s ease-in-out infinite alternate-reverse}
+.cf-cat.walk .bob{animation:cf-bob .5s ease-in-out infinite alternate}
+.cf-cat.walk .la{animation:cf-leg .5s ease-in-out infinite alternate}
+.cf-cat.walk .lb{animation:cf-leg .5s ease-in-out infinite alternate-reverse}
+.cf-cat.walk .la,.cf-cat.walk .lb{--a:18deg}
+.cf-cat.paw .fl{animation:none!important;transform:rotate(-80deg)}
+@keyframes cf-bob{to{transform:translateY(-4px)}}
+@keyframes cf-leg{from{transform:rotate(calc(var(--a,38deg)*-1))}to{transform:rotate(var(--a,38deg))}}
 </style>
 </head>
 <body>
@@ -10900,6 +10918,101 @@ function switchChannel(ch) {
   document.addEventListener('pointerup', end, true);
   document.addEventListener('mouseup', end, true);
   document.addEventListener('pointercancel', end, true);
+})();
+
+/* Saat başı kedi + ip yumağı: her SS:00'da rastgele 1 animasyon. Test: ayarlardaki "Kurulum" başlığına 5 hızlı dokunuş -> 10 sn sonra oynar */
+(function catYarnInit() {
+  try {
+    let busy = false, lastH = -1;
+    const YARN = '<svg viewBox="0 0 30 30"><circle cx="15" cy="15" r="14" fill="#d62a2a"/><path d="M4 11C12 6 20 8 26 14M3 17C11 12 21 14 27 20M7 24C14 19 20 20 24 25M10 4C8 12 10 20 16 28" fill="none" stroke="#8f1414" stroke-width="1.6"/><path d="M20 4C24 7 26 11 26 14" fill="none" stroke="#ff7a7a" stroke-width="1.4"/><path d="M22 26C26 28 28 28 30 29" fill="none" stroke="#d62a2a" stroke-width="2" stroke-linecap="round"/></svg>';
+    const G = '#f2a24a', D = '#d97a1e', C = '#fde7c4', P = '#f48fb1', K = '#2b1a0a';
+    const leg = (c, x, o, col) => `<line class="${c}" x1="${x}" y1="46" x2="${x}" y2="61" stroke="${col}" style="transform-origin:${x}px 46px"/>`;
+    const ears = (pink) => `<path d="M38 17L40 2L50 11Z M62 17L60 2L50 11Z" fill="${G}"/>` + (pink ? `<path d="M41 13L41.5 6L46 11Z M59 13L58.5 6L54 11Z" fill="${P}"/>` : '');
+    const SIDE = `<svg class="s" viewBox="0 0 100 64"><path d="M20 36C2 34 0 12 14 10" fill="none" stroke="${G}" stroke-width="7" stroke-linecap="round"/><g stroke-width="6" stroke-linecap="round">${leg('lb', 34, 0, D)}${leg('la', 62, 0, D)}</g><ellipse cx="46" cy="36" rx="28" ry="13" fill="${G}"/><path d="M32 25v8M42 24v9M52 24v9" stroke="${D}" stroke-width="3" stroke-linecap="round"/><g stroke-width="6" stroke-linecap="round">${leg('la', 26, 0, G)}${leg('lb fl', 68, 0, G)}</g><ellipse cx="78" cy="27" rx="14" ry="12.5" fill="${G}"/><path d="M67 20L70 6L79 15Z M80 15L90 6L91 21Z" fill="${G}"/><path d="M70 17L71.5 10L76 15Z" fill="${P}"/><ellipse cx="88" cy="32" rx="7" ry="5.5" fill="${C}"/><path d="M92 29h4l-2 3z" fill="${P}"/><ellipse cx="86" cy="25" rx="2.2" ry="3" fill="${K}"/><circle cx="86.7" cy="23.8" r=".8" fill="#fff"/><path d="M90 33l9-2M90 34l9 2" stroke="#fff" stroke-width=".8"/></svg>`;
+    const BACK = `<svg class="b" viewBox="0 0 100 64"><path d="M62 58C84 58 88 36 78 30" fill="none" stroke="${G}" stroke-width="7" stroke-linecap="round"/><ellipse cx="50" cy="46" rx="19" ry="16" fill="${G}"/><path d="M42 36v10M50 35v11M58 36v10" stroke="${D}" stroke-width="3" stroke-linecap="round"/><ellipse cx="41" cy="61" rx="7" ry="3.5" fill="${C}"/><ellipse cx="59" cy="61" rx="7" ry="3.5" fill="${C}"/><g class="hd" style="transform-origin:50px 36px"><circle cx="50" cy="24" r="14" fill="${G}"/>${ears(0)}<path d="M44 13v6M50 12v7M56 13v6" stroke="${D}" stroke-width="2.5" stroke-linecap="round"/></g></svg>`;
+    const FRONT = `<svg class="f" viewBox="0 0 100 64"><path d="M38 58C16 58 12 36 22 30" fill="none" stroke="${G}" stroke-width="7" stroke-linecap="round"/><ellipse cx="50" cy="46" rx="19" ry="16" fill="${G}"/><ellipse cx="50" cy="49" rx="9" ry="11" fill="${C}"/><ellipse cx="42" cy="61" rx="6" ry="3.5" fill="${C}"/><ellipse cx="58" cy="61" rx="6" ry="3.5" fill="${C}"/><g class="hd"><circle cx="50" cy="24" r="14" fill="${G}"/>${ears(1)}<path d="M46 11v5M50 10v6M54 11v5" stroke="${D}" stroke-width="2" stroke-linecap="round"/><ellipse cx="50" cy="30" rx="8" ry="5" fill="${C}"/><ellipse cx="43" cy="23" rx="2.3" ry="3.2" fill="${K}"/><ellipse cx="57" cy="23" rx="2.3" ry="3.2" fill="${K}"/><circle cx="43.8" cy="21.8" r=".9" fill="#fff"/><circle cx="57.8" cy="21.8" r=".9" fill="#fff"/><path d="M47 28h6l-3 3z" fill="${P}"/><path d="M50 31q-3 3-6 1M50 31q3 3 6 1" fill="none" stroke="#b5651d" stroke-width="1"/><path d="M40 30l-9-2M40 32l-9 2M60 30l9-2M60 32l9 2" stroke="#fff" stroke-width=".8"/></g></svg>`;
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const go = (el, kf, o) => el.animate(kf, Object.assign({ fill: 'forwards' }, o)).finished;
+    const tx = (a, b) => [{ transform: `translateX(${a}px)` }, { transform: `translateX(${b}px)` }];
+    const rot = (d) => d / 94 * 360;   // 30px çaplı yumak: yürüdüğü yola göre dönüş
+    function ground() {   // zemin = alttaki metin kutusu/tuş şeridinin üst kenarı
+      const ia = document.getElementById('input-area');
+      if (ia && getComputedStyle(ia).display !== 'none') return ia.getBoundingClientRect().top;
+      return innerHeight - 80;
+    }
+    async function play(n) {
+      if (busy) return; busy = true;
+      const W = innerWidth, Y = ground(), fx = document.createElement('div');
+      fx.className = 'cf-fx';
+      fx.innerHTML = `<div class="cf-yarn" style="top:${Y - 30}px"><div class="in">${YARN}</div></div><div class="cf-cat" data-v="s" style="top:${Y - 70}px"><div class="bob">${SIDE}${BACK}${FRONT}</div></div>`;
+      document.body.appendChild(fx);
+      const y = fx.children[0], yi = y.firstChild, c = fx.children[1];
+      const hd = (t) => { const h = c.querySelector('.b .hd'); if (h) h.style.transform = t; };
+      try {
+        if (n === 0) {            // 1) kedi ipe yetişemez, ikisi birlikte çıkar
+          const T = 3400, x1 = W + 300;
+          c.classList.add('run');
+          await Promise.all([
+            go(y, tx(-40, x1), { duration: T }),
+            go(yi, [{ transform: 'rotate(0)' }, { transform: `rotate(${rot(x1 + 40)}deg)` }], { duration: T }),
+            go(c, tx(-200, x1 - 132), { duration: T })
+          ]);
+        } else if (n === 1) {     // 2) yavaş yumak, geç gelen kedi, pati, uzaklaştırma
+          const xm = W * 0.5, ez = 'cubic-bezier(.2,.6,.3,1)', r0 = rot(xm + 40);
+          await Promise.all([
+            go(y, tx(-40, xm), { duration: 4000, easing: ez }),
+            go(yi, [{ transform: 'rotate(0)' }, { transform: `rotate(${r0}deg)` }], { duration: 4000, easing: ez })
+          ]);
+          await sleep(1100);
+          c.classList.add('run');
+          await go(c, tx(-130, xm - 125), { duration: 450, easing: 'ease-out' });
+          c.classList.remove('run'); c.classList.add('paw');
+          const r1 = rot(W + 80 - xm);
+          go(c, tx(xm - 125, xm - 113), { duration: 110 });
+          go(y, tx(xm, W + 80), { duration: 800, easing: 'ease-out' });
+          go(yi, [{ transform: `translateY(0) rotate(${r0}deg)` }, { transform: `translateY(-45px) rotate(${r0 + r1 * .5}deg)`, offset: .4 }, { transform: `translateY(0) rotate(${r0 + r1}deg)` }], { duration: 800 });
+          await sleep(180);
+          c.classList.remove('paw'); c.classList.add('run');
+          await go(c, tx(xm - 113, W + 130), { duration: 1000, easing: 'ease-in' });
+        } else {                  // 3) zıplayan hızlı yumak kaybolur, kedi bulamaz, yürüyüp çıkar
+          const xc = W / 2 - 55;
+          go(y, tx(-40, W + 40), { duration: 1400 });
+          go(yi, [{ transform: 'translateY(0)', easing: 'ease-out' }, { transform: 'translateY(-18px)', easing: 'ease-in' }, { transform: 'translateY(0)' }], { duration: 470, iterations: 3 });
+          go(yi.firstChild, [{ transform: 'rotate(0)' }, { transform: `rotate(${rot(W + 80)}deg)` }], { duration: 1400 });
+          await sleep(1500);
+          c.classList.add('run');
+          await go(c, tx(-130, xc), { duration: 500, easing: 'ease-out' });
+          c.classList.remove('run');
+          await sleep(300);
+          c.dataset.v = 'b'; hd('translateX(-7px) rotate(-14deg)'); await sleep(750);
+          hd('translateX(7px) rotate(14deg)'); await sleep(750);
+          hd('none'); await sleep(250);
+          c.dataset.v = 'f';
+          await go(c.querySelector('.f'), [{ transform: 'rotate(0)' }, { transform: 'rotate(-9deg)' }, { transform: 'rotate(9deg)' }, { transform: 'rotate(0)' }], { duration: 1500 });
+          await sleep(200);
+          c.dataset.v = 's'; c.classList.add('walk');
+          await go(c, tx(xc, W + 130), { duration: 3400 });
+        }
+      } catch (e) {}
+      fx.remove(); busy = false;
+    }
+    window.__catYarnPlay = play;
+    setInterval(() => {
+      const d = new Date();
+      if (d.getMinutes() === 0 && d.getSeconds() < 3 && lastH !== d.getHours()) {
+        lastH = d.getHours();
+        if (!document.hidden) play(Math.random() * 3 | 0);
+      }
+    }, 1000);
+    let ck = [];
+    document.addEventListener('click', (e) => {
+      const t = e.target.closest && e.target.closest('#blk-setup > .set-title');
+      if (!t) return;
+      const now = Date.now();
+      ck = ck.filter((x) => now - x < 2500); ck.push(now);
+      if (ck.length >= 5) { ck = []; setTimeout(() => play(Math.random() * 3 | 0), 10000); }
+    }, true);
+  } catch (e) {}
 })();
 
 cdAnimRestore();
