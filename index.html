@@ -366,6 +366,13 @@ body #typing-indicator { display: none !important; }
   border-radius: 4px; cursor: pointer; background: var(--c-1a);
 }
 .msg.img-pending .msg-img, .msg.img-pending .once-btn { opacity: 0.45; }
+/* Fotoğraf, ses ve tek seferlik içerikler baloncuğun köşesine eş merkezli oturur: dış yarıçap 14px, kenar boşluğu 4px, iç yarıçap 10px */
+.bubble:has(> .msg-media-body) { padding: 4px; }
+.bubble:has(> .msg-media-body) > .hdr-row { padding: 1px 6px 3px; }
+.bubble:has(> .msg-media-body) > .reply-container { margin: 0 0 4px; border-radius: 10px; }
+.bubble:has(> .msg-media-body) .msg-img { border-radius: 10px; display: block; }
+.bubble:has(> .msg-media-body) .aud-pl { border-radius: 10px; }
+.bubble:has(> .msg-media-body) .once-btn { border-radius: 10px; }
 .once-btn {
   display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
   background: var(--c-1a); color: var(--c-fff); border: 1px solid var(--c-55); border-radius: 8px;
