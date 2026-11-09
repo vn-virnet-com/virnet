@@ -135,6 +135,8 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 .bubble:has(> .yt-card) { width: min(320px, 78vw); padding: 5px; }
 .bubble:has(> .yt-card) > .msg-body { padding: 2px 4px 0; }
 .msg.yt-only .bubble { padding: 3px; }
+.bubble:has(> .yt-card) > .hdr-row { padding: 3px 5px 0; }
+.msg.yt-only .bubble > .hdr-row { padding: 4px 8px 1px; }
 .msg.yt-only .yt-card { margin-top: 0; }
 .msg.replying .bubble { box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-fff) 40%, transparent); }
 .msg-flash .bubble { background-color: var(--c-44) !important; }
@@ -181,6 +183,12 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 .msg-act:hover { color: var(--c-fff); background: color-mix(in srgb, var(--c-fff) 10%, transparent); }
 .msg-act:active { transform: scale(0.86); }
 .msg-act.copied { color: var(--accent); }
+/* Düzenleme sırasında: kalem seçili kalır, diğer tuşlar gizlenir, yanında iptal çarpısı belirir */
+.msg-act.cancel-edit { display: none; }
+.msg.editing .msg-acts { opacity: 1; pointer-events: auto; }
+.msg.editing .msg-act.cancel-edit { display: inline-flex; }
+.msg.editing .msg-act.copy, .msg.editing .msg-act.reply, .msg.editing .msg-act.danger { display: none; }
+.msg.editing .msg-act.edit { color: var(--c-fff); background: color-mix(in srgb, var(--c-fff) 18%, transparent); }
 .msg-act.danger.confirm { color: var(--dng); background: color-mix(in srgb, var(--dng) 18%, transparent); }
 /* Tepki: mesajın alt köşesinde yuvarlak + tuşu; basınca 3 kalp yan yana açılır, seçilen kalp aynı yerde kalır */
 .msg.has-react { margin-bottom: 12px; }
@@ -189,6 +197,8 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
   opacity: 0; pointer-events: none; transition: opacity 0.15s ease, transform 0.24s cubic-bezier(.22, .61, .36, 1);
 }
 .react-slot:not(.open) { transform: none !important; }
+/* Kendi mesajımızda tepki gelene kadar boş kutu (çizgi gibi görünen halka) hiç gösterilmez */
+.react-core:empty, .msg.own-msg:not(.has-react) .react-slot { display: none; }
 .msg.own-msg .react-slot { right: auto; left: -6px; }
 .msg.acts-on .react-slot, .msg.hov .react-slot, .react-slot.open, .msg.has-react .react-slot { opacity: 1; pointer-events: auto; }
 .msg.deleting .react-slot { opacity: 0; transition: opacity 0.12s ease; }
@@ -3369,8 +3379,9 @@ const MA_ICONS = {
 };
 MA_ICONS.copy = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
 MA_ICONS.check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+MA_ICONS.close = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 MA_ICONS.plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-function copyText(t) {
+function copyToClipboard(t) {
   const fb = () => {
     try {
       const ta = document.createElement('textarea');
@@ -3411,7 +3422,7 @@ function buildMsgFoot(msgDiv, id, own, kind) {
       acts.appendChild(makeMsgAct('copy', 'Kopyala', MA_ICONS.copy, (btn) => {
         const txt = (msgDiv._raw && msgDiv._raw.text) || '';
         if (!txt) return;
-        copyText(txt).then((ok) => {
+        copyToClipboard(txt).then((ok) => {
           if (!ok) return;
           btn.innerHTML = MA_ICONS.check; btn.classList.add('copied');
           clearTimeout(btn._ct);
@@ -3422,6 +3433,7 @@ function buildMsgFoot(msgDiv, id, own, kind) {
     acts.appendChild(makeMsgAct('reply', 'Yanıtla', MA_ICONS.reply, () => { msgDiv.classList.remove('acts-on'); if (msgDiv.isConnected && !editingId && msgDiv._doReply) msgDiv._doReply(); }));
     if (own && !isMedia && !isChip) {
       acts.appendChild(makeMsgAct('edit', 'Düzenle', MA_ICONS.edit, () => { msgDiv.classList.remove('acts-on'); if (msgDiv.isConnected && !editingId) startEdit(msgDiv); }));
+      acts.appendChild(makeMsgAct('cancel-edit', 'Düzenlemeyi iptal et', MA_ICONS.close, () => { if (editingId === msgDiv.id) endEdit(); }));
     }
     if (own) {
       // Basılı tutunca baloncuk kızarır; parmak tuşun üstündeyken bırakılırsa mesaj silinir, dışarı kayıp bırakılırsa vazgeçilir
@@ -7365,6 +7377,7 @@ function startEdit(msgDiv) {
   if (!msgDiv || !msgDiv._raw || msgDiv.dataset.mediaUrl || msgDiv.classList.contains('chip-msg')) return;
   if (editingId) { if (editingId === msgDiv.id) return; endEdit(); }
   editingId = msgDiv.id;
+  msgDiv.classList.add('editing');
   stopLive();
   savedDraft = { nick: nickInput.value, key: nickColorKey, text: messageInput.value };
   savedReply = replyingTo;
@@ -7387,6 +7400,7 @@ function startEdit(msgDiv) {
 }
 
 function endEdit() {
+  if (editingId) { const em = document.getElementById(editingId); if (em) em.classList.remove('editing'); }
   editingId = null;
   nickInput.value = savedDraft ? savedDraft.nick : (lsGet('nick') || '');
   nickColorKey = savedDraft ? savedDraft.key : (lsGet('nickColor') || '');
