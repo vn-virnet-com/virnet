@@ -98,7 +98,7 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 #chat-wrap { flex: 1 1 auto; min-height: 0; position: relative; display: none; }
 #chat-area {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  overflow-y: auto; overflow-x: hidden; padding: 18px 12px 10px;
+  overflow-y: auto; overflow-x: hidden; padding: 10px 12px;
   display: flex; flex-direction: column; gap: 2px;
   font-size: 18px; line-height: 1.4;
 }
@@ -183,9 +183,9 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 .msg-act.copied { color: var(--accent); }
 .msg-act.danger.confirm { color: var(--dng); background: color-mix(in srgb, var(--dng) 18%, transparent); }
 /* Tepki: mesajın alt köşesinde yuvarlak + tuşu; basınca 3 kalp yan yana açılır, seçilen kalp aynı yerde kalır */
-.msg.has-react { margin-top: 18px; }
+.msg.has-react { margin-bottom: 12px; }
 .react-slot {
-  position: absolute; top: -15px; right: -6px; z-index: 3; display: flex; align-items: center;
+  position: absolute; bottom: -15px; right: -6px; z-index: 3; display: flex; align-items: center;
   opacity: 0; pointer-events: none; transition: opacity 0.15s ease;
 }
 .msg.own-msg .react-slot { right: auto; left: -6px; }
@@ -3449,7 +3449,7 @@ function buildMsgFoot(msgDiv, id, own, kind) {
   tt.className = 'time-tag';
   tt.textContent = msgTimeText(id);
   msgDiv._tt = tt;
-  foot.appendChild(tt);
+  if (kind !== 'live') foot.appendChild(tt); // canlı mesajda saat, mesaj gönderilene kadar görünmez
   if (kind !== 'live') foot.appendChild(acts);
   if (!heartPickGuard) {
     heartPickGuard = true;
