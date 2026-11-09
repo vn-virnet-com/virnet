@@ -98,7 +98,7 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 #chat-wrap { flex: 1 1 auto; min-height: 0; position: relative; display: none; }
 #chat-area {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  overflow-y: auto; overflow-x: hidden; padding: 10px 12px;
+  overflow-y: auto; overflow-x: hidden; padding: 18px 12px 10px;
   display: flex; flex-direction: column; gap: 2px;
   font-size: 18px; line-height: 1.4;
 }
@@ -183,12 +183,12 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 .msg-act.copied { color: var(--accent); }
 .msg-act.danger.confirm { color: var(--dng); background: color-mix(in srgb, var(--dng) 18%, transparent); }
 /* Tepki: mesajın alt köşesinde yuvarlak + tuşu; basınca 3 kalp yan yana açılır, seçilen kalp aynı yerde kalır */
-.msg.has-react { margin-bottom: 10px; }
+.msg.has-react { margin-top: 18px; }
 .react-slot {
-  position: absolute; bottom: -11px; left: 6px; z-index: 3; display: flex; align-items: center;
+  position: absolute; top: -15px; right: -6px; z-index: 3; display: flex; align-items: center;
   opacity: 0; pointer-events: none; transition: opacity 0.15s ease;
 }
-.msg.own-msg .react-slot { left: auto; right: 6px; }
+.msg.own-msg .react-slot { right: auto; left: -6px; }
 .msg.acts-on .react-slot, .msg.hov .react-slot, .react-slot.open, .msg.has-react .react-slot { opacity: 1; pointer-events: auto; }
 .msg.deleting .react-slot { opacity: 0; transition: opacity 0.12s ease; }
 .react-core {
@@ -3540,12 +3540,29 @@ chatArea.addEventListener('pointerover', (e) => {
   setHov(m && !m.classList.contains('typing-msg') && !m.classList.contains('live-msg') ? m : null);
 });
 chatArea.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') setHov(null); });
+function msgAtY(y) {
+  const list = chatArea.getElementsByClassName('msg');
+  let best = null, bestD = 1e9;
+  for (let i = 0; i < list.length; i++) {
+    const r = list[i].getBoundingClientRect();
+    if (!r.height) continue;
+    const d = y < r.top ? r.top - y : (y > r.bottom ? y - r.bottom : 0);
+    if (d < bestD) { bestD = d; best = list[i]; }
+  }
+  return bestD <= 4 ? best : null;
+}
 chatArea.addEventListener('click', (e) => {
   const t = e.target;
   if (!t || !t.closest) return;
   if (t.closest('.msg-foot, .react-slot')) return;
   const bub = t.closest('.bubble');
-  const msg = bub ? bub.closest('.msg') : null;
+  let msg = bub ? bub.closest('.msg') : null;
+  // Baloncuğun dışında, mesajın bulunduğu satırın boş kısmına basmak da mesajı seçer (satırın yüksekliğine göre bulunur)
+  if (!msg) {
+    const own = t.closest('.msg');
+    if (own) msg = own;
+    else if (t === chatArea) msg = msgAtY(e.clientY);
+  }
   if (!msg || msg._deleting || msg.classList.contains('typing-msg') || msg.classList.contains('live-msg')) { closeActs(null); return; }
   if (t.closest('button, a, input, textarea, select, audio, video, .yt-card')) return;
   try { if (window.getSelection && String(window.getSelection())) return; } catch (err) {}
