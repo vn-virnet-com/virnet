@@ -98,7 +98,7 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 #chat-wrap { flex: 1 1 auto; min-height: 0; position: relative; display: none; }
 #chat-area {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  overflow-y: auto; overflow-x: hidden; padding: 8px 0;
+  overflow-y: auto; overflow-x: hidden; padding: 10px 12px;
   display: flex; flex-direction: column; gap: 2px;
   font-size: 18px; line-height: 1.4;
 }
@@ -115,60 +115,79 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 #scroll-down-btn.has-new { border-color: var(--accent); background: var(--c-33); }
 #scroll-down-btn::before { content: ''; position: absolute; top: -20px; bottom: -20px; left: -20px; right: -20px; }
 .msg {
-  overflow-wrap: break-word; word-break: break-word; font-size: var(--msg-fs);
-  padding: 6px 0; white-space: pre-wrap; color: var(--c-fff); position: relative;
-  background-color: var(--c-000); line-height: 1.25; transition: background-color 0.4s ease;
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; align-self: flex-start;
+  box-sizing: border-box; min-width: 0; max-width: min(78%, 720px); margin-top: 6px;
+  font-size: var(--msg-fs); line-height: 1.3; color: var(--c-fff); white-space: normal;
+  overflow-wrap: break-word; word-break: break-word;
 }
-.msg:not(.own-msg) { background-color: var(--c-111); padding: 6px 8px; }
-.msg.replying { background-color: rgba(128,128,128,0.16); background-color: color-mix(in srgb, var(--c-000) 89%, var(--c-fff) 11%); border-radius: 6px; }
-.msg.replying:not(.own-msg) { background-color: color-mix(in srgb, var(--c-111) 89%, var(--c-fff) 11%); }
+.msg.own-msg { align-self: flex-end; align-items: flex-end; }
 @media (max-width: 768px) { .msg { touch-action: pan-y; } }
-.msg.own-msg { color: var(--c-77); padding: 6px 8px; }
-.msg-flash { background-color: var(--c-33) !important; }
-.msg.msg-reveal { animation: msg-reveal 0.7s cubic-bezier(.22,.61,.36,1) both; }
-@keyframes msg-reveal { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
-@media (prefers-reduced-motion: reduce) { .msg.msg-reveal { animation: none; } }
-.msg-body { cursor: pointer; }
+
+/* Mesaj baloncuğu: iki taraf da aynı renk ve aynı yazı tonu; zemin koyu, baloncuk daha açık */
+.bubble {
+  position: relative; box-sizing: border-box; max-width: 100%; padding: 9px 14px;
+  border-radius: 18px; background: var(--c-26); color: var(--c-fff);
+  white-space: pre-wrap; overflow-wrap: break-word; word-break: break-word;
+  box-shadow: 0 1px 3px rgba(var(--sh), 0.35);
+  transition: background-color 0.4s ease, box-shadow 0.2s ease;
+}
+.bubble:has(> .msg-body.big-emoji) { background: transparent; box-shadow: none; padding: 0 2px; }
+.bubble:has(> .yt-card) { width: min(320px, 78vw); padding: 7px; }
+.bubble:has(> .yt-card) > .msg-body { padding: 2px 7px 0; }
+.msg.yt-only .bubble { padding: 4px; }
+.msg.yt-only .yt-card { margin-top: 0; }
+.msg.replying .bubble { box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-fff) 40%, transparent); }
+.msg-flash .bubble { background-color: var(--c-44) !important; }
+
+/* Yeni baloncuk küçükten büyüyerek belirir */
+@keyframes bubble-pop { 0% { opacity: 0; transform: scale(0.55); } 55% { opacity: 1; } 100% { opacity: 1; transform: scale(1); } }
+.bubble.pop { animation: bubble-pop 0.4s cubic-bezier(.2, .9, .3, 1.2) both; transform-origin: 0 100%; }
+.msg.own-msg .bubble.pop { transform-origin: 100% 100%; }
+@media (prefers-reduced-motion: reduce) { .bubble.pop { animation: none; } }
+
+.msg-body { cursor: text; -webkit-user-select: text; user-select: text; }
 .msg-body.big-emoji { font-size: 64px; line-height: 1.15; font-weight: 400; padding: 2px 0; white-space: normal; }
-body.names-inline .msg-body.big-emoji { display: block; }
 
-.hdr-row { position: relative; }
-.nick-hdr { transition: transform 0.25s ease; will-change: transform; }
+/* İsim: baloncuğun dışında, üstünde */
+.hdr-row { padding: 0 8px; }
+.nick-hdr { line-height: 1.2; }
+
+/* Alt şerit: tuşlar mesajın kendi yanında, saat zıt kenarda */
+.msg-foot {
+  align-self: stretch; display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  margin: 1px 2px 0; min-height: 26px;
+}
+.msg.own-msg .msg-foot { flex-direction: row-reverse; }
+.msg-acts { display: flex; align-items: center; gap: 1px; }
+.msg-act {
+  box-sizing: border-box; width: 30px; height: 26px; padding: 0; border: 0; border-radius: 13px; background: transparent;
+  color: var(--c-77); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none;
+  transition: color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
+}
+.msg-act svg { display: block; width: 16px; height: 16px; pointer-events: none; }
+.msg-act:hover { color: var(--c-fff); background: color-mix(in srgb, var(--c-fff) 10%, transparent); }
+.msg-act:active { transform: scale(0.86); }
+.msg-act.heart.open { color: var(--c-fff); }
+.msg-act.danger.confirm { color: var(--dng); background: color-mix(in srgb, var(--dng) 18%, transparent); }
+.heart-pick { display: flex; align-items: center; max-width: 0; opacity: 0; overflow: hidden; transition: max-width 0.25s ease, opacity 0.2s ease; }
+.msg-foot.pick-open .heart-pick { max-width: 170px; opacity: 1; }
+.heart-pick button {
+  flex: 0 0 auto; width: 32px; height: 26px; padding: 0; border: 0; border-radius: 13px; background: transparent;
+  font-size: 17px; line-height: 1; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.12s ease, background-color 0.15s ease;
+}
+.heart-pick button:hover { background: color-mix(in srgb, var(--c-fff) 10%, transparent); }
+.heart-pick button:active { transform: scale(0.82); }
+.msg.has-react .msg-act.heart, .msg.has-react .heart-pick { display: none; }
+.react-chip {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 24px; padding: 0 7px; margin-right: 2px;
+  border-radius: 12px; background: color-mix(in srgb, var(--c-fff) 12%, transparent); font-size: 14px; line-height: 1;
+}
+.react-chip.mine { cursor: pointer; }
 .time-tag {
-  position: absolute; left: 0; top: 0; font-size: var(--time-fs); font-family: 'Lexend', sans-serif; font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: 0; color: var(--c-4a);
-  white-space: nowrap; pointer-events: none; opacity: 0; transform: translateX(-36px);
-  transition: transform 0.25s ease, opacity 0.25s ease;
+  flex: 0 0 auto; font-size: calc(var(--time-fs) - 2px); font-family: 'Lexend', sans-serif; font-weight: 400;
+  font-variant-numeric: tabular-nums; color: var(--c-77); white-space: nowrap; pointer-events: none;
 }
-#chat-area.show-times .nick-hdr { transform: translateX(46px); }
-#chat-area.show-times .time-tag { opacity: 1; transform: translateX(0); }
-/* ---- Saat ayarı: Sürekli / Hiç ---- */
-#chat-area.times-always .nick-hdr { transform: translateX(46px); }
-#chat-area.times-always .time-tag { opacity: 1; transform: translateX(0); }
-body.own-right #chat-area.times-always .msg.own-msg .nick-hdr { transform: translateX(-46px); }
-body.own-right #chat-area.times-always .msg.own-msg .time-tag { transform: translateX(0); }
-body.names-inline #chat-area.times-always .nick-hdr { transform: none !important; }
-#chat-area.times-never .time-tag { display: none !important; }
-/* ---- Saat · İsim ayracı ---- */
-/* Üstünde modu: saat ve isim aynı satırda yan yana; saat görününce genişliği animasyonla açılır, isim ona göre kayar */
-body:not(.names-inline) .hdr-row { display: flex; align-items: baseline; }
-body:not(.names-inline) .nick-hdr { transform: none !important; }
-body:not(.names-inline) .time-tag { position: static; display: block; flex: 0 0 auto; overflow: hidden; max-width: 0; opacity: 0; transform: none !important; transition: max-width 0.25s ease, opacity 0.25s ease; }
-body:not(.names-inline) #chat-area.show-times .time-tag,
-body:not(.names-inline) #chat-area.times-always .time-tag { max-width: 120px; opacity: 1; }
-body:not(.names-inline) .time-tag::after { content: '\00a0·\00a0'; }
-/* Sağ yön (kendi mesajlarım): İsim · Saat */
-body.own-right:not(.names-inline) .msg.own-msg .hdr-row { flex-direction: row-reverse; }
-body.own-right:not(.names-inline) .msg.own-msg .time-tag::after { content: none; }
-body.own-right:not(.names-inline) .msg.own-msg .time-tag::before { content: '\00a0·\00a0'; }
-/* Yanında modu: Saat · İsim: mesaj */
-body.names-inline .time-tag::after { content: '\00a0·\00a0'; }
-
-.react-row { display: flex; margin-top: 4px; }
-.react-box {
-  width: 26px; height: 26px; border-radius: 6px; background: var(--c-26); border: 1px solid var(--c-3c);
-  display: inline-flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1;
-}
-.react-box.mine { cursor: pointer; }
 
 #input-area {
   flex: 0 0 auto; width: 100%; min-height: 72px;
@@ -188,7 +207,7 @@ body.names-inline .time-tag::after { content: '\00a0·\00a0'; }
 }
 /* İsimsiz (isim kutusu boş) yazılan mesajlar otomatik kalın: yazarken, canlı önizlemede ve gönderildikten sonra */
 #message-input.nameless { font-weight: 700; }
-.msg.no-nick:not(.typing-msg):not(.chip-msg) > .msg-body:not(.msg-media-body) { font-weight: 700; }
+.msg.no-nick:not(.typing-msg):not(.chip-msg) .msg-body:not(.msg-media-body) { font-weight: 700; }
 #message-input:disabled { opacity: 0.3; cursor: not-allowed; -webkit-user-select: none; user-select: none; pointer-events: none; }
 #msg-wrap { flex: 1; min-width: 0; position: relative; display: flex; align-items: flex-end; }
 #msg-wrap #message-input { flex: 1; min-width: 0; }
@@ -208,10 +227,10 @@ body.names-inline .time-tag::after { content: '\00a0·\00a0'; }
   border: 2px solid var(--accent) !important; box-shadow: 0 0 10px var(--glow); z-index: 2;
 }
 
-.reply-container { display: flex; flex-direction: row; align-items: stretch; margin-bottom: 6px; padding-left: 2px; gap: 8px; cursor: pointer; }
-.reply-line { width: 2px; background-color: var(--c-44); border-radius: 2px; flex-shrink: 0; }
+.reply-container { display: flex; flex-direction: row; align-items: stretch; margin: -2px -4px 7px; padding: 6px 9px; gap: 8px; cursor: pointer; border-radius: 12px; background: color-mix(in srgb, var(--c-fff) 9%, transparent); min-width: 0; white-space: normal; }
+.reply-line { width: 2px; background-color: var(--c-88); border-radius: 2px; flex-shrink: 0; }
 .reply-thumb { width: 16px; height: 16px; object-fit: cover; border-radius: 3px; flex-shrink: 0; display: block; background: var(--c-1a); }
-.reply-preview-text { font-size: var(--reply-fs); color: var(--c-66); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; display: flex; align-items: center; line-height: 1.4; }
+.reply-preview-text { font-size: var(--reply-fs); color: var(--c-cc); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; display: flex; align-items: center; line-height: 1.4; }
 #reply-bar {
   display: none; background: var(--c-111); border-top: 1px solid var(--c-22); padding: 8px 15px;
   font-size: 13px; color: var(--c-88); justify-content: space-between; align-items: center;
@@ -223,10 +242,13 @@ body.names-inline .time-tag::after { content: '\00a0·\00a0'; }
   padding: 2px 6px; border-radius: 3px; margin-right: 8px; display: inline-block; line-height: 1; flex-shrink: 0;
 }
 
-/* Henüz karşıya ulaşmamış (teslim onayı gelmemiş) kendi mesajım: yanıp söner */
-@keyframes undelivered-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
-.msg.undelivered .msg-body { animation: undelivered-blink 1s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { .msg.undelivered .msg-body { animation: none; } }
+/* Henüz karşıya ulaşmamış (teslim onayı gelmemiş) kendi mesajım: baloncuk %75 koyu katmanla kaplanır */
+.msg.undelivered .bubble::after {
+  content: 'Gönderiliyor...'; position: absolute; inset: 0; z-index: 2; border-radius: inherit; pointer-events: none;
+  display: flex; align-items: center; justify-content: center; text-align: center; white-space: nowrap;
+  background: color-mix(in srgb, var(--c-000) 75%, transparent); color: var(--c-fff);
+  font-size: 13px; font-weight: 700; letter-spacing: 0.01em;
+}
 .typing-msg .msg-body { color: var(--c-88); cursor: default; pointer-events: none; }
 .typing-msg .tdot { display: inline-block; margin-right: 0.3em; opacity: 0.25; animation: tdot-blink 1.2s ease-in-out infinite; }
 .typing-msg .tdot:nth-child(2) { animation-delay: 0.2s; }
@@ -307,7 +329,6 @@ body #typing-indicator { display: none !important; }
 .aud-t { flex:0 0 auto; white-space:nowrap; min-width:34px; text-align:right; font-size:12px; color:var(--c-88); font-variant-numeric:tabular-nums; }
 .aud-spd { flex:0 0 auto; min-width:38px; padding:2px 0; border:1px solid var(--c-55); border-radius:4px; background:transparent; color:var(--c-88); font-size:11px; font-weight:700; font-family:inherit; font-variant-numeric:tabular-nums; text-align:center; cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .aud-spd.fast { color:var(--on-accent); background:var(--accent); border-color:var(--accent); }
-body.own-right .msg.own-msg .aud-pl { margin-left:auto; }
 .aud-once { align-self:flex-start; margin-left:44px; white-space:nowrap; font-size:11px; font-weight:700; color:var(--c-88); border:1px solid var(--c-55); border-radius:4px; padding:0 4px; }
 .aud-pl.used { opacity:.65; }
 .aud-heard { align-self:flex-start; margin-left:44px; white-space:nowrap; font-size:11px; font-weight:700; color:var(--c-88); }
@@ -334,7 +355,6 @@ body.own-right .msg.own-msg .aud-pl { margin-left:auto; }
 .yt-card, #yt-dock { --yt-a12: color-mix(in srgb, var(--c-fff) 12%, transparent); --yt-a16: color-mix(in srgb, var(--c-fff) 16%, transparent); --yt-a20: color-mix(in srgb, var(--c-fff) 20%, transparent); --yt-a25: color-mix(in srgb, var(--c-fff) 25%, transparent); --yt-a28: color-mix(in srgb, var(--c-fff) 28%, transparent); --yt-a35: color-mix(in srgb, var(--c-fff) 35%, transparent); --yt-a42: color-mix(in srgb, var(--c-fff) 42%, transparent); --yt-a50: color-mix(in srgb, var(--c-fff) 50%, transparent); --yt-a60: color-mix(in srgb, var(--c-fff) 60%, transparent); --yt-a72: color-mix(in srgb, var(--c-fff) 72%, transparent); --yt-a75: color-mix(in srgb, var(--c-fff) 75%, transparent); --yt-a82: color-mix(in srgb, var(--c-fff) 82%, transparent); --yt-a88: color-mix(in srgb, var(--c-fff) 88%, transparent); }
 .yt-card { display: block; position: relative; box-sizing: border-box; width: 100%; max-width: none; margin: 6px 0 0;  border-radius: 14px; background: var(--c-1a); color: var(--c-fff); overflow: hidden; white-space: normal; cursor: default; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; font-family: 'Lexend', sans-serif; line-height: 1.2; box-shadow: 0 4px 18px rgba(0,0,0,.35); }
 .yt-card * { -webkit-tap-highlight-color: transparent; }
-body.own-right .msg.own-msg .yt-card { margin-left: 0; margin-right: 0; }
 .yt-bg { position: absolute; inset: -24px; background: #333 center / cover no-repeat; filter: blur(26px) saturate(1.2); opacity: .22; pointer-events: none; }
 .yt-host { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; overflow: hidden; }
 .yt-host iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
@@ -416,7 +436,7 @@ body.own-right .msg.own-msg .yt-card { margin-left: 0; margin-right: 0; }
 .ytd-ly.cur { color: var(--c-fff); }
 .ytd-ly.plain { font-weight: 400; color: var(--yt-a82); }
 .ytd-ly.msg { font-size: 12px; font-weight: 400; color: var(--yt-a60); }
-.msg.yt-only > .msg-body { display: none; }
+.msg.yt-only .msg-body { display: none; }
 #viewer.once-mode { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); }
 body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-viewing #reply-bar { display: none !important; }
 #viewer-img.once { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
@@ -749,36 +769,10 @@ body.mb-admin .mb-item .mb-dotbtn, body.mb-admin .mb-item .mb-lock { touch-actio
 @media (max-width: 768px) { .new-badge.show { display: flex; animation: new-badge-blink 1s ease-in-out infinite; } }
 @media (prefers-reduced-motion: reduce) { .new-badge.show { animation: none; } }
 
-#msg-menu-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 22000; display: none; }
-#msg-menu-backdrop.show { display: block; }
-#msg-menu {
-  position: fixed; background: var(--c-111); border: 1px solid var(--c-33); border-radius: 8px; overflow: hidden;
-  display: flex; flex-direction: column; min-width: 130px; box-shadow: 0 4px 18px rgba(var(--sh),0.7);
-}
-#msg-menu button {
-  background: none; border: none; color: var(--c-fff); font-size: 15px; padding: 12px 16px;
-  text-align: left; cursor: pointer;
-}
-#msg-menu-backdrop, #msg-menu, #msg-menu button {
-  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
-}
-#msg-menu button + button { border-top: 1px solid var(--c-22); }
-#msg-menu button.danger { color: var(--dng); }
-#msg-menu .heart-row { display: flex; }
-#msg-menu .heart-row button { font-size: 22px; padding: 10px 14px; line-height: 1; }
-#msg-menu .heart-row button + button { border-top: none; border-left: 1px solid var(--c-22); }
-#msg-menu .heart-row + button { border-top: 1px solid var(--c-22); }
 @media (pointer: coarse) {
-  .msg { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   .msg .msg-img { -webkit-touch-callout: none; }
 }
 
-/* ---- İsimler: Mesajın yanında (satır içi) ---- */
-body.names-inline .hdr-row { display: inline !important; }
-body.names-inline .nick-hdr { display: inline-block; margin-bottom: 0 !important; margin-right: 0.28em; font-size: var(--msg-fs) !important; transform: none !important; transition: none; will-change: auto; }
-body.names-inline .nick-hdr::after { content: ':'; }
-body.names-inline .msg-body { display: inline; }
-body.names-inline .time-tag { position: static; display: inline-block; opacity: 1; transform: none; transition: none; margin-right: 0; }
 /* ---- Ayar kilidi (karşılıklı dışlama) ---- */
 .set-block { transition: opacity 0.2s ease; }
 .set-block.locked { opacity: 0.35; pointer-events: none; }
@@ -789,15 +783,7 @@ body.fs-large { --msg-fs:17px; --nick-fs:14.5px; --time-fs:14.5px; --reply-fs:13
 .msg .chip { width: var(--chip-w); height: var(--chip-h); }
 .msg .chip-ok svg { width: var(--chip-svg-ok); height: var(--chip-svg-ok); }
 .msg .chip-no svg { width: var(--chip-svg-no); height: var(--chip-svg-no); }
-/* ---- Mesaj yönü: Sağ (yalnızca kendi mesajlarım) ---- */
-body.own-right .msg.own-msg { text-align: right; }
-body.own-right .msg.own-msg.chip-msg .msg-body { text-align: right; }
-body.own-right .msg.own-msg .react-row { justify-content: flex-end; }
-body.own-right .msg.own-msg .reply-container { flex-direction: row-reverse; padding-left: 0; padding-right: 2px; }
-body.own-right .msg.own-msg .reply-preview-text { justify-content: flex-end; }
-body.own-right .msg.own-msg .time-tag { left: auto; right: 0; transform: translateX(36px); }
-body.own-right #chat-area.show-times .msg.own-msg .nick-hdr { transform: translateX(-46px); }
-body.own-right #chat-area.show-times .msg.own-msg .time-tag { transform: translateX(0); }
+
 /* ---- Ayarlar içeriği ---- */
 #settings-menu { overflow: hidden; padding: 0; }
 #settings-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: calc(10px + env(safe-area-inset-top, 0px)) 14px calc(10px + env(safe-area-inset-top, 0px)); }
@@ -1686,31 +1672,6 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
       <button type="button" class="seg-btn" data-val="large" aria-pressed="false">Büyük</button>
     </div></div></div></div>
   </div>
-  <div class="set-block" id="blk-names">
-    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Tarz</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
-    <div class="set-collapse"><div class="set-clip"><div class="set-body">
-    <div class="seg" id="seg-names">
-      <button type="button" class="seg-btn active" data-val="top" data-short="Üstünde" aria-pressed="true">Mesajın Üstünde</button>
-      <button type="button" class="seg-btn" data-val="inline" data-short="Yanında" aria-pressed="false">Mesajın Yanında</button>
-    </div></div></div></div>
-  </div>
-  <div class="set-block" id="blk-time">
-    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Saat</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
-    <div class="set-collapse"><div class="set-clip"><div class="set-body">
-    <div class="seg" id="seg-time">
-      <button type="button" class="seg-btn" data-val="always" aria-pressed="false">Sürekli</button>
-      <button type="button" class="seg-btn active" data-val="auto" aria-pressed="true">Otomatik</button>
-      <button type="button" class="seg-btn" data-val="never" aria-pressed="false">Hiç</button>
-    </div></div></div></div>
-  </div>
-  <div class="set-block" id="blk-side">
-    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Yön</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
-    <div class="set-collapse"><div class="set-clip"><div class="set-body">
-    <div class="seg" id="seg-side">
-      <button type="button" class="seg-btn active" data-val="left" aria-pressed="true">Sol</button>
-      <button type="button" class="seg-btn" data-val="right" aria-pressed="false">Sağ</button>
-    </div></div></div></div>
-  </div>
   <div class="set-block">
     <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>İsimler</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
@@ -1845,7 +1806,6 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 </div>
 
 <div id="privacy-cover"><div id="privacy-eye" title="Göster"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg></div></div>
-<div id="msg-menu-backdrop"><div id="msg-menu"></div></div>
 
 <script>
 
@@ -1907,8 +1867,6 @@ const npView         = document.getElementById('np-view');
 const npEdit         = document.getElementById('np-edit');
 const newNotesBadge  = document.getElementById('new-notes-badge');
 const newMsgBadge    = document.getElementById('new-msg-badge');
-const msgMenuBackdrop = document.getElementById('msg-menu-backdrop');
-const msgMenu        = document.getElementById('msg-menu');
 const mqMobile       = window.matchMedia('(max-width: 768px)');
 const ID_REGEX = /^[A-Za-z0-9]([A-Za-z0-9_-]*[A-Za-z0-9])?$/;
 
@@ -2276,6 +2234,7 @@ function receiveLive(d) {
   if (text.trim() === '' || (id && finishedLiveIds.indexOf(id) !== -1)) { removeLive(); return; }
   hideTypingIndicator();
   if (liveEl && !liveEl.isConnected) liveEl = null;
+  let liveIsNew = false;
   let rep = null;
   if (d.reply && typeof d.reply === 'object' && typeof d.reply.text === 'string') {
     rep = {
@@ -2301,19 +2260,33 @@ function receiveLive(d) {
     div.dataset.liveId = id;
     div.dataset.ch = rxCh || 'main';
     div._repKey = repKey;
-    if (rep) { div.dataset.hasReply = '1'; div.appendChild(buildReplyContainer(rep)); }
     if (rn.finalNick === '') div.classList.add('no-nick');
     else { const hdr = buildHdrRow(rn.finalNick, rn.chosenColor, id); div._hdr = hdr; div.appendChild(hdr); }
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    div.appendChild(bubble);
+    div._bubble = bubble;
+    if (rep) { div.dataset.hasReply = '1'; bubble.appendChild(buildReplyContainer(rep)); }
     const body = document.createElement('div');
     body.className = 'msg-body';
-    div.appendChild(body);
+    bubble.appendChild(body);
     div._body = body;
-    chatArea.appendChild(div);
+    div.appendChild(buildMsgFoot(div, id, false, 'live'));
     liveEl = div;
+    liveIsNew = true;
   }
-  liveEl._raw.text = text;
-  setBodyContent(liveEl._body, text);
-  animateLiveWords(liveEl._body, id);
+  const applyLive = () => {
+    liveEl._raw.text = text;
+    setBodyContent(liveEl._body, text);
+    animateLiveWords(liveEl._body, id);
+  };
+  if (liveIsNew) {
+    applyLive();
+    chatArea.appendChild(liveEl);
+    popBubble(liveEl._bubble);
+  } else {
+    growBubble(liveEl._bubble, applyLive);
+  }
   if (chatArea.lastElementChild !== liveEl) chatArea.appendChild(liveEl);
   layoutNicks();
   if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
@@ -3208,9 +3181,14 @@ function syncTypingMsg() {
     body.innerHTML = recOn ? REC_MIC_HTML : TYPING_DOTS_HTML;
     div.dataset.tm = recOn ? 'rec' : 'dots';
     div.dataset.ch = typingCh;
-    div.appendChild(body);
+    const tb = document.createElement('div');
+    tb.className = 'bubble';
+    tb.appendChild(body);
+    div.appendChild(tb);
+    div._bubble = tb;
     chatArea.appendChild(div);
     typingMsgEl = div;
+    popBubble(tb);
   } else {
     const want = recOn ? 'rec' : 'dots';
     typingMsgEl.dataset.ch = typingCh;
@@ -3306,12 +3284,120 @@ function msgTimeText(id) {
 function buildHdrRow(finalNick, chosenColor, id) {
   const row = document.createElement('div');
   row.className = 'hdr-row';
+  row.appendChild(buildNickHeader(finalNick, chosenColor));
+  return row;
+}
+
+/* ===== Mesaj alt şeridi (tuşlar + saat) ve baloncuk animasyonları ===== */
+const MA_ICONS = {
+  heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+  reply: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>',
+  del: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>'
+};
+function reducedMotion() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
+
+function makeMsgAct(cls, title, svg, onClick) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'msg-act ' + cls;
+  b.title = title;
+  b.setAttribute('aria-label', title);
+  b.innerHTML = svg;
+  ['pointerdown', 'mousedown'].forEach((t) => b.addEventListener(t, (e) => e.preventDefault()));
+  b.addEventListener('click', (e) => { e.stopPropagation(); onClick(b, e); });
+  return b;
+}
+
+let heartPickGuard = false;
+function buildMsgFoot(msgDiv, id, own, kind) {
+  const foot = document.createElement('div');
+  foot.className = 'msg-foot';
+  const acts = document.createElement('div');
+  acts.className = 'msg-acts';
+  const isChip = msgDiv.classList.contains('chip-msg');
+  const isMedia = !!msgDiv.dataset.mediaUrl;
+  if (kind !== 'live') {
+    if (!own && !isChip) {
+      acts.appendChild(makeMsgAct('heart', 'Tepki ver', MA_ICONS.heart, (btn) => {
+        const open = foot.classList.toggle('pick-open');
+        btn.classList.toggle('open', open);
+      }));
+      const pick = document.createElement('div');
+      pick.className = 'heart-pick';
+      HEART_KINDS.forEach((k) => {
+        const hb = document.createElement('button');
+        hb.type = 'button';
+        hb.textContent = HEARTS[k];
+        ['pointerdown', 'mousedown'].forEach((t) => hb.addEventListener(t, (e) => e.preventDefault()));
+        hb.addEventListener('click', (e) => { e.stopPropagation(); foot.classList.remove('pick-open'); addReaction(msgDiv.id, k); });
+        pick.appendChild(hb);
+      });
+      acts.appendChild(pick);
+    }
+    acts.appendChild(makeMsgAct('reply', 'Yanıtla', MA_ICONS.reply, () => { if (msgDiv.isConnected && !editingId && msgDiv._doReply) msgDiv._doReply(); }));
+    if (own && !isMedia && !isChip) {
+      acts.appendChild(makeMsgAct('edit', 'Düzenle', MA_ICONS.edit, () => { if (msgDiv.isConnected && !editingId) startEdit(msgDiv); }));
+    }
+    if (own) {
+      acts.appendChild(makeMsgAct('danger', 'Sil', MA_ICONS.del, (btn) => {
+        if (btn.classList.contains('confirm')) { deleteOwnMessage(msgDiv.id); return; }
+        btn.classList.add('confirm');
+        btn.title = 'Silmek için tekrar dokun';
+        setTimeout(() => { btn.classList.remove('confirm'); btn.title = 'Sil'; }, 2500);
+      }));
+    }
+  }
   const tt = document.createElement('div');
   tt.className = 'time-tag';
   tt.textContent = msgTimeText(id);
-  row.appendChild(tt);
-  row.appendChild(buildNickHeader(finalNick, chosenColor));
-  return row;
+  foot.appendChild(acts);
+  foot.appendChild(tt);
+  if (!heartPickGuard) {
+    heartPickGuard = true;
+    document.addEventListener('click', (e) => {
+      document.querySelectorAll('.msg-foot.pick-open').forEach((f) => {
+        if (f.contains(e.target)) return;
+        f.classList.remove('pick-open');
+        const hbtn = f.querySelector('.msg-act.heart'); if (hbtn) hbtn.classList.remove('open');
+      });
+    }, true);
+  }
+  return foot;
+}
+
+// Yeni baloncuk küçükten büyüyerek belirir
+function popBubble(b) {
+  if (!b || reducedMotion()) return;
+  b.classList.add('pop');
+  const done = (e) => { if (e.target !== b) return; b.classList.remove('pop'); b.removeEventListener('animationend', done); };
+  b.addEventListener('animationend', done);
+}
+// İçerik değişince (dinamik mesaj, düzenleme) baloncuk genişliği ve yüksekliği yumuşakça büyür/küçülür
+function growBubble(b, mutate) {
+  if (!b || !b.isConnected || reducedMotion()) { mutate(); return; }
+  const w0 = b.offsetWidth, h0 = b.offsetHeight;
+  if (b._gt) { clearTimeout(b._gt); b._gt = null; }
+  b.style.transition = 'none'; b.style.width = ''; b.style.height = ''; b.style.overflow = '';
+  mutate();
+  const w1 = b.offsetWidth, h1 = b.offsetHeight;
+  if (!w0 || !h0 || (w0 === w1 && h0 === h1)) return;
+  b.style.width = w0 + 'px'; b.style.height = h0 + 'px'; b.style.overflow = 'hidden';
+  void b.offsetWidth;
+  const ease = 'cubic-bezier(.22,.61,.36,1)';
+  b.style.transition = 'width 0.3s ' + ease + ', height 0.3s ' + ease + ', background-color 0.4s ease, box-shadow 0.2s ease';
+  b.style.width = w1 + 'px'; b.style.height = h1 + 'px';
+  const t0 = Date.now();
+  const follow = () => {
+    if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
+    if (Date.now() - t0 < 330) requestAnimationFrame(follow);
+  };
+  follow();
+  b._gt = setTimeout(() => {
+    b._gt = null;
+    b.style.transition = ''; b.style.width = ''; b.style.height = ''; b.style.overflow = '';
+    if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
+  }, 340);
 }
 
 // Mesaj tek bir emojiden ibaretse (ZWJ, ten tonu, bayrak, tuş takımı dahil) büyük gösterilir
@@ -3399,7 +3485,7 @@ function ytSendListen(o) {
 function ytFindCard(msgId, ytId) {
   if (msgId) {
     const el = document.getElementById(msgId);
-    const c = el && el.querySelector(':scope > .yt-card');
+    const c = el && el.querySelector('.bubble > .yt-card');
     if (c && (!ytId || c._ytId === ytId)) return c;
   }
   if (!ytId) return null;
@@ -4839,18 +4925,13 @@ function buildYtCard(id, url) {
   bindYtTap(joinBtn, doJoin);
 
   // Kartın boş yerine dokunmak mesaja dokunmak gibi davranır (yanıtla / menü)
-  card.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (e.target.closest('button, .yt-seek, .yt-lyrics, .yt-err a')) return;
-    const b = card.parentNode && card.parentNode.querySelector(':scope > .msg-body');
-    if (b) b.click();
-  });
+  card.addEventListener('click', (e) => { e.stopPropagation(); });
   card.addEventListener('contextmenu', (e) => e.preventDefault());
   return card;
 }
 function syncYtCard(msgDiv, text, fresh) {
   if (!msgDiv) return;
-  const old = msgDiv.querySelector(':scope > .yt-card');
+  const old = msgDiv.querySelector('.bubble > .yt-card');
   const m = YT_URL_RE.exec(text || '');
   if (old && old._ytId === (m && m[1])) return;
   if (old) { if (old._destroy) old._destroy(); old.remove(); try { ytSweepLocks(); } catch (e) {} }
@@ -4858,7 +4939,7 @@ function syncYtCard(msgDiv, text, fresh) {
   if (!m) return;
   const card = buildYtCard(m[1], m[0]);
   card._ytId = m[1];
-  msgDiv.appendChild(card);
+  (msgDiv._bubble || msgDiv).appendChild(card);
   try { ytSweepLocks(); } catch (e) {}
   if (fresh && ytAutoReady && card._autoReady) {
     // başka bir şarkı hâlâ sürüyorsa (birlikte dinleme / başlıyor) yeni link otomatik çalmaz; yalnızca şarkı bittikten sonra atılan çalar
@@ -4897,10 +4978,12 @@ function updateMessageContent(el, text, rawNick) {
   if (rn.finalNick !== '') {
     const hdr = buildHdrRow(rn.finalNick, rn.chosenColor, el.id);
     el._hdr = hdr;
-    el.insertBefore(hdr, body);
+    el.insertBefore(hdr, el.firstChild);
   }
-  if (body) setBodyContent(body, text);
-  syncYtCard(el, text);
+  growBubble(el._bubble, () => {
+    if (body) setBodyContent(body, text);
+    syncYtCard(el, text);
+  });
   layoutNicks();
   if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
 }
@@ -4971,15 +5054,19 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
 
   if (finalNick === '') msgDiv.classList.add('no-nick');
 
-  if (replyData && (!media || media.audio)) {
-    msgDiv.dataset.hasReply = '1';
-    msgDiv.appendChild(buildReplyContainer(replyData));
-  }
-
   if (finalNick !== '') {
     const hdr = buildHdrRow(finalNick, rn.chosenColor, messageId);
     msgDiv._hdr = hdr;
     msgDiv.appendChild(hdr);
+  }
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  msgDiv._bubble = bubble;
+  msgDiv.appendChild(bubble);
+
+  if (replyData && (!media || media.audio)) {
+    msgDiv.dataset.hasReply = '1';
+    bubble.appendChild(buildReplyContainer(replyData));
   }
 
   if (media) {
@@ -5029,20 +5116,8 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
       if (liveMode && liveActive && !editingId) sendLive();
       focusInputForReply();
     };
-    body.addEventListener('click', () => {
-      if (Date.now() - lastCancelTime < 300) return;
-      if (Date.now() - menuOpenedAt < 600) return;
-      if (Date.now() - (msgDiv._swipedAt || 0) < 500) return;
-      if (editingId) return;
-      if (isMobileLayout()) {
-        menuRestoreFocus = document.activeElement === messageInput;
-        if (isOwnMessage) openMsgMenu(msgDiv); else openReactMenu(msgDiv);
-        return;
-      }
-      msgDiv._doReply();
-    });
     msgDiv.dataset.mediaUrl = media.url;
-    msgDiv.appendChild(body);
+    bubble.appendChild(body);
   } else {
 
     const textDiv = document.createElement('div');
@@ -5065,28 +5140,14 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
       if (liveMode && liveActive && !editingId) sendLive();
       focusInputForReply();
     };
-    textDiv.addEventListener('click', () => {
-      if (Date.now() - lastCancelTime < 300) return;
-      if (Date.now() - menuOpenedAt < 600) return;
-      if (Date.now() - (msgDiv._swipedAt || 0) < 500) return;
-      if (editingId) return;
-      if (isMobileLayout()) {
-        menuRestoreFocus = document.activeElement === messageInput;
-        if (isOwnMessage) openMsgMenu(msgDiv); else openReactMenu(msgDiv);
-        return;
-      }
-      msgDiv._doReply();
-    });
-
-    msgDiv.appendChild(textDiv);
+    bubble.appendChild(textDiv);
     if (!msgDiv.classList.contains('chip-msg')) syncYtCard(msgDiv, text, persist !== false);
   }
   chatArea.appendChild(msgDiv);
   if (mch === 'op' && !isOwnMessage && rxLate) placeByTime(msgDiv);
   if (liveEl && liveEl.isConnected) chatArea.appendChild(liveEl);
   if (typingMsgEl && typingMsgEl.isConnected) chatArea.appendChild(typingMsgEl);
-  if (isOwnMessage) attachOwnMsgMenu(msgDiv);
-  else attachOtherMsgMenu(msgDiv);
+  msgDiv.appendChild(buildMsgFoot(msgDiv, messageId, !!isOwnMessage, 'msg'));
   attachSwipeReply(msgDiv);
 
   let chMsgs;
@@ -5098,17 +5159,8 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
   }
   layoutNicks();
 
-  // Yeni mesaj (gelen veya giden) 2+ satırsa yukarıdan aşağı açılsın
-  if (persist && !media && !suppressReveal && !msgDiv.classList.contains('chip-msg')) {
-    const tb = msgDiv.querySelector('.msg-body');
-    if (tb) {
-      const lh = parseFloat(getComputedStyle(tb).lineHeight) || 20;
-      if (tb.getBoundingClientRect().height >= lh * 1.5) {
-        msgDiv.classList.add('msg-reveal');
-        msgDiv.addEventListener('animationend', () => msgDiv.classList.remove('msg-reveal'), { once: true });
-      }
-    }
-  }
+  // Yeni mesaj (gelen veya giden) küçükten büyüyerek belirir
+  if (persist && !suppressReveal) popBubble(bubble);
 
   if (persist) {
     saveMessageToHistory({
@@ -5159,46 +5211,10 @@ function updateScrollBtn() {
   if (stickToBottom) scrollDownBtn.classList.remove('has-new');
 }
 
-let touchingChat = false, lastWheel = 0, timesTimer = null;
-function hideTimes() {
-  if (timesTimer) { clearTimeout(timesTimer); timesTimer = null; }
-  chatArea.classList.remove('show-times');
-}
-function showTimes() {
-  if (chatArea.classList.contains('times-always') || chatArea.classList.contains('times-never')) return;
-  chatArea.classList.add('show-times');
-  if (timesTimer) { clearTimeout(timesTimer); timesTimer = null; }
-  if (!touchingChat) timesTimer = setTimeout(hideTimes, 450);
-}
-function endChatTouch() {
-  touchingChat = false;
-  if (chatArea.classList.contains('show-times')) {
-    if (timesTimer) clearTimeout(timesTimer);
-    timesTimer = setTimeout(hideTimes, 120);
-  }
-}
-let chatTouchX = 0, chatTouchY = 0;
-chatArea.addEventListener('touchstart', (e) => {
-  touchingChat = true;
-  const t = e.touches[0];
-  if (t) { chatTouchX = t.clientX; chatTouchY = t.clientY; }
-}, { passive: true });
-chatArea.addEventListener('touchmove', (e) => {
-  const t = e.touches[0];
-  if (!t) return;
-  touchingChat = true;
-  const dx = t.clientX - chatTouchX, dy = t.clientY - chatTouchY;
-  if (Math.abs(dy) > 6 && Math.abs(dy) > Math.abs(dx)) showTimes();
-}, { passive: true });
-chatArea.addEventListener('touchend', endChatTouch, { passive: true });
-chatArea.addEventListener('touchcancel', endChatTouch, { passive: true });
-chatArea.addEventListener('wheel', () => { lastWheel = Date.now(); showTimes(); }, { passive: true });
-
 chatArea.addEventListener('scroll', () => {
   const distance = chatArea.scrollHeight - chatArea.scrollTop - chatArea.clientHeight;
   stickToBottom = distance < 80;
   updateScrollBtn();
-  if (touchingChat || Date.now() - lastWheel < 500) showTimes();
 });
 
 ['touchstart', 'wheel', 'pointerdown'].forEach((t) => chatArea.addEventListener(t, () => { scrollArrowToken++; arrowPending = false; }, { passive: true }));
@@ -6976,22 +6992,28 @@ function setHistoryReact(id, react) {
 
 function setReaction(el, kind, mine) {
   if (!el) return;
-  const old = el.querySelector('.react-row');
+  const old = el.querySelector('.react-chip');
   if (old && old.parentNode) old.parentNode.removeChild(old);
+  const acts = el.querySelector('.msg-foot .msg-acts');
+  const foot = el.querySelector('.msg-foot');
+  if (foot) foot.classList.remove('pick-open');
+  const hbtn = el.querySelector('.msg-act.heart'); if (hbtn) hbtn.classList.remove('open');
   if (!kind || !HEARTS[kind]) {
     el._reaction = null;
+    el.classList.remove('has-react');
   } else {
     el._reaction = { kind: kind, mine: !!mine };
-    const row = document.createElement('div');
-    row.className = 'react-row';
-    const box = document.createElement('span');
-    box.className = 'react-box' + (mine ? ' mine' : '');
-    box.textContent = HEARTS[kind];
-    if (mine) {
-      box.addEventListener('click', (e) => { e.stopPropagation(); removeMyReaction(el.id); });
+    el.classList.add('has-react');
+    if (acts) {
+      const chip = document.createElement('span');
+      chip.className = 'react-chip' + (mine ? ' mine' : '');
+      chip.textContent = HEARTS[kind];
+      if (mine) {
+        chip.title = 'Tepkiyi kaldır';
+        chip.addEventListener('click', (e) => { e.stopPropagation(); removeMyReaction(el.id); });
+      }
+      acts.insertBefore(chip, acts.firstChild);
     }
-    row.appendChild(box);
-    el.appendChild(row);
   }
   if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
   updateScrollBtn();
@@ -7029,31 +7051,6 @@ function receiveUnreact(d) {
   if (!el || !el.classList.contains('own-msg') || !el._reaction || el._reaction.mine) return;
   setReaction(el, null);
   setHistoryReact(d.msgId, null);
-}
-
-function openReactMenu(msgDiv) {
-  if (editingId || !msgDiv.isConnected) return;
-  if (msgDiv.classList.contains('own-msg')) return;
-  if (msgMenuBackdrop.classList.contains('show')) return;
-  const copyable = !msgDiv.dataset.mediaUrl && !msgDiv.classList.contains('chip-msg');
-  const canReact = !msgDiv._reaction && !msgDiv.classList.contains('chip-msg');
-  if (!canReact && !copyable && !(isMobileLayout() && msgDiv._doReply)) return;
-  msgMenu.innerHTML = '';
-  msgMenu.classList.add('react-menu');
-  if (canReact) {
-    const row = document.createElement('div');
-    row.className = 'heart-row';
-    HEART_KINDS.forEach((kind) => {
-      const b = document.createElement('button');
-      b.textContent = HEARTS[kind];
-      b.addEventListener('click', () => { closeMsgMenu(); addReaction(msgDiv.id, kind); });
-      row.appendChild(b);
-    });
-    msgMenu.appendChild(row);
-  }
-  appendReplyButton(msgDiv);
-  if (copyable) appendCopyButton(msgDiv);
-  presentMenu(msgDiv);
 }
 
 function findLastEditableOwn() {
@@ -7156,13 +7153,6 @@ function copyText(text) {
   }
 }
 
-function appendCopyButton(msgDiv) {
-  const b = document.createElement('button');
-  b.textContent = 'Kopyala';
-  b.addEventListener('click', () => { const t = msgDiv._raw ? msgDiv._raw.text : ''; closeMsgMenu(); if (t) copyText(t); });
-  msgMenu.appendChild(b);
-}
-
 function focusInputForReply() {
   if (messageInput.disabled) return;
   const go = () => {
@@ -7176,142 +7166,6 @@ function focusInputForReply() {
   }
 }
 
-function appendReplyButton(msgDiv) {
-  if (!isMobileLayout() || !msgDiv._doReply) return;
-  const b = document.createElement('button');
-  b.textContent = 'Yanıtla';
-  b.addEventListener('click', () => { menuRestoreFocus = false; closeMsgMenu(); if (msgDiv.isConnected) msgDiv._doReply(); });
-  msgMenu.appendChild(b);
-}
-
-function closeMsgMenu() {
-  msgMenuBackdrop.classList.remove('show');
-  msgMenu.innerHTML = '';
-  msgMenu.classList.remove('react-menu');
-  if (menuRestoreFocus) {
-    menuRestoreFocus = false;
-    try { if (!messageInput.disabled) messageInput.focus({ preventScroll: true }); } catch (e) {}
-  }
-}
-
-function openMsgMenu(msgDiv) {
-  if (editingId || !msgDiv.isConnected) return;
-  if (msgMenuBackdrop.classList.contains('show')) return;
-  msgMenu.innerHTML = '';
-  msgMenu.classList.remove('react-menu');
-  const editable = !msgDiv.dataset.mediaUrl && !msgDiv.classList.contains('chip-msg');
-  appendReplyButton(msgDiv);
-  if (editable) {
-    const b = document.createElement('button');
-    b.textContent = 'Düzenle';
-    b.addEventListener('click', () => { closeMsgMenu(); startEdit(msgDiv); });
-    msgMenu.appendChild(b);
-    appendCopyButton(msgDiv);
-  }
-  const del = document.createElement('button');
-  del.className = 'danger';
-  del.textContent = 'Sil';
-  del.addEventListener('click', () => { closeMsgMenu(); deleteOwnMessage(msgDiv.id); });
-  msgMenu.appendChild(del);
-
-  presentMenu(msgDiv);
-}
-
-const lastPtr = { x: 0, y: 0, t: 0 };
-document.addEventListener('pointerdown', (e) => { lastPtr.x = e.clientX; lastPtr.y = e.clientY; lastPtr.t = Date.now(); }, true);
-document.addEventListener('contextmenu', (e) => { if (e.clientX || e.clientY) { lastPtr.x = e.clientX; lastPtr.y = e.clientY; lastPtr.t = Date.now(); } }, true);
-
-function presentMenu(msgDiv) {
-  menuOpenedAt = Date.now();
-  msgMenuBackdrop.classList.add('show');
-  if (document.activeElement !== messageInput) { try { const sel = window.getSelection && window.getSelection(); if (sel) sel.removeAllRanges(); } catch (e) {} }
-  if (navigator.vibrate) { try { navigator.vibrate(20); } catch (e) {} }
-
-  const r = msgDiv.getBoundingClientRect();
-  const mw = msgMenu.offsetWidth, mh = msgMenu.offsetHeight;
-  const vv = window.visualViewport;
-  const vTop = vv ? vv.offsetTop : 0;
-  const vH = vv ? vv.height : window.innerHeight;
-  const vW = vv ? vv.width : window.innerWidth;
-  let top = r.bottom + 6;
-  if (top + mh > vTop + vH - 8) top = r.top - mh - 6;
-  if (top < vTop + 8) top = vTop + Math.max(8, (vH - mh) / 2);
-  let left = (document.body.classList.contains('own-right') && msgDiv.classList.contains('own-msg'))
-    ? r.right - mw - 8
-    : Math.min(r.left + 8, vW - mw - 8);
-  left = Math.max(8, left);
-  if (Date.now() - lastPtr.t < 4000 && lastPtr.x >= r.left - 4 && lastPtr.x <= r.right + 4 && lastPtr.y >= r.top - 4 && lastPtr.y <= r.bottom + 4) {
-    left = Math.max(8, Math.min(vW - mw - 8, lastPtr.x - mw / 2));
-    top = lastPtr.y + 14;
-    if (top + mh > vTop + vH - 8) top = lastPtr.y - mh - 14;
-    if (top < vTop + 8) top = vTop + Math.max(8, (vH - mh) / 2);
-  }
-  msgMenu.style.top = top + 'px';
-  msgMenu.style.left = left + 'px';
-}
-
-msgMenuBackdrop.addEventListener('click', (e) => {
-  if (e.target === msgMenuBackdrop && Date.now() - menuOpenedAt > 350) closeMsgMenu();
-});
-msgMenuBackdrop.addEventListener('selectstart', (e) => e.preventDefault());
-['pointerdown', 'mousedown'].forEach((t) => {
-  msgMenuBackdrop.addEventListener(t, (e) => e.preventDefault());
-  msgMenu.addEventListener(t, (e) => e.preventDefault());
-});
-msgMenuBackdrop.addEventListener('contextmenu', (e) => {
-  e.preventDefault();
-  if (Date.now() - menuOpenedAt > 350) closeMsgMenu();
-});
-
-function attachHoldMenu(msgDiv, holdMs, openFn, ownContext) {
-  let timer = null, ctxTimer = null, sx = 0, sy = 0, held = false, downAt = 0, lastType = '', wasKb = false;
-  const clearCtx = () => { if (ctxTimer) { clearTimeout(ctxTimer); ctxTimer = null; } };
-  const cancel = () => {
-    if (timer) { clearTimeout(timer); timer = null; }
-
-    if (held) { held = false; menuOpenedAt = Date.now(); }
-    if (kbGuard) { clearTimeout(kbGuardTimer); kbGuardTimer = setTimeout(() => { kbGuard = false; }, 400); }
-  };
-  msgDiv.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-    if (editingId) return;
-    cancel(); clearCtx();
-    lastType = e.pointerType || '';
-    wasKb = document.activeElement === messageInput;
-    if (wasKb) { e.preventDefault(); clearTimeout(kbGuardTimer); kbGuard = true; }
-    downAt = Date.now();
-    sx = e.clientX; sy = e.clientY;
-    timer = setTimeout(() => { timer = null; held = true; menuRestoreFocus = wasKb; openFn(msgDiv); }, holdMs);
-  });
-  msgDiv.addEventListener('pointermove', (e) => {
-    if ((timer || ctxTimer) && (Math.abs(e.clientX - sx) > 12 || Math.abs(e.clientY - sy) > 12)) { cancel(); clearCtx(); }
-  });
-  msgDiv.addEventListener('pointerup', () => { cancel(); clearCtx(); });
-  msgDiv.addEventListener('touchend', clearCtx, { passive: true });
-
-  msgDiv.addEventListener('pointercancel', cancel);
-  msgDiv.addEventListener('pointerleave', cancel);
-  msgDiv.addEventListener('contextmenu', (e) => {
-    if (ownContext) {
-      e.preventDefault();
-      cancel();
-      if (!editingId) { menuRestoreFocus = wasKb; openFn(msgDiv); }
-      return;
-    }
-    const touchLike = lastType === 'touch' || lastType === 'pen' || window.matchMedia('(pointer: coarse)').matches;
-    if (!touchLike) {
-      // Masaüstü fare sağ tıkı: tarayıcı menüsü yerine sitenin kendi menüsü
-      e.preventDefault();
-      cancel(); clearCtx();
-      if (!editingId) { menuRestoreFocus = wasKb; openFn(msgDiv); }
-      return;
-    }
-    e.preventDefault();
-    if (editingId || ctxTimer) return;
-    const remaining = Math.max(0, holdMs - (Date.now() - downAt));
-    ctxTimer = setTimeout(() => { ctxTimer = null; held = true; menuRestoreFocus = wasKb; openFn(msgDiv); }, remaining);
-  });
-}
 function attachSwipeReply(msgDiv) {
   let sx = 0, sy = 0, mode = null, tx = 0, active = false;
   let holdTimer = null, editTriggered = false;
@@ -7325,7 +7179,6 @@ function attachSwipeReply(msgDiv) {
   msgDiv.addEventListener('touchstart', (e) => {
     active = false; mode = null; tx = 0; editTriggered = false; clearHold();
     if (!isMobileLayout() || e.touches.length !== 1 || editingId || !msgDiv._doReply) return;
-    if (msgMenuBackdrop.classList.contains('show')) return;
     active = true; sx = e.touches[0].clientX; sy = e.touches[0].clientY;
   }, { passive: true });
   msgDiv.addEventListener('touchmove', (e) => {
@@ -7402,18 +7255,7 @@ function attachSwipeReply(msgDiv) {
   }, 100);
 })();
 
-function attachOwnMsgMenu(msgDiv)   { attachHoldMenu(msgDiv, 500, openMsgMenu, true); }
-function attachOtherMsgMenu(msgDiv) { attachHoldMenu(msgDiv, 500, openReactMenu, false); }
-
 function isMobileLayout() { return mqMobile.matches; }
-
-// Mesaj Yönü "Sağ" iken İsimler kilitli; İsimler "Mesajın Yanında" iken Mesaj Yönü kilitli.
-function syncSettingLocks() {
-  const side = document.getElementById('blk-side');
-  const names = document.getElementById('blk-names');
-  if (side) side.classList.remove('locked');
-  if (names) names.classList.remove('locked');
-}
 
 function settingsIsOpen() { return settingsMenu.classList.contains('open'); }
 const MENU_KEY = 'settingsOpen';
@@ -7505,7 +7347,6 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
   panes.addEventListener('touchstart', (e) => {
     st = null;
     if (!isMobileLayout() || e.touches.length !== 1) return;
-    if (msgMenuBackdrop.classList.contains('show')) return;
     const tg = e.target;
     if (tg && tg.closest && tg.closest('#live-toggle, #notes-btn, #bell-btn, #profile-btn, #np-dots, #send-btn, input, textarea, #cancel-reply-btn')) return;
     const t = e.touches[0];
@@ -7582,7 +7423,6 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
   let reopen = false;
   function hide() {
     reopen = (document.activeElement === messageInput);
-    if (msgMenuBackdrop.classList.contains('show')) { menuRestoreFocus = false; closeMsgMenu(); }
     kbGuard = false; menuRestoreFocus = false;
     const a = document.activeElement;
     if (a && a !== document.body && a.blur) { try { a.blur(); } catch (e) {} }
@@ -9433,7 +9273,6 @@ function bpSetPage(p, instant) {
   function overlayOpen() {
     if (document.documentElement.classList.contains('pin-locked')) return true;
     if (settingsMenu.classList.contains('open')) return true;
-    if (msgMenuBackdrop.classList.contains('show')) return true;
     const ids = ['viewer', 'confirm-modal', 'photo-src-modal', 'ytsearch-modal', 'reset-modal', 'refresh-modal', 'codes-modal', 'stor-modal', 'idle-modal', 'privacy-cover'];
     for (let i = 0; i < ids.length; i++) { const el = document.getElementById(ids[i]); if (el && el.classList.contains('show')) return true; }
     if (document.getElementById('bp-compose').classList.contains('show')) return true;
@@ -9731,7 +9570,7 @@ function bpSetPage(p, instant) {
     '#settings-btn, #eye-btn, #refresh-btn, #notes-btn, #bell-btn, #profile-btn, #auto-chip-x, #live-toggle, ' +
     '#scroll-down-btn, #send-btn, #cancel-reply-btn, #privacy-eye, #viewer-close, #viewer-dl, #bp-add, .bp-del, ' +
     '#bp-actions span, .new-badge, .once-btn, #confirm-once-row, #photo-src-box button, #reset-check-row, .ncg-item, ' +
-    '.react-box, .cm-item, .pin-key:not(.ghost), #msg-menu button';
+    '.msg-act, .heart-pick button, .react-chip.mine, .cm-item, .pin-key:not(.ghost)';
   function tap(e, fromClick) {
     if (!isMobileLayout()) return;
     const t = e.target;
@@ -9781,35 +9620,6 @@ function bpSetPage(p, instant) {
   });
 })();
 
-(function initMsgSideSetting() {
-  const KEY = 'msgSide';
-  const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-side .seg-btn'));
-  function apply(val) {
-    const right = (val === 'right');
-    document.body.classList.toggle('own-right', right);
-    btns.forEach((b) => {
-      const on = b.dataset.val === (right ? 'right' : 'left');
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-    syncSettingLocks();
-    if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
-  }
-  apply(lsGet(KEY) === 'right' ? 'right' : 'left');
-  btns.forEach((b) => {
-    b.addEventListener('pointerdown', (e) => e.preventDefault());
-    b.addEventListener('click', () => {
-      const val = b.dataset.val === 'right' ? 'right' : 'left';
-      lsSet(KEY, val);
-      apply(val);
-      if (val === 'right' && document.body.classList.contains('names-inline')) {
-        const t = document.querySelector('#seg-names .seg-btn[data-val="top"]');
-        if (t) t.click();
-      }
-    });
-  });
-})();
-
 (function initFontSizeSetting() {
   const KEY = 'fontSize';
   const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-fs .seg-btn'));
@@ -9834,70 +9644,6 @@ function bpSetPage(p, instant) {
       apply(val);
     });
   });
-})();
-
-(function initNamesSetting() {
-  const KEY = 'nameMode';
-  const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-names .seg-btn'));
-  function apply(val) {
-    const inline = (val === 'inline');
-    document.body.classList.toggle('names-inline', inline);
-    btns.forEach((b) => {
-      const on = b.dataset.val === (inline ? 'inline' : 'top');
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-    syncSettingLocks();
-    if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
-  }
-  let saved = lsGet(KEY) === 'inline' ? 'inline' : 'top';
-  if (saved === 'inline' && document.body.classList.contains('own-right')) saved = 'top';
-  apply(saved);
-  btns.forEach((b) => {
-    b.addEventListener('pointerdown', (e) => e.preventDefault());
-    b.addEventListener('click', () => {
-      const val = b.dataset.val === 'inline' ? 'inline' : 'top';
-      lsSet(KEY, val);
-      apply(val);
-      if (val === 'inline' && document.body.classList.contains('own-right')) {
-        const l = document.querySelector('#seg-side .seg-btn[data-val="left"]');
-        if (l) l.click();
-      }
-    });
-  });
-})();
-
-(function initTimeSetting() {
-  const KEY = 'timeMode';
-  const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-time .seg-btn'));
-  const autoBtn = document.querySelector('#seg-time .seg-btn[data-val="auto"]');
-  function norm(v) { return (v === 'always' || v === 'never') ? v : 'auto'; }
-  let mode = norm(lsGet(KEY));
-  function render() {
-    const inline = document.body.classList.contains('names-inline');
-    // Mesajın yanında modunda saat zaten sürekli görünür: Otomatik seçeneği yok, seçiliyse Sürekli'ye döner
-    if (inline && mode === 'auto') { mode = 'always'; lsSet(KEY, mode); }
-    if (autoBtn) autoBtn.style.display = inline ? 'none' : '';
-    chatArea.classList.toggle('times-always', mode === 'always');
-    chatArea.classList.toggle('times-never', mode === 'never');
-    if (mode !== 'auto') hideTimes();
-    btns.forEach((b) => {
-      const on = b.dataset.val === mode;
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-  }
-  render();
-  btns.forEach((b) => {
-    b.addEventListener('pointerdown', (e) => e.preventDefault());
-    b.addEventListener('click', () => {
-      mode = norm(b.dataset.val);
-      lsSet(KEY, mode);
-      render();
-    });
-  });
-  // Tarz (isim yerleşimi) değişince yeniden uygula
-  new MutationObserver(render).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 })();
 
 (function initNickColorPicker() {
@@ -10816,7 +10562,6 @@ function switchChannel(ch) {
   if (ch === curCh) return;
   if (editingId) endEdit();
   closeReplyBar();
-  try { closeMsgMenu(); } catch (e) {}
   stopLive();
   if (isTypingSent) {
     if (myTypingTimeout) { clearTimeout(myTypingTimeout); myTypingTimeout = null; }
