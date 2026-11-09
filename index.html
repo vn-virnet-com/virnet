@@ -166,7 +166,7 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 .msg.own-msg .msg-acts { left: auto; right: 0; flex-direction: row-reverse; }
 /* Tek satırlık mesajlarda tuşlar saatin yanında, aynı satırda yan yana durur */
 .msg.time-mid .msg-acts { position: static; bottom: auto; padding-bottom: 0; }
-.msg.acts-on .msg-acts, .msg.hov .msg-acts, .msg-foot.pick-open .msg-acts { opacity: 1; pointer-events: auto; }
+.msg.acts-on .msg-acts, .msg.hov .msg-acts { opacity: 1; pointer-events: auto; }
 @media (any-hover: hover) {
   /* Mesajın bulunduğu satırın tamamı üzerine gelmeyi sayar; fare tuşlara giderken kapanmaz */
   .msg::before { content: ''; position: absolute; top: 0; bottom: 0; left: -100vw; right: -100vw; }
@@ -180,29 +180,50 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 .msg-act svg { display: block; width: 15px; height: 15px; pointer-events: none; }
 .msg-act:hover { color: var(--c-fff); background: color-mix(in srgb, var(--c-fff) 10%, transparent); }
 .msg-act:active { transform: scale(0.86); }
-.msg-act.heart.open { color: var(--c-fff); }
+.msg-act.copied { color: var(--accent); }
 .msg-act.danger.confirm { color: var(--dng); background: color-mix(in srgb, var(--dng) 18%, transparent); }
-/* Tepki tuşu: basılınca yerinde genişleyip seçenekleri yanında gösterir */
-.heart-group { display: inline-flex; align-items: center; border-radius: 12px; transition: background-color 0.2s ease; }
-.msg-foot.pick-open .heart-group { background: color-mix(in srgb, var(--c-fff) 10%, transparent); }
-.msg-foot.pick-open .heart-group .msg-act.heart:hover { background: transparent; }
-.heart-pick {
+/* Tepki: mesajın alt köşesinde yuvarlak + tuşu; basınca 3 kalp yan yana açılır, seçilen kalp aynı yerde kalır */
+.msg.has-react { margin-bottom: 10px; }
+.react-slot {
+  position: absolute; bottom: -11px; left: 6px; z-index: 3; display: flex; align-items: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.15s ease;
+}
+.msg.own-msg .react-slot { left: auto; right: 6px; }
+.msg.acts-on .react-slot, .msg.hov .react-slot, .react-slot.open, .msg.has-react .react-slot { opacity: 1; pointer-events: auto; }
+.msg.deleting .react-slot { opacity: 0; transition: opacity 0.12s ease; }
+.react-core {
+  display: inline-flex; align-items: center; height: 22px; border-radius: 11px; overflow: hidden;
+  background: var(--c-33); box-shadow: 0 0 0 2px var(--c-000);
+}
+.react-add {
+  flex: 0 0 auto; width: 22px; max-width: 22px; height: 22px; padding: 0; border: 0; border-radius: 11px; background: transparent;
+  color: var(--c-cc); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none;
+  transition: max-width 0.24s cubic-bezier(.22, .61, .36, 1), opacity 0.15s ease, color 0.15s ease;
+}
+.react-add svg { display: block; width: 12px; height: 12px; pointer-events: none; }
+.react-add:hover { color: var(--c-fff); }
+.react-slot.open .react-add { max-width: 0; opacity: 0; pointer-events: none; }
+.react-pick {
   display: flex; align-items: center; max-width: 0; overflow: hidden; opacity: 0; pointer-events: none;
   transition: max-width 0.24s cubic-bezier(.22, .61, .36, 1), opacity 0.18s ease;
 }
-.msg-foot.pick-open .heart-pick { max-width: 100px; opacity: 1; pointer-events: auto; }
-.heart-pick button {
-  flex: 0 0 auto; width: 26px; height: 24px; padding: 0; border: 0; border-radius: 12px; background: transparent;
-  font-size: 16px; line-height: 1; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.12s ease, background-color 0.15s ease;
+.react-slot.open .react-pick { max-width: 96px; opacity: 1; pointer-events: auto; }
+.react-pick button {
+  flex: 0 0 auto; width: 30px; height: 22px; padding: 0; border: 0; border-radius: 11px; background: transparent;
+  font-size: 15px; line-height: 1; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease, background-color 0.15s ease;
 }
-.heart-pick button:hover { background: color-mix(in srgb, var(--c-fff) 10%, transparent); }
-.heart-pick button:active { transform: scale(0.82); }
-.msg.has-react .heart-group { display: none; }
+.react-pick button:hover { background: color-mix(in srgb, var(--c-fff) 10%, transparent); }
+.react-pick button:active { transform: scale(0.82); }
+.msg.has-react .react-add, .msg.has-react .react-pick { display: none; }
 .react-chip {
-  display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 22px; padding: 0 6px; margin: 0;
-  border-radius: 12px; background: color-mix(in srgb, var(--c-fff) 12%, transparent); font-size: 14px; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 22px; padding: 0 4px; margin: 0;
+  font-size: 14px; line-height: 1; animation: react-in 0.26s cubic-bezier(.2, .9, .3, 1.4) both;
 }
 .react-chip.mine { cursor: pointer; }
+@keyframes react-in { 0% { opacity: 0; transform: scale(0.4); } 100% { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .react-chip { animation: none; } }
 .time-tag {
   flex: 0 0 auto; font-size: calc(var(--time-fs) - 2px); font-family: 'Lexend', sans-serif; font-weight: 400;
   font-variant-numeric: tabular-nums; color: var(--c-77); white-space: nowrap; pointer-events: none; line-height: 1.2;
@@ -3342,6 +3363,23 @@ const MA_ICONS = {
   edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>',
   del: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>'
 };
+MA_ICONS.copy = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+MA_ICONS.check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+MA_ICONS.plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+function copyText(t) {
+  const fb = () => {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = t; ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) { return false; }
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t).then(() => true, () => fb());
+  return Promise.resolve(fb());
+}
 function reducedMotion() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
 
 function makeMsgAct(cls, title, svg, onClick) {
@@ -3365,25 +3403,17 @@ function buildMsgFoot(msgDiv, id, own, kind) {
   const isChip = msgDiv.classList.contains('chip-msg');
   const isMedia = !!msgDiv.dataset.mediaUrl;
   if (kind !== 'live') {
-    if (!own && !isChip) {
-      const hg = document.createElement('div');
-      hg.className = 'heart-group';
-      hg.appendChild(makeMsgAct('heart', 'Tepki ver', MA_ICONS.heart, (btn) => {
-        const open = foot.classList.toggle('pick-open');
-        btn.classList.toggle('open', open);
+    if (!isMedia && !isChip) {
+      acts.appendChild(makeMsgAct('copy', 'Kopyala', MA_ICONS.copy, (btn) => {
+        const txt = (msgDiv._raw && msgDiv._raw.text) || '';
+        if (!txt) return;
+        copyText(txt).then((ok) => {
+          if (!ok) return;
+          btn.innerHTML = MA_ICONS.check; btn.classList.add('copied');
+          clearTimeout(btn._ct);
+          btn._ct = setTimeout(() => { btn.innerHTML = MA_ICONS.copy; btn.classList.remove('copied'); }, 1200);
+        });
       }));
-      const pick = document.createElement('div');
-      pick.className = 'heart-pick';
-      HEART_KINDS.forEach((k) => {
-        const hb = document.createElement('button');
-        hb.type = 'button';
-        hb.textContent = HEARTS[k];
-        ['pointerdown', 'mousedown'].forEach((t) => hb.addEventListener(t, (e) => e.preventDefault()));
-        hb.addEventListener('click', (e) => { e.stopPropagation(); foot.classList.remove('pick-open'); addReaction(msgDiv.id, k); });
-        pick.appendChild(hb);
-      });
-      hg.appendChild(pick);
-      acts.appendChild(hg);
     }
     acts.appendChild(makeMsgAct('reply', 'Yanıtla', MA_ICONS.reply, () => { msgDiv.classList.remove('acts-on'); if (msgDiv.isConnected && !editingId && msgDiv._doReply) msgDiv._doReply(); }));
     if (own && !isMedia && !isChip) {
@@ -3424,15 +3454,42 @@ function buildMsgFoot(msgDiv, id, own, kind) {
   if (!heartPickGuard) {
     heartPickGuard = true;
     document.addEventListener('click', (e) => {
-      document.querySelectorAll('.msg-foot.pick-open').forEach((f) => {
-        if (f.contains(e.target)) return;
-        f.classList.remove('pick-open');
-        const hbtn = f.querySelector('.msg-act.heart'); if (hbtn) hbtn.classList.remove('open');
-      });
+      document.querySelectorAll('.react-slot.open').forEach((sl) => { if (!sl.contains(e.target)) sl.classList.remove('open'); });
     }, true);
   }
   return foot;
 }
+
+// Tepki alanı: mesajın alt köşesinde. Başkasının mesajında + tuşu (açılınca 3 kalp), tepki verilince/alınınca seçilen kalp
+function buildReactSlot(msgDiv, own) {
+  const slot = document.createElement('div');
+  slot.className = 'react-slot';
+  const core = document.createElement('div');
+  core.className = 'react-core';
+  if (!own) {
+    const add = document.createElement('button');
+    add.type = 'button'; add.className = 'react-add'; add.title = 'Tepki ver'; add.setAttribute('aria-label', 'Tepki ver');
+    add.innerHTML = MA_ICONS.plus;
+    ['pointerdown', 'mousedown'].forEach((t) => add.addEventListener(t, (e) => e.preventDefault()));
+    add.addEventListener('click', (e) => { e.stopPropagation(); slot.classList.add('open'); });
+    core.appendChild(add);
+    const pick = document.createElement('div');
+    pick.className = 'react-pick';
+    HEART_KINDS.forEach((k) => {
+      const hb = document.createElement('button');
+      hb.type = 'button'; hb.textContent = HEARTS[k];
+      ['pointerdown', 'mousedown'].forEach((t) => hb.addEventListener(t, (e) => e.preventDefault()));
+      hb.addEventListener('click', (e) => { e.stopPropagation(); slot.classList.remove('open'); addReaction(msgDiv.id, k); });
+      pick.appendChild(hb);
+    });
+    core.appendChild(pick);
+  }
+  slot.addEventListener('touchstart', (e) => { e.stopPropagation(); }, { passive: true });
+  slot.appendChild(core);
+  msgDiv.appendChild(slot);
+  msgDiv._slot = slot; msgDiv._core = core;
+}
+function closeSlot(m) { if (m && m._slot) m._slot.classList.remove('open'); }
 
 // Mesaja (baloncuğa) bir kez dokununca tuşlar yanında belirir; tekrar dokununca ya da başka yere basınca kapanır
 function closeActs(except) {
@@ -3441,8 +3498,7 @@ function closeActs(except) {
     if (on[i] === except) continue;
     clearTimeout(on[i]._actsT);
     on[i].classList.remove('acts-on');
-    const f = on[i]._foot; if (f) f.classList.remove('pick-open');
-    const hb = on[i].querySelector('.msg-act.heart'); if (hb) hb.classList.remove('open');
+    closeSlot(on[i]);
   }
 }
 // Tıklanarak açılan tuşlar 5 saniye kullanılmazsa kendiliğinden kapanır; tuşlara dokunmak süreyi yeniler
@@ -3453,14 +3509,13 @@ function armActs(msg) {
     if (!msg.classList.contains('acts-on')) return;
     msg.classList.remove('acts-on');
     if (msg !== hovMsg) {
-      if (msg._foot) msg._foot.classList.remove('pick-open');
-      const hb = msg.querySelector('.msg-act.heart'); if (hb) hb.classList.remove('open');
+      closeSlot(msg);
     }
   }, 5000);
 }
 chatArea.addEventListener('pointerdown', (e) => {
   const t = e.target;
-  const f = t && t.closest ? t.closest('.msg-foot') : null;
+  const f = t && t.closest ? t.closest('.msg-foot, .react-slot') : null;
   const m = f ? f.closest('.msg') : null;
   if (m && m.classList.contains('acts-on')) armActs(m);
 }, true);
@@ -3473,8 +3528,7 @@ function setHov(m) {
   if (old) {
     old.classList.remove('hov');
     if (!old.classList.contains('acts-on')) {
-      if (old._foot) old._foot.classList.remove('pick-open');
-      const hb = old.querySelector('.msg-act.heart'); if (hb) hb.classList.remove('open');
+      closeSlot(old);
     }
   }
   if (m) m.classList.add('hov');
@@ -3489,7 +3543,7 @@ chatArea.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse'
 chatArea.addEventListener('click', (e) => {
   const t = e.target;
   if (!t || !t.closest) return;
-  if (t.closest('.msg-foot')) return;
+  if (t.closest('.msg-foot, .react-slot')) return;
   const bub = t.closest('.bubble');
   const msg = bub ? bub.closest('.msg') : null;
   if (!msg || msg._deleting || msg.classList.contains('typing-msg') || msg.classList.contains('live-msg')) { closeActs(null); return; }
@@ -5318,6 +5372,7 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
   if (liveEl && liveEl.isConnected) chatArea.appendChild(liveEl);
   if (typingMsgEl && typingMsgEl.isConnected) chatArea.appendChild(typingMsgEl);
   { const ft = buildMsgFoot(msgDiv, messageId, !!isOwnMessage, 'msg'); if (ft) { msgDiv.appendChild(ft); msgDiv._foot = ft; } }
+  if (!msgDiv.classList.contains('chip-msg')) buildReactSlot(msgDiv, !!isOwnMessage);
   attachSwipeReply(msgDiv);
 
   let chMsgs;
@@ -7193,17 +7248,14 @@ function setReaction(el, kind, mine) {
   if (!el) return;
   const old = el.querySelector('.react-chip');
   if (old && old.parentNode) old.parentNode.removeChild(old);
-  const acts = el.querySelector('.msg-foot .msg-acts');
-  const foot = el.querySelector('.msg-foot');
-  if (foot) foot.classList.remove('pick-open');
-  const hbtn = el.querySelector('.msg-act.heart'); if (hbtn) hbtn.classList.remove('open');
+  if (el._slot) el._slot.classList.remove('open');
   if (!kind || !HEARTS[kind]) {
     el._reaction = null;
     el.classList.remove('has-react');
   } else {
     el._reaction = { kind: kind, mine: !!mine };
     el.classList.add('has-react');
-    if (foot) {
+    if (el._core) {
       const chip = document.createElement('span');
       chip.className = 'react-chip' + (mine ? ' mine' : '');
       chip.textContent = HEARTS[kind];
@@ -7211,7 +7263,7 @@ function setReaction(el, kind, mine) {
         chip.title = 'Tepkiyi kaldır';
         chip.addEventListener('click', (e) => { e.stopPropagation(); removeMyReaction(el.id); });
       }
-      foot.insertBefore(chip, foot.firstChild);
+      el._core.appendChild(chip);
     }
   }
   if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
@@ -9769,7 +9821,7 @@ function bpSetPage(p, instant) {
     '#settings-btn, #eye-btn, #refresh-btn, #notes-btn, #bell-btn, #profile-btn, #auto-chip-x, #live-toggle, ' +
     '#scroll-down-btn, #send-btn, #cancel-reply-btn, #privacy-eye, #viewer-close, #viewer-dl, #bp-add, .bp-del, ' +
     '#bp-actions span, .new-badge, .once-btn, #confirm-once-row, #photo-src-box button, #reset-check-row, .ncg-item, ' +
-    '.msg-act, .heart-pick button, .react-chip.mine, .cm-item, .pin-key:not(.ghost)';
+    '.msg-act, .react-add, .react-pick button, .react-chip.mine, .cm-item, .pin-key:not(.ghost)';
   function tap(e, fromClick) {
     if (!isMobileLayout()) return;
     const t = e.target;
