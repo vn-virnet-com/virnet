@@ -1870,6 +1870,7 @@ const newMsgBadge    = document.getElementById('new-msg-badge');
 const mqMobile       = window.matchMedia('(max-width: 768px)');
 const ID_REGEX = /^[A-Za-z0-9]([A-Za-z0-9_-]*[A-Za-z0-9])?$/;
 
+let peerOpenAt = 0;
 let myId     = null;
 let friendId = null;
 
@@ -2808,8 +2809,20 @@ function startPeer() {
     else scheduleRestart();
     return;
   }
-  peer = new Peer(myId);
+  peer = new Peer(myId, {
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun.cloudflare.com:3478' },
+        { urls: 'stun:global.stun.twilio.com:3478' },
+        { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' }
+      ],
+      iceCandidatePoolSize: 4
+    }
+  });
   lastPeerStart = Date.now();
+  peerOpenAt = 0;
   const p = peer;
 
   if (!everOpened && !serverTimer) {
@@ -2824,6 +2837,7 @@ function startPeer() {
   p.on('open', () => {
     if (p !== peer) return;
     everOpened = true;
+    peerOpenAt = Date.now();
     if (serverTimer) { clearTimeout(serverTimer); serverTimer = null; }
     if (!isConnected()) setStatus('Cihazınız hazır. RAM bekleniyor...', false);
     if (retryInterval) clearInterval(retryInterval);
@@ -2870,7 +2884,8 @@ function tryConnect() {
   if (!peer || peer.destroyed || peer.disconnected || !peer.open) return;
   if (isConnected()) return;
   if (conn && Date.now() - connStart < 8000) return;
-  if (myId >= friendId) return;
+  // Kodu küçük olan hemen arar; büyük olan önce bekler, 6 sn içinde arama gelmezse o da arar (iki taraf da aynı anda aramasın diye)
+  if (myId >= friendId && Date.now() - peerOpenAt < 6000) return;
   if (conn) { const old = conn; conn = null; try { old.close(); } catch (e) {} }
   conn = peer.connect(friendId, { reliable: true });
   connStart = Date.now();
