@@ -1397,6 +1397,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 @keyframes cf-br{to{transform:scaleY(1.05)}}
 .cf-z{position:absolute;font:700 10px/1 'Lexend',sans-serif;color:var(--c-fff,#fff);pointer-events:none;opacity:0;white-space:nowrap}
 
+@media (max-width: 768px) { #chat-area { touch-action: pan-y; } }
 /* ===== Uzun basma: mesaj öne çıkar, arka plan bulanır, seçenekler isimleriyle menü olur ===== */
 @media (hover: none), (pointer: coarse) {
   .msg, .msg * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
@@ -7545,12 +7546,12 @@ function attachSwipeReply(msgDiv) {
     msgDiv.style.opacity = '';
     if (animate) setTimeout(() => { msgDiv.style.transition = ''; }, 230);
   };
-  msgDiv.addEventListener('touchstart', (e) => {
+  const onStart = (e) => {
     active = false; mode = null; tx = 0; editTriggered = false; clearHold();
     if (!isMobileLayout() || e.touches.length !== 1 || editingId || !msgDiv._doReply) return;
     active = true; sx = e.touches[0].clientX; sy = e.touches[0].clientY;
-  }, { passive: true });
-  msgDiv.addEventListener('touchmove', (e) => {
+  };
+  const onMove = (e) => {
     if (!active) return;
     const dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
     if (mode === null) {
@@ -7583,7 +7584,7 @@ function attachSwipeReply(msgDiv) {
         clearHold();
       }
     }
-  }, { passive: false });
+  };
   const end = (e) => {
     if (!active) return;
     active = false;
@@ -7607,9 +7608,25 @@ function attachSwipeReply(msgDiv) {
       msgDiv._doReply();
     }
   };
-  msgDiv.addEventListener('touchend', end);
-  msgDiv.addEventListener('touchcancel', end);
+  // Dokunuşlar sohbet alanından dinlenir (aşağıdaki yönlendirici), böylece mesajın bulunduğu satırın her yerinden sürüklenebilir
+  msgDiv._sw = { start: onStart, move: onMove, end: end };
 }
+
+(function swipeRowRouter() {
+  let cur = null;
+  chatArea.addEventListener('touchstart', (e) => {
+    cur = null;
+    const t = e.target;
+    if (!t || !t.closest) return;
+    let m = t.closest('.msg');
+    if (!m && t === chatArea && e.touches.length === 1) m = msgAtY(e.touches[0].clientY);
+    if (m && m._sw) { cur = m; m._sw.start(e); }
+  }, { passive: true });
+  chatArea.addEventListener('touchmove', (e) => { if (cur && cur.isConnected) cur._sw.move(e); }, { passive: false });
+  const fin = (e) => { const m = cur; cur = null; if (m && m._sw) m._sw.end(e); };
+  chatArea.addEventListener('touchend', fin);
+  chatArea.addEventListener('touchcancel', fin);
+})();
 
 // Yanıtlanan mesaj, yanıt modundayken hafifçe vurgulanır
 (function replyHighlight() {
