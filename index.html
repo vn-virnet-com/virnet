@@ -125,16 +125,16 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 
 /* Mesaj baloncuğu: iki taraf da aynı renk ve aynı yazı tonu; zemin koyu, baloncuk daha açık */
 .bubble {
-  position: relative; box-sizing: border-box; max-width: 100%; padding: 9px 14px;
-  border-radius: 18px; background: var(--c-26); color: var(--c-fff);
+  position: relative; box-sizing: border-box; max-width: 100%; padding: 5px 9px;
+  border-radius: 14px; background: var(--c-26); color: var(--c-fff);
   white-space: pre-wrap; overflow-wrap: break-word; word-break: break-word;
   box-shadow: 0 1px 3px rgba(var(--sh), 0.35);
   transition: background-color 0.4s ease, box-shadow 0.2s ease;
 }
 .bubble:has(> .msg-body.big-emoji) { background: transparent; box-shadow: none; padding: 0 2px; }
-.bubble:has(> .yt-card) { width: min(320px, 78vw); padding: 7px; }
-.bubble:has(> .yt-card) > .msg-body { padding: 2px 7px 0; }
-.msg.yt-only .bubble { padding: 4px; }
+.bubble:has(> .yt-card) { width: min(320px, 78vw); padding: 5px; }
+.bubble:has(> .yt-card) > .msg-body { padding: 2px 4px 0; }
+.msg.yt-only .bubble { padding: 3px; }
 .msg.yt-only .yt-card { margin-top: 0; }
 .msg.replying .bubble { box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-fff) 40%, transparent); }
 .msg-flash .bubble { background-color: var(--c-44) !important; }
@@ -149,16 +149,17 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 .msg-body.big-emoji { font-size: 64px; line-height: 1.15; font-weight: 400; padding: 2px 0; white-space: normal; }
 
 /* İsim, tuşlar ve saat baloncuğun içinde */
-.hdr-row { padding: 0; white-space: normal; }
+.hdr-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0; white-space: normal; }
 .nick-hdr { line-height: 1.2; }
 
-/* Alt şerit: tuşlar mesajın kendi yanında, saat zıt kenarda */
+/* Tuşlar baloncuğun dışında, yanındaki boş alanda: gelen mesajda sağda, giden mesajda solda */
 .msg-foot {
-  align-self: stretch; display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  margin: 2px -5px -4px; min-height: 24px; white-space: normal;
+  position: absolute; bottom: 0; left: 100%; margin-left: 3px;
+  display: flex; flex-direction: column; align-items: flex-start; min-height: 24px; white-space: nowrap;
 }
-.msg.own-msg .msg-foot { flex-direction: row-reverse; }
+.msg.own-msg .msg-foot { left: auto; right: 100%; margin-left: 0; margin-right: 3px; align-items: flex-end; }
 .msg-acts { display: flex; align-items: center; gap: 0; }
+.msg.own-msg .msg-acts { flex-direction: row-reverse; }
 .msg-act {
   box-sizing: border-box; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 12px; background: transparent;
   color: var(--c-77); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
@@ -170,8 +171,13 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 .msg-act:active { transform: scale(0.86); }
 .msg-act.heart.open { color: var(--c-fff); }
 .msg-act.danger.confirm { color: var(--dng); background: color-mix(in srgb, var(--dng) 18%, transparent); }
-.heart-pick { display: flex; align-items: center; max-width: 0; opacity: 0; overflow: hidden; transition: max-width 0.25s ease, opacity 0.2s ease; }
-.msg-foot.pick-open .heart-pick { max-width: 150px; opacity: 1; }
+.heart-pick {
+  position: absolute; bottom: 100%; right: 0; margin-bottom: 3px; display: flex; align-items: center;
+  padding: 2px; border-radius: 15px; background: var(--c-26); box-shadow: 0 2px 8px rgba(var(--sh), 0.5);
+  opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 0.18s ease, transform 0.18s ease; z-index: 5;
+}
+.msg.own-msg .heart-pick { right: auto; left: 0; }
+.msg-foot.pick-open .heart-pick { opacity: 1; pointer-events: auto; transform: none; }
 .heart-pick button {
   flex: 0 0 auto; width: 26px; height: 24px; padding: 0; border: 0; border-radius: 12px; background: transparent;
   font-size: 16px; line-height: 1; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.12s ease, background-color 0.15s ease;
@@ -186,8 +192,15 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 .react-chip.mine { cursor: pointer; }
 .time-tag {
   flex: 0 0 auto; font-size: calc(var(--time-fs) - 2px); font-family: 'Lexend', sans-serif; font-weight: 400;
-  font-variant-numeric: tabular-nums; color: var(--c-77); white-space: nowrap; pointer-events: none;
+  font-variant-numeric: tabular-nums; color: var(--c-77); white-space: nowrap; pointer-events: none; line-height: 1.2;
 }
+.time-tag.solo { display: block; text-align: right; margin-top: 1px; }
+.time-tag.out { display: block; margin: 1px 4px 1px; }
+.msg.own-msg .time-tag.out { text-align: right; }
+/* Silme: basılıyken baloncuk kırmızı, bırakınca solarak silinir */
+.msg.del-press .bubble { background: #d32f2f !important; transition: background-color 0.12s ease; }
+.msg.deleting { pointer-events: none; }
+.msg.deleting .msg-foot { opacity: 0; transition: opacity 0.12s ease; }
 
 #input-area {
   flex: 0 0 auto; width: 100%; min-height: 72px;
@@ -2272,7 +2285,7 @@ function receiveLive(d) {
     body.className = 'msg-body';
     bubble.appendChild(body);
     div._body = body;
-    bubble.appendChild(buildMsgFoot(div, id, false, 'live'));
+    buildMsgFoot(div, id, false, 'live');
     liveEl = div;
     liveIsNew = true;
   }
@@ -3355,19 +3368,37 @@ function buildMsgFoot(msgDiv, id, own, kind) {
       acts.appendChild(makeMsgAct('edit', 'Düzenle', MA_ICONS.edit, () => { if (msgDiv.isConnected && !editingId) startEdit(msgDiv); }));
     }
     if (own) {
-      acts.appendChild(makeMsgAct('danger', 'Sil', MA_ICONS.del, (btn) => {
-        if (btn.classList.contains('confirm')) { deleteOwnMessage(msgDiv.id); return; }
-        btn.classList.add('confirm');
-        btn.title = 'Silmek için tekrar dokun';
-        setTimeout(() => { btn.classList.remove('confirm'); btn.title = 'Sil'; }, 2500);
-      }));
+      // Basılı tutunca baloncuk kızarır; parmak tuşun üstündeyken bırakılırsa mesaj silinir, dışarı kayıp bırakılırsa vazgeçilir
+      const db = makeMsgAct('danger', 'Sil', MA_ICONS.del, () => {});
+      let pressing = false;
+      const inside = (e) => {
+        const r = db.getBoundingClientRect();
+        return e.clientX >= r.left - 10 && e.clientX <= r.right + 10 && e.clientY >= r.top - 10 && e.clientY <= r.bottom + 10;
+      };
+      const cancelPress = () => { if (!pressing) return; pressing = false; msgDiv.classList.remove('del-press'); };
+      db.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        pressing = true;
+        msgDiv.classList.add('del-press');
+        try { db.setPointerCapture(e.pointerId); } catch (err) {}
+      });
+      db.addEventListener('pointerup', (e) => {
+        if (!pressing) return;
+        pressing = false;
+        if (inside(e)) deleteOwnMessage(msgDiv.id); else msgDiv.classList.remove('del-press');
+      });
+      db.addEventListener('pointercancel', cancelPress);
+      db.addEventListener('touchstart', (e) => { e.stopPropagation(); }, { passive: true });
+      db.addEventListener('contextmenu', (e) => { e.preventDefault(); });
+      acts.appendChild(db);
     }
   }
   const tt = document.createElement('div');
   tt.className = 'time-tag';
   tt.textContent = msgTimeText(id);
+  msgDiv._tt = tt;
+  (msgDiv._bubble || msgDiv).appendChild(tt);
   foot.appendChild(acts);
-  foot.appendChild(tt);
   if (!heartPickGuard) {
     heartPickGuard = true;
     document.addEventListener('click', (e) => {
@@ -3378,7 +3409,7 @@ function buildMsgFoot(msgDiv, id, own, kind) {
       });
     }, true);
   }
-  return foot;
+  return kind === 'live' ? null : foot;
 }
 
 // Yeni baloncuk küçükten büyüyerek belirir
@@ -3445,11 +3476,31 @@ function placeByTime(el) {
   }
 }
 
+// İsim + saat, baloncuğun alabileceği en geniş iç genişliğe sığmıyorsa saat dışarı alınır (sonuç önbelleğe alınır)
+function timeNeedsRoom(m) {
+  const nickEl = m._hdr && m._hdr.querySelector('.nick-hdr');
+  const tt = m._tt;
+  if (!nickEl || !tt) return false;
+  const cs = getComputedStyle(chatArea);
+  const inner = chatArea.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+  const key = m._nick + '|' + inner + '|' + getComputedStyle(nickEl).fontSize + '|' + getComputedStyle(tt).fontSize + '|' + tt.textContent;
+  if (m._fitKey === key) return m._fitOut;
+  const prevWs = nickEl.style.whiteSpace;
+  nickEl.style.whiteSpace = 'nowrap';
+  const nw = nickEl.offsetWidth;
+  nickEl.style.whiteSpace = prevWs;
+  const tw = tt.offsetWidth || 36;
+  const maxBubble = Math.min(inner * 0.78, 720);
+  const out = nw > 0 && (nw + 12 + tw) > (maxBubble - 18);
+  m._fitKey = key; m._fitOut = out;
+  return out;
+}
 function layoutNicks() {
   const chSt = {};
   const msgs = chatArea.getElementsByClassName('msg');
   for (let i = 0; i < msgs.length; i++) {
     const m = msgs[i];
+    if (m._deleting) continue;
     const cs = chSt[chOfEl(m)] || (chSt[chOfEl(m)] = { prev: null, prevMedia: null });
     let prev = cs.prev, prevMedia = cs.prevMedia;
     const nick = m._nick || '';
@@ -3458,6 +3509,24 @@ function layoutNicks() {
     let show = false;
     if (nick !== '') show = isMedia ? nick !== prevMedia : nick !== prev;
     if (m._hdr) m._hdr.style.display = show ? '' : 'none';
+    if (m._tt) {
+      const tt = m._tt;
+      if (m._hdr && show) {
+        if (m._foot && timeNeedsRoom(m)) {
+          // İsim çok uzun: saat baloncuğun dışına, tuşların altına, mesajın alt kenarına hizalı çıkar
+          if (tt.parentNode !== m._foot) m._foot.appendChild(tt);
+          tt.classList.remove('solo'); tt.classList.add('out');
+        } else {
+          if (tt.parentNode !== m._hdr) m._hdr.appendChild(tt);
+          tt.classList.remove('solo'); tt.classList.remove('out');
+        }
+      } else {
+        const hb = m._bubble || m;
+        if (tt.parentNode !== hb || hb.lastChild !== tt) hb.appendChild(tt);
+        tt.classList.remove('out');
+        if (!tt.classList.contains('solo')) tt.classList.add('solo');
+      }
+    }
     if (isMedia) {
       prev = null;
       prevMedia = nick !== '' ? nick : null;
@@ -4955,7 +5024,7 @@ function syncYtCard(msgDiv, text, fresh) {
   if (!m) return;
   const card = buildYtCard(m[1], m[0]);
   card._ytId = m[1];
-  { const hostB = msgDiv._bubble || msgDiv; const ft = hostB.querySelector(':scope > .msg-foot'); if (ft) hostB.insertBefore(card, ft); else hostB.appendChild(card); }
+  { const hostB = msgDiv._bubble || msgDiv; const ft = (msgDiv._tt && msgDiv._tt.parentNode === hostB) ? msgDiv._tt : null; if (ft) hostB.insertBefore(card, ft); else hostB.appendChild(card); }
   try { ytSweepLocks(); } catch (e) {}
   if (fresh && ytAutoReady && card._autoReady) {
     // başka bir şarkı hâlâ sürüyorsa (birlikte dinleme / başlıyor) yeni link otomatik çalmaz; yalnızca şarkı bittikten sonra atılan çalar
@@ -5163,7 +5232,7 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
   if (mch === 'op' && !isOwnMessage && rxLate) placeByTime(msgDiv);
   if (liveEl && liveEl.isConnected) chatArea.appendChild(liveEl);
   if (typingMsgEl && typingMsgEl.isConnected) chatArea.appendChild(typingMsgEl);
-  bubble.appendChild(buildMsgFoot(msgDiv, messageId, !!isOwnMessage, 'msg'));
+  { const ft = buildMsgFoot(msgDiv, messageId, !!isOwnMessage, 'msg'); if (ft) { msgDiv.appendChild(ft); msgDiv._foot = ft; } }
   attachSwipeReply(msgDiv);
 
   let chMsgs;
@@ -6961,21 +7030,50 @@ function removeFromHistory(id, ownFlag) {
 function removeMessageFromUI(id) {
   const el = document.getElementById(id);
   if (el) {
-    if (el.dataset.mediaUrl) { try { URL.revokeObjectURL(el.dataset.mediaUrl); } catch (e) {} }
     if (pendingImageId === id) { pendingImageId = null; busyUntil = 0; if (isConnected()) setStatus('Bağlı', true); }
-    if (el.parentNode) el.parentNode.removeChild(el);
+    el.id = '';
+    el._deleting = true;
+    const finish = () => {
+      if (el.dataset.mediaUrl) { try { URL.revokeObjectURL(el.dataset.mediaUrl); } catch (e) {} }
+      if (el.parentNode) el.parentNode.removeChild(el);
+      layoutNicks();
+      if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
+      updateScrollBtn();
+    };
+    const h = el.offsetHeight;
+    if (!el.parentNode || reducedMotion() || !h) {
+      finish();
+    } else {
+      // Önce solar (kırmızı kalır), sonra yüksekliği kapanır; alttaki mesajlar yukarı kayar
+      const ease = 'cubic-bezier(.22,.61,.36,1)';
+      el.classList.add('deleting', 'del-press');
+      el.style.height = h + 'px';
+      el.style.overflow = 'hidden';
+      void el.offsetHeight;
+      el.style.transition = 'opacity 0.3s ease, height 0.3s ' + ease + ' 0.18s, margin-top 0.3s ' + ease + ' 0.18s, margin-bottom 0.3s ' + ease + ' 0.18s';
+      el.style.opacity = '0';
+      el.style.height = '0px';
+      el.style.marginTop = '0px';
+      el.style.marginBottom = '-2px';
+      const t0 = Date.now();
+      const follow = () => {
+        if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
+        if (Date.now() - t0 < 520) requestAnimationFrame(follow);
+      };
+      follow();
+      setTimeout(finish, 530);
+    }
   }
   if (editingId) { if (savedReply && savedReply.targetId === id) savedReply = null; }
   else if (replyingTo && replyingTo.targetId === id) closeReplyBar();
   layoutNicks();
-  if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
   updateScrollBtn();
 }
 
 function deleteOwnMessage(id) {
   const el = document.getElementById(id);
   if (!el || !el.classList.contains('own-msg')) return;
-  if (!isConnected()) { setStatus('Bağlı değil, mesaj silinemedi', false); return; }
+  if (!isConnected()) { el.classList.remove('del-press'); setStatus('Bağlı değil, mesaj silinemedi', false); return; }
   try { conn.send({ type: 'delete', msgId: id }); } catch (e) {}
   removeFromHistory(id, true);
   outboxRemove(id);
