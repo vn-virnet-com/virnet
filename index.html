@@ -83,10 +83,21 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 #auto-chip .ac-txt { overflow: hidden; text-overflow: ellipsis; }
 #auto-chip-x { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 22px; height: 22px; margin: 0 -4px 0 0; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #auto-chip-x:active { background: var(--c-1a); }
+#status-bar { display: none !important; }
+/* Yüzen yardım menüsü: basılı tutunca çevresinde göz / yenile / not / dinamik mesaj tuşları açılır */
+#fab { position: absolute; left: 12px; bottom: 12px; width: 46px; height: 46px; z-index: 21; }
+body.once-viewing #fab { display: none !important; }
+#fab-main { position: absolute; left: 0; top: 0; width: 46px; height: 46px; border-radius: 50%; box-sizing: border-box; background: var(--c-1a); border: 1px solid var(--c-44); color: var(--c-88); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(var(--sh),0.6); touch-action: none; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; transition: transform .15s ease, color .15s ease; }
+#fab.open #fab-main { transform: scale(0.92); color: var(--c-fff); }
+#fab-main svg { display: block; pointer-events: none; }
+#fab-ring { position: absolute; left: 0; top: 0; width: 46px; height: 46px; pointer-events: none; }
+#fab-ring > .fab-item { position: absolute !important; left: 3px; top: 3px; width: 40px; height: 40px; box-sizing: border-box; padding: 0 !important; margin: 0 !important; align-items: center; justify-content: center; border-radius: 50%; background: var(--c-1a); border: 1px solid var(--c-44); box-shadow: 0 2px 10px rgba(var(--sh),0.6); opacity: 0; pointer-events: none; transform: translate(0, 0) scale(0.4); transition: transform .18s cubic-bezier(.2,.9,.3,1.2), opacity .15s ease; }
+#fab-ring > #eye-btn, #fab-ring > #refresh-btn, #fab-ring > #notes-btn { display: flex; }
+#fab.open #fab-ring > .fab-item { opacity: 1; pointer-events: auto; transform: translate(var(--fx, 0px), var(--fy, 0px)) scale(1); }
+@media (prefers-reduced-motion: reduce) { #fab-ring > .fab-item, #fab-main { transition: none; } }
 #status-left { display: flex; align-items: center; }
 #refresh-btn { cursor: pointer; display: inline-flex; align-items: center; padding: 8px 13px 8px 0; margin: -8px 0; color: var(--c-88); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-#refresh-btn svg, #eye-btn svg, #settings-btn svg, #notes-btn svg, #bell-btn svg { display: block; }
-#settings-btn { cursor: pointer; display: inline-flex; align-items: center; padding: 8px 13px 8px 0; margin: -8px 0; color: var(--c-88); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+#refresh-btn svg, #eye-btn svg, #notes-btn svg { display: block; }
 #eye-btn { cursor: pointer; display: inline-flex; align-items: center; padding: 8px 13px 8px 0; margin: -8px 0; color: var(--c-88); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 #privacy-cover { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--c-000); z-index: 30000; display: none; touch-action: none; -webkit-user-select: none; user-select: none; }
 #privacy-cover.show { display: block; }
@@ -737,7 +748,7 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
   box-shadow: 0 2px 10px rgba(var(--sh),0.6); user-select: none; -webkit-user-select: none;
 }
 .new-badge svg { display: block; stroke: currentColor; }
-#new-notes-badge { right: 8px; display: none !important; }
+#new-notes-badge { right: 8px; }
 #new-msg-badge { left: 8px; }
 @keyframes new-badge-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 @media (max-width: 768px) { .new-badge.show { display: flex; animation: new-badge-blink 1s ease-in-out infinite; } }
@@ -756,9 +767,9 @@ body.fs-small { --msg-fs:13.5px; --nick-fs:12px; --time-fs:12px; --reply-fs:11px
 body.fs-large { --msg-fs:17px; --nick-fs:14.5px; --time-fs:14.5px; --reply-fs:13.5px; --badge-fs:11px; --img-max:190px; }
 
 /* ---- Ayarlar içeriği ---- */
-#settings-menu { overflow: hidden; padding: 0; }
-#settings-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: calc(10px + env(safe-area-inset-top, 0px)) 14px calc(10px + env(safe-area-inset-top, 0px)); }
-#settings-footer { flex: 0 0 auto; padding: 8px 14px calc(10px + env(safe-area-inset-bottom, 0px)); }
+/* Ayarlar sayfası: sağ panelin 4. sekmesi */
+#bp-page-set { background: var(--c-000); }
+#bp-page-set #settings-scroll { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 10px 12px 12px; }
 .set-title { text-align: center; font-size: 15px; font-weight: 700; color: var(--c-fff); margin-bottom: 7px; }
 .set-block + .set-block { margin-top: 14px; }
 .seg { display: flex; flex-direction: column; border: 1px solid var(--c-33); border-radius: var(--r-lg); overflow: hidden; background: var(--c-111); }
@@ -808,7 +819,7 @@ body.lv-admin .leap-num { cursor: pointer; }
 .set-title > span:first-child { flex: 0 0 auto; }
 .set-val { flex: 1 1 auto; text-align: center; font-size: 11px; font-weight: 600; opacity: .55; white-space: nowrap; min-width: 0; overflow: hidden; }
 body.no-anim .set-collapse, body.no-anim .set-body, body.no-anim .set-arrow { transition: none !important; }
-body.no-anim #app, body.no-anim #settings-menu { transition: none !important; }
+body.no-anim #app { transition: none !important; }
 .live-msg .msg-body { cursor: default; }
 /* Dinamik mesaj (alıcı tarafı): yeni gelen kısım 0,5 sn'de yavaşça normal tonunda belirir (parlama yok) */
 @keyframes live-word-in { from { opacity: 0; } to { opacity: 1; } }
@@ -842,6 +853,7 @@ body.nick-hidden #nick-color-grid { display: grid; }
 
 /* ---- Şerit içi renk seçici (Yeni mesaj yolda şeridi) ---- */
 #sb-mid { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; justify-content: center; margin: 0 -7px; }  /* tuşların görünmez 13px iç boşluğuna taşar: simgelere yaklaşık 6px kalır */
+#nick-input { touch-action: none; }
 #nick-ghost { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-size: 13.5px; color: var(--c-88); opacity: 0.55; pointer-events: none; user-select: none; -webkit-user-select: none; }
 /* Görünür isim kutusunun üstünde açılan renk paleti: kutunun genişliğinde, 2 sütun x 5 satır, dikey */
 #nick-pal {
@@ -863,12 +875,12 @@ body.nick-hidden #nick-color-grid { display: grid; }
 /* Titreşim ayarı yalnızca mobil görünümde */
 #blk-haptic { display: none; }
 @media (max-width: 768px) { #blk-haptic { display: block; } }
-#notes-btn, #bell-btn { cursor: pointer; display: inline-flex; align-items: center; padding: 8px 0 8px 13px; margin: -8px 0; color: var(--c-88); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+#notes-btn { cursor: pointer; display: inline-flex; align-items: center; padding: 8px 0 8px 13px; margin: -8px 0; color: var(--c-88); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 /* Not tuşunun konumu duruma göre JS ile taşınır (data-pos): strip = renk şeridinin en sağı, trash = ayarlar simgesinin sağı (masaüstü + isim kutusu gizli), top = sağ üst (eski yer) */
-#typing-indicator #notes-btn, #typing-indicator #bell-btn { flex: 0 0 auto; pointer-events: auto; padding: 8px 0 8px 13px; margin: -8px 0; }
+#typing-indicator #notes-btn { flex: 0 0 auto; pointer-events: auto; padding: 8px 0 8px 13px; margin: -8px 0; }
 /* Mobil + isim kutusu gizli: üst şerit olduğu gibi mesaj kutusunun üstüne iner, üst alan boş kalır */
 body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-1a); }
-#status-left #notes-btn, #status-left #bell-btn { padding: 8px 13px 8px 0; margin: -8px 0; }
+#status-left #notes-btn { padding: 8px 13px 8px 0; margin: -8px 0; }
 #notes-btn[data-pos="top"] { margin-left: auto; }
 #status-bar > #live-toggle { order: 99; }
 @keyframes notes-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
@@ -892,15 +904,9 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 #notes-pop.show, #bell-pop.show { display: block; }
 /* Bildirim paneli sağ panelin tamamını kaplar: masaüstünde her zaman açık, mobilde çana basınca sağ panel açılır */
 #bell-pop { position: relative; top: auto; right: auto; bottom: auto; left: auto; width: auto; height: auto; flex: 1 1 0; min-height: 0; z-index: auto; }
-/* Bildirim çanı yalnızca mobilde görünür; masaüstünde bildirim paneli sağ panelde zaten her zaman açık */
-#bell-btn { display: none; }
-@media (max-width: 768px) { #bell-btn { display: inline-flex; } }
-#bell-btn.unseen { color: var(--warn); }
-#bell-btn.unseen .bell-ico svg { animation: notes-blink 1s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { #bell-btn.unseen .bell-ico svg { animation: none; } }
-/* Karşı taraf gönderi/yanıt yazarken çanın üstünde çıkan minik "yazıyor" baloncuğu (çandan fırlar gibi açılır) */
-#bell-btn .bell-ico { position: relative; display: inline-flex; }
-.cmp-bub { display: none; position: absolute; left: 10px; top: -10px; z-index: 5; box-sizing: border-box; width: 21px; height: 14px; border-radius: var(--r-md); background: var(--accent); align-items: center; justify-content: center; gap: 2px; pointer-events: none; transform-origin: 0 100%; }
+/* Karşı taraf gönderi/yanıt yazarken sohbet alanının sağ kenarında çıkan minik "yazıyor" baloncuğu (çandan fırlar gibi açılır) */
+.cmp-bub { display: none; position: absolute; right: 10px; top: 10px; z-index: 5; box-sizing: border-box; width: 21px; height: 14px; border-radius: var(--r-md); background: var(--accent); align-items: center; justify-content: center; gap: 2px; pointer-events: none; transform-origin: 100% 100%; }
+@media (min-width: 769px) { .cmp-bub { display: none !important; } }
 .cmp-bub.show { display: flex; animation: cmpPop .3s cubic-bezier(.2,.9,.3,1.35) both; }
 .cmp-bub.show.out { animation: cmpOut .17s ease-in both; }
 .cmp-bub::after { content: ""; position: absolute; left: 3px; bottom: -4px; border-style: solid; border-width: 5px 5px 0 0; border-color: var(--accent) transparent transparent transparent; }
@@ -918,12 +924,10 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 .cmp-has > .bp-empty, .cd-rp.cmp-has > .cd-rp-e { display: none; }
 @keyframes cmpIn { from { opacity: 0; transform: translateY(-6px) scale(.92); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .cmp-bub.show, .cmp-bub.show.out, .cmp-box { animation: none; } .cmp-bub i, .cmp-box .tdot { animation: none; opacity: 0.7; } }
-#settings-btn.unseen { color: var(--warn); animation: notes-blink 1s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { #settings-btn.unseen { animation: none; } }
 #bp-clip { position: absolute; top: 0; left: 0; right: 0; bottom: 36px; overflow: hidden; border-radius: var(--r-md) var(--r-md) 0 0; }
 #bp-tabs { position: absolute; left: 0; right: 0; bottom: 0; height: 36px; padding: 4px 5px; box-sizing: border-box; border-top: 1px solid var(--c-33); border-radius: 0 0 var(--r-md) var(--r-md); background: var(--c-111); z-index: 3; }
 #bp-tabs-in { --bp-page: 0; position: relative; display: flex; height: 100%; padding: 2px; box-sizing: border-box; background: var(--c-1a); border: 1px solid var(--c-33); border-radius: var(--r-lg); }
-#bp-pill { position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc((100% - 4px) / 3); border-radius: var(--r-md); background: var(--accent); box-shadow: 0 1px 4px rgba(var(--sh),0.4); transform: translateX(calc(var(--bp-page) * 100%)); transition: transform .25s ease; will-change: transform; pointer-events: none; }
+#bp-pill { position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc((100% - 4px) / 4); border-radius: var(--r-md); background: var(--accent); box-shadow: 0 1px 4px rgba(var(--sh),0.4); transform: translateX(calc(var(--bp-page) * 100%)); transition: transform .25s ease; will-change: transform; pointer-events: none; }
 #bell-pop.no-anim #bp-pill { transition: none; }
 .bp-tab { position: relative; z-index: 1; flex: 1 1 0; min-width: 0; padding: 0 2px; border: 0; background: transparent; color: var(--c-88); font-size: 12px; font-weight: 400; font-family: inherit; line-height: 1; cursor: pointer; white-space: nowrap; transition: color .25s ease; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .bp-tab.on { color: var(--on-accent); font-weight: 700; }
@@ -931,10 +935,10 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 #bell-pop.composing #bp-clip { bottom: 0; border-radius: inherit; }
 .bp-tab .bp-dot { display: none; position: absolute; top: -2px; right: 3px; width: 9px; height: 9px; border-radius: 50%; background: var(--bad); border: 1.5px solid var(--c-111); box-sizing: content-box; }
 .bp-tab.new .bp-dot { display: block; }
-#bp-slider { --bp-page: 0; position: absolute; top: 0; bottom: 0; left: 0; width: 300%; display: flex; touch-action: pan-y; transition: transform .25s ease; will-change: transform; }
-#bp-slider { transform: translateX(calc(var(--bp-page) * -33.3333%)); }
+#bp-slider { --bp-page: 0; position: absolute; top: 0; bottom: 0; left: 0; width: 400%; display: flex; touch-action: pan-y; transition: transform .25s ease; will-change: transform; }
+#bp-slider { transform: translateX(calc(var(--bp-page) * -25%)); }
 #bell-pop.no-anim #bp-slider { transition: none; }
-.bp-page { position: relative; flex: 0 0 33.3333%; width: 33.3333%; height: 100%; overflow: hidden; }
+.bp-page { position: relative; flex: 0 0 25%; width: 25%; height: 100%; overflow: hidden; }
 #td-list { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 8px 8px 64px; }
 #td-add { display: none; position: absolute; right: 12px; bottom: 12px; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(var(--sh),0.5); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; z-index: 3; }
 #td-add.can { display: flex; }
@@ -1135,46 +1139,15 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 #np-edit { display: none; border: none; outline: none; resize: none; border-radius: 0; caret-color: var(--accent); }
 body.nick-hidden #nick-input { display: none; }
 body.nick-hidden #message-input { border-radius: var(--r-lg) 0 0 var(--r-lg); }
-/* ---- Sol ayarlar menüsü ---- */
-#settings-menu {
-  position: fixed; top: 0; left: 0; height: 100%; width: 50%;
-  background: var(--c-000); border-right: 1px solid var(--c-1a); z-index: 15000;
-  display: none; transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(0.22, 0.8, 0.3, 1); will-change: transform;
-  touch-action: pan-y;
-}
-#settings-menu.open { transform: translateX(0); }
-#settings-menu.dragging, #settings-backdrop.dragging { transition: none; }
-#settings-backdrop {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 14999;
-  background: var(--ov-5); opacity: 0; pointer-events: none; display: none;
-  transition: opacity 0.3s ease; -webkit-tap-highlight-color: transparent; touch-action: none;
-}
-body.has-menu #settings-menu, body.has-menu #settings-backdrop { display: block; }
-/* Gruplar menüde en üstten başlar (taşarsa kaydırılır) */
-body.has-menu #settings-menu { display: flex; flex-direction: column; justify-content: flex-start; }
 #settings-scroll > .set-block { flex-shrink: 0; }
-/* Operatör kanalı tuşu: menünün en altında sabit, ayar gruplarının üstüne binmez */
-#op-btn { position: relative; justify-content: center; text-align: center; margin: 0; }
-#op-btn > span:first-child { flex: 0 0 auto; }
-#op-btn.cooling { opacity: 0.4; }
-#op-btn.unread::after { content: ''; position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 0 2px var(--c-000); }
-/* Kanallar: her mesaj kendi kanalının etiketini taşır, diğer kanalın mesajları sadece gizlenir (silinmez) */
-#chat-area:not(.ch-op) > .msg[data-ch="op"], #chat-area.ch-op > .msg:not([data-ch="op"]) { display: none !important; }
-#settings-backdrop.show { opacity: 1; pointer-events: auto; }
 @media (min-width: 769px) {
-  #settings-scroll { padding: 10px 12px; }
-  #settings-footer { padding: 8px 12px 10px; }
   .set-title { font-size: 12px; margin-bottom: 5px; }
   .set-val { font-size: 10px; }
   .leap-name { font-size: 12px; }
   .leap-num { font-size: 10px; }
   .set-block + .set-block { margin-top: 10px; }
   .seg-btn { padding: 5px 10px; font-size: 12px; }
-  /* Masaüstü: menü varsayılan kapalı. Açılınca (20vw) sohbeti sıkıştırır; notlar paneli her zaman 36vw sabit. */
-  #app { transition: left 0.3s cubic-bezier(0.22, 0.8, 0.3, 1), width 0.3s cubic-bezier(0.22, 0.8, 0.3, 1); }
-  body.has-menu.settings-open #app { left: 20vw; width: 80vw; }
-  #settings-menu { width: 20vw; }
+  /* Masaüstü: sağ panel (bildirim / ayarlar) her zaman 36vw sabit. */
   #pane-chat { flex: 1 1 0; width: auto; min-width: 0; }
   #pane-notes { flex: 0 0 36vw; width: 36vw; }
   /* Masaüstü: yan panel (notlar) güncellenince, fareyle üstüne gelinene ya da tıklanana kadar yanıp söner */
@@ -1185,7 +1158,6 @@ body.has-menu #settings-menu { display: flex; flex-direction: column; justify-co
   #pane-notes.pane-unseen::after { display: block; animation: pane-unseen-blink 1.1s ease-in-out infinite; }
   @keyframes pane-unseen-blink { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { #pane-notes.pane-unseen::after { animation: none; opacity: 0.8; } }
-  #settings-backdrop, body.has-menu #settings-backdrop { display: none; }
 }
 
 /* ===== PIN KİLİDİ ===== */
@@ -1532,10 +1504,8 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   <div id="status-left">
     <span id="eye-btn" title="Ekranı gizle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
     <span id="refresh-btn" title="Sayfayı yenile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg></span>
-    <span id="settings-btn" title="Ayarlar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span>
   </div>
   <div id="sb-mid"><span id="nick-ghost" aria-hidden="true"></span></div>
-  <span id="bell-btn" title="Bildirimler"><span class="bell-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><span class="cmp-bub" aria-hidden="true"><i></i><i></i><i></i></span></span></span>
   <span id="notes-btn" title="Notlar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></span>
 </div>
 <div id="notes-pop">
@@ -1545,10 +1515,12 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 <div id="panes">
 <div id="slider">
 <div id="pane-chat" class="pane">
+<span class="cmp-bub" aria-hidden="true"><i></i><i></i><i></i></span>
 <div id="new-notes-badge" class="new-badge"><span>Yeni</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
 <div id="chat-wrap">
   <div id="chat-area"></div>
   <div id="auto-chip" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span class="ac-txt">Oto. Oynat</span><button type="button" id="auto-chip-x" aria-label="Otomatik oynatmayı kapat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div id="fab"><div id="fab-ring"></div><div id="fab-main" title="Menü (basılı tut)" aria-label="Yardım menüsü"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.5-3 4.5"></path><line x1="12" y1="17.5" x2="12" y2="17.6"></line></svg></div></div>
   <div id="scroll-down-btn" title="En son mesaja git">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
   </div>
@@ -1608,24 +1580,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     <div id="td-actions"><span id="td-cancel">İptal</span><span id="td-send">Gönder</span></div>
   </div>
   </div>
-  </div>
-  <div id="rp-compose">
-    <div id="rp-name-row"><label id="rp-vf-wrap" title="Onay rozeti"><input id="rp-vf-in" type="checkbox" aria-label="Onay rozeti ekle"><span class="cd-vf-box"></span></label><input id="rp-name-in" type="text" placeholder="İsim" maxlength="80" autocomplete="off" autocorrect="off" spellcheck="false"></div>
-    <textarea id="rp-body-in" placeholder="İçerik" maxlength="1000" autocomplete="off" spellcheck="false"></textarea>
-    <div id="rp-actions"><span id="rp-cancel">İptal</span><span id="rp-send">Gönder</span></div>
-  </div>
-  </div>
-  <div id="bp-tabs"><div id="bp-tabs-in"><div id="bp-pill"></div><button type="button" class="bp-tab on" data-p="0">Bildirim<span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="1">Keşfet<span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="2">Oluştur<span class="bp-dot"></span></button></div></div>
-</div>
-  <div id="new-msg-badge" class="new-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg><span>Yeni</span></div>
-</div>
-</div>
-</div>
-
-</div>
-
-<div id="settings-backdrop"></div>
-<div id="settings-menu">
+  <div id="bp-page-set" class="bp-page">
 <div id="settings-scroll">
   <div class="leap-bar" id="leap-bar"><span class="leap-name">Leap</span><span class="leap-num" id="leap-num">0</span></div>
   <div class="leap-ext" id="leap-ext" inert><div class="leap-ext-clip"><div class="leap-ext-row">
@@ -1683,9 +1638,21 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     </div></div></div></div>
   </div>
 </div>
-<div id="settings-footer">
-  <div class="set-title" id="op-btn" role="button" tabindex="0"><span>Operatör</span></div>
+  </div>
+  </div>
+  <div id="rp-compose">
+    <div id="rp-name-row"><label id="rp-vf-wrap" title="Onay rozeti"><input id="rp-vf-in" type="checkbox" aria-label="Onay rozeti ekle"><span class="cd-vf-box"></span></label><input id="rp-name-in" type="text" placeholder="İsim" maxlength="80" autocomplete="off" autocorrect="off" spellcheck="false"></div>
+    <textarea id="rp-body-in" placeholder="İçerik" maxlength="1000" autocomplete="off" spellcheck="false"></textarea>
+    <div id="rp-actions"><span id="rp-cancel">İptal</span><span id="rp-send">Gönder</span></div>
+  </div>
+  </div>
+  <div id="bp-tabs"><div id="bp-tabs-in"><div id="bp-pill"></div><button type="button" class="bp-tab on" data-p="0">Bildirim<span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="1">Keşfet<span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="2">Oluştur<span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="3">Ayarlar<span class="bp-dot"></span></button></div></div>
 </div>
+  <div id="new-msg-badge" class="new-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg><span>Yeni</span></div>
+</div>
+</div>
+</div>
+
 </div>
 
 <input type="file" id="file-input" accept="image/*" style="position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;">
@@ -1806,18 +1773,6 @@ const chatWrap       = document.getElementById('chat-wrap');
 const scrollDownBtn  = document.getElementById('scroll-down-btn');
 
 const chatArea       = document.getElementById('chat-area');
-// ---- Kanallar: 'main' (normal sohbet) ve 'op' (Operatör). Mesajlar silinmeden sadece gizlenir/gösterilir. ----
-let curCh = 'main';          // şu an görünen kanal
-let rxCh = null;             // karşıdan gelen veri işlenirken verinin kanalı
-let typingCh = 'main';       // karşı taraf hangi kanalda yazıyor
-let rxLate = false;          // gelen mesaj bekletilmiş (bağlantı yokken yazılmış) bir Operatör mesajı mı
-let chatConnUp = false;      // gerçek bağlantı durumu (Operatör kanalında yazı kutusu bağlantısız da açık kalır)
-const chView = { main: { top: 0, atBottom: true, newMsg: false }, op: { top: 0, atBottom: true, newMsg: false } };
-const chUnread = { main: false, op: false };
-function chNorm(v) { return v === 'op' ? 'op' : 'main'; }
-function chOfEl(el) { return el && el.dataset && el.dataset.ch === 'op' ? 'op' : 'main'; }
-// Karşıya giden veriye kanal etiketi ekler (normal kanalda alan hiç eklenmez, eski yapıyla aynı kalır)
-function chTag(o, ch) { if (chNorm(ch === undefined ? curCh : ch) === 'op') o.ch = 'op'; return o; }
 const inputArea      = document.getElementById('input-area');
 const nickInput      = document.getElementById('nick-input');
 const messageInput   = document.getElementById('message-input');
@@ -1838,14 +1793,10 @@ const confirmNo      = document.getElementById('confirm-no');
 const confirmOnce    = document.getElementById('confirm-once');
 
 const appEl = document.getElementById('app');
-const settingsBtn      = document.getElementById('settings-btn');
-const settingsMenu     = document.getElementById('settings-menu');
-const settingsBackdrop = document.getElementById('settings-backdrop');
 const panes          = document.getElementById('panes');
 const slider         = document.getElementById('slider');
 const notesBtn       = document.getElementById('notes-btn');
 const notesPop       = document.getElementById('notes-pop');
-const bellBtn        = document.getElementById('bell-btn');
 const bellPop        = document.getElementById('bell-pop');
 const npView         = document.getElementById('np-view');
 const npEdit         = document.getElementById('np-edit');
@@ -1886,6 +1837,7 @@ let menuRestoreFocus = false;
 
 let view = 'chat';
 let unreadMsgs = false;
+let unreadNotes = false;
 let popEditing = false;
 let notesUnseen = lsGet('qnoteUnseen') === '1';
 let qText = lsGet('qnoteText') || '';
@@ -2000,8 +1952,7 @@ function flushOutbox(fresh) {
     if (!fresh && (now - t.t < 6000 || t.n >= 3)) return;
     t.n++; t.t = now;
     const o = { text: m.text, senderNick: m.nick || '', reply: m.reply || null, msgId: m.id };
-    if (m.ch === 'op') o.late = true;   // karşı taraf bunu gönderim saatine göre yerleştirir
-    try { conn.send(chTag(o, m.ch || 'main')); } catch (e) {}
+    try { conn.send(o); } catch (e) {}
   });
 }
 function readSeen() {
@@ -2059,8 +2010,7 @@ function sanitizeEntry(e) {
     own:  e.own === true,
     id:   typeof e.id === 'string' ? e.id : null,
     reply: reply,
-    react: react,
-    ch: e.ch === 'op' ? 'op' : 'main'
+    react: react
   };
 }
 
@@ -2070,13 +2020,13 @@ function readHistory() {
     if (!raw) return [];
     const arr = JSON.parse(raw);
     if (!Array.isArray(arr)) return [];
-    return arr.map(sanitizeEntry).filter((x) => x && x.ch !== 'op').slice(-MAX_HISTORY);
+    return arr.map(sanitizeEntry).filter((x) => x).slice(-MAX_HISTORY);
   } catch (e) { return []; }
 }
 
 function writeHistory(list) {
   let safe = (Array.isArray(list) ? list : [])
-    .map(sanitizeEntry).filter((x) => x && x.ch !== 'op').slice(-MAX_HISTORY);
+    .map(sanitizeEntry).filter((x) => x).slice(-MAX_HISTORY);
 
   while (safe.length > 0) {
     try {
@@ -2091,7 +2041,6 @@ function writeHistory(list) {
 }
 
 function saveMessageToHistory(entry) {
-  if (entry && entry.ch === 'op') return;   // Operatör kanalı hiç saklanmaz; yalnızca normal sohbetin en son 1 mesajı tutulur
   const list = readHistory();
   if (entry.id && list.some(m => m.id === entry.id)) return;
   list.push(entry);
@@ -2120,7 +2069,7 @@ function sendLive() {
   if (secretProfile(v)) return;   // gizli kod kelimeleri karşıya gönderilmez
   if (!liveId) liveId = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
   liveActive = true;
-  try { conn.send(chTag({ type: 'live', liveText: v, senderNick: fullNick(), liveId: liveId, reply: replyingTo })); } catch (e) {}
+  try { conn.send({ type: 'live', liveText: v, senderNick: fullNick(), liveId: liveId, reply: replyingTo }); } catch (e) {}
   liveLastSent = v;
   clearLiveIdle();
 }
@@ -2245,7 +2194,6 @@ function receiveLive(d) {
     div._rawNick = nick;
     div._hdr = null;
     div.dataset.liveId = id;
-    div.dataset.ch = rxCh || 'main';
     div._repKey = repKey;
     if (rn.finalNick === '') div.classList.add('no-nick');
     const bubble = document.createElement('div');
@@ -2348,8 +2296,7 @@ function fillChatInput(text) {
   try { messageInput.focus({ preventScroll: true }); const l = text.length; messageInput.setSelectionRange(l, l); } catch (e) {}
 }
 function setChatEnabled(enabled) {
-  chatConnUp = !!enabled;
-  applyChatEnabled(chatConnUp || curCh === 'op');
+  applyChatEnabled(!!enabled);
 }
 function applyChatEnabled(enabled) {
   sendBtn.disabled = !enabled;
@@ -2370,7 +2317,7 @@ function applyChatEnabled(enabled) {
       liveSpaceCount = liveSpaces(chatDraft);
     }
     chatDraft = '';
-    setPlaceholder(chatConnUp ? 'Yazın...' : 'Bağlantı yok, mesajlar beklemeye alınır');
+    setPlaceholder('Yazın...');
     adjustInputHeight();
     // bağlanınca mesaj kutusunu otomatik seç, klavye açılsın
     window.dispatchEvent(new Event('chat-enabled'));
@@ -2507,7 +2454,7 @@ recallNickColor();
 applyNickColor();
 nickInput.addEventListener('focus', () => {
   // Kaydırma hareketinden sonra gelen sahte odaklanma isim kutusunu silmesin
-  if (window.__nickPalOpen || Date.now() - nickSwipeAt < 500) { try { nickInput.blur(); } catch (e) {} return; }
+  if (Date.now() - nickSwipeAt < 500) { try { nickInput.blur(); } catch (e) {} return; }
   nickColorPicked = false;
   if (editingId) return;
   pushNickHistory(nickInput.value);
@@ -2758,7 +2705,6 @@ document.addEventListener('keydown', (event) => {
 });
 
 function showChatUI() {
-  document.body.classList.add('has-menu');
   setupPanel.style.display = 'none';
   statusBar.style.display = 'flex';
   panes.style.display = 'block';
@@ -2926,7 +2872,6 @@ function setupConnection(c) {
     tsSend('strip-hello');
     sendFireSync();
     flushOutbox(true);
-    flushMediaOutbox();
     try { if (ytCurrent && ytCurrent._announce) ytCurrent._announce(); } catch (e) {}
     if (pingInterval) clearInterval(pingInterval);
     pingInterval = setInterval(() => {
@@ -2946,10 +2891,7 @@ function setupConnection(c) {
   if (c.open) onOpen(); else c.on('open', onOpen);
 
   c.on('data', (d0) => {
-    rxCh = chNorm(d0 && d0.ch);
-    rxLate = !!(d0 && d0.late === true && rxCh === 'op');
-    if (d0 && (d0.type === 'typing' || d0.type === 'rec')) typingCh = rxCh;
-    try { onPeerData(d0); } finally { rxCh = null; rxLate = false; }
+    onPeerData(d0);
   });
   function onPeerData(data) {
     if (c !== conn) return;
@@ -2988,7 +2930,6 @@ function setupConnection(c) {
     if (data.type === 'card-ack') { receiveCardAck(data); return; }
     if (data.type === 'qnote' || data.type === 'qnote-hello') { receiveQNote(data); return; }
     if (data.type === 'msg-ack') { receiveMsgAck(data); return; }
-    if (data.type === 'media-ack') { mediaAcked(data.msgId); return; }
     if (data.type === 'delete') { receiveDelete(data); return; }
     if (data.type === 'edit')   { receiveEdit(data); return; }
     if (data.type === 'react')   { receiveReact(data); return; }
@@ -3018,7 +2959,6 @@ function setupConnection(c) {
       return;
     }
     if (data.type === 'img-ack') {
-      mediaAcked(data.msgId);
       if (data.msgId && data.msgId === pendingImageId) {
         pendingImageId = null;
         busyUntil = 0;
@@ -3031,10 +2971,9 @@ function setupConnection(c) {
     if (data.type === 'audio') {
       hideRecIndicator();
       if (!data.buffer || typeof data.mime !== 'string' || data.mime.indexOf('audio/') !== 0) return;
-      if (data.msgId && document.getElementById(data.msgId)) { try { c.send({ type: 'media-ack', msgId: data.msgId }); } catch (e) {} return; }
+      if (data.msgId && document.getElementById(data.msgId)) return;
       appendMessage('', data.senderNick, false, (data.reply && typeof data.reply === 'object') ? data.reply : null, data.msgId, true, { url: URL.createObjectURL(new Blob([data.buffer], { type: data.mime })), audio: true, once: data.once === true, dur: Number(data.dur) || 0 });
       noteIncomingMessage();
-      try { c.send({ type: 'media-ack', msgId: data.msgId }); } catch (e) {}
       return;
     }
     if (data.type === 'image') {
@@ -3180,7 +3119,6 @@ function syncTypingMsg() {
     body.className = 'msg-body';
     body.innerHTML = recOn ? REC_MIC_HTML : TYPING_DOTS_HTML;
     div.dataset.tm = recOn ? 'rec' : 'dots';
-    div.dataset.ch = typingCh;
     const tb = document.createElement('div');
     tb.className = 'bubble';
     tb.appendChild(body);
@@ -3191,7 +3129,6 @@ function syncTypingMsg() {
     popBubble(tb);
   } else {
     const want = recOn ? 'rec' : 'dots';
-    typingMsgEl.dataset.ch = typingCh;
     if (typingMsgEl.dataset.tm !== want) { typingMsgEl.dataset.tm = want; const bd = typingMsgEl.querySelector('.msg-body'); if (bd) bd.innerHTML = recOn ? REC_MIC_HTML : TYPING_DOTS_HTML; }
     if (chatArea.lastElementChild !== typingMsgEl) chatArea.appendChild(typingMsgEl);
   }
@@ -3600,27 +3537,13 @@ function renderBodyHtml(text) {
 
 // Mesaj kimliği 'msg-<gönderim zamanı>-...' biçiminde; saat etiketi de bundan türetilir
 function msgTsOfId(id) { const mt = /^msg-(\d{10,})-/.exec(id || ''); return mt ? parseInt(mt[1], 10) : null; }
-// Bekletilmiş mesaj geç ulaştığında Operatör kanalında kendi gönderim saatine uygun yere girer
-function placeByTime(el) {
-  const ts = msgTsOfId(el.id);
-  if (ts == null) return;
-  const list = chatArea.querySelectorAll('.msg[data-ch="op"]:not(.live-msg):not(.typing-msg)');
-  for (let i = 0; i < list.length; i++) {
-    const o = list[i];
-    if (o === el) continue;
-    const t = msgTsOfId(o.id);
-    if (t != null && t > ts) { chatArea.insertBefore(el, o); return; }
-  }
-}
-
 function layoutNicks() {
-  const chSt = {};
+  const cs = { prev: null, prevMedia: null };
   const midCand = [];
   const msgs = chatArea.getElementsByClassName('msg');
   for (let i = 0; i < msgs.length; i++) {
     const m = msgs[i];
     if (m._deleting) continue;
-    const cs = chSt[chOfEl(m)] || (chSt[chOfEl(m)] = { prev: null, prevMedia: null });
     let prev = cs.prev, prevMedia = cs.prevMedia;
     const nick = m._nick || '';
     const isMedia = !!m.dataset.mediaUrl;
@@ -5234,15 +5157,12 @@ function buildReplyContainer(replyData) {
   return replyContainer;
 }
 
-function appendMessage(text, senderNick, isOwnMessage, replyData = null, customId = null, persist = true, media = null, chOverride = null) {
+function appendMessage(text, senderNick, isOwnMessage, replyData = null, customId = null, persist = true, media = null) {
   const msgDiv = document.createElement('div');
   msgDiv.className = 'msg';
   const messageId = customId || 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
   msgDiv.id = messageId;
-  const mch = chNorm(chOverride != null ? chOverride : (isOwnMessage ? curCh : (rxCh || curCh)));
-  msgDiv.dataset.ch = mch;
   if (isOwnMessage) msgDiv.classList.add('own-msg');
-  if (!isOwnMessage && persist && mch !== curCh) markChUnread(mch);
 
   const rawNick = (senderNick && senderNick.trim() !== '') ? senderNick.trim() : '';
   const rn = resolveNick(rawNick);
@@ -5337,7 +5257,6 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
     syncYtCard(msgDiv, text, persist !== false);
   }
   chatArea.appendChild(msgDiv);
-  if (mch === 'op' && !isOwnMessage && rxLate) placeByTime(msgDiv);
   if (liveEl && liveEl.isConnected) chatArea.appendChild(liveEl);
   if (typingMsgEl && typingMsgEl.isConnected) chatArea.appendChild(typingMsgEl);
   { const ft = buildMsgFoot(msgDiv, messageId, !!isOwnMessage, 'msg'); if (ft) { msgDiv.appendChild(ft); msgDiv._foot = ft; } }
@@ -5345,7 +5264,7 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
   attachSwipeReply(msgDiv);
 
   let chMsgs;
-  while ((chMsgs = chatArea.querySelectorAll('.msg[data-ch="' + mch + '"]:not(.live-msg):not(.typing-msg)')).length > 200) {
+  while ((chMsgs = chatArea.querySelectorAll('.msg:not(.live-msg):not(.typing-msg)')).length > 200) {
     const oldest = chMsgs[0];
     if (oldest.dataset && oldest.dataset.mediaUrl) { try { URL.revokeObjectURL(oldest.dataset.mediaUrl); } catch (e) {} }
     { const yc = oldest.querySelector && oldest.querySelector('.yt-card'); if (yc && yc._destroy) yc._destroy(); }
@@ -5362,15 +5281,11 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
       nick: rawNick,
       own: !!isOwnMessage,
       id: messageId,
-      reply: media ? null : replyData,
-      ch: mch
+      reply: media ? null : replyData
     });
   }
 
-  if (mch !== curCh) {
-    // Görünmeyen kanala gelen mesaj: görünür kanalın kaydırma durumuna dokunma
-    if (!isOwnMessage) chView[mch].newMsg = true;
-  } else if (isOwnMessage || stickToBottom) {
+  if (isOwnMessage || stickToBottom) {
     stickToBottom = true;
     setTimeout(() => { chatArea.scrollTop = chatArea.scrollHeight; updateScrollBtn(); }, 30);
   } else {
@@ -5383,13 +5298,13 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
 function restoreHistory() {
   enforceHistoryLimit();
   readHistory().forEach(m => {
-    appendMessage(m.text, m.nick, m.own, m.reply, m.id, false, null, m.ch);
+    appendMessage(m.text, m.nick, m.own, m.reply, m.id, false, null);
     if (m.react) setReaction(document.getElementById(m.id), m.react.kind, m.react.mine);
   });
 }
 function restoreOutbox() {
   readOutbox().forEach((m) => {
-    if (!document.getElementById(m.id)) appendMessage(m.text, m.nick || '', true, m.reply || null, m.id, false, null, m.ch);
+    if (!document.getElementById(m.id)) appendMessage(m.text, m.nick || '', true, m.reply || null, m.id, false, null);
     setUndelivered(m.id, true);
   });
 }
@@ -5500,13 +5415,9 @@ function fitToViewport() {
   if (vv) {
     appEl.style.top = vv.offsetTop + 'px';
     appEl.style.height = vv.height + 'px';
-    settingsMenu.style.top = settingsBackdrop.style.top = vv.offsetTop + 'px';
-    settingsMenu.style.height = settingsBackdrop.style.height = vv.height + 'px';
   } else {
     appEl.style.top = '0px';
     appEl.style.height = window.innerHeight + 'px';
-    settingsMenu.style.top = settingsBackdrop.style.top = '0px';
-    settingsMenu.style.height = settingsBackdrop.style.height = window.innerHeight + 'px';
   }
 }
 
@@ -5531,7 +5442,7 @@ messageInput.addEventListener('input', (e) => {
   if (liveMode) return;
   if (isConnected() && !editingId) {
     const tn = fullNick();
-    if (!isTypingSent || tn !== lastTypingNick || Date.now() - lastTypingSentAt > 2000) { conn.send(chTag({ type: 'typing', senderNick: tn })); isTypingSent = true; lastTypingNick = tn; lastTypingSentAt = Date.now(); }
+    if (!isTypingSent || tn !== lastTypingNick || Date.now() - lastTypingSentAt > 2000) { conn.send({ type: 'typing', senderNick: tn }); isTypingSent = true; lastTypingNick = tn; lastTypingSentAt = Date.now(); }
     if (myTypingTimeout) clearTimeout(myTypingTimeout);
     myTypingTimeout = setTimeout(() => {
       if (isConnected()) conn.send({ type: 'typing-stop' });
@@ -5610,8 +5521,7 @@ function sendMessage() {
   const textToSend = messageInput.value.trim();
   const currentNick = fullNick();
   if (textToSend === '') return;
-  const offlineOp = !isConnected() && curCh === 'op';   // Operatör kanalı: bağlantı yoksa mesaj beklemeye alınır
-  if (!isConnected() && !offlineOp) { setStatus('Bağlı değil, mesaj gönderilmedi', false); return; }
+  if (!isConnected()) { setStatus('Bağlı değil, mesaj gönderilmedi', false); return; }
 
   if (myTypingTimeout) clearTimeout(myTypingTimeout);
   if (isTypingSent && isConnected()) conn.send({ type: 'typing-stop' });
@@ -5620,10 +5530,10 @@ function sendMessage() {
   const myMsgId = (liveMode && liveActive && liveId) ? liveId : 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
   liveActive = false;
   liveId = null;
-  if (isConnected()) conn.send(chTag({ text: textToSend, senderNick: currentNick, reply: replyingTo, msgId: myMsgId }));
+  conn.send({ text: textToSend, senderNick: currentNick, reply: replyingTo, msgId: myMsgId });
   appendMessage(textToSend, currentNick, true, replyingTo, myMsgId);
-  outboxAdd({ id: myMsgId, text: textToSend, nick: currentNick, reply: replyingTo ? JSON.parse(JSON.stringify(replyingTo)) : null, ts: Date.now(), ch: curCh });
-  if (offlineOp) setUndelivered(myMsgId, true); else scheduleUndelivered(myMsgId);
+  outboxAdd({ id: myMsgId, text: textToSend, nick: currentNick, reply: replyingTo ? JSON.parse(JSON.stringify(replyingTo)) : null, ts: Date.now() });
+  scheduleUndelivered(myMsgId);
   closeReplyBar();
   rearmViewerReply();
   messageInput.value = '';
@@ -5639,9 +5549,9 @@ function sendTextNow(text) {
   if (!text || !isConnected()) return false;
   const currentNick = fullNick();
   const myMsgId = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-  conn.send(chTag({ text: text, senderNick: currentNick, reply: null, msgId: myMsgId }));
+  conn.send({ text: text, senderNick: currentNick, reply: null, msgId: myMsgId });
   appendMessage(text, currentNick, true, null, myMsgId);
-  outboxAdd({ id: myMsgId, text: text, nick: currentNick, reply: null, ts: Date.now(), ch: curCh });
+  outboxAdd({ id: myMsgId, text: text, nick: currentNick, reply: null, ts: Date.now() });
   scheduleUndelivered(myMsgId);
   return true;
 }
@@ -6413,7 +6323,7 @@ confirmNo.addEventListener('click', () => closeConfirm(false));
 /* ===== Ses kaydı: gönder tuşunu basılı tut, bırakınca gönderilir (tuşun dışında bırakırsan iptal) ===== */
 let recLocked = false, recLockTapId = null;
 let recMR = null, recChunks = [], recSend = false, recStream = null, recAuto = null, recBeat = null, recT0 = 0;
-function sendRec(t) { try { if (conn && conn.open) conn.send(chTag({ type: t })); } catch (e) {} }
+function sendRec(t) { try { if (conn && conn.open) conn.send({ type: t }); } catch (e) {} }
 /* Kulaklık takılıyken kulaklık mikrofonunu kullanma: telefonun kendi mikrofonunu seç */
 function setAudSess(t) { try { if (navigator.audioSession) navigator.audioSession.type = t; } catch (e) {} }
 async function pickInternalMic() {
@@ -6446,7 +6356,7 @@ function recGuardStart() {
 async function startRec() {
   if (recMR) return;
   if (!window.MediaRecorder) { flashStatus('Bu tarayıcı ses kaydını desteklemiyor'); return; }
-  if (!isConnected() && curCh !== 'op') { flashStatus('Bağlı değil'); return; }
+  if (!isConnected()) { flashStatus('Bağlı değil'); return; }
   try {
     recHeld = true; songPauseForAudio(); // basar basmaz şarkıyı durdur
     setAudSess('play-and-record');
@@ -6606,7 +6516,7 @@ function audAdvance(a) {
   if (!a._fromOther || !a._msgDiv) return;
   if (curAud && curAud !== a && !curAud.paused) return;
   let n = a._msgDiv.nextElementSibling;
-  while (n && (!n.classList.contains('msg') || chOfEl(n) !== chOfEl(a._msgDiv))) n = n.nextElementSibling;
+  while (n && !n.classList.contains('msg')) n = n.nextElementSibling;
   if (!n || n.classList.contains('own-msg') || n.dataset.audio !== '1' || n.dataset.once === '1') return;
   const hd = n.querySelector('.aud-heard');
   if (hd && hd.style.display !== 'none') return; // zaten dinlenmişse tekrar çalma
@@ -6792,22 +6702,16 @@ function askAudio(blob, dur) {
 }
 async function sendAudio(blob, once, dur) {
   if (!isConnected()) {
-    if (curCh === 'op') {
-      const rep0 = replyingTo ? JSON.parse(JSON.stringify(replyingTo)) : null;
-      queueMedia({ kind: 'audio', file: blob, url: URL.createObjectURL(blob), once: !!once, dur: dur || 0, rep: rep0 });
-      return;
-    }
     flashStatus('Bağlı değil, ses gönderilmedi');
     return;
   }
-  const sch = curCh;
   try {
     const buf = await blob.arrayBuffer();
     const id = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
     const nick = fullNick();
     const rep = replyingTo ? JSON.parse(JSON.stringify(replyingTo)) : null; // yanıtlanan mesaj varsa ses de yanıt olarak gider
-    conn.send(chTag({ type: 'audio', buffer: buf, mime: blob.type, senderNick: nick, msgId: id, once: !!once, dur: dur || 0, reply: rep }, sch));
-    appendMessage('', nick, true, rep, id, true, { url: URL.createObjectURL(blob), audio: true, once: !!once, dur: dur || 0 }, sch);
+    conn.send({ type: 'audio', buffer: buf, mime: blob.type, senderNick: nick, msgId: id, once: !!once, dur: dur || 0, reply: rep });
+    appendMessage('', nick, true, rep, id, true, { url: URL.createObjectURL(blob), audio: true, once: !!once, dur: dur || 0 });
     if (rep) { closeReplyBar(); rearmViewerReply(); }
   } catch (e) { flashStatus('Ses gönderilemedi'); }
 }
@@ -6819,12 +6723,10 @@ async function sendImage(file, url, once) {
     return;
   }
   if (!isConnected()) {
-    if (curCh === 'op') { queueMedia({ kind: 'image', file: file, url: url, once: !!once }); return; }
     try { URL.revokeObjectURL(url); } catch (e) {}
     flashStatus('Bağlı değil, fotoğraf gönderilmedi');
     return;
   }
-  const sch = curCh;
   try {
     const buf = await readAsArrayBuffer(file);
     if (!isConnected()) throw new Error('baglanti yok');
@@ -6833,8 +6735,8 @@ async function sendImage(file, url, once) {
     pendingImageId = id;
     busyUntil = Date.now() + 20000 + (buf.byteLength / (100 * 1024)) * 1000;
     conn.send({ type: 'img-start', size: buf.byteLength });
-    conn.send(chTag({ type: 'image', buffer: buf, mime: file.type, senderNick: nick, msgId: id, once: !!once }, sch));
-    appendMessage('', nick, true, null, id, true, { url: url, once: !!once }, sch);
+    conn.send({ type: 'image', buffer: buf, mime: file.type, senderNick: nick, msgId: id, once: !!once });
+    appendMessage('', nick, true, null, id, true, { url: url, once: !!once });
     const el = document.getElementById(id);
     if (el) el.classList.add('img-pending');
     setStatus('Fotoğraf gönderiliyor...', true);
@@ -7249,7 +7151,7 @@ function findLastEditableOwn() {
   const msgs = chatArea.getElementsByClassName('msg');
   for (let i = msgs.length - 1; i >= 0; i--) {
     const m = msgs[i];
-    if (m.classList.contains('own-msg') && !m.dataset.mediaUrl && chOfEl(m) === curCh) return m;
+    if (m.classList.contains('own-msg') && !m.dataset.mediaUrl) return m;
   }
   return null;
 }
@@ -7380,18 +7282,18 @@ function attachSwipeReply(msgDiv) {
     const dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
     if (mode === null) {
       if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
-      mode = (dx < 0 && Math.abs(dx) > Math.abs(dy) * 1.2) ? 'h' : 'v';
+      mode = (dx > 0 && Math.abs(dx) > Math.abs(dy) * 1.2) ? 'h' : 'v';
       if (mode === 'h') msgDiv.style.transition = 'none';
     }
     if (mode !== 'h') return;
     if (e.cancelable) e.preventDefault();
     if (editTriggered) return;
-    tx = Math.max(-140, Math.min(0, dx));
+    tx = Math.max(0, Math.min(140, dx));
     msgDiv.style.transform = 'translateX(' + tx + 'px)';
-    msgDiv.style.opacity = String(1 - Math.min(1, -tx / 140) * 0.55);
+    msgDiv.style.opacity = String(1 - Math.min(1, tx / 140) * 0.55);
     // Kendi mesajımız kaydırılı şekilde ~0,3 sn bekletilirse düzenleme moduna geçer
     if (msgDiv.classList.contains('own-msg')) {
-      if (tx <= -70) {
+      if (tx >= 70) {
         if (!holdTimer) {
           holdTimer = setTimeout(() => {
             holdTimer = null;
@@ -7425,7 +7327,7 @@ function attachSwipeReply(msgDiv) {
       }
       return;
     }
-    const commit = e.type !== 'touchcancel' && tx <= -70;
+    const commit = e.type !== 'touchcancel' && tx >= 70;
     reset(true);
     if (commit && msgDiv.isConnected && !editingId) {
       if (navigator.vibrate) { try { navigator.vibrate(15); } catch (err) {} }
@@ -7467,44 +7369,13 @@ function attachSwipeReply(msgDiv) {
 
 function isMobileLayout() { return mqMobile.matches; }
 
-function settingsIsOpen() { return settingsMenu.classList.contains('open'); }
-const MENU_KEY = 'settingsOpen';
-let menuSaveMuted = false;
-function saveMenuState(open) {
-  if (menuSaveMuted || isMobileLayout()) return;
-  lsSet(MENU_KEY, open ? '1' : '0');
-}
-function openSettings() {
-  if (settingsIsOpen()) return;
-  if (isMobileLayout()) {
-    kbGuard = false; menuRestoreFocus = false;
-    const a = document.activeElement;
-    if (a && a !== document.body && a.blur) { try { a.blur(); } catch (e) {} }
-  }
-  settingsMenu.classList.add('open');
-  settingsBackdrop.classList.add('show');
-  document.body.classList.add('settings-open');
-  settingsBtn.classList.remove('unseen');
-  saveMenuState(true);
-}
-function closeSettings(skipFocus) {
-  const wasOpen = settingsIsOpen();
-  settingsMenu.classList.remove('open');
-  settingsBackdrop.classList.remove('show');
-  document.body.classList.remove('settings-open');
-  if (wasOpen) saveMenuState(false);
-  if (!skipFocus && wasOpen && isMobileLayout() && view === 'chat' && !messageInput.disabled) {
-    try { messageInput.focus({ preventScroll: true }); } catch (e) {}
-  }
-}
-
 function restartBadgeBlink(el) {
   if (!el || !(el.classList.contains('show') || el.classList.contains('unseen'))) return;
   el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
 }
 function updateBadges() {
   const mob = isMobileLayout();
-  newNotesBadge.classList.remove('show');
+  newNotesBadge.classList.toggle('show', mob && view === 'chat' && unreadNotes);
   newMsgBadge.classList.toggle('show', mob && view === 'notes' && unreadMsgs);
 }
 
@@ -7516,6 +7387,7 @@ function setView(v) {
   slider.classList.remove('dragging');
   slider.style.transform = (v === 'notes') ? 'translateX(-50%)' : 'translateX(0px)';
   if (v !== 'notes') unreadMsgs = false;
+  if (v === 'notes') unreadNotes = false;
   if (isMobileLayout() && changed) {
     kbGuard = false; menuRestoreFocus = false;
     if (kbCloseTimer) { clearTimeout(kbCloseTimer); kbCloseTimer = null; }
@@ -7539,7 +7411,11 @@ function noteIncomingMessage() {
   if (isMobileLayout() && view === 'notes') { unreadMsgs = true; updateBadges(); restartBadgeBlink(newMsgBadge); }
 }
 
+function noteIncomingNotif() {
+  if (isMobileLayout() && view === 'chat') { unreadNotes = true; updateBadges(); restartBadgeBlink(newNotesBadge); }
+}
 newMsgBadge.addEventListener('click', () => setView('chat'));
+newNotesBadge.addEventListener('click', () => setView('notes'));
 if (mqMobile.addEventListener) mqMobile.addEventListener('change', updateBadges);
 else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
 
@@ -7549,7 +7425,7 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
     st = null;
     if (!isMobileLayout() || e.touches.length !== 1) return;
     const tg = e.target;
-    if (tg && tg.closest && tg.closest('#live-toggle, #notes-btn, #bell-btn, #bell-pop, #nick-pal, #send-btn, input, textarea, #cancel-reply-btn')) return;
+    if (tg && tg.closest && tg.closest('#fab, #live-toggle, #notes-btn, #bell-pop, #nick-pal, #send-btn, input, textarea, #cancel-reply-btn')) return;
     const t = e.touches[0];
     st = { x: t.clientX, y: t.clientY, t0: Date.now(), mode: null, dx: 0 };
   }, { passive: true });
@@ -7562,26 +7438,13 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
       if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
       if (Math.abs(dx) > Math.abs(dy) * 1.2) {
         st.mode = 'h';
-        if (view === 'chat' && dx < 0) { st = null; return; }
-        if (view === 'chat' && dx > 0) {
-          st.menu = true;
-          settingsMenu.classList.add('dragging');
-          settingsBackdrop.classList.add('dragging');
-        } else {
-          slider.classList.add('dragging');
-        }
+        if (view === 'chat' && dx > 0) { st = null; return; }
+        slider.classList.add('dragging');
       }
       else { st.mode = 'v'; }
     }
     if (st.mode !== 'h') return;
     st.dx = dx;
-    if (st.menu) {
-      const M = settingsMenu.offsetWidth || 1;
-      const p = Math.max(0, Math.min(1, dx / M));
-      settingsMenu.style.transform = 'translateX(' + ((p - 1) * 100) + '%)';
-      settingsBackdrop.style.opacity = String(p);
-      return;
-    }
     const W = panes.clientWidth;
     const base = (view === 'notes') ? -W : 0;
     slider.style.transform = 'translateX(' + Math.max(-W, Math.min(0, base + dx)) + 'px)';
@@ -7591,17 +7454,6 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
     if (!st) return;
     const s = st; st = null;
     if (s.mode !== 'h') return;
-    if (s.menu) {
-      const M = settingsMenu.offsetWidth || 1;
-      const dtm = Math.max(1, Date.now() - s.t0);
-      const commit = e.type !== 'touchcancel' && (s.dx > M * 0.35 || (s.dx > 40 && s.dx / dtm > 0.4));
-      settingsMenu.classList.remove('dragging');
-      settingsBackdrop.classList.remove('dragging');
-      settingsMenu.style.transform = '';
-      settingsBackdrop.style.opacity = '';
-      if (commit) openSettings();
-      return;
-    }
     const W = panes.clientWidth;
     const dt = Math.max(1, Date.now() - s.t0);
     const fast = Math.abs(s.dx) > 40 && Math.abs(s.dx) / dt > 0.4;
@@ -7684,7 +7536,7 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
     }).observe(chatArea, { childList: true });
     // Bildirim / not / ayar simgeleri ve yan panel "yeni" işaretleri: kapalıdan açığa geçtiği an
     const watchCls = [
-      ['notes-btn', 'unseen'], ['bell-btn', 'unseen'], ['settings-btn', 'unseen'],
+      ['notes-btn', 'unseen'],
       ['pane-notes', 'pane-unseen'], ['new-notes-badge', 'show'], ['new-msg-badge', 'show']
     ];
     watchCls.forEach(([id, cls]) => {
@@ -7760,7 +7612,7 @@ function layoutPopFor(notesPop, notesBtn) {
   if (!notesPop.classList.contains('show')) return;
   const ar = appEl.getBoundingClientRect();
   const pos = notesBtn.dataset.pos || 'top';
-  const sbr = statusBar.getBoundingClientRect();
+  const sbr = document.getElementById('fab-main').getBoundingClientRect();
   const top = Math.round(sbr.bottom - ar.top) + 4;
   const st = notesPop.style;
   let size;
@@ -7794,9 +7646,9 @@ function layoutPopFor(notesPop, notesBtn) {
     const rightGap = (deskPane ? Math.max(0, Math.round(ar.right - pcr.right)) : 0) + 8;
     size = Math.min(340, baseW * 0.88, sbr.top - ar.top - 8);
     size = Math.max(140, Math.floor(size));
-    st.top = 'auto'; st.left = 'auto';
-    st.bottom = (Math.round(ar.bottom - sbr.top) + 4) + 'px';
-    st.right = rightGap + 'px';
+    st.top = 'auto'; st.right = 'auto';
+    st.bottom = (Math.round(ar.bottom - sbr.top) + 8) + 'px';
+    st.left = Math.max(4, Math.round(sbr.left - ar.left)) + 'px';
   } else {
     const bottomEdge = inputArea.getBoundingClientRect().top - ar.top;
     size = Math.min(340, ar.width * 0.88, bottomEdge - top - 8);
@@ -7814,24 +7666,74 @@ function layoutPopFor(notesPop, notesBtn) {
   }
 }
 function layoutNotesPop() {
-  layoutPopFor(notesPop, notesBtn); layoutPopFor(bellPop, bellBtn);
+  layoutPopFor(notesPop, notesBtn);
 }
+(function initFab() {
+  const fab = document.getElementById('fab'), main = document.getElementById('fab-main'), ring = document.getElementById('fab-ring');
+  let holdT = null, held = false;
+  function layoutItems() {
+    const items = Array.prototype.filter.call(ring.children, (el) => getComputedStyle(el).display !== 'none');
+    const n = items.length, R = 84;
+    items.forEach((el, i) => {
+      const a = (n === 1 ? 45 : 90 - (90 / (n - 1)) * i) * Math.PI / 180;
+      el.style.setProperty('--fx', Math.round(R * Math.cos(a)) + 'px');
+      el.style.setProperty('--fy', Math.round(-R * Math.sin(a)) + 'px');
+    });
+  }
+  function openFab() {
+    layoutItems();
+    fab.classList.add('open');
+    try { navigator.vibrate(15); } catch (e) {}
+  }
+  function closeFab() { fab.classList.remove('open'); }
+  // Masaüstü: fareyle üzerine gelmek yeter; menü ve tuşlarının dışına çıkınca kısa gecikmeyle kapanır
+  let hoverT = null;
+  fab.addEventListener('pointerenter', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    clearTimeout(hoverT); hoverT = null;
+    if (!fab.classList.contains('open')) openFab();
+  });
+  fab.addEventListener('pointerleave', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    clearTimeout(hoverT);
+    hoverT = setTimeout(() => { hoverT = null; closeFab(); }, 300);
+  });
+  main.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse') { e.preventDefault(); return; }
+    e.preventDefault();
+    held = false;
+    clearTimeout(holdT);
+    if (fab.classList.contains('open')) { closeFab(); held = true; return; }
+    holdT = setTimeout(() => { holdT = null; held = true; openFab(); }, 320);
+  });
+  const stop = () => { clearTimeout(holdT); holdT = null; };
+  main.addEventListener('pointerup', stop);
+  main.addEventListener('pointercancel', stop);
+  main.addEventListener('pointerleave', stop);
+  main.addEventListener('mousedown', (e) => e.preventDefault());   // odak (klavye) kaçmasın
+  main.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+  main.addEventListener('contextmenu', (e) => e.preventDefault());
+  // Bir tuşa basılıp bırakılınca menü kapanır; menü dışına basmak da kapatır
+  ring.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') setTimeout(closeFab, 140); });
+  document.addEventListener('pointerdown', (e) => {
+    if (!fab.classList.contains('open')) return;
+    if (fab.contains(e.target)) return;
+    closeFab();
+  }, true);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFab(); });
+})();
 // Tuş şeridinin yerini seç: hem mobilde hem masaüstünde, isim kutusu görünür de gizli de olsa şerit en altta (renk şeridi varsa onun üstünde, mesaj kutusunun üstünde); dinamik mesaj tuşu şeridin en sağında.
 function placeNotesBtn() {
   const pos = 'top';
   document.body.classList.toggle('sb-bottom', true);
   const paneChatEl = document.getElementById('pane-chat');
-  // Sohbet panelinin içinde, renk şeridinin (varsa) ve mesaj kutusunun üstünde
-  if (statusBar.nextElementSibling !== typingIndicator) paneChatEl.insertBefore(statusBar, typingIndicator);
-  if (notesBtn.dataset.pos !== pos) {
-    notesBtn.dataset.pos = pos;
-    bellBtn.dataset.pos = pos;
-    statusBar.appendChild(notesBtn);
-    notesBtn.insertAdjacentElement('afterend', bellBtn);
-  }
-  // Dinamik mesaj tuşu: tuş şeridinin en sağı
-  const lt = document.getElementById('live-toggle');
-  if (lt && (lt.parentNode !== statusBar || statusBar.lastElementChild !== lt)) statusBar.appendChild(lt);
+  notesBtn.dataset.pos = pos;
+  // Dört tuş yüzen menünün halkasına taşınır (kimlikleri ve işleyicileri aynı kalır)
+  const ring = document.getElementById('fab-ring');
+  ['eye-btn', 'refresh-btn', 'notes-btn', 'live-toggle'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el && el.parentNode !== ring) { el.classList.add('fab-item'); ring.appendChild(el); }
+  });
   layoutNotesPop();
 }
 function enterPopEdit() {
@@ -7941,8 +7843,7 @@ function receiveNotif(d) {
   notifList.push({ id: id, t: n.t.slice(0, 120), b: n.b.slice(0, 2000), at: Date.now(), own: false, pending: false });
   trimNotifs();
   ackNotif(id, false);
-  if (!bellPop.classList.contains('show')) bellBtn.classList.add('unseen');
-  else renderNotifs();
+  if (bellPop.classList.contains('show')) renderNotifs();
   bpMarkUnread(0);
 }
 function receiveNotifDel(d) {
@@ -7976,7 +7877,6 @@ function openBellPop() {
   renderNotifs();
   renderCards();
   document.getElementById('bp-list').scrollTop = 0;
-  bellBtn.classList.remove('unseen');
   layoutNotesPop();
 }
 let bellMsgHad = false; // + basıldığında mesaj kutusunda klavye odağı var mıydı
@@ -8228,7 +8128,6 @@ function receiveCardState(d) {
     if (nw || rn) cmpPeerClear();
     trimCards(); cardPersist();
     if (bellPop.classList.contains('show')) renderCards();
-    else if (nw || rn) bellBtn.classList.add('unseen');
     if (nw || rn) bpMarkUnread(1);
   }
   if (d.h) cardSyncSoon(false); // karşı taraf yeni bağlandı: kendi durumumu da yolla, ikisi de aynı hâle gelsin
@@ -8397,7 +8296,6 @@ function receiveThird(d, isHello) {
   const rpNew = !isHello && !isNew && (c.rp || []).some((r) => !(prev.rp || []).some((q) => q.id === r.id));
   if (isNew || rpNew) cmpPeerClear();
   if (bellPop.classList.contains('show')) renderCards();
-  else if (isNew || rpNew) bellBtn.classList.add('unseen');
   if (isNew || rpNew) bpMarkUnread(2);
 }
 (function loadThird() {
@@ -8711,7 +8609,7 @@ function cmpPeerClear() {
   cmpSync();
 }
 function cmpBubble(on) {
-  const b = document.querySelector('#bell-btn .cmp-bub');
+  const b = document.querySelector('#pane-chat .cmp-bub');
   if (!b) return;
   if (on) {
     if (cmpBubTimer) { clearTimeout(cmpBubTimer); cmpBubTimer = null; }
@@ -8731,7 +8629,7 @@ function cmpDropBox() {
   cmpBox = null; cmpBoxKey = '';
 }
 function cmpSync() {
-  if (!cmpRem && !cmpBox && !(document.querySelector('#bell-btn .cmp-bub.show'))) return;
+  if (!cmpRem && !cmpBox && !(document.querySelector('#pane-chat .cmp-bub.show'))) return;
   if (!cmpRem) { cmpDropBox(); cmpBubble(false); return; }
   const k = cmpRem.k, id = cmpRem.id;
   const open = bellPop.classList.contains('show') && !bellPop.classList.contains('composing') && bpPage === cmpPageOf(k, id);
@@ -8859,8 +8757,7 @@ function receiveCard(d) {
   if (!r.ch) return;
   if (r.nw || r.rn) cmpPeerClear();
   trimCards(); cardPersist();
-  if (!bellPop.classList.contains('show')) bellBtn.classList.add('unseen');
-  else renderCards();
+  if (bellPop.classList.contains('show')) renderCards();
   if (r.nw || r.rn) bpMarkUnread(1);
 }
 // Yanıt ekleme (6687): 3. sayfada gönderiyle birlikte revizyonla, 2. sayfada 'card-reply' ile karşıya gider. En yeni üstte, en fazla 3; 4. yanıtla en eskisi silinir
@@ -9135,12 +9032,12 @@ function closeCardCompose() {
 })();
 
 /* Bildirim penceresi: altta Bildirim | Keşfet | Oluştur sekmeleri; mobilde ayrıca sağa/sola kaydırarak geçiş. Son seçilen sayfa hatırlanır */
-let bpPage = (() => { const v = parseInt(lsGet('bpPage') || '0', 10); return (v >= 0 && v <= 2) ? v : 0; })();
-const BP_PAGES = 3;
-const bpUnread = [false, false, false];
+let bpPage = (() => { const v = parseInt(lsGet('bpPage') || '0', 10); return (v >= 0 && v <= 3) ? v : 0; })();
+const BP_PAGES = 4;
+const bpUnread = [false, false, false, false];
 function bpDots() { document.querySelectorAll('.bp-tab').forEach((b, i) => b.classList.toggle('new', !!bpUnread[i])); }
 // Seçili olmayan sayfaya yeni gönderi gelirse o sekmenin köşesinde kırmızı nokta çıkar
-function bpMarkUnread(i) { if (i === bpPage) return; bpUnread[i] = true; bpDots(); }
+function bpMarkUnread(i) { try { noteIncomingNotif(); } catch (e) {} if (i === bpPage) return; bpUnread[i] = true; bpDots(); }
 function bpSetPage(p, instant) {
   p = Math.max(0, Math.min(BP_PAGES - 1, p));
   if (instant) bellPop.classList.add('no-anim');
@@ -9233,7 +9130,7 @@ function bpSetPage(p, instant) {
     const open = notesPop.classList.contains('show');
     if (!open) return;
     const t = e.target;
-    if (!t || !t.closest || t.closest('#notes-pop, #bell-pop, #notes-btn, #bell-btn')) return;
+    if (!t || !t.closest || t.closest('#notes-pop, #bell-pop, #notes-btn')) return;
     if (t.closest('#chat-area')) swallowClickUntil = Date.now() + 800;
   }, true);
   document.addEventListener('click', (e) => {
@@ -9294,7 +9191,7 @@ function bpSetPage(p, instant) {
   npEdit.addEventListener('input', () => { lastQInput = Date.now(); commitQNoteFromEdit(); });
   // Üst şeritteki boş alana basılınca notlar kapanır ve alttaki mesaj kutusu klavyeyle birlikte açılır
   const isEmptyStatusArea = (t) => !!(t && t.closest && t.closest('#status-bar') &&
-    !t.closest('#eye-btn, #refresh-btn, #settings-btn, #notes-btn, #bell-btn, #auto-chip'));
+    !t.closest('#eye-btn, #refresh-btn, #notes-btn, #auto-chip'));
   let refocusUntil = 0;
   document.addEventListener('pointerdown', (e) => {
     if (!notesPop.classList.contains('show')) return;
@@ -9399,24 +9296,6 @@ function bpSetPage(p, instant) {
       document.getElementById('bp-list').scrollTop = 0;
     });
   })();
-  // Bildirim çanı (yalnızca mobil): kısa basış = sağ paneli (bildirimler) aç/kapat
-  let bellDown = false;
-  bellBtn.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-    e.preventDefault();
-    bellDown = true;
-  });
-  bellBtn.addEventListener('pointerup', () => {
-    if (!bellDown) return;
-    bellDown = false;
-    if (!isMobileLayout()) return;
-    closeNotesPop();
-    setView(view === 'notes' ? 'chat' : 'notes');
-  });
-  bellBtn.addEventListener('pointercancel', () => { bellDown = false; });
-  bellBtn.addEventListener('mousedown', (e) => e.preventDefault());
-  bellBtn.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
-  bellBtn.addEventListener('contextmenu', (e) => e.preventDefault());
   window.addEventListener('resize', layoutNotesPop);
   if (window.visualViewport) window.visualViewport.addEventListener('resize', layoutNotesPop);
   if (window.ResizeObserver) { const ro = new ResizeObserver(layoutNotesPop); ro.observe(inputArea); ro.observe(appEl); ro.observe(typingIndicator); }
@@ -9445,7 +9324,6 @@ function bpSetPage(p, instant) {
   const isField = (el) => !!(el && el.closest && el.closest(FIELD));
   function overlayOpen() {
     if (document.documentElement.classList.contains('pin-locked')) return true;
-    if (settingsMenu.classList.contains('open')) return true;
     const ids = ['viewer', 'confirm-modal', 'photo-src-modal', 'ytsearch-modal', 'reset-modal', 'refresh-modal', 'codes-modal', 'stor-modal', 'idle-modal', 'privacy-cover'];
     for (let i = 0; i < ids.length; i++) { const el = document.getElementById(ids[i]); if (el && el.classList.contains('show')) return true; }
     if (document.getElementById('bp-compose').classList.contains('show')) return true;
@@ -9516,92 +9394,6 @@ function bpSetPage(p, instant) {
   }, true);
   document.addEventListener('pointerup', (e) => { lastPtr = Date.now(); if (!onArrow(e.target)) restoreSoon(); });
   document.addEventListener('click', (e) => { if (!onArrow(e.target)) restoreSoon(); });
-})();
-
-(function initSettingsMenu() {
-  // Ayarlar simgesine basılı tutunca diğer kanala geçer (yalnızca 6687 PIN'i ile girenlerde, her zaman)
-  let lpTimer = 0, lpFired = false;
-  const lpClear = () => { if (lpTimer) { clearTimeout(lpTimer); lpTimer = 0; } };
-  settingsBtn.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-    lpFired = false; lpClear();
-    // Yalnızca 6687 ile girenler kullanabilir (3828 ile girenler hiç kullanamaz); simge yanıp sönmese de her zaman çalışır
-    let lpLive = false;
-    try { lpLive = sessionStorage.getItem('pinLive') === '1'; } catch (err) {}
-    if (!lpLive) return;
-    const target = curCh === 'op' ? 'main' : 'op';
-    lpTimer = setTimeout(() => {
-      lpTimer = 0;
-      if (curCh === target) return;
-      lpFired = true;
-      switchChannel(target);
-      startChCooldown();
-      if (isMobileLayout() && view !== 'chat') setView('chat');
-      try { navigator.vibrate(20); } catch (err) {}
-    }, 500);
-  });
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => settingsBtn.addEventListener(t, lpClear));
-  settingsBtn.addEventListener('contextmenu', (e) => { if (lpFired || lpTimer) e.preventDefault(); });
-  settingsBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (lpFired) { lpFired = false; return; }   // uzun basış kanal değiştirdi, menü açılmasın
-    if (settingsIsOpen()) closeSettings(); else openSettings();
-  });
-  settingsBackdrop.addEventListener('click', () => closeSettings());
-  settingsBtn.addEventListener('pointerdown', (e) => { if (!isMobileLayout()) e.preventDefault(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && settingsIsOpen()) closeSettings(); });
-  const onMq = () => {
-    menuSaveMuted = true;
-    try { closeSettings(true); } finally { menuSaveMuted = false; }
-    if (!isMobileLayout() && lsGet(MENU_KEY) === '1') openSettings();
-  };
-  if (mqMobile.addEventListener) mqMobile.addEventListener('change', onMq);
-  else if (mqMobile.addListener) mqMobile.addListener(onMq);
-
-  // Sola kaydırarak kapat: menünün üstünden de, sağdaki boş (karartılmış) alandan da çalışır
-  let sx = 0, sy = 0, sT = 0, mode = null, dxNow = 0, tracking = false;
-  function dragStart(e) {
-    if (e.touches.length !== 1 || !settingsIsOpen()) { tracking = false; return; }
-    sx = e.touches[0].clientX; sy = e.touches[0].clientY; sT = Date.now();
-    mode = null; dxNow = 0; tracking = true;
-  }
-  function dragMove(e) {
-    if (!tracking) return;
-    const dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
-    if (mode === null) {
-      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
-      if (dx < 0 && Math.abs(dx) > Math.abs(dy) * 1.2) {
-        mode = 'h';
-        settingsMenu.classList.add('dragging');
-        settingsBackdrop.classList.add('dragging');
-      } else { mode = 'v'; }
-    }
-    if (mode !== 'h') return;
-    if (e.cancelable) e.preventDefault();
-    const M = settingsMenu.offsetWidth || 1;
-    dxNow = Math.max(-M, Math.min(0, dx));
-    settingsMenu.style.transform = 'translateX(' + dxNow + 'px)';
-    settingsBackdrop.style.opacity = String(1 + dxNow / M);
-  }
-  function dragEnd(e) {
-    if (!tracking) return;
-    tracking = false;
-    if (mode !== 'h') return;
-    const M = settingsMenu.offsetWidth || 1;
-    const dt = Math.max(1, Date.now() - sT);
-    const commit = e.type !== 'touchcancel' && (-dxNow > M * 0.35 || (-dxNow > 40 && -dxNow / dt > 0.4));
-    settingsMenu.classList.remove('dragging');
-    settingsBackdrop.classList.remove('dragging');
-    settingsMenu.style.transform = '';
-    settingsBackdrop.style.opacity = '';
-    if (commit) closeSettings();
-  }
-  [settingsMenu, settingsBackdrop].forEach((el) => {
-    el.addEventListener('touchstart', dragStart, { passive: true });
-    el.addEventListener('touchmove', dragMove, { passive: false });
-    el.addEventListener('touchend', dragEnd);
-    el.addEventListener('touchcancel', dragEnd);
-  });
 })();
 
 (function initLiveModeSetting() {
@@ -9740,7 +9532,7 @@ function bpSetPage(p, instant) {
 // Açıkken her tuşa çok hafif titreşim (yalnızca mobil görünüm)
 (function initTapHaptics() {
   const SEL = 'button:not(:disabled), [role="button"], [role="switch"], [role="option"], .seg-btn, .set-title, ' +
-    '#settings-btn, #eye-btn, #refresh-btn, #notes-btn, #bell-btn, #auto-chip-x, #live-toggle, ' +
+    '#eye-btn, #refresh-btn, #notes-btn, #auto-chip-x, #live-toggle, ' +
     '#scroll-down-btn, #send-btn, #cancel-reply-btn, #privacy-eye, #viewer-close, #viewer-dl, #bp-add, .bp-del, ' +
     '#bp-actions span, .new-badge, .once-btn, #confirm-once-row, #photo-src-box button, #reset-check-row, .ncg-item, ' +
     '.msg-act, .react-add, .react-pick button, .react-chip.mine, .cm-item, .pin-key:not(.ghost)';
@@ -9749,7 +9541,7 @@ function bpSetPage(p, instant) {
     const t = e.target;
     if (!t || !t.closest) return;
     if (t.closest('#nick-pal')) return;           // renk paletinin kendi tıkırtısı var
-    const inMenu = !!t.closest('#settings-menu');
+    const inMenu = !!t.closest('#settings-scroll');
     if (inMenu !== fromClick) return;            // ayarlar menüsü kaydırılabilir: orada tık anında, diğerlerinde dokunuş anında
     if (!t.closest(SEL)) return;
     try { navigator.vibrate(8); } catch (err) {}
@@ -9906,26 +9698,33 @@ function bpSetPage(p, instant) {
   // Mobil: isim kutusuna basılı tut, parmağı renge kaydır, bırakınca o renk seçilir
   (function palLongPress() {
     let lpT = null, lpX = 0, lpY = 0, held = false, wasFocused = false;
+    function openHold() {
+      if (held || !palCanShow()) return;
+      held = true;
+      nickInput.classList.add('pal-hold');
+      try { const sel = window.getSelection && window.getSelection(); if (sel) sel.removeAllRanges(); } catch (err) {}
+      palShow();
+      try { navigator.vibrate(15); } catch (err) {}
+    }
     nickInput.addEventListener('touchstart', (e) => {
       clearTimeout(lpT); lpT = null; held = false;
       if (e.touches.length !== 1) return;
       const t = e.touches[0];
       lpX = t.clientX; lpY = t.clientY;
       wasFocused = document.activeElement === nickInput;
-      lpT = setTimeout(() => {
-        lpT = null;
-        if (!palCanShow()) return;
-        held = true;
-        nickInput.classList.add('pal-hold');
-        try { const sel = window.getSelection && window.getSelection(); if (sel) sel.removeAllRanges(); } catch (err) {}
-        palShow();
-        try { navigator.vibrate(15); } catch (err) {}
-      }, 380);
+      lpT = setTimeout(() => { lpT = null; openHold(); }, 380);
     }, { passive: true });
     nickInput.addEventListener('touchmove', (e) => {
       const t = e.touches[0];
       if (!t) return;
-      if (lpT && Math.hypot(t.clientX - lpX, t.clientY - lpY) > 12) { clearTimeout(lpT); lpT = null; }
+      const mdx = t.clientX - lpX, mdy = t.clientY - lpY;
+      // Basılı tutmadan, doğrudan yukarı sürükleyince de palet açılır (klavye açık/kapalı durumu korunur)
+      if (!held && mdy < -10 && Math.abs(mdy) > Math.abs(mdx) * 1.2) {
+        clearTimeout(lpT); lpT = null;
+        openHold();
+        if (held) { nickSwipeAt = Date.now(); if (e.cancelable) e.preventDefault(); palTrack(t.clientX, t.clientY); return; }
+      }
+      if (lpT && Math.hypot(mdx, mdy) > 12) { clearTimeout(lpT); lpT = null; }
       if (held) { if (e.cancelable) e.preventDefault(); palTrack(t.clientX, t.clientY); }
     }, { passive: false });
     function end(e, commit) {
@@ -9982,14 +9781,6 @@ function bpSetPage(p, instant) {
     markGrid();
   }
   window.syncNickColorUI = markSelected;
-})();
-
-(function restoreMenuState() {
-  if (isMobileLayout() || lsGet(MENU_KEY) !== '1' || !document.body.classList.contains('has-menu')) return;
-  document.body.classList.add('no-anim');
-  openSettings();
-  void settingsMenu.offsetWidth;
-  requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove('no-anim')));
 })();
 
 renderQNote();
@@ -10211,7 +10002,7 @@ function receiveLeap(d) {
 (function () {
   const KEY = 'settingsCollapsed';
   let closed = [];
-  const blocks = Array.from(document.querySelectorAll('#settings-menu .set-block'));
+  const blocks = Array.from(document.querySelectorAll('#settings-scroll .set-block'));
   const idOf = (b, i) => b.id || ('blk-' + i);
   // Durum yalnızca uygulama içi yenile tuşuyla yenilemede korunur; diğer tüm açılışlarda hepsi kapalı.
   let keep = false, saved = null;
@@ -10240,7 +10031,7 @@ function receiveLeap(d) {
 })();
 /* ---- Grup başlığında seçili ayarın kısa adı ---- */
 (function () {
-  const menu = document.getElementById('settings-menu');
+  const menu = document.getElementById('settings-scroll');
   function update() {
     menu.querySelectorAll('.set-block').forEach((b) => {
       const v = b.querySelector('.set-val');
@@ -10252,138 +10043,6 @@ function receiveLeap(d) {
   update();
   new MutationObserver(update).observe(menu, { attributes: true, attributeFilter: ['class'], subtree: true });
 })();
-/* ---- Operatör kanalı: bağlantı yokken fotoğraf/ses beklemeye alınır ve bağlantı gelince gönderim saatiyle gider.
-   Yazılı mesajlar sayfa yenilense de saklanır; fotoğraf/ses ise sayfa yenilenene kadar bellekte bekler. ---- */
-const mediaOutbox = [];
-let mediaFlushing = false;
-function queueMedia(e) {
-  e.id = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-  e.nick = fullNick();
-  mediaOutbox.push(e);
-  appendMessage('', e.nick, true, e.rep || null, e.id, true,
-    e.kind === 'audio' ? { url: e.url, audio: true, once: !!e.once, dur: e.dur || 0 } : { url: e.url, once: !!e.once }, 'op');
-  setUndelivered(e.id, true);
-  if (e.rep) { closeReplyBar(); rearmViewerReply(); }
-}
-function mediaAcked(id) {
-  if (typeof id !== 'string') return;
-  const i = mediaOutbox.findIndex((m) => m.id === id);
-  if (i < 0) return;
-  mediaOutbox.splice(i, 1);
-  setUndelivered(id, false);
-}
-async function flushMediaOutbox() {
-  if (mediaFlushing) return;
-  mediaFlushing = true;
-  try {
-    for (const m of mediaOutbox.slice()) {
-      if (!isConnected()) break;
-      if (mediaOutbox.indexOf(m) < 0) continue;
-      const buf = m.kind === 'audio' ? await m.file.arrayBuffer() : await readAsArrayBuffer(m.file);
-      if (!isConnected()) break;
-      if (m.kind === 'audio') {
-        conn.send({ type: 'audio', buffer: buf, mime: m.file.type, senderNick: m.nick, msgId: m.id, once: !!m.once, dur: m.dur || 0, reply: m.rep || null, ch: 'op', late: true });
-      } else {
-        conn.send({ type: 'img-start', size: buf.byteLength });
-        conn.send({ type: 'image', buffer: buf, mime: m.file.type, senderNick: m.nick, msgId: m.id, once: !!m.once, ch: 'op', late: true });
-      }
-    }
-  } catch (e) {} finally { mediaFlushing = false; }
-}
-
-/* ---- Kanallar: ayarlar menüsündeki Operatör / Geri Dön tuşu ---- */
-// 3828 şifresiyle girenler için: kanal tuşunu kullandıktan sonra 15 sn geri sayım, dolmadan tuş çalışmaz
-let chCdUntil = 0, chCdTimer = 0;
-function chCdLeft() { return chCdUntil > Date.now() ? Math.ceil((chCdUntil - Date.now()) / 1000) : 0; }
-function startChCooldown() {
-  if (!thirdCanSend()) return;
-  chCdUntil = Date.now() + 15000;
-  if (chCdTimer) clearInterval(chCdTimer);
-  chCdTimer = setInterval(() => {
-    if (!chCdLeft()) { clearInterval(chCdTimer); chCdTimer = 0; }
-    updateChBtn();
-  }, 250);
-  updateChBtn();
-}
-function updateChBtn() {
-  const btn = document.getElementById('op-btn');
-  if (!btn) return;
-  const lb = btn.querySelector('span');
-  const left = chCdLeft();
-  if (lb) lb.textContent = (curCh === 'op' ? 'Geri Dön' : 'Operatör') + (left ? ' (' + left + ')' : '');
-  btn.classList.toggle('cooling', !!left);
-  btn.classList.toggle('unread', !!chUnread[curCh === 'op' ? 'main' : 'op']);
-}
-function markChUnread(ch) {
-  if (ch === curCh) return;
-  chUnread[ch] = true;
-  // Menü kapalıysa ayarlar simgesi sarı yanıp söner; menü açılınca yerini Operatör tuşundaki nokta alır
-  if (!settingsIsOpen()) settingsBtn.classList.add('unseen');
-  updateChBtn();
-}
-function switchChannel(ch) {
-  ch = chNorm(ch);
-  if (ch === curCh) return;
-  if (editingId) endEdit();
-  closeReplyBar();
-  stopLive();
-  if (isTypingSent) {
-    if (myTypingTimeout) { clearTimeout(myTypingTimeout); myTypingTimeout = null; }
-    if (isConnected()) { try { conn.send({ type: 'typing-stop' }); } catch (e) {} }
-    isTypingSent = false;
-  }
-  chView[curCh].top = chatArea.scrollTop;
-  chView[curCh].atBottom = stickToBottom;
-  curCh = ch;
-  chatArea.classList.toggle('ch-op', ch === 'op');
-  chUnread[ch] = false;
-  if (!chUnread.main && !chUnread.op) settingsBtn.classList.remove('unseen');
-  applyChatEnabled(chatConnUp || curCh === 'op');
-  if (!chatConnUp && curCh !== 'op') setPlaceholder('Bağlantı bekleniyor...');
-  updateChBtn();
-  const v = chView[ch];
-  if (v.atBottom) { stickToBottom = true; chatArea.scrollTop = chatArea.scrollHeight; }
-  else { stickToBottom = false; chatArea.scrollTop = v.top; }
-  scrollDownBtn.classList.toggle('has-new', !v.atBottom && v.newMsg);
-  v.newMsg = false;
-  layoutNicks();
-  updateScrollBtn();
-}
-(function initChannelBtn() {
-  const btn = document.getElementById('op-btn');
-  if (!btn) return;
-  const go = () => {
-    if (chCdLeft()) return;   // 15 sn dolmadan basılamaz
-    switchChannel(curCh === 'op' ? 'main' : 'op');
-    startChCooldown();
-    if (isMobileLayout()) {
-      if (view !== 'chat') setView('chat');
-      closeSettings();
-    }
-  };
-  // Dokunuşu 'click' yerine pointerdown/pointerup ile yakala (zil/not tuşlarıyla aynı düzen): klavye kapanırken menü
-  // yüksekliği değişip tuş kayınca 'click' hiç oluşmuyor ve ilk basış boşa gidiyordu.
-  let opDown = false, opLastUp = 0;
-  btn.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-    e.preventDefault();          // odak mesaj kutusundan çalınmaz
-    opDown = true;
-  });
-  btn.addEventListener('pointerup', () => {
-    if (!opDown) return;
-    opDown = false;
-    opLastUp = Date.now();
-    go();
-  });
-  btn.addEventListener('pointercancel', () => { opDown = false; });
-  btn.addEventListener('click', () => {
-    if (Date.now() - opLastUp < 600) return;   // pointerup zaten işledi, çift tetiklenmesin
-    go();
-  });
-  btn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
-  updateChBtn();
-})();
-
 // Masaüstü: kaydırma çubuğuna tıklanınca/sürüklenince mesaj kutusunun odağı kaybolmasın
 (function keepFocusOnScrollbar() {
   const input = document.getElementById('message-input');
