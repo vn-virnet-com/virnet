@@ -84,16 +84,20 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 #auto-chip-x { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 22px; height: 22px; margin: 0 -4px 0 0; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #auto-chip-x:active { background: var(--c-1a); }
 #status-bar { display: none !important; }
-/* Yüzen yardım menüsü: basılı tutunca çevresinde göz / yenile / not / dinamik mesaj tuşları açılır */
-#fab { position: absolute; left: 12px; bottom: 12px; width: 46px; height: 46px; z-index: 21; }
+/* Yüzen menü: sürüklenebilir; basılı tutunca/üstüne gelince tuşlar GTA tarzı pasta dilimleri olarak merkeze bitişik açılır */
+#fab { position: absolute; left: 12px; top: 0; width: 46px; height: 46px; z-index: 21; }
 body.once-viewing #fab { display: none !important; }
-#fab-main { position: absolute; left: 0; top: 0; width: 46px; height: 46px; border-radius: 50%; box-sizing: border-box; background: var(--c-1a); border: 1px solid var(--c-44); color: var(--c-88); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(var(--sh),0.6); touch-action: none; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; transition: transform .15s ease, color .15s ease; }
-#fab.open #fab-main { transform: scale(0.92); color: var(--c-fff); }
+#fab-main { position: absolute; left: 0; top: 0; width: 46px; height: 46px; border-radius: 50%; box-sizing: border-box; background: var(--c-1a); border: 1px solid var(--c-44); color: var(--c-88); display: flex; align-items: center; justify-content: center; cursor: grab; box-shadow: 0 2px 10px rgba(var(--sh),0.6); touch-action: none; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; transition: transform .15s ease, color .15s ease; z-index: 2; }
+#fab.open #fab-main { transform: scale(0.9); color: var(--c-fff); }
+#fab.dragging #fab-main { cursor: grabbing; transform: scale(1.08); color: var(--c-fff); }
 #fab-main svg { display: block; pointer-events: none; }
-#fab-ring { position: absolute; left: 0; top: 0; width: 46px; height: 46px; pointer-events: none; }
-#fab-ring > .fab-item { position: absolute !important; left: 3px; top: 3px; width: 40px; height: 40px; box-sizing: border-box; padding: 0 !important; margin: 0 !important; align-items: center; justify-content: center; border-radius: 50%; background: var(--c-1a); border: 1px solid var(--c-44); box-shadow: 0 2px 10px rgba(var(--sh),0.6); opacity: 0; pointer-events: none; transform: translate(0, 0) scale(0.4); transition: transform .18s cubic-bezier(.2,.9,.3,1.2), opacity .15s ease; }
-#fab-ring > #eye-btn, #fab-ring > #refresh-btn, #fab-ring > #notes-btn { display: flex; }
-#fab.open #fab-ring > .fab-item { opacity: 1; pointer-events: auto; transform: translate(var(--fx, 0px), var(--fy, 0px)) scale(1); }
+#fab-ring { position: absolute; left: 0; top: 0; width: 46px; height: 46px; pointer-events: none; z-index: 1; }
+#fab-ring > .fab-item { position: absolute !important; left: calc(23px - var(--R, 104px)); top: calc(23px - var(--R, 104px)); width: calc(var(--R, 104px) * 2); height: calc(var(--R, 104px) * 2); box-sizing: border-box; padding: 0 !important; margin: 0 !important; background: var(--c-22); color: var(--c-88); opacity: 0; pointer-events: none; transform: scale(0.55); transform-origin: 50% 50%; transition: transform .18s cubic-bezier(.2,.9,.3,1.15), opacity .14s ease, background .1s ease, color .1s ease; }
+#fab-ring > #eye-btn, #fab-ring > #refresh-btn, #fab-ring > #notes-btn { display: block; }
+#fab-ring > .fab-item > svg { position: absolute; left: var(--ix, 50%); top: var(--iy, 50%); transform: translate(-50%, -50%); }
+#fab.open #fab-ring > .fab-item { opacity: 1; pointer-events: auto; transform: scale(1); }
+#fab.open.touchsel #fab-ring > .fab-item { pointer-events: none; }
+#fab-ring > .fab-item:hover, #fab-ring > .fab-item.hot { background: var(--c-44); color: var(--c-fff); }
 @media (prefers-reduced-motion: reduce) { #fab-ring > .fab-item, #fab-main { transition: none; } }
 #status-left { display: flex; align-items: center; }
 #refresh-btn { cursor: pointer; display: inline-flex; align-items: center; padding: 8px 13px 8px 0; margin: -8px 0; color: var(--c-88); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -1517,10 +1521,10 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 <div id="pane-chat" class="pane">
 <span class="cmp-bub" aria-hidden="true"><i></i><i></i><i></i></span>
 <div id="new-notes-badge" class="new-badge"><span>Yeni</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
+<div id="fab"><div id="fab-ring"></div><div id="fab-main" title="Menü" aria-label="Menü"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2" fill="currentColor"></circle></svg></div></div>
 <div id="chat-wrap">
   <div id="chat-area"></div>
   <div id="auto-chip" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span class="ac-txt">Oto. Oynat</span><button type="button" id="auto-chip-x" aria-label="Otomatik oynatmayı kapat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-  <div id="fab"><div id="fab-ring"></div><div id="fab-main" title="Menü (basılı tut)" aria-label="Yardım menüsü"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.5-3 4.5"></path><line x1="12" y1="17.5" x2="12" y2="17.6"></line></svg></div></div>
   <div id="scroll-down-btn" title="En son mesaja git">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
   </div>
@@ -7638,16 +7642,13 @@ function layoutPopFor(notesPop, notesBtn) {
     st.top = top + 'px'; st.bottom = 'auto'; st.right = 'auto';
     st.left = left + 'px';
   } else if (document.body.classList.contains('sb-bottom')) {
-    // Şerit mesaj kutusunun üstüne indiğinde pencere şeridin üstünden yukarı açılır
-    // Masaüstünde sohbet paneli ekranın yalnızca bir kısmı: genişlik ve sağ kenar panele göre hesaplanır
-    const pcr = document.getElementById('pane-chat').getBoundingClientRect();
-    const deskPane = !isMobileLayout();
-    const baseW = deskPane ? pcr.width : ar.width;
-    const rightGap = (deskPane ? Math.max(0, Math.round(ar.right - pcr.right)) : 0) + 8;
-    size = Math.min(340, baseW * 0.88, sbr.top - ar.top - 8);
-    size = Math.max(140, Math.floor(size));
-    st.top = 'auto'; st.right = 'auto';
-    st.bottom = (Math.round(ar.bottom - sbr.top) + 8) + 'px';
+    // Yüzen menünün yanında açılır: menü ekranın üst yarısındaysa altına, değilse üstüne
+    const below = (sbr.top + sbr.bottom) / 2 < (ar.top + ar.bottom) / 2;
+    const room = below ? (ar.bottom - sbr.bottom - 8) : (sbr.top - ar.top - 8);
+    size = Math.max(140, Math.floor(Math.min(340, ar.width * 0.88, room)));
+    st.right = 'auto';
+    if (below) { st.bottom = 'auto'; st.top = (Math.round(sbr.bottom - ar.top) + 8) + 'px'; }
+    else { st.top = 'auto'; st.bottom = (Math.round(ar.bottom - sbr.top) + 8) + 'px'; }
     st.left = Math.max(4, Math.round(sbr.left - ar.left)) + 'px';
   } else {
     const bottomEdge = inputArea.getBoundingClientRect().top - ar.top;
@@ -7670,50 +7671,184 @@ function layoutNotesPop() {
 }
 (function initFab() {
   const fab = document.getElementById('fab'), main = document.getElementById('fab-main'), ring = document.getElementById('fab-ring');
-  let holdT = null, held = false;
-  function layoutItems() {
-    const items = Array.prototype.filter.call(ring.children, (el) => getComputedStyle(el).display !== 'none');
-    const n = items.length, R = 84;
-    items.forEach((el, i) => {
-      const a = (n === 1 ? 45 : 90 - (90 / (n - 1)) * i) * Math.PI / 180;
-      el.style.setProperty('--fx', Math.round(R * Math.cos(a)) + 'px');
-      el.style.setProperty('--fy', Math.round(-R * Math.sin(a)) + 'px');
+  const paneEl = document.getElementById('pane-chat');
+  const S = 46, R1 = 27, TAU = Math.PI * 2;
+  let slices = [], R2 = 104, hotEl = null, dragging = false, hoverT = null;
+  let pos = null;
+  try { const o = JSON.parse(localStorage.getItem('fabPos') || 'null'); if (o && isFinite(o.fx) && isFinite(o.fy)) pos = { fx: Math.min(1, Math.max(0, o.fx)), fy: Math.min(1, Math.max(0, o.fy)) }; } catch (e) {}
+  function paneSize() { return { W: paneEl.clientWidth, H: paneEl.clientHeight }; }
+  function placeFab() {
+    const z = paneSize();
+    if (!z.W || !z.H) return;
+    let l, t;
+    if (pos) { l = pos.fx * (z.W - S); t = pos.fy * (z.H - S); }
+    else {
+      l = 12;
+      const ir = inputArea.getBoundingClientRect(), pr = paneEl.getBoundingClientRect();
+      t = (ir.height ? ir.top - pr.top : z.H) - S - 12;
+    }
+    l = Math.max(0, Math.min(z.W - S, l)); t = Math.max(0, Math.min(z.H - S, t));
+    fab.style.left = Math.round(l) + 'px'; fab.style.top = Math.round(t) + 'px';
+    try { layoutNotesPop(); } catch (e) {}
+  }
+  function setCenter(cx, cy, save) {
+    const z = paneSize(), pr = paneEl.getBoundingClientRect();
+    const l = Math.max(0, Math.min(z.W - S, cx - pr.left - S / 2)), t = Math.max(0, Math.min(z.H - S, cy - pr.top - S / 2));
+    fab.style.left = Math.round(l) + 'px'; fab.style.top = Math.round(t) + 'px';
+    if (save) {
+      pos = { fx: z.W > S ? l / (z.W - S) : 0, fy: z.H > S ? t / (z.H - S) : 0 };
+      try { localStorage.setItem('fabPos', JSON.stringify(pos)); } catch (e) {}
+    }
+    try { layoutNotesPop(); } catch (e) {}
+  }
+  function center() { const r = main.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
+  if (window.ResizeObserver) { const ro = new ResizeObserver(placeFab); ro.observe(paneEl); ro.observe(inputArea); }
+  window.addEventListener('resize', placeFab);
+  setTimeout(placeFab, 0);
+
+  function visibleItems() { return Array.prototype.filter.call(ring.children, (el) => getComputedStyle(el).display !== 'none'); }
+  // Kenara/köşeye yakınsa dilimler zıt yöne dizilir (yarım / çeyrek daire); ortadaysa tam daire
+  function layoutWheel() {
+    const items = visibleItems(), n = items.length;
+    if (!n) { slices = []; return; }
+    const c = center(), pr = paneEl.getBoundingClientRect();
+    const need = 112;
+    const tl = c.x - pr.left < need, tr = pr.right - c.x < need, tt = c.y - pr.top < need, tb = pr.bottom - c.y < need;
+    let nx = (tl ? 1 : 0) - (tr ? 1 : 0), ny = (tt ? 1 : 0) - (tb ? 1 : 0);
+    let span = TAU, mid = -Math.PI / 2;
+    if (nx !== 0 && ny !== 0) { span = Math.PI / 2; mid = Math.atan2(ny, nx); }
+    else if (nx !== 0 || ny !== 0) { span = Math.PI; mid = Math.atan2(ny, nx); }
+    R2 = span <= Math.PI / 2 + 0.01 ? 128 : 104;
+    ring.style.setProperty('--R', R2 + 'px');
+    const start = (span === TAU) ? -Math.PI / 2 - (TAU / n) / 2 + (TAU / n) / 2 : mid - span / 2;
+    const step = span / n, gap = 3 / ((R1 + R2) / 2);
+    slices = items.map((el, i) => {
+      const a0 = start + i * step, a1 = a0 + step;
+      const b0 = a0 + gap / 2, b1 = a1 - gap / 2;
+      const pts = [];
+      const k = Math.max(2, Math.ceil((b1 - b0) / 0.07));
+      for (let j = 0; j <= k; j++) { const a = b0 + (b1 - b0) * j / k; pts.push((R2 + R2 * Math.cos(a)).toFixed(1) + 'px ' + (R2 + R2 * Math.sin(a)).toFixed(1) + 'px'); }
+      for (let j = k; j >= 0; j--) { const a = b0 + (b1 - b0) * j / k; pts.push((R2 + R1 * Math.cos(a)).toFixed(1) + 'px ' + (R2 + R1 * Math.sin(a)).toFixed(1) + 'px'); }
+      const cp = 'polygon(' + pts.join(',') + ')';
+      el.style.clipPath = cp; el.style.webkitClipPath = cp;
+      const am = (b0 + b1) / 2, rm = (R1 + R2) / 2;
+      el.style.setProperty('--ix', (R2 + rm * Math.cos(am)).toFixed(1) + 'px');
+      el.style.setProperty('--iy', (R2 + rm * Math.sin(am)).toFixed(1) + 'px');
+      return { el: el, a0: a0, a1: a1 };
     });
   }
   function openFab() {
-    layoutItems();
+    clearTimeout(hoverT); hoverT = null;
+    layoutWheel();
+    setHot(null);
     fab.classList.add('open');
-    try { navigator.vibrate(15); } catch (e) {}
+    try { navigator.vibrate(12); } catch (e) {}
   }
-  function closeFab() { fab.classList.remove('open'); }
-  // Masaüstü: fareyle üzerine gelmek yeter; menü ve tuşlarının dışına çıkınca kısa gecikmeyle kapanır
-  let hoverT = null;
+  function closeFab() { fab.classList.remove('open', 'touchsel'); setHot(null); }
+  function setHot(el) {
+    if (hotEl === el) return;
+    if (hotEl) hotEl.classList.remove('hot');
+    hotEl = el;
+    if (el) { el.classList.add('hot'); try { navigator.vibrate(6); } catch (e) {} }
+  }
+  function sliceAt(x, y) {
+    const c = center(), dx = x - c.x, dy = y - c.y, d = Math.hypot(dx, dy);
+    if (d < R1 || d > R2 + 30) return null;
+    const a = Math.atan2(dy, dx);
+    for (const sl of slices) {
+      let diff = (a - sl.a0) % TAU; if (diff < 0) diff += TAU;
+      if (diff <= (sl.a1 - sl.a0)) return sl.el;
+    }
+    return null;
+  }
+  function trigger(el) {
+    if (!el) return;
+    if (el.id === 'notes-btn') {
+      const o = { bubbles: true, cancelable: true, pointerType: 'touch', button: 0 };
+      el.dispatchEvent(new PointerEvent('pointerdown', o));
+      el.dispatchEvent(new PointerEvent('pointerup', o));
+    } else { el.click(); }
+  }
+
+  // Masaüstü: üzerine gelince açılır, fareyle dilimlere gidilip tıklanır; dışına çıkınca kısa gecikmeyle kapanır
   fab.addEventListener('pointerenter', (e) => {
-    if (e.pointerType !== 'mouse') return;
+    if (e.pointerType !== 'mouse' || dragging) return;
     clearTimeout(hoverT); hoverT = null;
     if (!fab.classList.contains('open')) openFab();
   });
   fab.addEventListener('pointerleave', (e) => {
-    if (e.pointerType !== 'mouse') return;
+    if (e.pointerType !== 'mouse' || dragging) return;
     clearTimeout(hoverT);
     hoverT = setTimeout(() => { hoverT = null; closeFab(); }, 300);
   });
+
+  // Dokunma/fare: tuşa basınca (mobilde anında) dilimler açılır; basılı tutup dilime sürükleyip bırakmak seçer.
+  // Dilimlerin dışına (halkadan uzağa) sürüklemek menüyü taşır.
+  let down = null;
   main.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'mouse') { e.preventDefault(); return; }
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault();
-    held = false;
-    clearTimeout(holdT);
-    if (fab.classList.contains('open')) { closeFab(); held = true; return; }
-    holdT = setTimeout(() => { holdT = null; held = true; openFab(); }, 320);
+    try { main.setPointerCapture(e.pointerId); } catch (err) {}
+    const c = center();
+    down = { id: e.pointerId, type: e.pointerType, x: e.clientX, y: e.clientY, ox: e.clientX - c.x, oy: e.clientY - c.y, moved: false, wasOpen: fab.classList.contains('open'), mode: e.pointerType === 'mouse' ? 'mouse' : 'wheel' };
+    if (e.pointerType !== 'mouse') {
+      if (down.wasOpen) { closeFab(); down.consumed = true; return; }
+      openFab();
+      fab.classList.add('touchsel');
+    }
   });
-  const stop = () => { clearTimeout(holdT); holdT = null; };
-  main.addEventListener('pointerup', stop);
-  main.addEventListener('pointercancel', stop);
-  main.addEventListener('pointerleave', stop);
+  main.addEventListener('pointermove', (e) => {
+    if (!down || e.pointerId !== down.id) return;
+    const dist = Math.hypot(e.clientX - down.x, e.clientY - down.y);
+    if (down.consumed) return;
+    if (dist > 6) down.moved = true;
+    if (down.mode === 'mouse') {
+      if (down.moved) {
+        down.mode = 'move'; dragging = true;
+        closeFab(); fab.classList.add('dragging');
+      } else return;
+    }
+    if (down.mode === 'wheel') {
+      const c = center(), d = Math.hypot(e.clientX - c.x, e.clientY - c.y);
+      if (d > R2 + 30) {
+        down.mode = 'move'; dragging = true;
+        closeFab(); fab.classList.add('dragging');
+        down.ox = 0; down.oy = 0;
+      } else { setHot(sliceAt(e.clientX, e.clientY)); return; }
+    }
+    if (down.mode === 'move') {
+      const c = center();
+      const tx = e.clientX - down.ox, ty = e.clientY - down.oy;
+      // Dokunmada merkez parmağa yumuşakça yaklaşır (ani zıplama olmasın)
+      const k = down.type === 'mouse' ? 1 : 0.45;
+      setCenter(c.x + (tx - c.x) * k, c.y + (ty - c.y) * k, false);
+    }
+  });
+  function finish(e, cancel) {
+    if (!down || e.pointerId !== down.id) return;
+    const d = down; down = null;
+    try { main.releasePointerCapture(e.pointerId); } catch (err) {}
+    fab.classList.remove('touchsel');
+    if (d.consumed) return;
+    if (d.mode === 'move') {
+      dragging = false; fab.classList.remove('dragging');
+      setCenter(e.clientX - d.ox, e.clientY - d.oy, !cancel);
+      if (cancel) placeFab();
+      return;
+    }
+    if (d.mode === 'wheel') {
+      const el = cancel ? null : hotEl;
+      if (el) { closeFab(); trigger(el); }
+      else if (d.moved) closeFab();      // dilim seçilmeden bırakıldı: iptal
+      // hareketsiz kısa dokunuş: menü açık kalır, dilimlere dokunulabilir
+    }
+  }
+  main.addEventListener('pointerup', (e) => finish(e, false));
+  main.addEventListener('pointercancel', (e) => finish(e, true));
   main.addEventListener('mousedown', (e) => e.preventDefault());   // odak (klavye) kaçmasın
   main.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
   main.addEventListener('contextmenu', (e) => e.preventDefault());
-  // Bir tuşa basılıp bırakılınca menü kapanır; menü dışına basmak da kapatır
+  // Açık menüde bir dilime doğrudan dokunulunca (sürüklemeden) menü kapanır; menü dışına basmak da kapatır
   ring.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') setTimeout(closeFab, 140); });
   document.addEventListener('pointerdown', (e) => {
     if (!fab.classList.contains('open')) return;
