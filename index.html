@@ -1396,6 +1396,51 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 .cf-cat .z .tl{animation:none}
 @keyframes cf-br{to{transform:scaleY(1.05)}}
 .cf-z{position:absolute;font:700 10px/1 'Lexend',sans-serif;color:var(--c-fff,#fff);pointer-events:none;opacity:0;white-space:nowrap}
+
+/* ===== Uzun basma: mesaj öne çıkar, arka plan bulanır, seçenekler isimleriyle menü olur ===== */
+@media (hover: none), (pointer: coarse) {
+  .msg, .msg * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+}
+#lp-overlay {
+  position: fixed; left: 0; top: 0; z-index: 25000; overflow: hidden;
+  background: rgba(0, 0, 0, 0.38); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  opacity: 0; transition: opacity 0.18s ease; touch-action: none;
+  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+#lp-overlay.on { opacity: 1; }
+.lp-stage { position: absolute; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; max-width: calc(100% - 20px); }
+.lp-stage.own { align-items: flex-end; }
+.lp-stage .msg.lp-clone { position: relative; margin: 0; pointer-events: none; animation: lp-pop 0.22s cubic-bezier(.2, .9, .3, 1.15) both; transform-origin: 0 100%; }
+.lp-stage.own .msg.lp-clone { transform-origin: 100% 100%; }
+.lp-stage .msg.lp-clone::before { display: none; }
+.lp-stage .msg.lp-clone .bubble { transition: none; }
+.lp-react {
+  display: grid; grid-template-columns: repeat(3, 44px); gap: 2px; padding: 6px; border-radius: var(--r-xl); background: var(--c-1a);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45); animation: lp-pop 0.22s cubic-bezier(.2, .9, .3, 1.15) both; transform-origin: 0 100%;
+}
+.lp-stage.own .lp-react { transform-origin: 100% 100%; }
+.lp-react button {
+  width: 42px; height: 42px; padding: 0; border: 0; border-radius: 50%; background: transparent; font-size: 26px; line-height: 1;
+  cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.12s ease, background-color 0.15s ease;
+}
+.lp-react button:active { transform: scale(0.8); background: color-mix(in srgb, var(--c-fff) 12%, transparent); }
+.lp-menu {
+  display: flex; flex-direction: column; min-width: 224px; overflow: hidden; border-radius: var(--r-xl); background: var(--c-1a);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45); transform-origin: 0 0; animation: lp-drop 0.22s cubic-bezier(.2, .9, .3, 1.1) both;
+}
+.lp-stage.own .lp-menu { transform-origin: 100% 0; }
+.lp-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; box-sizing: border-box; min-height: 46px; padding: 0 16px;
+  border: 0; background: transparent; color: var(--c-fff); font: 400 16px 'Lexend', sans-serif; text-align: left; cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.lp-item + .lp-item { border-top: 1px solid color-mix(in srgb, var(--c-fff) 10%, transparent); }
+.lp-item:active { background: color-mix(in srgb, var(--c-fff) 12%, transparent); }
+.lp-item svg { width: 18px; height: 18px; flex: 0 0 auto; display: block; pointer-events: none; }
+.lp-item.danger { color: var(--dng); }
+@keyframes lp-pop { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes lp-drop { 0% { opacity: 0; transform: translateY(-12px) scale(0.88); } 100% { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .lp-stage .msg.lp-clone, .lp-react, .lp-menu { animation: none; } #lp-overlay { transition: none; } }
 </style>
 </head>
 <body>
@@ -2120,9 +2165,16 @@ const MEDIA_PLACEHOLDER = '[Burada bir medya içeriği vardı]';
 const HEARTS = {
   red:   '\u2665\uFE0F',
   pink:  String.fromCodePoint(0x1FA77),
-  white: String.fromCodePoint(0x1F90D)
+  white: String.fromCodePoint(0x1F90D),
+  love:  String.fromCodePoint(0x1F970),
+  sob:   String.fromCodePoint(0x1F62D),
+  melt:  String.fromCodePoint(0x1FAEA),
+  skull: String.fromCodePoint(0x1F480),
+  mid:   String.fromCodePoint(0x1F595),
+  thumb: String.fromCodePoint(0x1F44D)
 };
 const HEART_KINDS = Object.keys(HEARTS);
+const HEART_PICK = ['red', 'pink', 'white']; // yandaki küçük seçici yalnızca kalpleri gösterir; 9'lu seçim uzun basma menüsünde
 
 function sanitizeEntry(e) {
   if (!e || typeof e !== 'object' || typeof e.text !== 'string') return null;
@@ -3497,7 +3549,7 @@ function buildReactSlot(msgDiv, own) {
     core.appendChild(add);
     const pick = document.createElement('div');
     pick.className = 'react-pick';
-    HEART_KINDS.forEach((k) => {
+    HEART_PICK.forEach((k) => {
       const hb = document.createElement('button');
       hb.type = 'button'; hb.textContent = HEARTS[k];
       ['pointerdown', 'mousedown'].forEach((t) => hb.addEventListener(t, (e) => e.preventDefault()));
@@ -3520,7 +3572,7 @@ function placeSlot(msg) {
   const r = slot.getBoundingClientRect();
   void slot.offsetWidth;
   slot.style.transition = '';
-  const W = HEART_KINDS.length * 30 + 4;
+  const W = HEART_PICK.length * 30 + 4;
   const own = msg.classList.contains('own-msg');
   // Çapa kenarı sabit: gelen mesajda sağ kenar, kendi mesajımızda sol kenar; kalpler diğer yana doğru açılır
   const fl = own ? r.left : r.right - W;
@@ -11261,6 +11313,167 @@ function switchChannel(ch) {
 })();
 
 cdAnimRestore();
+
+/* ===== Uzun basma: mesaj öne çıkar, arka plan bulanır, seçenekler isimleriyle menü olur ===== */
+(function longPressMenu() {
+  const LP_MS = 420, LP_MOVE = 10;
+  const SKIP = 'a, input, textarea, select, .react-slot, .msg-foot';
+  let timer = null, sx = 0, sy = 0, fired = false, lpAt = 0;
+  let ov = null, openedAt = 0, wasFocused = false, watch = null;
+
+  function cancelTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+  function makeClone(m) {
+    const wrap = document.createElement('div');
+    wrap.className = 'msg lp-clone';
+    ['own-msg', 'no-nick', 'yt-only', 'chip-msg', 'undelivered'].forEach((c) => { if (m.classList.contains(c)) wrap.classList.add(c); });
+    const b = m._bubble.cloneNode(true);
+    b.classList.remove('pop');
+    b.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+    b.querySelectorAll('iframe, audio, video, script').forEach((n) => n.remove());
+    // Arka arkaya mesajda gizlenen gönderen ismi, yalnızca burada görünür (sohbetteki halini değiştirmez)
+    const h = b.querySelector(':scope > .hdr-row');
+    if (h) h.style.display = '';
+    wrap.appendChild(b);
+    wrap.style.maxWidth = Math.min(chatArea.clientWidth * 0.78, 720) + 'px';
+    return wrap;
+  }
+
+  function actionsFor(m) {
+    const own = m.classList.contains('own-msg');
+    const isChip = m.classList.contains('chip-msg');
+    const isMedia = !!m.dataset.mediaUrl;
+    const list = [];
+    if (editingId === m.id) {
+      list.push({ label: 'Düzenlemeyi iptal et', icon: MA_ICONS.close, run: () => { if (editingId === m.id) endEdit(); } });
+      return list;
+    }
+    if (!editingId && m._doReply) list.push({ label: 'Yanıtla', icon: MA_ICONS.reply, run: () => { if (m.isConnected && !editingId) m._doReply(); } });
+    if (!isMedia && !isChip && m._raw && m._raw.text) list.push({ label: 'Kopyala', icon: MA_ICONS.copy, run: () => copyText(m._raw.text) });
+    if (own && !isMedia && !isChip && !editingId) list.push({ label: 'Düzenle', icon: MA_ICONS.edit, run: () => { if (m.isConnected && !editingId) startEdit(m); } });
+    if (m._reaction && m._reaction.mine) list.push({ label: 'Tepkiyi kaldır', icon: MA_ICONS.heart, run: () => removeMyReaction(m.id) });
+    if (own) list.push({ label: 'Sil', icon: MA_ICONS.del, cls: 'danger', run: () => deleteOwnMessage(m.id) });
+    return list;
+  }
+
+  function open(m) {
+    const acts = actionsFor(m);
+    const own = m.classList.contains('own-msg');
+    const canReact = !own && !m.classList.contains('chip-msg') && !m._reaction && !!m._slot;
+    if (!acts.length && !canReact) return;
+    fired = true; lpAt = Date.now(); openedAt = lpAt;
+    if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
+    try { closeActs(null); } catch (e) {}
+
+    ov = document.createElement('div');
+    ov.id = 'lp-overlay';
+    const vv = window.visualViewport;
+    const vTop = vv ? vv.offsetTop : 0, vLeft = vv ? vv.offsetLeft : 0;
+    const vH = vv ? vv.height : window.innerHeight, vW = vv ? vv.width : window.innerWidth;
+    ov.style.top = vTop + 'px'; ov.style.left = vLeft + 'px'; ov.style.width = vW + 'px'; ov.style.height = vH + 'px';
+
+    const rect = (m._bubble || m).getBoundingClientRect();
+    const stage = document.createElement('div');
+    stage.className = 'lp-stage' + (own ? ' own' : '');
+
+    let react = null;
+    if (canReact) {
+      react = document.createElement('div');
+      react.className = 'lp-react';
+      HEART_KINDS.forEach((k) => {
+        const hb = document.createElement('button');
+        hb.type = 'button'; hb.textContent = HEARTS[k];
+        hb.addEventListener('click', (e) => { e.stopPropagation(); if (Date.now() - openedAt < 350) return; addReaction(m.id, k); close(true); });
+        react.appendChild(hb);
+      });
+      stage.appendChild(react);
+    }
+    const clone = makeClone(m);
+    stage.appendChild(clone);
+    let menu = null;
+    if (acts.length) {
+      menu = document.createElement('div');
+      menu.className = 'lp-menu';
+      acts.forEach((a) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'lp-item' + (a.cls ? ' ' + a.cls : '');
+        const sp = document.createElement('span'); sp.textContent = a.label;
+        b.appendChild(sp);
+        b.insertAdjacentHTML('beforeend', a.icon);
+        b.addEventListener('click', (e) => { e.stopPropagation(); if (Date.now() - openedAt < 350) return; a.run(); close(true); });
+        menu.appendChild(b);
+      });
+      stage.appendChild(menu);
+    }
+    ov.appendChild(stage);
+    document.body.appendChild(ov);
+
+    // Yerleşim: baloncuk olduğu yerde kalır (isim satırı eklendiyse yukarı doğru büyür), menü aşağı açılır; sığmazsa grup kaydırılır
+    if (own) stage.style.right = Math.max(10, vW - (rect.right - vLeft)) + 'px';
+    else stage.style.left = Math.max(10, rect.left - vLeft) + 'px';
+    const G = 8;
+    const rh = react ? react.offsetHeight + G : 0;
+    const mh = menu ? menu.offsetHeight + G : 0;
+    let cH = clone.offsetHeight;
+    const padT = 14, padB = 14;
+    const avail = vH - padT - padB;
+    if (rh + cH + mh > avail) {
+      cH = Math.max(80, avail - rh - mh);
+      clone.style.maxHeight = cH + 'px'; clone.style.overflow = 'hidden';
+    }
+    const total = rh + cH + mh;
+    let top = (rect.bottom - vTop) - cH - rh;
+    if (top + total > vH - padB) top = vH - padB - total;
+    if (top < padT) top = padT;
+    stage.style.top = Math.round(top) + 'px';
+
+    ov.addEventListener('click', () => { if (Date.now() - openedAt < 350) return; close(true); });
+    ['pointerdown', 'mousedown'].forEach((t) => ov.addEventListener(t, (e) => e.preventDefault())); // yazma kutusunun odağı gitmesin
+    ov.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+    ov.addEventListener('contextmenu', (e) => e.preventDefault());
+    requestAnimationFrame(() => { if (ov) ov.classList.add('on'); });
+    watch = setInterval(() => { if (!m.isConnected || !ov) close(false); }, 300);
+  }
+
+  function close(restoreFocus) {
+    if (!ov) return;
+    const o = ov; ov = null;
+    clearInterval(watch); watch = null;
+    o.classList.remove('on');
+    setTimeout(() => { if (o.parentNode) o.parentNode.removeChild(o); }, 190);
+    if (restoreFocus && wasFocused && typeof focusInputForReply === 'function') focusInputForReply();
+  }
+
+  chatArea.addEventListener('touchstart', (e) => {
+    cancelTimer(); fired = false;
+    if (ov || e.touches.length !== 1) return;
+    const t = e.target;
+    const m = t && t.closest ? t.closest('.msg') : null;
+    if (!m || !m._bubble || m._deleting || m.classList.contains('deleting') || m.classList.contains('typing-msg') || m.classList.contains('live-msg')) return;
+    if (t.closest(SKIP)) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+    wasFocused = document.activeElement === messageInput;
+    timer = setTimeout(() => { timer = null; if (m.isConnected && !ov) open(m); }, LP_MS);
+  }, { capture: true, passive: true });
+  chatArea.addEventListener('touchmove', (e) => {
+    if (!timer) return;
+    const t = e.touches[0];
+    if (Math.abs(t.clientX - sx) > LP_MOVE || Math.abs(t.clientY - sy) > LP_MOVE) cancelTimer();
+  }, { capture: true, passive: true });
+  const endTouch = (e) => {
+    cancelTimer();
+    // Parmak kalkınca oluşacak sahte 'tıklama' menüyü hemen kapatmasın / baloncuğa dokunmuş sayılmasın
+    if (fired && e.cancelable) e.preventDefault();
+  };
+  chatArea.addEventListener('touchend', endTouch, { capture: true, passive: false });
+  chatArea.addEventListener('touchcancel', endTouch, { capture: true, passive: false });
+  chatArea.addEventListener('click', (e) => { if (Date.now() - lpAt < 700) { e.stopPropagation(); e.preventDefault(); } }, true);
+  chatArea.addEventListener('contextmenu', (e) => { if (ov || Date.now() - lpAt < 1500 || timer) e.preventDefault(); });
+  document.addEventListener('keydown', (e) => { if (ov && e.key === 'Escape') close(true); });
+  window.addEventListener('orientationchange', () => close(false));
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { if (ov && Date.now() - openedAt > 600) close(false); });
+})();
 </script>
 </body>
 </html>
