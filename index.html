@@ -164,9 +164,10 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
   opacity: 0; pointer-events: none; transition: opacity 0.15s ease;
 }
 .msg.own-msg .msg-acts { left: auto; right: 0; flex-direction: row-reverse; }
-.msg.acts-on .msg-acts { opacity: 1; pointer-events: auto; }
-@media (hover: hover) and (pointer: fine) {
-  .msg:hover .msg-acts { opacity: 1; pointer-events: auto; }
+/* Tek satırlık mesajlarda tuşlar saatin yanında, aynı satırda yan yana durur */
+.msg.time-mid .msg-acts { position: static; bottom: auto; padding-bottom: 0; }
+.msg.acts-on .msg-acts, .msg.hov .msg-acts, .msg-foot.pick-open .msg-acts { opacity: 1; pointer-events: auto; }
+@media (any-hover: hover) {
   /* Mesajın bulunduğu satırın tamamı üzerine gelmeyi sayar; fare tuşlara giderken kapanmaz */
   .msg::before { content: ''; position: absolute; top: 0; bottom: 0; left: -100vw; right: -100vw; }
 }
@@ -181,20 +182,22 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 .msg-act:active { transform: scale(0.86); }
 .msg-act.heart.open { color: var(--c-fff); }
 .msg-act.danger.confirm { color: var(--dng); background: color-mix(in srgb, var(--dng) 18%, transparent); }
+/* Tepki tuşu: basılınca yerinde genişleyip seçenekleri yanında gösterir */
+.heart-group { display: inline-flex; align-items: center; border-radius: 12px; transition: background-color 0.2s ease; }
+.msg-foot.pick-open .heart-group { background: color-mix(in srgb, var(--c-fff) 10%, transparent); }
+.msg-foot.pick-open .heart-group .msg-act.heart:hover { background: transparent; }
 .heart-pick {
-  position: absolute; bottom: 100%; right: 0; margin-bottom: 2px; display: flex; align-items: center;
-  padding: 2px; border-radius: 15px; background: var(--c-26); box-shadow: 0 2px 8px rgba(var(--sh), 0.5);
-  opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 0.18s ease, transform 0.18s ease; z-index: 5;
+  display: flex; align-items: center; max-width: 0; overflow: hidden; opacity: 0; pointer-events: none;
+  transition: max-width 0.24s cubic-bezier(.22, .61, .36, 1), opacity 0.18s ease;
 }
-.msg.own-msg .heart-pick { right: auto; left: 0; }
-.msg-foot.pick-open .heart-pick { opacity: 1; pointer-events: auto; transform: none; }
+.msg-foot.pick-open .heart-pick { max-width: 100px; opacity: 1; pointer-events: auto; }
 .heart-pick button {
   flex: 0 0 auto; width: 26px; height: 24px; padding: 0; border: 0; border-radius: 12px; background: transparent;
   font-size: 16px; line-height: 1; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.12s ease, background-color 0.15s ease;
 }
 .heart-pick button:hover { background: color-mix(in srgb, var(--c-fff) 10%, transparent); }
 .heart-pick button:active { transform: scale(0.82); }
-.msg.has-react .msg-act.heart, .msg.has-react .heart-pick { display: none; }
+.msg.has-react .heart-group { display: none; }
 .react-chip {
   display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 22px; padding: 0 6px; margin: 0;
   border-radius: 12px; background: color-mix(in srgb, var(--c-fff) 12%, transparent); font-size: 14px; line-height: 1;
@@ -203,7 +206,10 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 .time-tag {
   flex: 0 0 auto; font-size: calc(var(--time-fs) - 2px); font-family: 'Lexend', sans-serif; font-weight: 400;
   font-variant-numeric: tabular-nums; color: var(--c-77); white-space: nowrap; pointer-events: none; line-height: 1.2;
+  transition: opacity 0.18s ease;
 }
+/* Baloncuk beliriş animasyonu bitene kadar saat gizli kalır, sonra hızlıca belirir */
+.time-tag.tt-wait { opacity: 0; transition: none; }
 /* Silme: basılıyken baloncuk kırmızı, bırakınca solarak silinir */
 .msg.del-press .bubble { background: #d32f2f !important; transition: background-color 0.12s ease; }
 .msg.deleting { pointer-events: none; }
@@ -2066,8 +2072,7 @@ const MEDIA_PLACEHOLDER = '[Burada bir medya içeriği vardı]';
 const HEARTS = {
   red:   '\u2665\uFE0F',
   pink:  String.fromCodePoint(0x1FA77),
-  white: String.fromCodePoint(0x1F90D),
-  black: String.fromCodePoint(0x1F5A4)
+  white: String.fromCodePoint(0x1F90D)
 };
 const HEART_KINDS = Object.keys(HEARTS);
 
@@ -3042,7 +3047,7 @@ function setupConnection(c) {
       const ael = typeof data.msgId === 'string' ? document.getElementById(data.msgId) : null;
       if (ael && ael.classList.contains('own-msg')) {
         const hl = ael.querySelector('.aud-heard');
-        if (hl) { hl.textContent = 'Dinledi'; hl.style.display = ''; }
+        if (hl) { hl.textContent = 'Dinledi'; hl.style.display = ''; followHeardLabel(); }
       }
       return;
     }
@@ -3354,7 +3359,9 @@ function buildMsgFoot(msgDiv, id, own, kind) {
   const isMedia = !!msgDiv.dataset.mediaUrl;
   if (kind !== 'live') {
     if (!own && !isChip) {
-      acts.appendChild(makeMsgAct('heart', 'Tepki ver', MA_ICONS.heart, (btn) => {
+      const hg = document.createElement('div');
+      hg.className = 'heart-group';
+      hg.appendChild(makeMsgAct('heart', 'Tepki ver', MA_ICONS.heart, (btn) => {
         const open = foot.classList.toggle('pick-open');
         btn.classList.toggle('open', open);
       }));
@@ -3368,7 +3375,8 @@ function buildMsgFoot(msgDiv, id, own, kind) {
         hb.addEventListener('click', (e) => { e.stopPropagation(); foot.classList.remove('pick-open'); addReaction(msgDiv.id, k); });
         pick.appendChild(hb);
       });
-      acts.appendChild(pick);
+      hg.appendChild(pick);
+      acts.appendChild(hg);
     }
     acts.appendChild(makeMsgAct('reply', 'Yanıtla', MA_ICONS.reply, () => { msgDiv.classList.remove('acts-on'); if (msgDiv.isConnected && !editingId && msgDiv._doReply) msgDiv._doReply(); }));
     if (own && !isMedia && !isChip) {
@@ -3424,11 +3432,53 @@ function closeActs(except) {
   const on = chatArea.querySelectorAll('.msg.acts-on');
   for (let i = 0; i < on.length; i++) {
     if (on[i] === except) continue;
+    clearTimeout(on[i]._actsT);
     on[i].classList.remove('acts-on');
     const f = on[i]._foot; if (f) f.classList.remove('pick-open');
     const hb = on[i].querySelector('.msg-act.heart'); if (hb) hb.classList.remove('open');
   }
 }
+// Tıklanarak açılan tuşlar 5 saniye kullanılmazsa kendiliğinden kapanır; tuşlara dokunmak süreyi yeniler
+function armActs(msg) {
+  clearTimeout(msg._actsT);
+  msg._actsT = setTimeout(() => {
+    msg._actsT = null;
+    if (!msg.classList.contains('acts-on')) return;
+    msg.classList.remove('acts-on');
+    if (msg !== hovMsg) {
+      if (msg._foot) msg._foot.classList.remove('pick-open');
+      const hb = msg.querySelector('.msg-act.heart'); if (hb) hb.classList.remove('open');
+    }
+  }, 5000);
+}
+chatArea.addEventListener('pointerdown', (e) => {
+  const t = e.target;
+  const f = t && t.closest ? t.closest('.msg-foot') : null;
+  const m = f ? f.closest('.msg') : null;
+  if (m && m.classList.contains('acts-on')) armActs(m);
+}, true);
+// Fare üzerine gelince tuşlar görünür (CSS :hover medya sorgusuna bağımlı kalmadan, doğrudan fare olaylarıyla)
+let hovMsg = null;
+function setHov(m) {
+  if (hovMsg === m) return;
+  const old = hovMsg;
+  hovMsg = m;
+  if (old) {
+    old.classList.remove('hov');
+    if (!old.classList.contains('acts-on')) {
+      if (old._foot) old._foot.classList.remove('pick-open');
+      const hb = old.querySelector('.msg-act.heart'); if (hb) hb.classList.remove('open');
+    }
+  }
+  if (m) m.classList.add('hov');
+}
+chatArea.addEventListener('pointerover', (e) => {
+  if (e.pointerType !== 'mouse') return;
+  const t = e.target;
+  const m = t && t.closest ? t.closest('.msg') : null;
+  setHov(m && !m.classList.contains('typing-msg') && !m.classList.contains('live-msg') ? m : null);
+});
+chatArea.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') setHov(null); });
 chatArea.addEventListener('click', (e) => {
   const t = e.target;
   if (!t || !t.closest) return;
@@ -3439,16 +3489,35 @@ chatArea.addEventListener('click', (e) => {
   if (t.closest('button, a, input, textarea, select, audio, video, .yt-card')) return;
   try { if (window.getSelection && String(window.getSelection())) return; } catch (err) {}
   if (msg.classList.contains('acts-on')) closeActs(null);
-  else { closeActs(msg); msg.classList.add('acts-on'); }
+  else { closeActs(msg); msg.classList.add('acts-on'); armActs(msg); }
 });
 document.addEventListener('click', (e) => { if (!(e.target && e.target.closest && e.target.closest('#chat-area'))) closeActs(null); });
 
 // Yeni baloncuk küçükten büyüyerek belirir
+// "Dinledi/Dinledin" yazısı eklenince içerik uzar; sohbet en alttaysa sayfa da o kadar aşağı kayar
+function followHeardLabel() {
+  if (!stickToBottom) return;
+  const go = () => { chatArea.scrollTop = chatArea.scrollHeight; };
+  go();
+  requestAnimationFrame(go);
+  setTimeout(go, 120);
+}
 function popBubble(b) {
   if (!b || reducedMotion()) return;
+  const msg = b.closest ? b.closest('.msg') : null;
+  const tt = msg && msg._tt ? msg._tt : null;
+  if (tt) tt.classList.add('tt-wait');
   b.classList.add('pop');
-  const done = (e) => { if (e.target !== b) return; b.classList.remove('pop'); b.removeEventListener('animationend', done); };
+  let fin = false;
+  const finish = () => {
+    if (fin) return; fin = true;
+    b.classList.remove('pop');
+    b.removeEventListener('animationend', done);
+    if (tt) { void tt.offsetWidth; tt.classList.remove('tt-wait'); }
+  };
+  const done = (e) => { if (e.target !== b) return; finish(); };
   b.addEventListener('animationend', done);
+  setTimeout(finish, 700);
 }
 // İçerik değişince (dinamik mesaj, düzenleme) baloncuk genişliği ve yüksekliği yumuşakça büyür/küçülür
 function growBubble(b, mutate) {
@@ -6635,7 +6704,7 @@ function buildAudioPlayer(media, isOwn, id, msgDiv) {
     a.addEventListener('play', () => {
       if (heardSent) return;
       heardSent = true;
-      heard.textContent = 'Dinledin'; heard.style.display = '';
+      heard.textContent = 'Dinledin'; heard.style.display = ''; followHeardLabel();
       if (isConnected()) { try { conn.send({ type: 'aud-played', msgId: id }); } catch (er) {} }
     });
   }
