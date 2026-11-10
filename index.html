@@ -585,6 +585,7 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 .call-card .call-title, .dial-status { font-weight: 500; font-size: 13px; opacity: 0.92; }
 .call-card[data-tone="g"], .dial-card[data-tone="g"] { background: linear-gradient(135deg, color-mix(in srgb, var(--ok) 45%, var(--c-1a)), color-mix(in srgb, var(--ok) 12%, var(--c-1a))); border-color: color-mix(in srgb, var(--ok) 65%, transparent); }
 .call-card[data-tone="r"], .dial-card[data-tone="r"] { background: linear-gradient(135deg, color-mix(in srgb, var(--bad) 45%, var(--c-1a)), color-mix(in srgb, var(--bad) 12%, var(--c-1a))); border-color: color-mix(in srgb, var(--bad) 65%, transparent); }
+.dial-card[data-tone="d"] { background: linear-gradient(135deg, #3d4045, #232529); border-color: #4b4e54; }
 .call-card[data-tone="o"], .dial-card[data-tone="o"] { background: linear-gradient(135deg, color-mix(in srgb, #ff9f1a 45%, var(--c-1a)), color-mix(in srgb, #ff9f1a 12%, var(--c-1a))); border-color: color-mix(in srgb, #ff9f1a 65%, transparent); }
 .dial-opt { width: 100%; padding: 10px 12px; border: 1px solid var(--c-33); border-radius: var(--r-md); background: var(--c-111); color: var(--c-fff); font-size: 15px; font-family: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .dial-opt:active { background: var(--hot); }
@@ -1937,8 +1938,8 @@ const DIAL_PREFIX = '\u2063DIAL\u2063';
 const DIAL_KEY = 'dialStates';
 const DIAL_ORANGE = '#ff9f1a';
 const dialTimers = {};
-const DIAL_OPTS = [['call_open', 'Arama Açılsın'], ['call_busy', 'Meşgul Çıksın'], ['call_timeout', 'Zamanı Aşsın'], ['notfound', 'Bulunamasın']];
-const DIAL_RANK = { wait: 0, call_open: 1, call_busy: 1, call_timeout: 1, notfound: 2, started: 2, busy: 2, timeout: 2 };
+const DIAL_OPTS = [['call_open', 'Arama Açılsın'], ['call_busy', 'Meşgul Çıksın'], ['call_timeout', 'Zamanı Aşsın'], ['notfound', 'Bulunamasın'], ['offline', 'Çevrimdışı Olsun']];
+const DIAL_RANK = { wait: 0, call_open: 1, call_busy: 1, call_timeout: 1, notfound: 2, started: 2, busy: 2, timeout: 2, offline: 2 };
 const CALL_TIMEOUT_MS = 30000;
 const CHIP_SVG = {
   photo: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="1.6"></circle><polyline points="21 16 15 10 5 20"></polyline></svg>',
@@ -5754,6 +5755,7 @@ function buildDialCard(name, own) {
     else if (st === 'started') { txt = 'Arama başladı'; tone = 'g'; }
     else if (st === 'busy') { txt = 'Kullanıcı meşgul'; tone = 'r'; }
     else if (st === 'timeout') { txt = 'Zaman aşımı (30s)'; tone = 'o'; }
+    else if (st === 'offline') { txt = 'Kullanıcı çevrimdışı'; tone = 'd'; }
     el.dataset.tone = tone;
     const t = document.createElement('div');
     t.className = 'dial-name';
@@ -5777,7 +5779,7 @@ function dialApply(id, st) {
 // Gönderen tarafta "aranıyor" başlayınca sonucu rastgele (5-20 sn) ya da 30 sn sonra kendisi belirler ve karşıya da iletir
 function dialSchedule(id, st) {
   if (dialTimers[id]) return;
-  const ms = st === 'call_timeout' ? 30000 : 5000 + Math.floor(Math.random() * 15001);
+  const ms = st === 'call_timeout' ? 30000 : 5000 + Math.floor(Math.random() * 20001);
   const fin = st === 'call_open' ? 'started' : st === 'call_busy' ? 'busy' : 'timeout';
   dialTimers[id] = setTimeout(() => { delete dialTimers[id]; dialSetState(id, fin, true); }, ms);
 }
