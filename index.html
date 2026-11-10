@@ -969,6 +969,8 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 @keyframes notes-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 #notes-btn.unseen { color: var(--warn); animation: notes-blink 1s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { #notes-btn.unseen { animation: none; } }
+/* Yüzen menüde not dilimi yanıp sönmez (animasyon, kapalıyken gizli olan dilimi görünür yapıyordu); uyarıyı menünün sarı parlaması verir */
+#fab-ring > #notes-btn.unseen { animation: none; }
 #notes-pop, #bell-pop {
   position: absolute; top: 36px; right: 8px; width: 300px; height: 300px; z-index: 40; display: none;
   background: var(--c-111); border: 1px solid var(--c-33); border-radius: var(--r-md); box-shadow: 0 6px 24px rgba(var(--sh),0.5);
@@ -994,6 +996,7 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
   font-size: 13px; font-weight: 600; letter-spacing: .2px; cursor: pointer;
   user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
+body.np-open #app > #bp-tabs { display: none !important; }
 #np-back:active { background: var(--c-33); color: var(--c-fff); }
 #np-back svg { display: block; flex: 0 0 auto; }
 /* Bildirim paneli sağ panelin tamamını kaplar: masaüstünde her zaman açık, mobilde çana basınca sağ panel açılır */
@@ -8548,6 +8551,7 @@ function finishPopEdit() {
   renderQNote();
 }
 function openNotesPop() {
+  document.body.classList.add('np-open');
   notesPop.classList.add('show');
   layoutNotesPop();
   renderQNote();
@@ -8694,6 +8698,7 @@ function closeBellPop() {
 function closeNotesPop() {
   finishPopEdit();
   notesPop.classList.remove('show');
+  document.body.classList.remove('np-open');
 }
 // Bildirim paneli sağ panelde durur: masaüstünde her zaman açık, mobilde yalnızca sağ panel görünürken açık
 function syncBellPanel() {
@@ -10311,9 +10316,21 @@ function goPanel(idx) {
   // En üstteki ince "Geri Dön" şeridi: not penceresini kapatır
   const npBack = document.getElementById('np-back');
   if (npBack) {
+    let backDown = false;
+    npBack.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      e.preventDefault(); e.stopPropagation(); backDown = true;
+    });
+    npBack.addEventListener('pointerup', (e) => {
+      if (!backDown) return;
+      backDown = false; e.preventDefault(); e.stopPropagation();
+      closeNotesPop();
+    });
+    npBack.addEventListener('pointercancel', () => { backDown = false; });
     npBack.addEventListener('mousedown', (e) => e.preventDefault());
-    npBack.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
-    npBack.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); closeNotesPop(); });
+    npBack.addEventListener('contextmenu', (e) => e.preventDefault());
+    // Klavye / yedek yol: click ile de kapanır (dokunmada pointerup zaten kapatmış olur)
+    npBack.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); if (notesPop.classList.contains('show')) closeNotesPop(); });
   }
   npView.addEventListener('click', () => { if (!window.getSelection || window.getSelection().toString() === '') enterPopEdit(); });
   npEdit.addEventListener('input', () => { lastQInput = Date.now(); commitQNoteFromEdit(); });
