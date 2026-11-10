@@ -170,6 +170,8 @@ body.once-viewing #fab { display: none !important; }
 .bubble.pop-left { animation: bubble-pop-left 0.22s cubic-bezier(.2, .85, .3, 1) both; transform-origin: 0 50%; }
 /* Kendi mesajım: gönderme anında hazır olana kadar gizli kalır, sonra kutudan uçarak yerine oturur */
 .bubble.fly-hide { visibility: hidden; }
+.msg.fly-ghost { position: fixed; left: 0; top: 0; margin: 0; max-width: none; z-index: 9999; pointer-events: none; will-change: transform, opacity, filter; align-self: auto; }
+.msg.fly-ghost .bubble { margin: 0; animation: none; }
 @media (prefers-reduced-motion: reduce) { .bubble.pop, .bubble.pop-left { animation: none; } }
 
 .msg-body { cursor: text; -webkit-user-select: text; user-select: text; }
@@ -355,6 +357,8 @@ body.no-time .time-tag { display: none !important; }
   opacity: 0; transition: opacity 0.25s ease;
 }
 .msg.undelivered .bubble::after { opacity: 1; }
+/* Kısa mesajda baloncuk genişlediği için arkadaki yazı (ör. tek harf) katmanın yanında sızmasın: katman tam kapatır */
+.msg.ud-short .bubble::after { background: color-mix(in srgb, var(--c-000) 75%, var(--c-26)); }
 .typing-msg .msg-body { color: var(--c-88); cursor: default; pointer-events: none; }
 .typing-msg .tdot { display: inline-block; margin-right: 0.3em; opacity: 0.25; animation: tdot-blink 1.2s ease-in-out infinite; }
 .typing-msg .tdot:nth-child(2) { animation-delay: 0.2s; }
@@ -2095,9 +2099,30 @@ function outboxUpdate(id, text, nick) {
   list.forEach((m) => { if (m.id === id) { m.text = text; m.nick = nick; changed = true; } });
   if (changed) writeOutbox(list);
 }
+// Baloncuk, "Gönderiliyor..." için genişletilmek zorunda kalacak kadar kısa mı? (içerik min-width'ten dar)
+function udIsShort(el) {
+  const bub = el._bubble;
+  if (!bub) return false;
+  let w = 0;
+  for (let i = 0; i < bub.children.length; i++) {
+    const ch = bub.children[i];
+    if (ch.querySelector && ch.querySelector('img, video, canvas, .yt-card, .audio-player, button, svg')) return false;
+    try { const rg = document.createRange(); rg.selectNodeContents(ch); w = Math.max(w, rg.getBoundingClientRect().width); } catch (e) { return false; }
+  }
+  if (w === 0) return !el._raw || String(el._raw.text || '').length <= 8; // ekranda değilse tahmin
+  return w + 18 < 126;
+}
 function setUndelivered(id, on) {
   const el = document.getElementById(id);
-  if (el) el.classList.toggle('undelivered', !!on);
+  if (!el) return;
+  if (el._udT) { clearTimeout(el._udT); el._udT = 0; }
+  if (on) {
+    el.classList.toggle('ud-short', udIsShort(el));
+    el.classList.add('undelivered');
+  } else {
+    el.classList.remove('undelivered');
+    if (el.classList.contains('ud-short')) el._udT = setTimeout(() => { el._udT = 0; el.classList.remove('ud-short'); }, 360);
+  }
 }
 // Normalde onay ~anında gelir; 1,5 sn gelmezse mesaj yanıp sönmeye başlar
 function scheduleUndelivered(id) {
@@ -3589,34 +3614,50 @@ function flyBubble(b, from) {
   const tt = msg && msg._tt ? msg._tt : null;
   if (tt) tt.classList.add('tt-wait');
   b.classList.add('fly-hide');
-  let started = false;
-  const cleanup = () => { b.classList.remove('fly-hide'); b.style.willChange = ''; if (tt) { void tt.offsetWidth; tt.classList.remove('tt-wait'); } };
-  const run = () => {
-    if (started) return; started = true;
-    if (!b.isConnected) { cleanup(); return; }
-    if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
-    const r = b.getBoundingClientRect();
-    if (!r.width || !r.height) { cleanup(); return; }
-    const dx = (from.left + 12) - r.left;
-    const dy = (from.top + from.height / 2) - (r.top + r.height / 2);
-    const dist = Math.hypot(dx, dy);
-    const blur = Math.min(7, 2 + dist / 60);
-    const stretch = 1 + Math.min(0.12, dist / 1800);
+  const r0 = b.getBoundingClientRect();
+  let ghost = null, done = false;
+  const end = () => {
+    if (done) return; done = true;
+    if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
     b.classList.remove('fly-hide');
-    b.style.willChange = 'transform, filter, opacity';
-    let a;
-    try {
-      a = b.animate([
-        { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(0.92)', filter: 'blur(' + blur + 'px)', opacity: 0.55, offset: 0 },
-        { transform: 'translate(' + (dx * 0.4) + 'px,' + (dy * 0.4) + 'px) scale(1, ' + stretch + ')', filter: 'blur(' + (blur * 0.7) + 'px)', opacity: 1, offset: 0.45 },
-        { transform: 'translate(0,0) scale(1)', filter: 'blur(0px)', opacity: 1, offset: 1 }
-      ], { duration: 280, easing: 'cubic-bezier(.2, .8, .25, 1)', fill: 'none' });
-    } catch (e) { cleanup(); return; }
-    a.onfinish = cleanup; a.oncancel = cleanup;
+    if (tt) { void tt.offsetWidth; tt.classList.remove('tt-wait'); }
   };
-  requestAnimationFrame(() => requestAnimationFrame(run)); // giriş kutusu küçülüp sohbet kayduktan sonra ölç
-  setTimeout(run, 120);
-  setTimeout(cleanup, 700);
+  if (!r0.width || !r0.height) { end(); return; }
+  try {
+    // Gerçek baloncuk yerinde gizli durur (yerleşim hiç değişmez); uçan şey sadece hafif bir kopyadır
+    ghost = document.createElement('div');
+    ghost.className = 'msg own-msg fly-ghost';
+    const gb = b.cloneNode(true);
+    gb.classList.remove('fly-hide', 'pop', 'pop-left');
+    gb.removeAttribute('id');
+    gb.querySelectorAll('[id]').forEach((e) => e.removeAttribute('id'));
+    gb.style.width = r0.width + 'px'; gb.style.height = r0.height + 'px';
+    ghost.appendChild(gb);
+    document.body.appendChild(ghost);
+  } catch (e) { end(); return; }
+  const W = r0.width, H = r0.height, DUR = 240;
+  const sx = from.left + 12, sy = from.top + from.height / 2 - H / 2; // yazı kutusundaki yazının başı
+  const t0 = performance.now();
+  let px = sx, py = sy, pt = t0;
+  const frame = (now) => {
+    if (done) return;
+    if (!b.isConnected) { end(); return; }
+    const p = Math.min(1, (now - t0) / DUR);
+    const e = 1 - Math.pow(1 - p, 3);
+    const r = b.getBoundingClientRect(); // gizli gerçek baloncuğun o anki yeri: sohbet kayarsa hedef de kayar
+    const x = sx + (r.left - sx) * e, y = sy + (r.top - sy) * e;
+    const dt = Math.max(1, now - pt), speed = Math.hypot(x - px, y - py) / dt;
+    px = x; py = y; pt = now;
+    const blur = p >= 1 ? 0 : Math.min(3.5, speed * 0.5);
+    ghost.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
+    ghost.style.opacity = String(0.75 + 0.25 * e);
+    ghost.style.filter = blur > 0.2 ? 'blur(' + blur.toFixed(1) + 'px)' : 'none';
+    if (p >= 1) { end(); return; }
+    requestAnimationFrame(frame);
+  };
+  frame(t0);
+  requestAnimationFrame(frame);
+  setTimeout(end, 700);
 }
 function popBubble(b, opts) {
   if (!b || reducedMotion()) return;
@@ -5441,7 +5482,9 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
 
   if (isOwnMessage || stickToBottom) {
     stickToBottom = true;
-    setTimeout(() => { chatArea.scrollTop = chatArea.scrollHeight; updateScrollBtn(); }, 30);
+    // Yeni mesajın yeri tek adımda belirlenir: hemen en alta oturt, gecikmeli ikinci kayma yok (boşluk büyüyüp kısalmasın)
+    chatArea.scrollTop = chatArea.scrollHeight;
+    requestAnimationFrame(() => { if (chatArea.scrollHeight - chatArea.scrollTop - chatArea.clientHeight > 1) chatArea.scrollTop = chatArea.scrollHeight; updateScrollBtn(); });
   } else {
     scrollDownBtn.classList.add('has-new');
     updateScrollBtn();
@@ -10093,7 +10136,13 @@ function bpSetPage(p, instant) {
     if (Date.now() - lastPtr > 500) { kbWanted = false; return; } // dokunuş yokken kapandı = klavye özellikle kapatıldı
   });
   const onArrow = (t) => !!(t && t.closest && t.closest('#scroll-down-btn'));
+  // Klavye kapalıyken bir mesaja dokunma / basılı tutma klavyeyi kendiliğinden açmasın: geri getirme yalnızca
+  // dokunuş başlarken klavye açıksa (odağı çalmış olabilir) ya da mesaj dışına kısa dokunuşta yapılır
+  let downFocused = false, downOnMsg = false, downAt = 0, restoreOk = true;
   document.addEventListener('pointerdown', (e) => {
+    downFocused = document.activeElement === messageInput;
+    downOnMsg = !!(e.target && e.target.closest && e.target.closest('.msg, .lp-clone'));
+    downAt = Date.now(); restoreOk = true;
     lastPtr = Date.now();
     if (pickerBusy && Date.now() - pickerAt > 1500) pickerBusy = false;
     if (onArrow(e.target)) {
@@ -10106,8 +10155,12 @@ function bpSetPage(p, instant) {
     // Dokunmatikte odağı çalacak tuşlara basışı engelle (klavye hiç kapanmasın)
     if (e.pointerType !== 'mouse' && document.activeElement === messageInput && !isField(e.target) && !overlayOpen() && e.cancelable) e.preventDefault();
   }, true);
-  document.addEventListener('pointerup', (e) => { lastPtr = Date.now(); if (!onArrow(e.target)) restoreSoon(); });
-  document.addEventListener('click', (e) => { if (!onArrow(e.target)) restoreSoon(); });
+  document.addEventListener('pointerup', (e) => {
+    lastPtr = Date.now();
+    restoreOk = downFocused || (!downOnMsg && Date.now() - downAt < 400);
+    if (!onArrow(e.target) && restoreOk) restoreSoon();
+  });
+  document.addEventListener('click', (e) => { if (!onArrow(e.target) && restoreOk) restoreSoon(); });
 })();
 
 (function initLiveModeSetting() {
