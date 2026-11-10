@@ -4367,13 +4367,12 @@ function ytDockBuild() {
       '<button type="button" class="ytd-b ytd-play" aria-label="Oynat">' + YTD_PLAY + '</button>' +
       '<button type="button" class="ytd-b ytd-next" aria-label="Sonraki şarkı" style="display:none">' + YTD_NEXT + '</button>' +
       '<button type="button" class="ytd-b ytd-tog" aria-label="Şarkı sözlerini aç">' + YTD_LYR + '</button>' +
-      '<button type="button" class="ytd-b ytd-goto" aria-label="Şarkı mesajına git">' + YTD_GOTO + '</button>' +
       '<button type="button" class="ytd-b ytd-x" aria-label="Kapat">' + YTD_X + '</button>' +
     '</div>' +
     '<div class="ytd-lyr"></div>';
   wrap.appendChild(el);
   const q = (s) => el.querySelector(s);
-  el._d = { cover: q('.ytd-cover'), info: q('.ytd-info'), play: q('.ytd-play'), next: q('.ytd-next'), x: q('.ytd-x'), goto: q('.ytd-goto'), lyr: q('.ytd-lyr'), tog: q('.ytd-tog'), prog: q('.ytd-prog'), fill: q('.ytd-track > i'), tc: q('.ytd-tc'), td: q('.ytd-td'), seeking: false, frac: 0, dur0: 0 };
+  el._d = { cover: q('.ytd-cover'), info: q('.ytd-info'), play: q('.ytd-play'), next: q('.ytd-next'), x: q('.ytd-x'), lyr: q('.ytd-lyr'), tog: q('.ytd-tog'), prog: q('.ytd-prog'), fill: q('.ytd-track > i'), tc: q('.ytd-tc'), td: q('.ytd-td'), seeking: false, frac: 0, dur0: 0 };
   bindYtTap(el._d.play, () => { if (ytDockCard && ytDockCard._toggle) ytDockCard._toggle(); });
   bindYtTap(el._d.x, () => {
     const c = ytDockCard;
@@ -4386,13 +4385,6 @@ function ytDockBuild() {
   });
   bindYtTap(el._d.next, () => { try { if (ytPl) ytPlNext(); } catch (e) {} });
   bindYtTap(el._d.tog, () => { ytDockSetLyr(!ytDockLyrOpen); });
-  bindYtTap(el._d.goto, () => {
-    const c = ytDockCard; if (!c || !c.isConnected) return;
-    const target = c.closest('.msg') || c;
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    target.classList.add('msg-flash');
-    setTimeout(() => target.classList.remove('msg-flash'), 800);
-  });
   ['touchstart', 'wheel', 'mousedown'].forEach((ev) => el._d.lyr.addEventListener(ev, () => { ytDockLyrUserAt = Date.now(); }, { passive: true }));
   el._d.lyr.addEventListener('mousedown', (e) => { if (e.cancelable) e.preventDefault(); });
   el._d.lyr.addEventListener('click', (e) => {
@@ -4500,7 +4492,6 @@ function ytDockUpdate() {
   const el = ytDockEl, d = el._d, m = card._meta;
   let plOn = false; try { plOn = !!ytPl && !!card._ghost; } catch (e) {}
   d.next.style.display = plOn ? '' : 'none'; // sonraki şarkı: yalnızca karışık çalma modunda
-  d.goto.style.display = card._ghost ? 'none' : ''; // sohbette mesajı olmayan şarkıda "mesaja git" anlamsız
   const tt = m ? m.title : 'Şarkı', aa = m ? m.artist : '';
   if (card._cover) {
     const v = 'url(' + card._cover + ')';
