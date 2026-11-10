@@ -9687,16 +9687,19 @@ function bpSetPage(p, instant) {
     const tsb = e.target.closest && e.target.closest('#ts-strip');
     if (tsb && tsb.scrollWidth > tsb.clientWidth) return; // taşan şeridi yana kaydırmak sayfa değiştirmesin
     if (document.getElementById('bp-compose').classList.contains('show') || document.getElementById('cd-compose').classList.contains('show') || document.getElementById('td-compose').classList.contains('show') || document.getElementById('rp-compose').classList.contains('show')) return;
-    g = { x: e.clientX, y: e.clientY, id: e.pointerId, on: false, back: !(e.target.closest && e.target.closest('.bp-card')) };
+    g = { x: e.clientX, y: e.clientY, id: e.pointerId, on: false, back: !(e.target.closest && e.target.closest('#bp-list .bp-card')) };
   });
   bellPop.addEventListener('pointermove', (e) => {
     if (!g || e.pointerId !== g.id || g.on) return;
     const dx = e.clientX - g.x, dy = e.clientY - g.y;
     if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { g = null; return; }
     if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.2) {
-      if (dx < 0 && bpPage < (document.body.classList.contains('desk-set') ? 2 : BP_PAGES - 1)) { bpSetPage(bpPage + 1); g.on = true; }
+      if (isMobileLayout()) {
+        // Mobil: sekmeler yalnızca alttaki tuşlarla değişir; herhangi bir sekmeden sağa kaydırmak sohbete döndürür (son sekme hatırlanır)
+        if (dx > 0 && g.back) { g.on = true; setView('chat'); }
+        else g = null;
+      } else if (dx < 0 && bpPage < (document.body.classList.contains('desk-set') ? 2 : BP_PAGES - 1)) { bpSetPage(bpPage + 1); g.on = true; }
       else if (dx > 0 && bpPage > 0) { bpSetPage(bpPage - 1); g.on = true; }
-      else if (dx > 0 && g.back && isMobileLayout()) { g.on = true; setView('chat'); }
       else g = null;
     }
   });
