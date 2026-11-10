@@ -229,7 +229,7 @@ body.once-viewing #fab { display: none !important; }
 .msg-act.danger.confirm { color: var(--dng); background: color-mix(in srgb, var(--dng) 18%, transparent); }
 /* Masaüstü: Yanıtla tuşu her zaman görünür ve mesaja en yakın tuştur; diğer tuşlar üzerine gelince yanında açılır */
 @keyframes act-in { from { opacity: 0; } to { opacity: 1; } }
-@media (hover: hover) and (pointer: fine) {
+@media (any-hover: hover) and (any-pointer: fine) {
   .msg-act.reply { order: -1; }
   .msg-acts.two .msg-act.danger { grid-column: 2; }
   .msg-acts.two .msg-act.edit { grid-column: 1; }
@@ -3595,7 +3595,7 @@ window.addEventListener('resize', () => {
   restActsSoon();
 });
 // Masaüstü: Yanıtla tuşu sürekli görünür olduğundan, tuşlar kapalıyken de yerleşimi ekrana sığacak şekilde ayarlanır
-const DESK_MQ = window.matchMedia ? window.matchMedia('(hover: hover) and (pointer: fine)') : { matches: false };
+const DESK_MQ = window.matchMedia ? window.matchMedia('(any-hover: hover) and (any-pointer: fine)') : { matches: false };
 function restActs(msg) {
   if (!DESK_MQ.matches || !msg || !msg.classList) return;
   if (msg.classList.contains('hov') || msg.classList.contains('acts-on') || msg.classList.contains('editing')) return;
