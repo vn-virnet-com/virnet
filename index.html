@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Widget2">
 <meta name="theme-color" content="#000000" id="meta-theme">
 <title>VN</title>
-<script>try{var t=localStorage.getItem('theme');if(t==='halloween'||t==='pink'){localStorage.setItem('theme','black');t='black';}if(t==='blue'){document.documentElement.setAttribute('data-theme',t);var m=document.getElementById('meta-theme');if(m)m.setAttribute('content','#131827');}}catch(e){}</script>
+<script>try{var t=localStorage.getItem('theme');if(t==='halloween'||t==='pink'){localStorage.setItem('theme','black');t='black';}if(t==='blue'||t==='gray'||t==='purple'){document.documentElement.setAttribute('data-theme',t);var m=document.getElementById('meta-theme');if(m)m.setAttribute('content',t==='gray'?'#232323':(t==='purple'?'#110e20':'#131827'));}}catch(e){}</script>
 
 <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 <script>window.Peer || document.write('<script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"><\/script>');</script>
@@ -32,6 +32,12 @@
   --ok:#00e676; --bad:#ff4444; --dng:#ff6b6b; --warn:#ffd23f; --dng-bg:#6e1423; --dng-bg-a:#8a1a2e;
   --nc-g:#a0a0a0;
 }
+/* Gri tema: siyahın birkaç ton açığı, nötr gri */
+html[data-theme="gray"] {
+  --c-000:#232323; --c-111:#2b2b2b; --c-1a:#323232; --c-22:#3a3a3a; --c-26:#404040; --c-33:#4a4a4a; --c-3c:#525252; --c-44:#5b5b5b;
+  --c-4a:#646464; --c-55:#6e6e6e; --c-66:#7d7d7d; --c-77:#8c8c8c; --c-88:#9b9b9b; --c-cc:#cfcfcf; --c-dd:#dedede; --c-fff:#fff;
+  --ov-85:rgba(14,14,14,0.85); --ov-65:rgba(14,14,14,0.65); --ov-5:rgba(14,14,14,0.5);
+}
 /* Mavi tema: mavi-gri, soluk, Discord tarzı */
 html[data-theme="blue"] {
   --c-000:#131827; --c-111:#1a2030; --c-1a:#212839; --c-22:#293043; --c-26:#2f384d; --c-33:#3a455c; --c-3c:#424e68; --c-44:#4b5873;
@@ -39,6 +45,14 @@ html[data-theme="blue"] {
   --chip-no:#6b2e22; --badge-bg:#e3eafb;
   --ov-85:rgba(8,11,20,0.85); --ov-65:rgba(8,11,20,0.65); --ov-5:rgba(8,11,20,0.5);
   --nc-g:#a3aec8;
+}
+/* Mor tema: mavi temanın tonlarının mora kaydırılmış, biraz daha koyu hali; yazılar açık lila */
+html[data-theme="purple"] {
+  --c-000:#110e20; --c-111:#171429; --c-1a:#1d1a33; --c-22:#241f3e; --c-26:#2a2548; --c-33:#352e58; --c-3c:#3d3566; --c-44:#463e72;
+  --c-4a:#514a78; --c-55:#5c5584; --c-66:#6d6694; --c-77:#7f78a6; --c-88:#9088b8; --c-cc:#c3b8e8; --c-dd:#d4caf0; --c-fff:#f1ecfc;
+  --chip-no:#5e2a2a; --badge-bg:#e1d9f7;
+  --ov-85:rgba(10,7,20,0.85); --ov-65:rgba(10,7,20,0.65); --ov-5:rgba(10,7,20,0.5);
+  --nc-g:#a399c6;
 }
 #reset-box-mark svg { color: var(--on-accent); }
 
@@ -76,6 +90,7 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 body.once-viewing #fab { display: none !important; }
 #fab-main { position: absolute; left: 0; top: 0; width: 46px; height: 46px; border-radius: 50%; box-sizing: border-box; background: var(--c-1a); border: 1px solid var(--c-44); color: var(--c-88); display: flex; align-items: center; justify-content: center; cursor: grab; box-shadow: 0 2px 10px rgba(var(--sh),0.6); touch-action: none; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; transition: transform .15s ease, color .15s ease; z-index: 2; }
 #fab.open #fab-main { transform: scale(0.9); color: var(--c-fff); }
+#fab.snapping { transition: left .16s cubic-bezier(.2,.9,.3,1), top .16s cubic-bezier(.2,.9,.3,1); }
 #fab.dragging #fab-main { cursor: grabbing; transform: scale(1.08); color: var(--c-fff); }
 #fab-main svg { display: block; pointer-events: none; }
 #fab-ring { position: absolute; left: 0; top: 0; width: 46px; height: 46px; pointer-events: none; z-index: 1; }
@@ -239,6 +254,7 @@ body.once-viewing #fab { display: none !important; }
 @media (prefers-reduced-motion: reduce) { .react-chip { animation: none; } }
 body.no-time .time-tag { display: none !important; }
 #fab.drop #fab-main { cursor: pointer; }
+#fab.drop #fab-main::after { content: ""; position: absolute; left: -22px; right: -8px; top: -16px; bottom: -16px; border-radius: 50%; }   /* damla modunda görünmez geniş dokunma alanı */
 .time-tag {
   flex: 0 0 auto; font-size: calc(var(--time-fs) - 2px); font-family: 'Lexend', sans-serif; font-weight: 400;
   font-variant-numeric: tabular-nums; color: var(--c-77); white-space: nowrap; pointer-events: none; line-height: 1.2;
@@ -1281,7 +1297,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 .lp-stage .msg.lp-clone::before { display: none; }
 .lp-stage .msg.lp-clone .bubble { transition: none; }
 .lp-react {
-  display: grid; grid-template-columns: repeat(3, 44px); gap: 2px; padding: 6px; border-radius: var(--r-xl); background: var(--c-1a);
+  display: grid; grid-template-columns: repeat(5, 44px); gap: 2px; padding: 6px; border-radius: var(--r-xl); background: var(--c-1a);
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45); animation: lp-pop 0.22s cubic-bezier(.2, .9, .3, 1.15) both; transform-origin: 0 100%;
 }
 .lp-stage.own .lp-react { transform-origin: 100% 100%; }
@@ -1289,6 +1305,11 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   width: 42px; height: 42px; padding: 0; border: 0; border-radius: 50%; background: transparent; font-size: 26px; line-height: 1;
   cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.12s ease, background-color 0.15s ease;
 }
+.lp-stage.free { inset: 0; max-width: none; display: block; }
+.lp-stage.free > .msg.lp-clone { position: absolute; }
+.lp-stage.free > .lp-react { position: absolute; pointer-events: auto; transform-origin: 0 0; }
+.lp-stage.free > .lp-react.up { transform-origin: 0 100%; }
+.lp-react button.sel { background: color-mix(in srgb, var(--c-fff) 16%, transparent); }
 .lp-react button:active { transform: scale(0.8); background: color-mix(in srgb, var(--c-fff) 12%, transparent); }
 .lp-menu {
   display: flex; flex-direction: column; min-width: 224px; overflow: hidden; border-radius: var(--r-xl); background: var(--c-1a);
@@ -1311,6 +1332,9 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 /* ===== Yüzen menü: Leap göstergesi ===== */
 #leap-hud { position: fixed; left: 50%; top: 10px; z-index: 12500; display: flex; align-items: center; gap: 7px; padding: 5px 14px 5px 6px; border-radius: 999px; box-sizing: border-box; white-space: nowrap; color: var(--warn); font-size: 13px; font-weight: 700; background: color-mix(in srgb, var(--c-1a) 94%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); box-shadow: 0 6px 18px rgba(var(--sh),0.55), 0 0 12px color-mix(in srgb, var(--warn) 25%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none; user-select: none; -webkit-user-select: none; opacity: 0; transform: translate(-50%, -10px) scale(.96); transition: opacity .18s ease, transform .24s cubic-bezier(.2,.9,.3,1.15); }
 #leap-hud.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+#leap-hud.show, #leap-hud.pinned { pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+#leap-hud.pinned { color: #3a2300; background: #ff9f1a; border-color: #ffbf5e; box-shadow: 0 6px 18px rgba(var(--sh),0.55), 0 0 12px rgba(255,159,26,.45); -webkit-backdrop-filter: none; backdrop-filter: none; }
+#leap-hud.pinned .lh-num { color: #3a2300; }
 #leap-hud .lh-coin { display: block; flex: 0 0 auto; filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); }
 #leap-hud .lh-num { color: var(--c-fff); font-weight: 600; font-variant-numeric: tabular-nums; margin-left: 2px; }
 @media (prefers-reduced-motion: reduce) { #leap-hud { transition: opacity .1s linear; } }
@@ -1661,7 +1685,9 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
     <div class="seg" id="seg-theme">
       <button type="button" class="seg-btn active" data-val="black" aria-pressed="true">Siyah</button>
+      <button type="button" class="seg-btn" data-val="gray" aria-pressed="false">Gri</button>
       <button type="button" class="seg-btn" data-val="blue" aria-pressed="false">Mavi</button>
+      <button type="button" class="seg-btn" data-val="purple" aria-pressed="false">Mor</button>
     </div></div></div></div>
   </div>
   <div class="set-block sb-size">
@@ -2073,17 +2099,34 @@ const MAX_HISTORY = 1;
 const MEDIA_PLACEHOLDER = '[Burada bir medya içeriği vardı]';
 
 const HEARTS = {
-  red:   '\u2665\uFE0F',
-  pink:  String.fromCodePoint(0x1FA77),
-  white: String.fromCodePoint(0x1F90D),
-  love:  String.fromCodePoint(0x1F970),
-  sob:   String.fromCodePoint(0x1F62D),
-  melt:  String.fromCodePoint(0x1FAEA),
-  skull: String.fromCodePoint(0x1F480),
-  mid:   String.fromCodePoint(0x1F595),
-  thumb: String.fromCodePoint(0x1F44D)
+  white: String.fromCodePoint(0x1f90d),
+  gray: String.fromCodePoint(0x1fa76),
+  pink: String.fromCodePoint(0x1fa77),
+  purple: String.fromCodePoint(0x1f49c),
+  red: String.fromCodePoint(0x2764,0xfe0f),
+  lblue: String.fromCodePoint(0x1fa75),
+  blue: String.fromCodePoint(0x1f499),
+  sparkle: String.fromCodePoint(0x1f496),
+  growing: String.fromCodePoint(0x1f497),
+  broken: String.fromCodePoint(0x1f494),
+  sob: String.fromCodePoint(0x1f62d),
+  melt: String.fromCodePoint(0x1faea),
+  flushed: String.fromCodePoint(0x1f633),
+  cool: String.fromCodePoint(0x1f60e),
+  devil: String.fromCodePoint(0x1f608),
+  skull: String.fromCodePoint(0x1f480),
+  crossbones: String.fromCodePoint(0x2620,0xfe0f),
+  love: String.fromCodePoint(0x1f970),
+  brow: String.fromCodePoint(0x1f928),
+  plead: String.fromCodePoint(0x1f97a),
+  thumb: String.fromCodePoint(0x1f44d),
+  thumbdown: String.fromCodePoint(0x1f44e),
+  heartshands: String.fromCodePoint(0x1faf6),
+  mid: String.fromCodePoint(0x1f595),
+  wave: String.fromCodePoint(0x1f44b)
 };
 const HEART_KINDS = Object.keys(HEARTS);
+const HEART_GRID = ['white','gray','pink','purple','red','lblue','blue','sparkle','growing','broken','sob','melt','flushed','cool','devil','skull','crossbones','love','brow','plead','thumb','thumbdown','heartshands','mid','wave']; // uzun basma / sağ tık tepsisi: 5x5
 const HEART_PICK = ['red', 'pink', 'white']; // yandaki küçük seçici yalnızca kalpleri gösterir; 9'lu seçim uzun basma menüsünde
 
 function sanitizeEntry(e) {
@@ -8055,18 +8098,17 @@ function layoutNotesPop() {
   });
 
   // Dokunma/fare: tuşa basınca (mobilde anında) dilimler açılır; basılı tutup dilime sürükleyip bırakmak seçer.
-  // Menüyü taşımak için tuşun üzerinde kıpırdamadan 0,3 sn basılı tutmak gerekir; ondan sonra sürüklenince yer değiştirir.
-  // Dilimlerin dışına sürüklemek menüyü artık taşımaz.
-  const HOLD_MS = 300, HOLD_SLOP = 10;
-  let down = null, holdT = null;
-  function clearHold() { clearTimeout(holdT); holdT = null; }
+  // Menüyü taşımak için basılı tutmak gerekmez: parmağı açılan çarkın DIŞINA sürüklemek yeter.
+  // Çark kapanır, menü hızla parmağın altına gelir, parmağı takip eder ve bırakılan yerde kalır.
+  let down = null, snapT = null;
   function startMove(d) {
     if (!d || d.mode === 'move' || drop) return;
     clearTimeout(hoverT); hoverT = null;
     d.mode = 'move'; d.consumed = false; dragging = true;
     closeFab(); fab.classList.add('dragging');
-    const c = center();
-    d.ox = d.lx - c.x; d.oy = d.ly - c.y;      // parmağın/farenin tuş merkezine göre ofseti korunur (zıplama olmaz)
+    d.ox = 0; d.oy = 0;                         // menü parmağın tam altına gelir
+    fab.classList.add('snapping');
+    clearTimeout(snapT); snapT = setTimeout(() => fab.classList.remove('snapping'), 200);
     try { navigator.vibrate(18); } catch (err) {}
   }
   main.addEventListener('pointerdown', (e) => {
@@ -8075,30 +8117,38 @@ function layoutNotesPop() {
     try { main.setPointerCapture(e.pointerId); } catch (err) {}
     const c = center();
     down = { id: e.pointerId, type: e.pointerType, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, ox: e.clientX - c.x, oy: e.clientY - c.y, moved: false, wasOpen: fab.classList.contains('open'), mode: e.pointerType === 'mouse' ? 'mouse' : 'wheel' };
-    clearHold();
-    const mine = down;
-    holdT = setTimeout(() => { holdT = null; if (down === mine && !mine.moved) startMove(mine); }, HOLD_MS);
     if (e.pointerType !== 'mouse') {
       if (down.wasOpen) { closeFab(); down.consumed = true; return; }
       openFab();
       fab.classList.add('touchsel');
-    }
+    } else if (!down.wasOpen && !drop) { openFab(); }
   });
   main.addEventListener('pointermove', (e) => {
     if (!down || e.pointerId !== down.id) return;
     down.lx = e.clientX; down.ly = e.clientY;
     if (down.mode === 'move') { setCenter(e.clientX - down.ox, e.clientY - down.oy, false); return; }
-    const dist = Math.hypot(e.clientX - down.x, e.clientY - down.y);
-    // Masaüstü (fare): basılı tutup sürüklemek beklemeden hemen taşır
-    if (down.mode === 'mouse' && dist > 4 && !drop) { clearHold(); startMove(down); setCenter(e.clientX - down.ox, e.clientY - down.oy, false); return; }
-    // Dokunmada 0,3 sn dolmadan kıpırdarsa taşıma iptal olur; dilim seçimine devam eder
-    if (dist > HOLD_SLOP) { down.moved = true; clearHold(); }
+    if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > 10) down.moved = true;
     if (down.consumed) return;
-    if (down.mode === 'wheel') setHot(sliceAt(e.clientX, e.clientY));
+    // Fare: basılı tutup sürüklemek çark dışına çıkmayı beklemeden hemen taşır (menü olduğu yerden, zıplamadan)
+    if (down.mode === 'mouse' && !drop && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 4) {
+      const c0 = center();
+      startMove(down);
+      down.ox = down.lx - c0.x; down.oy = down.ly - c0.y;
+      fab.classList.remove('snapping'); clearTimeout(snapT);
+      setCenter(e.clientX - down.ox, e.clientY - down.oy, false);
+      return;
+    }
+    // Çarkın dışına çıkıldı: taşıma başlar
+    const c = center();
+    if (!drop && Math.hypot(e.clientX - c.x, e.clientY - c.y) > R2 + 34) {
+      startMove(down);
+      setCenter(e.clientX, e.clientY, false);
+      return;
+    }
+    setHot(sliceAt(e.clientX, e.clientY));
   });
   function finish(e, cancel) {
     if (!down || e.pointerId !== down.id) return;
-    clearHold();
     const d = down; down = null;
     try { main.releasePointerCapture(e.pointerId); } catch (err) {}
     fab.classList.remove('touchsel');
@@ -8109,10 +8159,10 @@ function layoutNotesPop() {
       return;
     }
     if (d.consumed) return;
-    if (d.mode === 'wheel') {
+    if (d.mode === 'wheel' || d.mode === 'mouse') {
       const el = cancel ? null : hotEl;
       if (el) { closeFab(); trigger(el); }
-      else {                              // dilim seçilmeden bırakıldı (kısa dokunuş / çekip bırakma): çark hemen kapanır
+      else if (d.mode === 'wheel') {      // dilim seçilmeden bırakıldı (kısa dokunuş / çekip bırakma): çark hemen kapanır
         hudLinger = true;                 // Leap göstergesi 1-2 sn daha görünür kalır
         closeFab();
         setTimeout(() => { hudLinger = false; }, 0);
@@ -8129,6 +8179,7 @@ function layoutNotesPop() {
   document.addEventListener('pointerdown', (e) => {
     if (!fab.classList.contains('open')) return;
     if (fab.contains(e.target)) return;
+    if (e.target.closest && e.target.closest('#leap-hud')) return;
     closeFab();
   }, true);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFab(); });
@@ -8139,22 +8190,39 @@ function layoutNotesPop() {
   hud.innerHTML = '<svg class="lh-coin" width="22" height="22" viewBox="0 0 24 24"><defs><linearGradient id="lhg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0a8"/><stop offset="1" stop-color="#f2b200"/></linearGradient></defs><circle cx="12" cy="12" r="10.5" fill="url(#lhg)" stroke="#b78300" stroke-width="1.2"/><circle cx="12" cy="12" r="7.6" fill="none" stroke="#b78300" stroke-opacity=".55" stroke-width="1"/><text x="12" y="16.1" text-anchor="middle" font-size="10.5" font-weight="800" fill="#8a5d00" font-family="Lexend,Arial,sans-serif">L</text></svg><span class="lh-name">Leap</span><span class="lh-num" id="leap-hud-num">0</span>';
   document.body.appendChild(hud);
   const hudNum = hud.querySelector('#leap-hud-num');
-  let hudT = null, hudOn = false;
+  let hudT = null, hudOn = false, hudPinned = (lsGet('leapPin') === '1');
+  function placeHud() {
+    const pr = paneEl.getBoundingClientRect();
+    hud.style.left = Math.round(pr.left + pr.width / 2) + 'px';
+    hud.style.top = pr.top > 1 ? (Math.round(pr.top) + 10) + 'px' : 'calc(env(safe-area-inset-top, 0px) + 10px)';
+  }
   function hudSync() {
-    const on = fab.classList.contains('open') || fab.classList.contains('dragging');
+    const on = fab.classList.contains('open') || fab.classList.contains('dragging') || hudPinned;
+    hud.classList.toggle('pinned', hudPinned);
     if (on === hudOn) return;
     hudOn = on;
     clearTimeout(hudT);
     if (on) {
       try { hudNum.textContent = leapFmt(leapVal); } catch (err) {}
-      const pr = paneEl.getBoundingClientRect();
-      hud.style.left = Math.round(pr.left + pr.width / 2) + 'px';
-      hud.style.top = pr.top > 1 ? (Math.round(pr.top) + 10) + 'px' : 'calc(env(safe-area-inset-top, 0px) + 10px)';
+      placeHud();
       hud.classList.add('show');
     } else {
       hudT = setTimeout(() => hud.classList.remove('show'), hudLinger ? 1700 : 350);
     }
   }
+  // Leap göstergesine basınca turuncu olur ve tekrar basılana kadar yerinde kalır
+  hud.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
+  hud.addEventListener('click', (e) => {
+    e.stopPropagation();
+    hudPinned = !hudPinned;
+    if (hudPinned) lsSet('leapPin', '1'); else lsRemove('leapPin');
+    try { navigator.vibrate(10); } catch (err) {}
+    hudSync();
+  });
+  hud.addEventListener('contextmenu', (e) => e.preventDefault());
+  window.addEventListener('resize', () => { if (hudOn) placeHud(); });
+  if (window.ResizeObserver) new ResizeObserver(() => { if (hudOn) placeHud(); }).observe(paneEl);
+  if (hudPinned) setTimeout(hudSync, 0);
   new MutationObserver(hudSync).observe(fab, { attributes: true, attributeFilter: ['class'] });
   wake();
 })();
@@ -10009,7 +10077,7 @@ function bpSetPage(p, instant) {
 
 (function initThemeSetting() {
   const KEY = 'theme';
-  const THEMES = { black: '#000000', blue: '#131827' };
+  const THEMES = { black: '#000000', gray: '#232323', blue: '#131827', purple: '#110e20' };
   const valid = (v) => Object.prototype.hasOwnProperty.call(THEMES, v);
   const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-theme .seg-btn'));
   const meta = document.getElementById('meta-theme');
@@ -10397,27 +10465,14 @@ cdAnimRestore();
     return wrap;
   }
 
-  function actionsFor(m) {
-    const own = m.classList.contains('own-msg');
-    const isMedia = !!m.dataset.mediaUrl;
-    const list = [];
-    if (editingId === m.id) {
-      list.push({ label: 'Düzenlemeyi iptal et', icon: MA_ICONS.close, run: () => { if (editingId === m.id) endEdit(); } });
-      return list;
-    }
-    if (!editingId && m._doReply) list.push({ label: 'Yanıtla', icon: MA_ICONS.reply, run: () => { if (m.isConnected && !editingId) m._doReply(); } });
-    if (!isMedia && m._raw && m._raw.text) list.push({ label: 'Kopyala', icon: MA_ICONS.copy, run: () => copyText(m._raw.text) });
-    if (own && !isMedia && !editingId) list.push({ label: 'Düzenle', icon: MA_ICONS.edit, run: () => { if (m.isConnected && !editingId) startEdit(m); } });
-    if (m._reaction && m._reaction.mine) list.push({ label: 'Tepkiyi kaldır', icon: MA_ICONS.heart, run: () => removeMyReaction(m.id) });
-    if (own) list.push({ label: 'Sil', icon: MA_ICONS.del, cls: 'danger', run: () => deleteOwnMessage(m.id) });
-    return list;
+  // Yalnızca karşı tarafın mesajında açılır: 5x5 emoji tepsisi. Kendi mesajımızda hiçbir şey olmaz.
+  function canOpen(m) {
+    return !!m && !m.classList.contains('own-msg') && !!m._bubble && !!m._slot && !m._deleting &&
+      !m.classList.contains('deleting') && !m.classList.contains('typing-msg') && !m.classList.contains('live-msg');
   }
 
   function open(m) {
-    const acts = actionsFor(m);
-    const own = m.classList.contains('own-msg');
-    const canReact = !own && !m._reaction && !!m._slot;
-    if (!acts.length && !canReact) return;
+    if (!canOpen(m)) return;
     fired = true; lpAt = Date.now(); openedAt = lpAt;
     if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
     try { closeActs(null); } catch (e) {}
@@ -10431,59 +10486,59 @@ cdAnimRestore();
 
     const rect = (m._bubble || m).getBoundingClientRect();
     const stage = document.createElement('div');
-    stage.className = 'lp-stage' + (own ? ' own' : '');
+    stage.className = 'lp-stage free';
 
-    let react = null;
-    if (canReact) {
-      react = document.createElement('div');
-      react.className = 'lp-react';
-      HEART_KINDS.forEach((k) => {
-        const hb = document.createElement('button');
-        hb.type = 'button'; hb.textContent = HEARTS[k];
-        hb.addEventListener('click', (e) => { e.stopPropagation(); if (Date.now() - openedAt < 350) return; addReaction(m.id, k); close(true); });
-        react.appendChild(hb);
+    const cur = m._reaction && m._reaction.mine ? m._reaction.kind : null;
+    const react = document.createElement('div');
+    react.className = 'lp-react';
+    HEART_GRID.forEach((k) => {
+      const hb = document.createElement('button');
+      hb.type = 'button'; hb.textContent = HEARTS[k];
+      if (k === cur) hb.classList.add('sel');
+      hb.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (Date.now() - openedAt < 350) return;
+        if (k === cur) removeMyReaction(m.id);                       // aynı tepkiye tekrar basınca kaldırır
+        else { if (cur) removeMyReaction(m.id); addReaction(m.id, k); }
+        close(true);
       });
-      stage.appendChild(react);
-    }
+      react.appendChild(hb);
+    });
     const clone = makeClone(m);
     stage.appendChild(clone);
-    let menu = null;
-    if (acts.length) {
-      menu = document.createElement('div');
-      menu.className = 'lp-menu';
-      acts.forEach((a) => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'lp-item' + (a.cls ? ' ' + a.cls : '');
-        const sp = document.createElement('span'); sp.textContent = a.label;
-        b.appendChild(sp);
-        b.insertAdjacentHTML('beforeend', a.icon);
-        b.addEventListener('click', (e) => { e.stopPropagation(); if (Date.now() - openedAt < 350) return; a.run(); close(true); });
-        menu.appendChild(b);
-      });
-      stage.appendChild(menu);
-    }
+    stage.appendChild(react);
     ov.appendChild(stage);
     document.body.appendChild(ov);
 
-    // Yerleşim: baloncuk olduğu yerde kalır (isim satırı eklendiyse yukarı doğru büyür), menü aşağı açılır; sığmazsa grup kaydırılır
-    if (own) stage.style.right = Math.max(10, vW - (rect.right - vLeft)) + 'px';
-    else stage.style.left = Math.max(10, rect.left - vLeft) + 'px';
-    const G = 8;
-    const rh = react ? react.offsetHeight + G : 0;
-    const mh = menu ? menu.offsetHeight + G : 0;
-    let cH = clone.offsetHeight;
-    const padT = 14, padB = 14;
+    // Yerleşim: mesaj olduğu yerde kalır; tepsi altına, sığmazsa üstüne, ikisine de sığmazsa grup kaydırılır; yanlarda da ekran içinde tutulur
+    const G = 8, padT = 14, padB = 14, padX = 10;
+    const trayW = react.offsetWidth, trayH = react.offsetHeight;
+    let cl = Math.max(padX, rect.left - vLeft);
+    clone.style.left = cl + 'px';
+    const cw = clone.offsetWidth;
+    if (cl + cw > vW - padX) cl = Math.max(padX, vW - padX - cw);
+    clone.style.left = Math.round(cl) + 'px';
+    const tl = Math.max(padX, Math.min(vW - trayW - padX, cl));
+    react.style.left = Math.round(tl) + 'px';
+
     const avail = vH - padT - padB;
-    if (rh + cH + mh > avail) {
-      cH = Math.max(80, avail - rh - mh);
+    let cH = clone.offsetHeight;
+    if (cH + G + trayH > avail) {
+      cH = Math.max(60, avail - G - trayH);
       clone.style.maxHeight = cH + 'px'; clone.style.overflow = 'hidden';
     }
-    const total = rh + cH + mh;
-    let top = (rect.bottom - vTop) - cH - rh;
-    if (top + total > vH - padB) top = vH - padB - total;
-    if (top < padT) top = padT;
-    stage.style.top = Math.round(top) + 'px';
+    let cTop = (rect.bottom - vTop) - cH;
+    cTop = Math.max(padT, Math.min(vH - padB - cH, cTop));
+    let trayTop;
+    if (cTop + cH + G + trayH <= vH - padB) trayTop = cTop + cH + G;                 // altına
+    else if (cTop - G - trayH >= padT) { trayTop = cTop - G - trayH; react.classList.add('up'); }   // üstüne
+    else {                                                                            // ikisi de olmaz: grup kayar
+      const total = cH + G + trayH;
+      cTop = Math.max(padT, Math.min(vH - padB - total, cTop));
+      trayTop = cTop + cH + G;
+    }
+    clone.style.top = Math.round(cTop) + 'px';
+    react.style.top = Math.round(trayTop) + 'px';
 
     ov.addEventListener('click', () => { if (Date.now() - openedAt < 350) return; close(true); });
     ['pointerdown', 'mousedown'].forEach((t) => ov.addEventListener(t, (e) => e.preventDefault())); // yazma kutusunun odağı gitmesin
@@ -10507,7 +10562,7 @@ cdAnimRestore();
     if (ov || e.touches.length !== 1) return;
     const t = e.target;
     const m = t && t.closest ? t.closest('.msg') : null;
-    if (!m || !m._bubble || m._deleting || m.classList.contains('deleting') || m.classList.contains('typing-msg') || m.classList.contains('live-msg')) return;
+    if (!canOpen(m)) return;
     if (t.closest(SKIP)) return;
     sx = e.touches[0].clientX; sy = e.touches[0].clientY;
     wasFocused = document.activeElement === messageInput;
@@ -10526,7 +10581,17 @@ cdAnimRestore();
   chatArea.addEventListener('touchend', endTouch, { capture: true, passive: false });
   chatArea.addEventListener('touchcancel', endTouch, { capture: true, passive: false });
   chatArea.addEventListener('click', (e) => { if (Date.now() - lpAt < 700) { e.stopPropagation(); e.preventDefault(); } }, true);
-  chatArea.addEventListener('contextmenu', (e) => { if (ov || Date.now() - lpAt < 1500 || timer) e.preventDefault(); });
+  chatArea.addEventListener('contextmenu', (e) => {
+    if (ov || Date.now() - lpAt < 1500 || timer) { e.preventDefault(); return; }
+    if (e.pointerType === 'touch' || e.pointerType === 'pen') return;   // dokunmada uzun basma zaten ayrı ele alınıyor
+    const t = e.target;
+    const m = t && t.closest ? t.closest('.msg') : null;
+    if (!canOpen(m) || t.closest(SKIP)) return;
+    e.preventDefault();
+    cancelTimer();
+    wasFocused = document.activeElement === messageInput;
+    open(m);
+  });
   document.addEventListener('keydown', (e) => { if (ov && e.key === 'Escape') close(true); });
   window.addEventListener('orientationchange', () => close(false));
   if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { if (ov && Date.now() - openedAt > 600) close(false); });
