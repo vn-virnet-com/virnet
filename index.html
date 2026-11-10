@@ -238,6 +238,12 @@ body.desk .msg-acts { opacity: 1; pointer-events: auto; }
 body.desk .msg:not(.hov):not(.acts-on):not(.editing) .msg-act:not(.reply) { display: none; }
 body.desk .msg.hov .msg-act:not(.reply), body.desk .msg.acts-on .msg-act:not(.reply) { animation: act-in 0.15s ease both; }
 body.desk .msg:not(.hov):not(.acts-on):not(.editing) .msg-acts.over { background: none; border: 0; box-shadow: none; padding: 0; }
+/* Yedek: desk sınıfı JS'ten gelmese bile geniş ekranda Yanıtla tuşu hep görünür */
+@media (min-width: 769px) {
+  .msg-act.reply { order: -1; }
+  .msg .msg-acts { opacity: 1; pointer-events: auto; }
+  .msg:not(.hov):not(.acts-on):not(.editing) .msg-act:not(.reply) { display: none; }
+}
 /* Tepki: mesajın alt köşesinde yuvarlak + tuşu; basınca 3 kalp yan yana açılır, seçilen kalp aynı yerde kalır */
 .msg.has-react { margin-bottom: 12px; }
 .react-slot {
@@ -544,9 +550,12 @@ body #typing-indicator { display: none !important; }
 .yt-err { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; font-size: 12.5px; color: var(--c-dd); background: color-mix(in srgb, var(--c-1a) 94%, transparent); z-index: 5; }
 .yt-err a { color: var(--c-fff); text-decoration: underline; }
 /* Yüzen mini oynatıcı */
-#yt-dock { position: absolute; top: 0; left: 0; right: 0; box-sizing: border-box; z-index: 6; width: 100%; display: none; flex-direction: column; align-items: stretch; gap: 0; padding: 6px 10px 7px; border-radius: 0; background: color-mix(in srgb, var(--c-1a) 96%, transparent); color: var(--c-fff); border: 0; border-bottom: 1px solid var(--yt-a12); box-shadow: 0 4px 14px rgba(0,0,0,.4); font-family: 'Lexend', sans-serif; line-height: 1.25; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-user-select: none; user-select: none; }
-#auto-chip.show ~ #yt-dock { top: 28px; }
+#yt-dock { position: absolute; top: 6px; left: 8px; right: 8px; box-sizing: border-box; z-index: 6; width: auto; display: none; flex-direction: column; align-items: stretch; gap: 0; padding: 7px 10px 8px; border-radius: 22px; isolation: isolate; overflow: hidden; background: linear-gradient(160deg, color-mix(in srgb, var(--c-fff) 16%, transparent) 0%, color-mix(in srgb, var(--c-fff) 5%, transparent) 45%, color-mix(in srgb, var(--c-fff) 9%, transparent) 100%), color-mix(in srgb, var(--c-1a) 62%, transparent); color: var(--c-fff); border: 1px solid var(--yt-a20); box-shadow: inset 0 1px 0 var(--yt-a35), inset 0 -1px 0 var(--yt-a12), inset 0 0 14px var(--yt-a12), 0 8px 24px rgba(0,0,0,.38), 0 1px 3px rgba(0,0,0,.3); font-family: 'Lexend', sans-serif; line-height: 1.25; -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); -webkit-user-select: none; user-select: none; }
+#auto-chip.show ~ #yt-dock { top: 32px; }
 #yt-dock.show { display: flex; animation: ytdIn .2s ease-out; }
+/* Cam yansıması: üstte yumuşak parlama + köşede ışık çizgisi */
+#yt-dock::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; background: radial-gradient(120% 90% at 12% -10%, var(--yt-a28) 0%, transparent 55%), linear-gradient(115deg, transparent 38%, var(--yt-a12) 50%, transparent 62%); opacity: .8; }
+#yt-dock::after { content: ''; position: absolute; left: 14px; right: 14px; top: 0; height: 1px; z-index: -1; pointer-events: none; background: linear-gradient(90deg, transparent, var(--yt-a42), transparent); }
 #yt-dock.hide { opacity: 0; transform: translateY(-8px); transition: opacity .2s ease, transform .2s ease; pointer-events: none; }
 @keyframes ytdIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
 .ytd-cover { width: 36px; height: 36px; border-radius: var(--r-lg); background: #333 center / cover no-repeat; flex-shrink: 0; }
