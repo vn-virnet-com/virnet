@@ -193,6 +193,9 @@ body.once-viewing #fab { display: none !important; }
 .msg-acts.two .msg-act.reply { grid-row: 2; grid-column: 1; }
 .msg-acts.two .msg-act.copy { grid-row: 2; grid-column: 2; }
 .msg.editing .msg-acts.two { display: flex; }
+/* Tek satırlık geniş mesajlarda da sığmazsa: tuşlar baloncuğun üstünde yüzen küçük bir çubuk olur */
+.msg .msg-acts.over, .msg.own-msg .msg-acts.over, .msg.time-mid .msg-acts.over { position: absolute; right: auto; bottom: auto; padding: 1px; z-index: 6; background: var(--c-111); border: 1px solid var(--c-33); border-radius: var(--r-lg); box-shadow: 0 2px 8px rgba(var(--sh), 0.4); }
+.msg.own-msg .msg-acts.over { flex-direction: row-reverse; }
 @media (any-hover: hover) {
   /* Mesajın bulunduğu satırın tamamı üzerine gelmeyi sayar; fare tuşlara giderken kapanmaz */
   .msg::before { content: ''; position: absolute; top: 0; bottom: 0; left: -100vw; right: -100vw; }
@@ -1207,9 +1210,9 @@ body.nick-hidden #message-input { border-radius: var(--r-lg) 0 0 var(--r-lg); }
   .seg-btn { padding: 5px 10px; font-size: 12px; }
   /* Masaüstü: sağ panel (bildirim / ayarlar) her zaman 36vw sabit. */
   #pane-chat { flex: 1 1 0; width: auto; min-width: 0; }
-  #pane-notes { flex: 0 0 36vw; width: 36vw; }
+  #pane-notes { flex: 0 0 40vw; width: 40vw; }
   /* Masaüstü: ayarlar solda sabit, sağ panelden biraz daha dar; sohbet ikisinin ortasında */
-  #pane-settings { display: flex; flex: 0 0 28vw; width: 28vw; border-right: 1px solid var(--c-1a); background: var(--c-000); }
+  #pane-settings { display: flex; flex: 0 0 20vw; width: 20vw; min-width: 210px; border-right: 1px solid var(--c-1a); background: var(--c-000); }
   #pane-settings > #bp-page-set { flex: 1 1 auto; width: 100%; height: 100%; }
   body.desk-set .bp-tab[data-p="3"] { display: none; }
   body.desk-set #bp-pill { width: calc((100% - 4px) / 3); }
@@ -1386,7 +1389,10 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 #settings-scroll #blk-haptic .set-title::before { background-color: #22c55e; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Crect x=%228%22 y=%223%22 width=%228%22 height=%2218%22 rx=%222%22/%3E%3Cpath d=%22M4 8v8M20 8v8%22/%3E%3C/svg%3E"); }
 #settings-scroll #blk-setup .set-title::before { background-color: #64748b; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cline x1=%224%22 y1=%2221%22 x2=%224%22 y2=%2214%22/%3E%3Cline x1=%224%22 y1=%2210%22 x2=%224%22 y2=%223%22/%3E%3Cline x1=%2212%22 y1=%2221%22 x2=%2212%22 y2=%2212%22/%3E%3Cline x1=%2212%22 y1=%228%22 x2=%2212%22 y2=%223%22/%3E%3Cline x1=%2220%22 y1=%2221%22 x2=%2220%22 y2=%2216%22/%3E%3Cline x1=%2220%22 y1=%2212%22 x2=%2220%22 y2=%223%22/%3E%3Cline x1=%221%22 y1=%2214%22 x2=%227%22 y2=%2214%22/%3E%3Cline x1=%229%22 y1=%228%22 x2=%2215%22 y2=%228%22/%3E%3Cline x1=%2217%22 y1=%2216%22 x2=%2223%22 y2=%2216%22/%3E%3C/svg%3E"); }
 
-#settings-scroll .seg { flex-direction: row; gap: 2px; padding: 2px; border: none; border-radius: 10px; overflow: visible; background: var(--c-000); }
+#settings-scroll .seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; padding: 2px; border: none; border-radius: 10px; overflow: visible; background: var(--c-000); }
+#settings-scroll .seg.measure { display: flex !important; width: max-content; }
+#settings-scroll .seg.measure .seg-btn { flex: 0 0 auto !important; }
+#settings-scroll .set-val { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #settings-scroll .seg-btn { flex: 1 1 0; width: auto; min-width: 0; padding: 6px 4px; font-size: 12.5px; font-weight: 500; white-space: nowrap; border: none; border-radius: 8px; background: transparent; color: var(--c-88); box-shadow: none; transition: background .18s ease, color .18s ease, box-shadow .18s ease; }
 #settings-scroll .seg-btn + .seg-btn { border-top: none; }
 #settings-scroll .seg-btn.active { background: var(--c-33); color: var(--c-fff); box-shadow: 0 1px 4px rgba(var(--sh),0.5), inset 0 0 0 1px var(--c-44); }
@@ -3429,16 +3435,32 @@ window.addEventListener('resize', () => {
 });
 function closeSlot(m) { if (m && m._slot) m._slot.classList.remove('open'); }
 
-// Tuşlar solda ekrandan taşacaksa (kendi mesajımız, çok geniş baloncuk) iki satıra böler
+// Tuşlar (ya da saatle birlikte durdukları alan) ekrandan taşacaksa: önce iki satıra böler (kendi mesajımız), o da olmazsa baloncuğun üstünde yüzen bir çubuk olarak gösterir
 function fitActs(msg) {
-  if (!msg || !msg.classList || !msg.classList.contains('own-msg') || msg.classList.contains('time-mid')) return;
-  const acts = msg.querySelector('.msg-acts');
-  if (!acts) return;
-  acts.classList.remove('two');
-  const r = acts.getBoundingClientRect();
-  if (!r.width) return;
-  const lim = Math.max(0, chatArea.getBoundingClientRect().left);
-  if (r.left < lim + 2) acts.classList.add('two');
+  if (!msg || !msg.classList || msg.classList.contains('typing-msg') || msg.classList.contains('live-msg')) return;
+  const acts = msg.querySelector('.msg-acts'), foot = msg.querySelector('.msg-foot');
+  if (!acts || !foot) return;
+  const own = msg.classList.contains('own-msg'), mid = msg.classList.contains('time-mid');
+  acts.classList.remove('two', 'over');
+  acts.style.left = ''; acts.style.top = '';
+  const ca = chatArea.getBoundingClientRect();
+  const L = Math.max(0, ca.left) + 2, R = Math.min(window.innerWidth, ca.right) - 2;
+  const out = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && (r.left < L || r.right > R); };
+  const probe = mid ? foot : acts;
+  if (!out(probe)) return;
+  if (!mid && own && acts.querySelector('.msg-act.danger')) {
+    acts.classList.add('two');
+    if (!out(acts)) return;
+    acts.classList.remove('two');
+  }
+  acts.classList.add('over');
+  const bub = msg.querySelector('.bubble') || msg;
+  const br = bub.getBoundingClientRect(), fr = foot.getBoundingClientRect();
+  const w = acts.offsetWidth, h = acts.offsetHeight;
+  let x = own ? br.right - w : br.left;
+  x = Math.min(Math.max(x, L), Math.max(L, R - w));
+  acts.style.left = (x - fr.left) + 'px';
+  acts.style.top = (br.top - h - 2 - fr.top) + 'px';
 }
 window.addEventListener('resize', () => {
   const on = chatArea.querySelectorAll('.msg.acts-on, .msg.hov');
@@ -9705,6 +9727,40 @@ function bpSetPage(p, instant) {
     if (!t || !t.closest || t.closest('input, textarea, [contenteditable="true"]')) return;
     if (t.closest('button, [role="button"], [role="switch"], .set-title, .leap-bar') && e.cancelable) e.preventDefault();
   });
+})();
+// Ayarlardaki seçenek tuşları sığmazsa eşit sütunlu satırlara bölünür (ör. 4 tuş dar menüde 2x2 olur)
+(function initSegWrap() {
+  const menu = document.getElementById('settings-scroll');
+  if (!menu) return;
+  const segs = Array.prototype.slice.call(menu.querySelectorAll('.seg'));
+  function fit(seg) {
+    const btns = Array.prototype.slice.call(seg.querySelectorAll('.seg-btn'));
+    const n = btns.length;
+    const avail = seg.clientWidth - 4;
+    if (!n || avail <= 0) return;
+    seg.classList.add('measure');
+    let nat = 0;
+    btns.forEach((b) => { nat = Math.max(nat, b.offsetWidth); });
+    seg.classList.remove('measure');
+    if (!nat) return;
+    let cols = Math.max(1, Math.floor((avail + 2) / (nat + 2)));
+    if (cols >= n) { seg.style.gridAutoFlow = ''; seg.style.gridTemplateColumns = ''; return; }
+    const rows = Math.ceil(n / cols);
+    cols = Math.ceil(n / rows);
+    seg.style.gridAutoFlow = 'row';
+    seg.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
+  }
+  let raf = 0;
+  function all() { raf = 0; segs.forEach(fit); }
+  function sched() { if (!raf) raf = requestAnimationFrame(all); }
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(sched);
+    ro.observe(menu);
+    segs.forEach((sg) => ro.observe(sg));
+  }
+  window.addEventListener('resize', sched);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(sched);
+  sched();
 })();
 (function initNotesPopup() {
   if (notesUnseen) notesBtn.classList.add('unseen');
