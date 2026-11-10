@@ -78,12 +78,17 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
   padding: 0 15px; background: var(--c-000); border-bottom: 1px solid var(--c-1a);
   font-size: 13.5px; color: var(--c-88);
 }
-#auto-chip { display: none; position: absolute; top: 0; left: 0; right: 0; z-index: 7; box-sizing: border-box; height: 28px; align-items: center; justify-content: center; gap: 6px; padding: 0 12px; background: color-mix(in srgb, var(--c-1a) 96%, transparent); border-bottom: 1px solid var(--c-33); color: var(--c-88); font-size: 12.5px; white-space: nowrap; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-#auto-chip.show { display: flex; }
+/* Oto. Oynat baloncuğu: şarkı şeridinin ALTINDA ortalı duran liquid glass hap. Şerit yoksa tepeye çıkar, şerit (sözler) uzarsa aşağı kayar; top değerini JS (ytChipSync) verir */
+#auto-chip { display: none; position: absolute; top: 6px; left: 0; right: 0; margin: 0 auto; z-index: 5; box-sizing: border-box; width: max-content; max-width: calc(100% - 16px); height: 36px; align-items: center; justify-content: center; gap: 7px; padding: 0 4px 0 13px; border-radius: 999px; isolation: isolate; overflow: hidden; white-space: nowrap; font-size: 12.5px; font-weight: 600; line-height: 1.25; font-family: 'Lexend', sans-serif; color: var(--yt-a88); background: linear-gradient(160deg, color-mix(in srgb, var(--c-fff) 16%, transparent) 0%, color-mix(in srgb, var(--c-fff) 5%, transparent) 45%, color-mix(in srgb, var(--c-fff) 9%, transparent) 100%), color-mix(in srgb, var(--c-1a) 62%, transparent); border: 1px solid var(--yt-a20); box-shadow: inset 0 1px 0 var(--yt-a35), inset 0 -1px 0 var(--yt-a12), inset 0 0 14px var(--yt-a12), 0 8px 24px rgba(0,0,0,.38), 0 1px 3px rgba(0,0,0,.3); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); -webkit-user-select: none; user-select: none; transition: top .3s cubic-bezier(.2,.9,.3,1); }
+#auto-chip.show { display: flex; animation: acIn .22s ease-out; }
+@keyframes acIn { from { opacity: 0; transform: translateY(-8px) scale(.96); } to { opacity: 1; transform: none; } }
+#auto-chip::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; background: radial-gradient(120% 120% at 12% -20%, var(--yt-a28) 0%, transparent 55%), linear-gradient(115deg, transparent 38%, var(--yt-a12) 50%, transparent 62%); opacity: .8; }
+#auto-chip::after { content: ''; position: absolute; left: 16px; right: 16px; top: 0; height: 1px; z-index: -1; pointer-events: none; background: linear-gradient(90deg, transparent, var(--yt-a42), transparent); }
 #auto-chip svg { display: block; flex: 0 0 auto; }
 #auto-chip .ac-txt { overflow: hidden; text-overflow: ellipsis; }
-#auto-chip-x { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 22px; height: 22px; margin: 0 -4px 0 0; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-#auto-chip-x:active { background: var(--c-1a); }
+#auto-chip-x { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 28px; width: 28px; height: 28px; margin: 0 0 0 3px; padding: 0; color: var(--yt-a88); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: background .15s, color .15s, transform .1s; }
+#auto-chip-x svg { width: 14px; height: 14px; }
+@media (prefers-reduced-motion: reduce) { #auto-chip { transition: none; } #auto-chip.show { animation: none; } }
 #status-bar { display: none !important; }
 /* Yüzen menü: sürüklenebilir; basılı tutunca/üstüne gelince tuşlar GTA tarzı pasta dilimleri olarak merkeze bitişik açılır */
 #fab { position: absolute; left: 12px; top: 0; width: 46px; height: 46px; z-index: 21; }
@@ -500,7 +505,7 @@ body #typing-indicator { display: none !important; }
 .once-btn:disabled:active { background: var(--c-111); }
 
 /* Spotify tarzı şarkı kartı */
-.yt-card, #yt-dock { --yt-a12: color-mix(in srgb, var(--c-fff) 12%, transparent); --yt-a16: color-mix(in srgb, var(--c-fff) 16%, transparent); --yt-a20: color-mix(in srgb, var(--c-fff) 20%, transparent); --yt-a25: color-mix(in srgb, var(--c-fff) 25%, transparent); --yt-a28: color-mix(in srgb, var(--c-fff) 28%, transparent); --yt-a35: color-mix(in srgb, var(--c-fff) 35%, transparent); --yt-a42: color-mix(in srgb, var(--c-fff) 42%, transparent); --yt-a50: color-mix(in srgb, var(--c-fff) 50%, transparent); --yt-a60: color-mix(in srgb, var(--c-fff) 60%, transparent); --yt-a72: color-mix(in srgb, var(--c-fff) 72%, transparent); --yt-a75: color-mix(in srgb, var(--c-fff) 75%, transparent); --yt-a82: color-mix(in srgb, var(--c-fff) 82%, transparent); --yt-a88: color-mix(in srgb, var(--c-fff) 88%, transparent); }
+.yt-card, #yt-dock, #auto-chip { --yt-a12: color-mix(in srgb, var(--c-fff) 12%, transparent); --yt-a16: color-mix(in srgb, var(--c-fff) 16%, transparent); --yt-a20: color-mix(in srgb, var(--c-fff) 20%, transparent); --yt-a25: color-mix(in srgb, var(--c-fff) 25%, transparent); --yt-a28: color-mix(in srgb, var(--c-fff) 28%, transparent); --yt-a35: color-mix(in srgb, var(--c-fff) 35%, transparent); --yt-a42: color-mix(in srgb, var(--c-fff) 42%, transparent); --yt-a50: color-mix(in srgb, var(--c-fff) 50%, transparent); --yt-a60: color-mix(in srgb, var(--c-fff) 60%, transparent); --yt-a72: color-mix(in srgb, var(--c-fff) 72%, transparent); --yt-a75: color-mix(in srgb, var(--c-fff) 75%, transparent); --yt-a82: color-mix(in srgb, var(--c-fff) 82%, transparent); --yt-a88: color-mix(in srgb, var(--c-fff) 88%, transparent); }
 .yt-card { display: block; position: relative; box-sizing: border-box; width: 100%; max-width: none; margin: 6px 0 0;  border-radius: var(--r-xl); background: var(--c-1a); color: var(--c-fff); overflow: hidden; white-space: normal; cursor: default; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; font-family: 'Lexend', sans-serif; line-height: 1.2; box-shadow: 0 4px 18px rgba(0,0,0,.35); }
 .yt-card * { -webkit-tap-highlight-color: transparent; }
 .yt-bg { position: absolute; inset: -24px; background: #333 center / cover no-repeat; filter: blur(26px) saturate(1.2); opacity: .22; pointer-events: none; }
@@ -555,7 +560,6 @@ body #typing-indicator { display: none !important; }
 .yt-err a { color: var(--c-fff); text-decoration: underline; }
 /* Yüzen mini oynatıcı */
 #yt-dock { position: absolute; top: 6px; left: 8px; right: 8px; box-sizing: border-box; z-index: 6; width: auto; display: none; flex-direction: column; align-items: stretch; gap: 0; padding: 7px 10px 8px; border-radius: 22px; isolation: isolate; overflow: hidden; background: linear-gradient(160deg, color-mix(in srgb, var(--c-fff) 16%, transparent) 0%, color-mix(in srgb, var(--c-fff) 5%, transparent) 45%, color-mix(in srgb, var(--c-fff) 9%, transparent) 100%), color-mix(in srgb, var(--c-1a) 62%, transparent); color: var(--c-fff); border: 1px solid var(--yt-a20); box-shadow: inset 0 1px 0 var(--yt-a35), inset 0 -1px 0 var(--yt-a12), inset 0 0 14px var(--yt-a12), 0 8px 24px rgba(0,0,0,.38), 0 1px 3px rgba(0,0,0,.3); font-family: 'Lexend', sans-serif; line-height: 1.25; -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); -webkit-user-select: none; user-select: none; }
-#auto-chip.show ~ #yt-dock { top: 32px; }
 #yt-dock.show { display: flex; animation: ytdIn .2s ease-out; }
 /* Cam yansıması: üstte yumuşak parlama + köşede ışık çizgisi */
 #yt-dock::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; background: radial-gradient(120% 90% at 12% -10%, var(--yt-a28) 0%, transparent 55%), linear-gradient(115deg, transparent 38%, var(--yt-a12) 50%, transparent 62%); opacity: .8; }
@@ -564,9 +568,13 @@ body #typing-indicator { display: none !important; }
 @keyframes ytdIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
 .ytd-cover { width: 36px; height: 36px; border-radius: var(--r-lg); background: #333 center / cover no-repeat; flex-shrink: 0; }
 /* Şerit düğmeleri: hepsi aynı boy, aynı daire, aynı çizgi dili (24 ızgara, 2 px yuvarlak uçlu çizgi, 20 px simge) */
-#yt-dock .ytd-b { box-sizing: border-box; display: flex; align-items: center; justify-content: center; flex: 0 0 36px; width: 36px; height: 36px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: var(--yt-a12); color: var(--yt-a88); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: background .15s, color .15s, transform .1s; }
-#yt-dock .ytd-b:active { transform: scale(.94); background: var(--yt-a20); }
-#yt-dock .ytd-b.on { background: var(--yt-a28); color: var(--c-fff); }
+/* Liquid glass yuvarlak tuşlar (şerit tuşları + Oto. Oynat çarpısı aynı dil): ışık alan üst yansıma, alt kırılma parıltısı, iç kenar ışığı */
+#yt-dock .ytd-b { box-sizing: border-box; display: flex; align-items: center; justify-content: center; flex: 0 0 36px; width: 36px; height: 36px; margin: 0; padding: 0; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; color: var(--yt-a88); transition: background .15s, color .15s, transform .12s, box-shadow .15s; }
+#yt-dock .ytd-b, #auto-chip-x { position: relative; isolation: isolate; overflow: hidden; border: 1px solid var(--yt-a28); border-radius: 50%; background: radial-gradient(120% 110% at 28% 10%, var(--yt-a42) 0%, transparent 55%), linear-gradient(160deg, var(--yt-a28) 0%, var(--yt-a12) 55%, var(--yt-a20) 100%); box-shadow: inset 0 1.5px 1px var(--yt-a60), inset 0 -2px 3px var(--yt-a20), inset 0 0 8px var(--yt-a16), 0 3px 8px rgba(0,0,0,.34), 0 1px 2px rgba(0,0,0,.3); }
+#yt-dock .ytd-b::before, #auto-chip-x::before { content: ''; position: absolute; left: 17%; right: 17%; top: 2px; height: 44%; z-index: -1; pointer-events: none; border-radius: 50%; background: linear-gradient(180deg, var(--yt-a60) 0%, transparent 100%); opacity: .55; }
+#yt-dock .ytd-b::after, #auto-chip-x::after { content: ''; position: absolute; left: 24%; right: 24%; bottom: 2px; height: 28%; z-index: -1; pointer-events: none; border-radius: 50%; background: radial-gradient(closest-side, var(--yt-a35), transparent); opacity: .55; }
+#yt-dock .ytd-b:active, #auto-chip-x:active { transform: scale(.92); background: radial-gradient(120% 110% at 28% 10%, var(--yt-a50) 0%, transparent 55%), linear-gradient(160deg, var(--yt-a35) 0%, var(--yt-a16) 55%, var(--yt-a25) 100%); }
+#yt-dock .ytd-b.on { color: var(--c-fff); background: radial-gradient(120% 110% at 28% 10%, var(--yt-a60) 0%, transparent 58%), linear-gradient(160deg, var(--yt-a42) 0%, var(--yt-a20) 55%, var(--yt-a35) 100%); box-shadow: inset 0 1.5px 1px var(--yt-a75), inset 0 -2px 3px var(--yt-a25), inset 0 0 10px var(--yt-a25), 0 0 12px var(--yt-a25), 0 3px 8px rgba(0,0,0,.34); }
 #yt-dock .ytd-b svg { display: block; width: 20px; height: 20px; flex: 0 0 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .ytd-prog { position: relative; flex: 1 1 0; min-width: 40px; height: 34px; touch-action: none; -webkit-user-select: none; user-select: none; cursor: pointer; }
 .ytd-t { position: absolute; top: 19px; font-size: 10px; line-height: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--yt-a72); pointer-events: none; white-space: nowrap; }
@@ -4384,6 +4392,9 @@ function ytDockBuild() {
     '</div>' +
     '<div class="ytd-lyr"></div>';
   wrap.appendChild(el);
+  // Şerit uzayınca (sözler açılınca) / kısalınca / gizlenince Oto. Oynat baloncuğu hemen yeni yerine kaysın
+  try { if (window.ResizeObserver) new ResizeObserver(() => { try { ytTopInsetSync(); } catch (e) {} }).observe(el); } catch (e) {}
+  try { new MutationObserver(() => { try { ytTopInsetSync(); } catch (e) {} }).observe(el, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}
   const q = (s) => el.querySelector(s);
   el._d = { cover: q('.ytd-cover'), info: q('.ytd-info'), play: q('.ytd-play'), next: q('.ytd-next'), x: q('.ytd-x'), lyr: q('.ytd-lyr'), tog: q('.ytd-tog'), prog: q('.ytd-prog'), fill: q('.ytd-track > i'), tc: q('.ytd-tc'), td: q('.ytd-td'), seeking: false, frac: 0, dur0: 0 };
   bindYtTap(el._d.play, () => { if (ytDockCard && ytDockCard._toggle) ytDockCard._toggle(); });
@@ -4534,15 +4545,37 @@ setInterval(ytDockUpdate, 300);
 
 /* Üstteki şeritler (Oto. Oynat + şarkı şeridi) göründükçe mesaj alanının üst boşluğu şeritlerin altına iner; ilk mesajlar altta kalmaz */
 /* Şarkı şeridi / Oto. Oynat şeridi ekranda görünüyorsa alt kenarını (ekran koordinatı) --strip-b'ye yazar; Leap göstergesi ve bildirim baloncuğu şeridin altına iner */
+/* Oto. Oynat baloncuğunun hedef üst konumu (chat-wrap'e göre): şarkı şeridi görünüyorsa şeridin 6px altı, yoksa tepeye sabit.
+   Şerit sözlerle uzayınca ya da kapanınca baloncuk CSS geçişiyle aşağı / yukarı kayar; Leap ve bildirim baloncuğu da bu hedefe göre hesaplanır. */
+function ytChipTop() {
+  const d = document.getElementById('yt-dock');
+  if (d && d.classList.contains('show') && !d.classList.contains('hide') && d.offsetHeight) return d.offsetTop + d.offsetHeight + 6;
+  return 6;
+}
+function ytChipSync() {
+  const c = document.getElementById('auto-chip'); if (!c) return;
+  const t = ytChipTop() + 'px';
+  if (c.style.top !== t) c.style.top = t;
+}
+// Üstteki şeritlerin (şarkı şeridi + Oto. Oynat) chat-wrap üstüne göre alt kenarı; kayma bitmeden hedef konum esas alınır
+function ytStripRelBottom() {
+  let rel = 0;
+  const d = document.getElementById('yt-dock');
+  if (d && d.classList.contains('show') && !d.classList.contains('hide') && d.offsetHeight) rel = d.offsetTop + d.offsetHeight;
+  const c = document.getElementById('auto-chip');
+  if (c && c.classList.contains('show') && c.offsetHeight) rel = Math.max(rel, ytChipTop() + c.offsetHeight);
+  return rel;
+}
+/* Şarkı şeridi / Oto. Oynat baloncuğu ekranda görünüyorsa alt kenarını (ekran koordinatı) --strip-b'ye yazar; Leap göstergesi ve bildirim baloncuğu şeridin altına iner */
 function ytStripBottomSync() {
+  try { ytChipSync(); } catch (e) {}
   let b = 0;
-  ['auto-chip', 'yt-dock'].forEach((id) => {
-    const e = document.getElementById(id);
-    if (!e || e.classList.contains('hide') || !e.classList.contains('show')) return;
-    const r = e.getBoundingClientRect();
-    if (!r.height || r.right <= 0 || r.left >= window.innerWidth) return; // mobilde sohbet bölmesi ekran dışındaysa sayılmaz
-    b = Math.max(b, r.bottom);
-  });
+  const wrap = document.getElementById('chat-wrap');
+  if (wrap) {
+    const r = wrap.getBoundingClientRect();
+    const rel = ytStripRelBottom();
+    if (rel && r.height && r.right > 0 && r.left < window.innerWidth) b = r.top + rel; // mobilde sohbet bölmesi ekran dışındaysa sayılmaz
+  }
   const v = b ? Math.ceil(b) + 'px' : '0px';
   const rs = document.documentElement.style;
   if (rs.getPropertyValue('--strip-b') !== v) rs.setProperty('--strip-b', v);
@@ -4551,15 +4584,7 @@ function ytTopInsetSync() {
   try { ytStripBottomSync(); } catch (e) {}
   const area = document.getElementById('chat-area'), wrap = document.getElementById('chat-wrap');
   if (!area || !wrap) return;
-  let inset = 0;
-  const wb = wrap.getBoundingClientRect().top;
-  ['auto-chip', 'yt-dock'].forEach((id) => {
-    const e = document.getElementById(id);
-    if (!e || e.classList.contains('hide')) return;
-    if (id === 'auto-chip' ? !e.classList.contains('show') : !e.classList.contains('show')) return;
-    const r = e.getBoundingClientRect();
-    if (r.height) inset = Math.max(inset, Math.ceil(r.bottom - wb));
-  });
+  const inset = ytStripRelBottom();
   const want = inset ? inset + 8 : 8;
   if (parseFloat(area.style.paddingTop || 8) === want) return;
   const dist = area.scrollHeight - area.scrollTop - area.clientHeight; // alta olan uzaklığı koru
@@ -4596,6 +4621,7 @@ let ytAutoReady = false;
 function ytAutoSet(v) {
   ytAutoReady = !!v;
   const c = document.getElementById('auto-chip');
+  try { ytChipSync(); } catch (e) {}
   if (c) c.classList.toggle('show', ytAutoReady);
   try { ytTopInsetSync(); } catch (e) {}
 }
