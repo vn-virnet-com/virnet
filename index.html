@@ -1003,7 +1003,7 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 #bp-clip { position: absolute; top: 0; left: 0; right: 0; bottom: var(--bp-tabs-h, 44px); overflow: hidden; border-radius: var(--r-md) var(--r-md) 0 0; }
 #bp-tabs { position: absolute; left: 0; right: 0; bottom: 0; height: var(--bp-tabs-h, 44px); padding: 4px 5px; box-sizing: border-box; border-top: 1px solid var(--c-33); border-radius: 0 0 var(--r-md) var(--r-md); background: var(--c-111); z-index: 3; }
 #bp-tabs-in { --bp-page: 0; position: relative; display: flex; height: 100%; padding: 2px; box-sizing: border-box; background: var(--c-1a); border: 1px solid var(--c-33); border-radius: var(--r-lg); }
-#bp-pill { position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc((100% - 4px) / 4); border-radius: var(--r-md); background: var(--accent); box-shadow: 0 1px 4px rgba(var(--sh),0.4); transform: translateX(calc(var(--bp-page) * 100%)); transition: transform .25s ease; will-change: transform; pointer-events: none; }
+#bp-pill { position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc((100% - 4px) / 4); border-radius: var(--r-md); background: var(--accent); box-shadow: 0 1px 4px rgba(var(--sh),0.4); transform: translateX(calc(var(--bp-pill, var(--bp-page)) * 100%)); transition: transform .25s ease; will-change: transform; pointer-events: none; }
 #bell-pop.no-anim #bp-pill { transition: none; }
 .bp-tab { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; flex: 1 1 0; min-width: 0; padding: 0 2px; border: 0; background: transparent; color: var(--c-88); font-size: 12px; font-weight: 400; font-family: inherit; line-height: 1; cursor: pointer; white-space: nowrap; transition: color .25s ease; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .bp-tab.on { color: var(--on-accent); font-weight: 700; }
@@ -1441,6 +1441,20 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 #fab.idle #fab-main { opacity: .25; transition: transform .15s ease, color .15s ease, opacity .6s ease; }
 #fab.idle::before { opacity: 1; transition: opacity .6s ease; }
 @media (prefers-reduced-motion: reduce) { #fab::before, #fab-main, #fab.idle #fab-main { transition: none; } }
+
+/* ===== MOBİL: sabit alt sekme çubuğu (CMD | Bildirim | Keşfet | Oluştur | Ayarlar) ===== */
+.bp-cmd { display: none; }
+#bp-tabs-in.drag #bp-pill { transition: none; }
+@media (max-width: 768px) {
+  .bp-cmd { display: flex; order: -1; }
+  #app > #bp-tabs { position: relative; left: auto; right: auto; bottom: auto; flex: 0 0 auto; width: 100%; height: calc(var(--bp-tabs-h, 44px) + env(safe-area-inset-bottom, 0px)); padding: 0 0 env(safe-area-inset-bottom, 0px); border-radius: 0; z-index: 5; }
+  #app > #bp-tabs { display: none; }
+  #app > #panes[style*="display: block"] ~ #bp-tabs { display: block; }
+  body.kb-open #app > #panes ~ #bp-tabs { display: none; }
+  #app > #bp-tabs #bp-tabs-in { border: 0; border-radius: 0; }
+  #app > #bp-tabs #bp-pill { width: calc((100% - 4px) / 5); border-radius: var(--r-sm); }
+  #bell-pop #bp-clip, #bell-pop.composing #bp-clip { bottom: 0; }
+}
 </style>
 </head>
 <body>
@@ -1803,7 +1817,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     <div id="rp-actions"><span id="rp-cancel">İptal</span><span id="rp-send">Gönder</span></div>
   </div>
   </div>
-  <div id="bp-tabs"><div id="bp-tabs-in"><div id="bp-pill"></div><button type="button" class="bp-tab on" data-p="0" aria-label="Bildirim" title="Bildirim"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="1" aria-label="Keşfet" title="Keşfet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="2" aria-label="Oluştur" title="Oluştur"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8M8 12h8"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="3" aria-label="Ayarlar" title="Ayarlar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="bp-dot"></span></button></div></div>
+  <div id="bp-tabs"><div id="bp-tabs-in"><div id="bp-pill"></div><button type="button" class="bp-tab on" data-p="0" aria-label="Bildirim" title="Bildirim"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="1" aria-label="Keşfet" title="Keşfet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="2" aria-label="Oluştur" title="Oluştur"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8M8 12h8"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="3" aria-label="Ayarlar" title="Ayarlar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab bp-cmd" data-p="chat" aria-label="CMD (sohbet)" title="CMD"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor" stroke="none" font-family="Lexend,Arial,sans-serif">CMD</text></svg><span class="bp-dot"></span></button></div></div>
 </div>
   <div id="new-msg-badge" class="new-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg><span>Yeni</span></div>
 </div>
@@ -7873,6 +7887,7 @@ function updateBadges() {
   const mob = isMobileLayout();
   newNotesBadge.classList.toggle('show', mob && view === 'chat' && (unreadNotes || newNotesBadge.classList.contains('typing')));
   newMsgBadge.classList.toggle('show', mob && view === 'notes' && unreadMsgs);
+  { const cb = document.querySelector('.bp-cmd'); if (cb) cb.classList.toggle('new', mob && view === 'notes' && unreadMsgs); }
 }
 
 let reopenKb = false;
@@ -7917,14 +7932,20 @@ if (mqMobile.addEventListener) mqMobile.addEventListener('change', updateBadges)
 else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
 
 (function initSwipe() {
+  const innerSlider = document.getElementById('bp-slider');
+  const tabsIn = document.getElementById('bp-tabs-in');
   let st = null;
+  // Paneller: 0 = CMD (sohbet), 1 = Bildirim, 2 = Keşfet, 3 = Oluştur, 4 = Ayarlar
   panes.addEventListener('touchstart', (e) => {
     st = null;
     if (!isMobileLayout() || e.touches.length !== 1) return;
     const tg = e.target;
-    if (tg && tg.closest && tg.closest('#fab, #live-toggle, #notes-btn, #bell-pop, #send-btn, input, textarea, #cancel-reply-btn')) return;
+    if (tg && tg.closest && tg.closest('#fab, #live-toggle, #notes-btn, #send-btn, input, textarea, #cancel-reply-btn')) return;
+    if (bellPop.classList.contains('composing')) return;
+    const strip = (tg && tg.closest) ? tg.closest('#ts-strip') : null;
+    if (strip && strip.scrollWidth > strip.clientWidth) return;
     const t = e.touches[0];
-    st = { x: t.clientX, y: t.clientY, t0: Date.now(), mode: null, dx: 0 };
+    st = { x: t.clientX, y: t.clientY, t0: Date.now(), mode: null, dx: 0, idx: curPanelIdx(), dir: 0, target: 0, kind: '', card: !!(tg && tg.closest && tg.closest('#bp-list .bp-card')) };
   }, { passive: true });
 
   panes.addEventListener('touchmove', (e) => {
@@ -7934,33 +7955,46 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
     if (st.mode === null) {
       if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
       if (Math.abs(dx) > Math.abs(dy) * 1.2) {
+        const idx = st.idx;
+        // CMD'de sağa kaydırma mesaj yanıtı; sonda sola yok; bildirim kartında sağa kaydırma kartı siler
+        if ((dx > 0 && idx === 0) || (dx < 0 && idx === 4) || (dx > 0 && idx === 1 && st.card)) { st = null; return; }
         st.mode = 'h';
-        if (view === 'chat' && dx > 0) { st = null; return; }
-        slider.classList.add('dragging');
-      }
-      else { st.mode = 'v'; }
+        st.dir = dx < 0 ? 1 : -1;
+        st.target = idx + st.dir;
+        st.kind = ((idx === 0 && st.target === 1) || (idx === 1 && st.target === 0)) ? 'outer' : 'inner';
+        if (idx === 0) prepNotesDrag();
+        if (st.kind === 'outer') slider.classList.add('dragging');
+        else innerSlider.style.transition = 'none';
+        tabsIn.classList.add('drag');
+      } else { st.mode = 'v'; }
     }
     if (st.mode !== 'h') return;
     st.dx = dx;
-    const W = panes.clientWidth;
-    const base = (view === 'notes') ? -W : 0;
-    slider.style.transform = 'translateX(' + Math.max(-W, Math.min(0, base + dx)) + 'px)';
+    const w = panes.clientWidth || 1;
+    if (st.kind === 'outer') {
+      const base = (st.idx === 1) ? -w : 0;
+      slider.style.transform = 'translateX(' + Math.max(-w, Math.min(0, base + dx)) + 'px)';
+    } else {
+      const d = st.dir > 0 ? Math.max(-w, Math.min(0, dx)) : Math.max(0, Math.min(w, dx));
+      innerSlider.style.transform = 'translateX(calc(' + ((st.idx - 1) * -25) + '% + ' + d + 'px))';
+    }
+    const dd = st.dir > 0 ? Math.max(0, -dx) : Math.max(0, dx);
+    tabsIn.style.setProperty('--bp-pill', String(st.idx + st.dir * Math.min(1, dd / w)));
   }, { passive: true });
 
   const end = (e) => {
     if (!st) return;
-    const s = st; st = null;
-    if (s.mode !== 'h') return;
-    const W = panes.clientWidth;
-    const dt = Math.max(1, Date.now() - s.t0);
-    const fast = Math.abs(s.dx) > 40 && Math.abs(s.dx) / dt > 0.4;
-    const far = Math.abs(s.dx) > W * 0.25;
-    let target = view;
-    if (e.type !== 'touchcancel' && (far || fast)) {
-      if (view === 'chat' && s.dx < 0) target = 'notes';
-      else if (view === 'notes' && s.dx > 0) target = 'chat';
-    }
-    setView(target);
+    const s0 = st; st = null;
+    tabsIn.classList.remove('drag');
+    if (s0.mode !== 'h') return;
+    const w = panes.clientWidth || 1;
+    const dt = Math.max(1, Date.now() - s0.t0);
+    const dd = s0.dir > 0 ? -s0.dx : s0.dx;
+    const fast = dd > 40 && dd / dt > 0.4;
+    const far = dd > w * 0.25;
+    const go = e.type !== 'touchcancel' && (far || fast);
+    if (s0.kind === 'inner') { innerSlider.style.transition = ''; innerSlider.style.transform = ''; }
+    commitPanel(go ? s0.target : s0.idx);
   };
   panes.addEventListener('touchend', end);
   panes.addEventListener('touchcancel', end);
@@ -8610,7 +8644,9 @@ function closeNotesPop() {
 function syncBellPanel() {
   const vis = !isMobileLayout() || view === 'notes';
   if (vis === bellPop.classList.contains('show')) return;
-  if (vis) openBellPop(); else closeBellPop();
+  if (vis) openBellPop();
+  else if (isMobileLayout()) setTimeout(() => { if (isMobileLayout() && view !== 'notes') closeBellPop(); }, 380);
+  else closeBellPop();
 }
 
 // ---- Kartlar (bildirim penceresinin yan sayfası): İsim / İçerik / Konu / Zaman + ortak beğenme-beğenmeme ----
@@ -9731,7 +9767,7 @@ function closeCardCompose() {
 let bpPage = (() => { const v = parseInt(lsGet('bpPage') || '0', 10); return (v >= 0 && v <= 3) ? v : 0; })();
 const BP_PAGES = 4;
 const bpUnread = [false, false, false, false];
-function bpDots() { document.querySelectorAll('.bp-tab').forEach((b, i) => b.classList.toggle('new', !!bpUnread[i])); }
+function bpDots() { document.querySelectorAll('.bp-tab').forEach((b, i) => { if (b.classList.contains('bp-cmd')) return; b.classList.toggle('new', !!bpUnread[i]); }); }
 // Seçili olmayan sayfaya yeni gönderi gelirse o sekmenin köşesinde kırmızı nokta çıkar
 function bpMarkUnread(i) { try { noteIncomingNotif(); } catch (e) {} if (i === bpPage) return; bpUnread[i] = true; bpDots(); }
 function bpSetPage(p, instant) {
@@ -9746,6 +9782,7 @@ function bpSetPage(p, instant) {
   bpUnread[p] = false;
   bpDots();
   try { lsSet('bpPage', String(p)); } catch (e) {}
+  try { syncMobileBar(); } catch (e) {}
   try { cmpSync(); } catch (e) {}
 }
 // Yazma (oluşturma) ekranı açıkken sekmeler gizlenir, ekran panelin tamamını kaplar
@@ -9787,16 +9824,93 @@ function bpSetPage(p, instant) {
   // Çanın penceresi açılıp kapanınca / sayfa değişince alıcı göstergesini eşitle
   new MutationObserver(() => { try { cmpSync(); } catch (e) {} }).observe(bellPop, { attributes: true, attributeFilter: ['class'] });
 })();
+function curPanelIdx() { return view === 'chat' ? 0 : bpPage + 1; }
+function syncMobileBar() {
+  const inner = document.getElementById('bp-tabs-in');
+  if (!inner) return;
+  if (!isMobileLayout()) { inner.style.removeProperty('--bp-pill'); return; }
+  const idx = curPanelIdx();
+  inner.style.setProperty('--bp-pill', String(idx));
+  document.querySelectorAll('.bp-tab').forEach((b) => {
+    const k = b.classList.contains('bp-cmd') ? 0 : (parseInt(b.dataset.p, 10) + 1);
+    b.classList.toggle('on', k === idx);
+  });
+}
+function dropComposes() {
+  ['bp-compose', 'cd-compose', 'td-compose', 'rp-compose', 'ts-compose'].forEach((id) => { const c = document.getElementById(id); if (c) c.classList.remove('show'); });
+  const ae = document.activeElement;
+  if (ae && /^(bp-(title|body)|cd-(name|body|topic|time|up|dn)|td-(name|body|topic)|rp-(name|body)|ts-(tag|note))-in$/.test(ae.id || '')) { try { ae.blur(); } catch (e) {} }
+  bellMsgHad = false;
+}
+function prepNotesDrag() {
+  bpSetPage(0, true);
+  if (!bellPop.classList.contains('show')) openBellPop();
+}
+function commitPanel(idx) {
+  if (idx === 0) setView('chat');
+  else { bpSetPage(idx - 1, view === 'chat'); setView('notes'); }
+}
+function goPanel(idx) {
+  dropComposes();
+  if (idx === curPanelIdx()) return;
+  commitPanel(idx);
+}
+(function initMobileBar() {
+  const tabs = document.getElementById('bp-tabs');
+  if (!tabs) return;
+  const vv = window.visualViewport;
+  let base = 0, lastW = 0, open = false, edAt = 0, to = null;
+  const isEd = () => {
+    const a = document.activeElement;
+    return !!(a && a.matches && a.matches('textarea, input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="button"])'));
+  };
+  function kbUpd() {
+    clearTimeout(to); to = null;
+    const body = document.body;
+    if (!isMobileLayout()) { open = false; body.classList.remove('kb-open'); return; }
+    const cur = vv ? vv.height : window.innerHeight;
+    const w = vv ? vv.width : window.innerWidth;
+    if (Math.abs(w - lastW) > 60) { base = 0; lastW = w; }
+    base = Math.max(base, cur, window.innerHeight);
+    const kb = cur < base - 140;
+    const ed = isEd();
+    if (ed) edAt = Date.now();
+    const was = open;
+    open = ed ? kb : (open && kb && Date.now() - edAt < 900);
+    if (open !== was) body.classList.toggle('kb-open', open);
+    if (open && !ed) to = setTimeout(kbUpd, 300);
+  }
+  function place() {
+    if (isMobileLayout()) { if (tabs.parentNode !== appEl) appEl.appendChild(tabs); }
+    else if (tabs.parentNode !== bellPop) bellPop.appendChild(tabs);
+    syncMobileBar();
+    kbUpd();
+  }
+  if (vv) { vv.addEventListener('resize', kbUpd); vv.addEventListener('scroll', kbUpd); }
+  window.addEventListener('resize', kbUpd);
+  window.addEventListener('orientationchange', () => { base = 0; setTimeout(kbUpd, 300); });
+  document.addEventListener('focusin', () => setTimeout(kbUpd, 30));
+  document.addEventListener('focusout', () => setTimeout(kbUpd, 60));
+  window.addEventListener('vn-view', syncMobileBar);
+  if (mqMobile.addEventListener) mqMobile.addEventListener('change', place);
+  else if (mqMobile.addListener) mqMobile.addListener(place);
+  place();
+})();
 (function initBellPages() {
   document.querySelectorAll('.bp-tab').forEach((b) => {
     b.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
     b.addEventListener('mousedown', (e) => e.preventDefault());
-    b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); bpSetPage(parseInt(b.dataset.p, 10)); });
+    b.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      if (isMobileLayout()) { goPanel(b.dataset.p === 'chat' ? 0 : parseInt(b.dataset.p, 10) + 1); return; }
+      if (b.dataset.p === 'chat') return;
+      bpSetPage(parseInt(b.dataset.p, 10));
+    });
   });
   bpSetPage(bpPage, true);
   let g = null;
   bellPop.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'mouse') return; // masaüstünde sekmelerle geçiş
+    if (e.pointerType === 'mouse' || isMobileLayout()) return; // masaüstünde sekmelerle geçiş (mobil: birleşik kaydırma)
     if (e.target.closest && e.target.closest('input, textarea, #bp-tabs')) return;
     const tsb = e.target.closest && e.target.closest('#ts-strip');
     if (tsb && tsb.scrollWidth > tsb.clientWidth) return; // taşan şeridi yana kaydırmak sayfa değiştirmesin
