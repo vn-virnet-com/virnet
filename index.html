@@ -8392,7 +8392,7 @@ function layoutNotesPop() {
     hud.style.top = pr.top > 1 ? (Math.round(pr.top) + 10) + 'px' : 'calc(env(safe-area-inset-top, 0px) + 10px)';
   }
   function hudSync() {
-    const away = isMobileLayout() && view === 'notes'; // mobilde sağ panelde Leap göstergesi gizli (sabitlenmişse sohbete dönünce geri gelir)
+    const away = !isMobileLayout() || view === 'notes'; // masaüstünde Leap göstergesi hiç çıkmaz; mobilde sağ panelde gizli (sabitlenmişse sohbete dönünce geri gelir)
     const on = !away && (fab.classList.contains('open') || fab.classList.contains('dragging') || hudPinned);
     hud.classList.toggle('pinned', hudPinned);
     if (on === hudOn) return;
