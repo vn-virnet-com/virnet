@@ -118,6 +118,9 @@ body.once-viewing #fab { display: none !important; }
   overflow-y: auto; overflow-x: hidden; padding: 10px 12px 16px;
   display: flex; flex-direction: column; gap: 2px;
   font-size: 18px; line-height: 1.4;
+  /* Mesaj kutusuyla sohbet arasındaki çizgi yerine alt kenarda kısacık, çok hafif bir solma */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 12px), rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 12px), rgba(0,0,0,0) 100%);
 }
 #scroll-down-btn {
   position: absolute; right: 12px; bottom: 12px; z-index: 20;
@@ -279,7 +282,7 @@ body.no-time .time-tag { display: none !important; }
 
 #input-area {
   flex: 0 0 auto; width: 100%; min-height: 72px;
-  padding: 15px; background: var(--c-000); border-top: 1px solid var(--c-22);
+  padding: 15px; background: var(--c-000); border-top: 1px solid transparent; /* ince ayırıcı çizgi kaldırıldı (yerine sohbetin altında kısa bir solma var) */
   display: none; align-items: flex-end;
 }
 #input-wrapper { display: flex; width: 100%; align-items: flex-end; }
@@ -7790,6 +7793,7 @@ function setView(v) {
   }
   updateBadges();
   try { syncBellPanel(); } catch (e) {}
+  try { window.dispatchEvent(new Event('vn-view')); } catch (e) {}
 }
 
 function noteIncomingMessage() {
@@ -8275,12 +8279,13 @@ function layoutNotesPop() {
   const hudNum = hud.querySelector('#leap-hud-num');
   let hudT = null, hudOn = false, hudPinned = (lsGet('leapPin') === '1');
   function placeHud() {
-    const pr = paneEl.getBoundingClientRect();
+    const pr = (isMobileLayout() ? panes : paneEl).getBoundingClientRect(); // mobilde sohbet bölmesi kayarken bile ortası sabit: panelin kendisine göre
     hud.style.left = Math.round(pr.left + pr.width / 2) + 'px';
     hud.style.top = pr.top > 1 ? (Math.round(pr.top) + 10) + 'px' : 'calc(env(safe-area-inset-top, 0px) + 10px)';
   }
   function hudSync() {
-    const on = fab.classList.contains('open') || fab.classList.contains('dragging') || hudPinned;
+    const away = isMobileLayout() && view === 'notes'; // mobilde sağ panelde Leap göstergesi gizli (sabitlenmişse sohbete dönünce geri gelir)
+    const on = !away && (fab.classList.contains('open') || fab.classList.contains('dragging') || hudPinned);
     hud.classList.toggle('pinned', hudPinned);
     if (on === hudOn) return;
     hudOn = on;
@@ -8306,6 +8311,7 @@ function layoutNotesPop() {
   window.addEventListener('resize', () => { if (hudOn) placeHud(); });
   if (window.ResizeObserver) new ResizeObserver(() => { if (hudOn) placeHud(); }).observe(paneEl);
   if (hudPinned) setTimeout(hudSync, 0);
+  window.addEventListener('vn-view', hudSync);
   new MutationObserver(hudSync).observe(fab, { attributes: true, attributeFilter: ['class'] });
   wake();
 })();
