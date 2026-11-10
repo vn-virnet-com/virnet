@@ -573,11 +573,19 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 .call-btn svg { display: block; pointer-events: none; }
 .call-rej svg { transform: rotate(135deg); }
 .call-card.mine .call-btn { pointer-events: none; cursor: default; }
-.call-card.missed .call-title { color: var(--warn); }
-/* ".ara" komutu kartı */
-.dial-card { --dc: var(--c-88); box-sizing: border-box; min-width: 190px; padding: 10px 14px; border: 1px solid var(--dc); border-radius: var(--r-md); color: var(--dc); background: color-mix(in srgb, var(--dc) 14%, transparent); font-weight: 700; text-align: center; overflow-wrap: anywhere; transition: color .3s, background .3s, border-color .3s; }
-.dial-card.opts { display: flex; flex-direction: column; gap: 8px; color: var(--c-fff); border-color: var(--c-33); background: var(--c-1a); }
-.dial-name { font-weight: 700; overflow-wrap: anywhere; }
+
+/* Arama kartları: ortak görünüm + duruma göre gradyan ton (g = yeşil, r = kırmızı, o = turuncu) */
+.call-card, .dial-card {
+  box-sizing: border-box; min-width: 190px; padding: 12px 16px; border: 1px solid var(--c-33); border-radius: var(--r-md);
+  background: var(--c-1a); color: var(--c-fff); text-align: center; transition: background .35s, border-color .35s;
+}
+.dial-card { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.dial-card.opts { gap: 8px; align-items: stretch; }
+.call-name, .dial-name { font-weight: 700; font-size: 16px; overflow-wrap: anywhere; }
+.call-card .call-title, .dial-status { font-weight: 500; font-size: 13px; opacity: 0.92; }
+.call-card[data-tone="g"], .dial-card[data-tone="g"] { background: linear-gradient(135deg, color-mix(in srgb, var(--ok) 45%, var(--c-1a)), color-mix(in srgb, var(--ok) 12%, var(--c-1a))); border-color: color-mix(in srgb, var(--ok) 65%, transparent); }
+.call-card[data-tone="r"], .dial-card[data-tone="r"] { background: linear-gradient(135deg, color-mix(in srgb, var(--bad) 45%, var(--c-1a)), color-mix(in srgb, var(--bad) 12%, var(--c-1a))); border-color: color-mix(in srgb, var(--bad) 65%, transparent); }
+.call-card[data-tone="o"], .dial-card[data-tone="o"] { background: linear-gradient(135deg, color-mix(in srgb, #ff9f1a 45%, var(--c-1a)), color-mix(in srgb, #ff9f1a 12%, var(--c-1a))); border-color: color-mix(in srgb, #ff9f1a 65%, transparent); }
 .dial-opt { width: 100%; padding: 10px 12px; border: 1px solid var(--c-33); border-radius: var(--r-md); background: var(--c-111); color: var(--c-fff); font-size: 15px; font-family: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .dial-opt:active { background: var(--hot); }
 .call-btn.off { opacity: 0.22; filter: grayscale(0.7); pointer-events: none; }
@@ -1929,7 +1937,7 @@ const DIAL_PREFIX = '\u2063DIAL\u2063';
 const DIAL_KEY = 'dialStates';
 const DIAL_ORANGE = '#ff9f1a';
 const dialTimers = {};
-const DIAL_OPTS = [['call_open', 'Açılsın'], ['call_busy', 'Meşgul çıksın'], ['call_timeout', 'Zaman aşımı'], ['notfound', 'Bulunamadı']];
+const DIAL_OPTS = [['call_open', 'Arama Açılsın'], ['call_busy', 'Meşgul Çıksın'], ['call_timeout', 'Zamanı Aşsın'], ['notfound', 'Bulunamasın']];
 const DIAL_RANK = { wait: 0, call_open: 1, call_busy: 1, call_timeout: 1, notfound: 2, started: 2, busy: 2, timeout: 2 };
 const CALL_TIMEOUT_MS = 30000;
 const CHIP_SVG = {
@@ -5129,7 +5137,8 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
   msgDiv.id = messageId;
   if (isOwnMessage) msgDiv.classList.add('own-msg');
 
-  const rawNick = (senderNick && senderNick.trim() !== '') ? senderNick.trim() : '';
+  const isCallMsg = callParse(text) !== null || dialParse(text) !== null; // arama kartlarında gönderen ismi yazmaz
+  const rawNick = (!isCallMsg && senderNick && senderNick.trim() !== '') ? senderNick.trim() : '';
   const rn = resolveNick(rawNick);
   const finalNick = rn.finalNick;
   msgDiv._raw = { text: text, nick: rawNick };
@@ -5625,9 +5634,10 @@ function callWriteStates(o) {
 function buildCallCard(name) {
   const el = document.createElement('div');
   el.className = 'call-card';
-  el.innerHTML = '<div class="call-title"></div><div class="call-btns">' +
+  el.innerHTML = '<div class="call-name"></div><div class="call-title"></div><div class="call-btns">' +
     '<button type="button" class="call-btn call-acc" aria-label="Aramayı kabul et">' + CALL_SVG + '</button>' +
     '<button type="button" class="call-btn call-rej" aria-label="Meşgule at">' + CALL_SVG + '</button></div>';
+  el._n = el.querySelector('.call-name');
   el._t = el.querySelector('.call-title');
   el._acc = el.querySelector('.call-acc');
   el._rej = el.querySelector('.call-rej');
@@ -5635,9 +5645,10 @@ function buildCallCard(name) {
   el._state = 'ringing';
   el._set = (st) => {
     el._state = st;
+    el._n.textContent = el._name || '…';
     el._t.textContent = st === 'accepted' ? 'Arama başladı' : st === 'rejected' ? 'Reddedildi'
-      : st === 'missed' ? 'Cevapsız Arama' + (el._name ? ' · ' + el._name : '')
-      : (el._name ? el._name + ' seni arıyor' : '… seni arıyor');
+      : st === 'missed' ? 'Cevapsız Arama' : 'Seni arıyor';
+    el.dataset.tone = st === 'accepted' ? 'g' : st === 'rejected' ? 'r' : st === 'missed' ? 'o' : '';
     el.classList.toggle('missed', st === 'missed');
     el._acc.classList.toggle('off', st === 'rejected' || st === 'missed');
     el._rej.classList.toggle('off', st === 'accepted' || st === 'missed');
@@ -5719,6 +5730,7 @@ function buildDialCard(name, own) {
     el._state = st;
     el.innerHTML = '';
     el.className = 'dial-card';
+    el.dataset.tone = '';
     const nm = el._name;
     if (st === 'wait' && !own) {
       el.classList.add('opts');
@@ -5736,14 +5748,21 @@ function buildDialCard(name, own) {
       });
       return;
     }
-    let txt = 'Bir saniye...', col = 'var(--c-88)';
-    if (st.indexOf('call_') === 0) { txt = nm + ' aranıyor...'; col = DIAL_ORANGE; }
-    else if (st === 'notfound') { txt = nm + ' diye bir kullanıcı bulunamadı'; col = 'var(--bad)'; }
-    else if (st === 'started') { txt = 'Arama Başladı'; col = 'var(--ok)'; }
-    else if (st === 'busy') { txt = 'Meşgul'; col = 'var(--bad)'; }
-    else if (st === 'timeout') { txt = 'Zaman Aşımı'; col = DIAL_ORANGE; }
-    el.style.setProperty('--dc', col);
-    el.textContent = txt;
+    let txt = 'Bir saniye...', tone = '';
+    if (st.indexOf('call_') === 0) { txt = nm + ' aranıyor'; tone = 'o'; }
+    else if (st === 'notfound') { txt = nm + ' bulunamadı'; tone = 'r'; }
+    else if (st === 'started') { txt = 'Arama başladı'; tone = 'g'; }
+    else if (st === 'busy') { txt = 'Kullanıcı meşgul'; tone = 'r'; }
+    else if (st === 'timeout') { txt = 'Zaman aşımı (30s)'; tone = 'o'; }
+    el.dataset.tone = tone;
+    const t = document.createElement('div');
+    t.className = 'dial-name';
+    t.textContent = nm;
+    const u = document.createElement('div');
+    u.className = 'dial-status';
+    u.textContent = txt;
+    el.appendChild(t);
+    el.appendChild(u);
   };
   el._set('wait');
   return el;
