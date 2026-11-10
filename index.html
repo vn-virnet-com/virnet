@@ -238,11 +238,15 @@ body.desk .msg-acts { opacity: 1; pointer-events: auto; }
 body.desk .msg:not(.hov):not(.acts-on):not(.editing) .msg-act:not(.reply) { display: none; }
 body.desk .msg.hov .msg-act:not(.reply), body.desk .msg.acts-on .msg-act:not(.reply) { animation: act-in 0.15s ease both; }
 body.desk .msg:not(.hov):not(.acts-on):not(.editing) .msg-acts.over { background: none; border: 0; box-shadow: none; padding: 0; }
+/* Mesajın satırına gelinmedikçe Yanıtla tuşu sönük (%25); gelince tam görünür */
+body.desk .msg-act.reply { transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease, transform 0.1s ease; }
+body.desk .msg:not(.hov):not(.acts-on):not(.editing) .msg-act.reply { opacity: 0.25; }
 /* Yedek: desk sınıfı JS'ten gelmese bile geniş ekranda Yanıtla tuşu hep görünür */
 @media (min-width: 769px) {
   .msg-act.reply { order: -1; }
   .msg .msg-acts { opacity: 1; pointer-events: auto; }
   .msg:not(.hov):not(.acts-on):not(.editing) .msg-act:not(.reply) { display: none; }
+  .msg:not(.hov):not(.acts-on):not(.editing) .msg-act.reply { opacity: 0.25; }
 }
 /* Tepki: mesajın alt köşesinde yuvarlak + tuşu; basınca 3 kalp yan yana açılır, seçilen kalp aynı yerde kalır */
 .msg.has-react { margin-bottom: 12px; }
