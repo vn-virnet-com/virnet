@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Widget2">
 <meta name="theme-color" content="#000000" id="meta-theme">
 <title>VN</title>
-<script>try{var t=localStorage.getItem('theme');if(t==='halloween'){localStorage.setItem('theme','black');t='black';}if(t==='blue'||t==='pink'){document.documentElement.setAttribute('data-theme',t);var m=document.getElementById('meta-theme');if(m)m.setAttribute('content',t==='blue'?'#131827':'#290419');}}catch(e){}</script>
+<script>try{var t=localStorage.getItem('theme');if(t==='halloween'||t==='pink'){localStorage.setItem('theme','black');t='black';}if(t==='blue'){document.documentElement.setAttribute('data-theme',t);var m=document.getElementById('meta-theme');if(m)m.setAttribute('content','#131827');}}catch(e){}</script>
 
 <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 <script>window.Peer || document.write('<script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"><\/script>');</script>
@@ -40,18 +40,6 @@ html[data-theme="blue"] {
   --ov-85:rgba(8,11,20,0.85); --ov-65:rgba(8,11,20,0.65); --ov-5:rgba(8,11,20,0.5);
   --nc-g:#a3aec8;
 }
-/* Pembe tema: siyah temanın kopyası. Siyah -> #290419, beyaz -> #f6d6e8 (açık pembe); aradaki griler bu iki renk arasında. İsim renkleri siyah temayla aynı */
-html[data-theme="pink"] {
-  --c-000:#290419; --c-111:#330c23; --c-1a:#391128; --c-22:#3e152c; --c-26:#40172e; --c-33:#4e243c; --c-3c:#542a42; --c-44:#5a3047;
-  --c-4a:#5e334c; --c-55:#673a53; --c-66:#724460; --c-77:#9a6d87; --c-88:#b88ba5; --c-cc:#dcbfce; --c-dd:#e4c7d8; --c-fff:#f6d6e8;
-  --badge-bg:#f6d6e8;
-  --ov-85:rgba(41,4,25,0.85); --ov-65:rgba(41,4,25,0.65); --ov-5:rgba(41,4,25,0.5);
-  --sh:41,4,25; --glow:rgba(246,214,232,0.5); --hot:rgba(246,214,232,0.16);
-  --nc-g:#c9b2bd;
-}
-html[data-theme="pink"] .seg-btn.danger { color: #fff; }
-html[data-theme="pink"] #reset-yes { background: var(--dng-bg); color: #fff; }
-html[data-theme="pink"] #scroll-down-btn svg { stroke: var(--c-fff); }
 #reset-box-mark svg { color: var(--on-accent); }
 
 
@@ -249,6 +237,8 @@ body.once-viewing #fab { display: none !important; }
 .react-chip.mine { cursor: pointer; }
 @keyframes react-in { 0% { opacity: 0; transform: scale(0.4); } 100% { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .react-chip { animation: none; } }
+body.no-time .time-tag { display: none !important; }
+#fab.drop #fab-main { cursor: pointer; }
 .time-tag {
   flex: 0 0 auto; font-size: calc(var(--time-fs) - 2px); font-family: 'Lexend', sans-serif; font-weight: 400;
   font-variant-numeric: tabular-nums; color: var(--c-77); white-space: nowrap; pointer-events: none; line-height: 1.2;
@@ -1353,6 +1343,8 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 #settings-scroll .sb-theme .set-title::before { background-color: #3b82f6; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%229%22/%3E%3Cpath d=%22M12 3a9 9 0 0 1 0 18z%22 fill=%22white%22/%3E%3C/svg%3E"); }
 #settings-scroll .sb-size .set-title::before { background-color: #8b5cf6; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%224 7 4 4 20 4 20 7%22/%3E%3Cline x1=%229%22 y1=%2220%22 x2=%2215%22 y2=%2220%22/%3E%3Cline x1=%2212%22 y1=%224%22 x2=%2212%22 y2=%2220%22/%3E%3C/svg%3E"); }
 #settings-scroll .sb-nick .set-title::before { background-color: #f59e0b; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2%22/%3E%3Ccircle cx=%2212%22 cy=%227%22 r=%224%22/%3E%3C/svg%3E"); }
+#settings-scroll .sb-time .set-title::before { background-color: #14b8a6; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222.2%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%229%22/%3E%3Cpolyline points=%2212 7 12 12 15 14%22/%3E%3C/svg%3E"); }
+#settings-scroll .sb-fab .set-title::before { background-color: #ef4444; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222.2%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12 2.7c3.5 4.3 6 7.2 6 10.3a6 6 0 0 1-12 0c0-3.1 2.5-6 6-10.3z%22/%3E%3C/svg%3E"); }
 #settings-scroll #blk-haptic .set-title::before { background-color: #22c55e; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Crect x=%228%22 y=%223%22 width=%228%22 height=%2218%22 rx=%222%22/%3E%3Cpath d=%22M4 8v8M20 8v8%22/%3E%3C/svg%3E"); }
 #settings-scroll #blk-setup .set-title::before { background-color: #64748b; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cline x1=%224%22 y1=%2221%22 x2=%224%22 y2=%2214%22/%3E%3Cline x1=%224%22 y1=%2210%22 x2=%224%22 y2=%223%22/%3E%3Cline x1=%2212%22 y1=%2221%22 x2=%2212%22 y2=%2212%22/%3E%3Cline x1=%2212%22 y1=%228%22 x2=%2212%22 y2=%223%22/%3E%3Cline x1=%2220%22 y1=%2221%22 x2=%2220%22 y2=%2216%22/%3E%3Cline x1=%2220%22 y1=%2212%22 x2=%2220%22 y2=%223%22/%3E%3Cline x1=%221%22 y1=%2214%22 x2=%227%22 y2=%2214%22/%3E%3Cline x1=%229%22 y1=%228%22 x2=%2215%22 y2=%228%22/%3E%3Cline x1=%2217%22 y1=%2216%22 x2=%2223%22 y2=%2216%22/%3E%3C/svg%3E"); }
 
@@ -1670,7 +1662,6 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     <div class="seg" id="seg-theme">
       <button type="button" class="seg-btn active" data-val="black" aria-pressed="true">Siyah</button>
       <button type="button" class="seg-btn" data-val="blue" aria-pressed="false">Mavi</button>
-      <button type="button" class="seg-btn" data-val="pink" aria-pressed="false">Pembe</button>
     </div></div></div></div>
   </div>
   <div class="set-block sb-size">
@@ -1681,6 +1672,24 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
       <button type="button" class="seg-btn active" data-val="medium" aria-pressed="true">Orta</button>
       <button type="button" class="seg-btn" data-val="large" aria-pressed="false">Büyük</button>
     </div></div></div></div>
+  </div>
+  <div class="set-block sb-time">
+    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Saat</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
+    <div class="set-collapse"><div class="set-clip"><div class="set-body">
+    <div class="seg" id="seg-time">
+      <button type="button" class="seg-btn active" data-val="show" aria-pressed="true">Göster</button>
+      <button type="button" class="seg-btn" data-val="hide" aria-pressed="false">Gösterme</button>
+    </div>
+    </div></div></div>
+  </div>
+  <div class="set-block sb-fab">
+    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Menü</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
+    <div class="set-collapse"><div class="set-clip"><div class="set-body">
+    <div class="seg" id="seg-fab">
+      <button type="button" class="seg-btn active" data-val="float" aria-pressed="true">Yüzen</button>
+      <button type="button" class="seg-btn" data-val="drop" aria-pressed="false">Damla</button>
+    </div>
+    </div></div></div>
   </div>
   <div class="set-block sb-nick">
     <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>İsimler</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
@@ -7925,12 +7934,22 @@ function layoutNotesPop() {
   function sleepFab() { if (fab.classList.contains('open') || fab.classList.contains('dragging') || down) { wake(); return; } fab.classList.add('idle'); }
   ['pointerdown', 'pointerenter', 'pointermove'].forEach((t) => fab.addEventListener(t, wake, { passive: true }));
   let pos = null;
+  let drop = (lsGet('fabMode') === 'drop');
   try { const o = JSON.parse(localStorage.getItem('fabPos') || 'null'); if (o && isFinite(o.fx) && isFinite(o.fy)) pos = { fx: Math.min(1, Math.max(0, o.fx)), fy: Math.min(1, Math.max(0, o.fy)) }; } catch (e) {}
   function paneSize() { return { W: paneEl.clientWidth, H: paneEl.clientHeight }; }
   function placeFab() {
     const z = paneSize();
     if (!z.W || !z.H) return;
     let l, t;
+    if (drop) {
+      const ir0 = inputArea.getBoundingClientRect(), pr0 = paneEl.getBoundingClientRect();
+      l = z.W - S / 2;
+      t = ((ir0.height ? ir0.top - pr0.top : z.H) / 2) - S / 2;
+      t = Math.max(0, Math.min(z.H - S, t));
+      fab.style.left = Math.round(l) + 'px'; fab.style.top = Math.round(t) + 'px';
+      try { layoutNotesPop(); } catch (e) {}
+      return;
+    }
     if (pos) { l = pos.fx * (z.W - S); t = pos.fy * (z.H - S); }
     else {
       l = 12;
@@ -7955,6 +7974,8 @@ function layoutNotesPop() {
   if (window.ResizeObserver) { const ro = new ResizeObserver(placeFab); ro.observe(paneEl); ro.observe(inputArea); }
   window.addEventListener('resize', placeFab);
   setTimeout(placeFab, 0);
+  fab.classList.toggle('drop', drop);
+  window.setFabMode = function (m) { drop = (m === 'drop'); fab.classList.toggle('drop', drop); try { closeFab(); } catch (e) {} placeFab(); };
 
   function visibleItems() { return Array.prototype.filter.call(ring.children, (el) => getComputedStyle(el).display !== 'none'); }
   // Kenara/köşeye yakınsa dilimler zıt yöne dizilir (yarım / çeyrek daire); ortadaysa tam daire
@@ -8040,7 +8061,7 @@ function layoutNotesPop() {
   let down = null, holdT = null;
   function clearHold() { clearTimeout(holdT); holdT = null; }
   function startMove(d) {
-    if (!d || d.mode === 'move') return;
+    if (!d || d.mode === 'move' || drop) return;
     clearTimeout(hoverT); hoverT = null;
     d.mode = 'move'; d.consumed = false; dragging = true;
     closeFab(); fab.classList.add('dragging');
@@ -8069,7 +8090,7 @@ function layoutNotesPop() {
     if (down.mode === 'move') { setCenter(e.clientX - down.ox, e.clientY - down.oy, false); return; }
     const dist = Math.hypot(e.clientX - down.x, e.clientY - down.y);
     // Masaüstü (fare): basılı tutup sürüklemek beklemeden hemen taşır
-    if (down.mode === 'mouse' && dist > 4) { clearHold(); startMove(down); setCenter(e.clientX - down.ox, e.clientY - down.oy, false); return; }
+    if (down.mode === 'mouse' && dist > 4 && !drop) { clearHold(); startMove(down); setCenter(e.clientX - down.ox, e.clientY - down.oy, false); return; }
     // Dokunmada 0,3 sn dolmadan kıpırdarsa taşıma iptal olur; dilim seçimine devam eder
     if (dist > HOLD_SLOP) { down.moved = true; clearHold(); }
     if (down.consumed) return;
@@ -9892,6 +9913,33 @@ function bpSetPage(p, instant) {
   });
 })();
 
+(function initTimeSetting() {
+  const KEY = 'timeShow';
+  const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-time .seg-btn'));
+  function apply(val) {
+    const hide = (val === 'hide');
+    document.body.classList.toggle('no-time', hide);
+    btns.forEach((b) => { const on = b.dataset.val === (hide ? 'hide' : 'show'); b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    try { if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight; } catch (e) {}
+  }
+  apply(lsGet(KEY) === 'hide' ? 'hide' : 'show');
+  btns.forEach((b) => {
+    b.addEventListener('pointerdown', (e) => e.preventDefault());
+    b.addEventListener('click', () => { const v = b.dataset.val === 'hide' ? 'hide' : 'show'; lsSet(KEY, v); apply(v); });
+  });
+})();
+
+(function initFabModeSetting() {
+  const KEY = 'fabMode';
+  const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-fab .seg-btn'));
+  function mark(val) { btns.forEach((b) => { const on = b.dataset.val === val; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); }
+  mark(lsGet(KEY) === 'drop' ? 'drop' : 'float');
+  btns.forEach((b) => {
+    b.addEventListener('pointerdown', (e) => e.preventDefault());
+    b.addEventListener('click', () => { const v = b.dataset.val === 'drop' ? 'drop' : 'float'; lsSet(KEY, v); mark(v); if (window.setFabMode) window.setFabMode(v); });
+  });
+})();
+
 (function initNickBoxSetting() {
   const KEY = 'nickBox';
   const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-nick .seg-btn'));
@@ -9961,7 +10009,7 @@ function bpSetPage(p, instant) {
 
 (function initThemeSetting() {
   const KEY = 'theme';
-  const THEMES = { black: '#000000', blue: '#131827', pink: '#290419' };
+  const THEMES = { black: '#000000', blue: '#131827' };
   const valid = (v) => Object.prototype.hasOwnProperty.call(THEMES, v);
   const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-theme .seg-btn'));
   const meta = document.getElementById('meta-theme');
@@ -9978,7 +10026,7 @@ function bpSetPage(p, instant) {
     });
   }
   // Eskiden seçilmiş kabak teması varsa siyaha dön
-  if (lsGet(KEY) === 'halloween') lsSet(KEY, 'black');
+  if (lsGet(KEY) === 'halloween' || lsGet(KEY) === 'pink') lsSet(KEY, 'black');
   apply(lsGet(KEY));
   btns.forEach((b) => {
     b.addEventListener('pointerdown', (e) => e.preventDefault());
