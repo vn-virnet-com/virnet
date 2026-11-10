@@ -10555,6 +10555,9 @@ function receiveLeap(d) {
   // Dokunmatikte boşluğa basınca kutu kapanmayabilir: dışarı dokununca uygula
   document.addEventListener('click', (e) => {
     if (!active) return;
+    // Tıklanan öğe (ör. .leap-num-t) open() içinde DOM'dan çıkarılmış olabilir; bu yüzden olay yoluna bakılır
+    const path = (e.composedPath && e.composedPath()) || [];
+    if (path.indexOf(el) !== -1 || path.indexOf(ext) !== -1) return;
     if (el.contains(e.target) || ext.contains(e.target)) return;
     finish(true);
   });
