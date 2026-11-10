@@ -7684,8 +7684,11 @@ function layoutNotesPop() {
     if (!down || e.pointerId !== down.id) return;
     down.lx = e.clientX; down.ly = e.clientY;
     if (down.mode === 'move') { setCenter(e.clientX - down.ox, e.clientY - down.oy, false); return; }
-    // 0,3 sn dolmadan kıpırdarsa taşıma iptal olur; dokunmada dilim seçimine devam eder
-    if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > HOLD_SLOP) { down.moved = true; clearHold(); }
+    const dist = Math.hypot(e.clientX - down.x, e.clientY - down.y);
+    // Masaüstü (fare): basılı tutup sürüklemek beklemeden hemen taşır
+    if (down.mode === 'mouse' && dist > 4) { clearHold(); startMove(down); setCenter(e.clientX - down.ox, e.clientY - down.oy, false); return; }
+    // Dokunmada 0,3 sn dolmadan kıpırdarsa taşıma iptal olur; dilim seçimine devam eder
+    if (dist > HOLD_SLOP) { down.moved = true; clearHold(); }
     if (down.consumed) return;
     if (down.mode === 'wheel') setHot(sliceAt(e.clientX, e.clientY));
   });
