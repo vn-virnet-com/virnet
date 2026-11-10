@@ -30,7 +30,6 @@
   --accent:var(--c-fff); --on-accent:var(--c-000); --tgl:var(--c-cc);
   --sh:0,0,0; --glow:rgba(255,255,255,0.5); --hot:rgba(255,255,255,0.16);
   --ok:#00e676; --bad:#ff4444; --dng:#ff6b6b; --warn:#ffd23f; --dng-bg:#6e1423; --dng-bg-a:#8a1a2e;
-  --nc-k:#f55f5f; --nc-t:#f59e5f; --nc-s:#f5e15f; --nc-y:#85f55f; --nc-ma:#08f3ff; --nc-l:#3c82b5; --nc-mo:#c68aff; --nc-p:#ff8aca; --nc-b:#ffffff;
   --nc-g:#a0a0a0;
 }
 /* Mavi tema: mavi-gri, soluk, Discord tarzı */
@@ -358,7 +357,6 @@ body.once-viewing #fab { display: none !important; }
 .chip-search svg, .chip-photo svg { stroke: var(--c-fff); }
 
 #send-btn { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: none; }
-/* Renk paleti şeridi: yalnızca isim kutusu görünürken vardır */
 body #typing-indicator { display: none !important; }
 /* Gönder tuşunu yukarı sürükleyince açılan fotoğraf / müzik arama menüsü */
 #chip-menu {
@@ -840,42 +838,11 @@ body.live-on #message-input { animation: live-pulse 3s ease-in-out infinite; }
 #nick-input.nudge-prev { animation: nick-nudge-prev 0.18s ease-out; }
 #nick-input.nudge-next { animation: nick-nudge-next 0.18s ease-out; }
 @media (prefers-reduced-motion: reduce) { #nick-input.nudge-prev, #nick-input.nudge-next { animation: none; } }
-#nick-color-grid {
-  display: none; grid-template-columns: repeat(5, 1fr); border: 1px solid var(--c-33);
-  border-radius: var(--r-lg); overflow: hidden; background: var(--c-111); margin-top: 8px;
-}
-body.nick-hidden #nick-color-grid { display: grid; }
-.ncg-item {
-  display: flex; align-items: center; justify-content: center; height: 36px; cursor: pointer;
-  -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none;
-}
-.ncg-item:nth-child(n+6) { border-top: 1px solid var(--c-33); }
-.ncg-item:not(:nth-child(5n+1)) { border-left: 1px solid var(--c-33); }
-.ncg-item .nc-dot { width: 18px; height: 18px; border-radius: 50%; box-sizing: border-box; }
-.ncg-item.sel { background: var(--c-1a); }
-.ncg-item.sel .nc-dot { box-shadow: 0 0 0 2px var(--accent); }
 
-/* ---- Şerit içi renk seçici (Yeni mesaj yolda şeridi) ---- */
+/* ---- Şerit orta alanı (Yeni mesaj yolda şeridi) ---- */
 #sb-mid { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; justify-content: center; margin: 0 -7px; }  /* tuşların görünmez 13px iç boşluğuna taşar: simgelere yaklaşık 6px kalır */
 #nick-input { touch-action: none; }
 #nick-ghost { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-size: 13.5px; color: var(--c-88); opacity: 0.55; pointer-events: none; user-select: none; -webkit-user-select: none; }
-/* Görünür isim kutusunun üstünde açılan renk paleti: kutunun genişliğinde, 2 sütun x 5 satır, dikey */
-#nick-pal {
-  position: fixed; z-index: 12000; display: none; box-sizing: border-box;
-  grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(5, 22px); grid-auto-flow: column;
-  background: var(--c-111); border: 1px solid var(--c-33); border-bottom: 0; border-radius: var(--r-lg) var(--r-lg) 0 0;
-  overflow: hidden; box-shadow: 0 -4px 14px rgba(var(--sh),0.5);
-  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
-}
-#nick-pal.show { display: grid; animation: nplRise .14s ease-out; transform-origin: 50% 100%; }
-@keyframes nplRise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.npl-item { display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.npl-item .nc-dot { width: 13px; height: 13px; border-radius: 50%; box-sizing: border-box; pointer-events: none; }
-.npl-item.sel .nc-dot { box-shadow: 0 0 0 2px var(--accent); }
-.npl-item.hot { background: var(--hot); }
-@media (hover: hover) and (pointer: fine) { .npl-item:hover { background: var(--hot); } }
-@media (prefers-reduced-motion: reduce) { #nick-pal.show { animation: none; } }
-#nick-input.pal-hold { -webkit-user-select: none; user-select: none; }
 /* Titreşim ayarı yalnızca mobil görünümde */
 #blk-haptic { display: none; }
 @media (max-width: 768px) { #blk-haptic { display: block; } }
@@ -928,16 +895,17 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 .cmp-has > .bp-empty, .cd-rp.cmp-has > .cd-rp-e { display: none; }
 @keyframes cmpIn { from { opacity: 0; transform: translateY(-6px) scale(.92); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .cmp-bub.show, .cmp-bub.show.out, .cmp-box { animation: none; } .cmp-bub i, .cmp-box .tdot { animation: none; opacity: 0.7; } }
-#bp-clip { position: absolute; top: 0; left: 0; right: 0; bottom: 36px; overflow: hidden; border-radius: var(--r-md) var(--r-md) 0 0; }
-#bp-tabs { position: absolute; left: 0; right: 0; bottom: 0; height: 36px; padding: 4px 5px; box-sizing: border-box; border-top: 1px solid var(--c-33); border-radius: 0 0 var(--r-md) var(--r-md); background: var(--c-111); z-index: 3; }
+#bp-clip { position: absolute; top: 0; left: 0; right: 0; bottom: var(--bp-tabs-h, 44px); overflow: hidden; border-radius: var(--r-md) var(--r-md) 0 0; }
+#bp-tabs { position: absolute; left: 0; right: 0; bottom: 0; height: var(--bp-tabs-h, 44px); padding: 4px 5px; box-sizing: border-box; border-top: 1px solid var(--c-33); border-radius: 0 0 var(--r-md) var(--r-md); background: var(--c-111); z-index: 3; }
 #bp-tabs-in { --bp-page: 0; position: relative; display: flex; height: 100%; padding: 2px; box-sizing: border-box; background: var(--c-1a); border: 1px solid var(--c-33); border-radius: var(--r-lg); }
 #bp-pill { position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc((100% - 4px) / 4); border-radius: var(--r-md); background: var(--accent); box-shadow: 0 1px 4px rgba(var(--sh),0.4); transform: translateX(calc(var(--bp-page) * 100%)); transition: transform .25s ease; will-change: transform; pointer-events: none; }
 #bell-pop.no-anim #bp-pill { transition: none; }
-.bp-tab { position: relative; z-index: 1; flex: 1 1 0; min-width: 0; padding: 0 2px; border: 0; background: transparent; color: var(--c-88); font-size: 12px; font-weight: 400; font-family: inherit; line-height: 1; cursor: pointer; white-space: nowrap; transition: color .25s ease; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.bp-tab { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; flex: 1 1 0; min-width: 0; padding: 0 2px; border: 0; background: transparent; color: var(--c-88); font-size: 12px; font-weight: 400; font-family: inherit; line-height: 1; cursor: pointer; white-space: nowrap; transition: color .25s ease; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .bp-tab.on { color: var(--on-accent); font-weight: 700; }
+.bp-tab svg { display: block; width: 22px; height: 22px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 #bell-pop.composing #bp-tabs { display: none; }
 #bell-pop.composing #bp-clip { bottom: 0; border-radius: inherit; }
-.bp-tab .bp-dot { display: none; position: absolute; top: -2px; right: 3px; width: 9px; height: 9px; border-radius: 50%; background: var(--bad); border: 1.5px solid var(--c-111); box-sizing: content-box; }
+.bp-tab .bp-dot { display: none; position: absolute; top: calc(50% - 15px); right: calc(50% - 18px); width: 9px; height: 9px; border-radius: 50%; background: var(--bad); border: 1.5px solid var(--c-111); box-sizing: content-box; }
 .bp-tab.new .bp-dot { display: block; }
 #bp-slider { --bp-page: 0; position: absolute; top: 0; bottom: 0; left: 0; width: 400%; display: flex; touch-action: pan-y; transition: transform .25s ease; will-change: transform; }
 #bp-slider { transform: translateX(calc(var(--bp-page) * -25%)); }
@@ -1232,35 +1200,6 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   #scroll-down-btn, #td-add, #cd-add, #bp-add { right: 18px; }
 }
 
-/* Saat başı kedi + ip yumağı animasyonu */
-.cf-fx{position:fixed;top:0;height:100%;overflow:hidden;pointer-events:none;z-index:9000}
-.cf-cat,.cf-yarn{position:absolute;left:0;top:0;pointer-events:none;will-change:transform;transform:translate(-300px,0)}
-.cf-cat{width:75px;height:52px;transform-origin:50% 100%}
-.cf-cat .v{position:relative;width:100%;height:100%;transform-origin:50% 100%}
-.cf-cat svg{position:absolute;left:0;top:0;width:100%;height:100%;display:none;overflow:visible}
-.cf-cat[data-v=s] .s,.cf-cat[data-v=z] .z,.cf-cat[data-v=x] svg{display:block}
-.cf-cat .lg,.cf-cat .tl{transform-box:fill-box}
-.cf-cat .lg{transform-origin:50% 6%}
-.cf-cat .tl{transform-origin:90% 90%;animation:cf-tail 1.4s ease-in-out infinite alternate}
-.cf-cat.run{--ld:.24s;--am:40deg}.cf-cat.walk{--ld:.62s;--am:16deg}
-.cf-cat.run .tl{animation:cf-tail .24s ease-in-out infinite alternate}
-.cf-cat.run .la,.cf-cat.run .ld,.cf-cat.walk .la,.cf-cat.walk .ld{animation:cf-A var(--ld) linear infinite}
-.cf-cat.run .lb,.cf-cat.run .lc,.cf-cat.walk .lb,.cf-cat.walk .lc{animation:cf-B var(--ld) linear infinite}
-.cf-cat.jump .la,.cf-cat.jump .lb{transform:rotate(58deg)}
-.cf-cat.jump .lc,.cf-cat.jump .ld{transform:rotate(-58deg)}
-.cf-cat.jump .tl{transform:rotate(14deg);animation:none}
-@keyframes cf-A{0%,100%{transform:rotate(var(--am))}50%{transform:rotate(calc(var(--am)*-1))}}
-@keyframes cf-B{0%,100%{transform:rotate(calc(var(--am)*-1))}50%{transform:rotate(var(--am))}}
-@keyframes cf-tail{from{transform:rotate(-8deg)}to{transform:rotate(10deg)}}
-.cf-yarn{width:32px;height:32px}
-.cf-yarn .rl,.cf-yarn .rl svg{width:100%;height:100%;display:block}
-.cf-yarn .th{position:absolute;left:-36px;bottom:1px;width:46px;height:14px;transform-origin:right center;animation:cf-thr .45s ease-in-out infinite alternate}
-@keyframes cf-thr{from{transform:skewY(-9deg) scaleX(1)}to{transform:skewY(7deg) scaleX(.82)}}
-/* uyuyan kedi */
-.cf-cat .br{transform-box:fill-box;transform-origin:50% 100%;animation:cf-br 2.6s ease-in-out infinite alternate}
-.cf-cat .z .tl{animation:none}
-@keyframes cf-br{to{transform:scaleY(1.05)}}
-.cf-z{position:absolute;font:700 10px/1 'Lexend',sans-serif;color:var(--c-fff,#fff);pointer-events:none;opacity:0;white-space:nowrap}
 
 @media (max-width: 768px) { #chat-area { touch-action: pan-y; } }
 /* ===== Uzun basma: mesaj öne çıkar, arka plan bulanır, seçenekler isimleriyle menü olur ===== */
@@ -1307,6 +1246,50 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 @keyframes lp-pop { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
 @keyframes lp-drop { 0% { opacity: 0; transform: translateY(-12px) scale(0.88); } 100% { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .lp-stage .msg.lp-clone, .lp-react, .lp-menu { animation: none; } #lp-overlay { transition: none; } }
+
+/* ===== Yüzen menü: Leap göstergesi ===== */
+#leap-hud { position: fixed; left: 50%; top: 10px; z-index: 12500; display: flex; align-items: center; gap: 7px; padding: 5px 14px 5px 6px; border-radius: 999px; box-sizing: border-box; white-space: nowrap; color: var(--warn); font-size: 13px; font-weight: 700; background: color-mix(in srgb, var(--c-1a) 94%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); box-shadow: 0 6px 18px rgba(var(--sh),0.55), 0 0 12px color-mix(in srgb, var(--warn) 25%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none; user-select: none; -webkit-user-select: none; opacity: 0; transform: translate(-50%, -10px) scale(.96); transition: opacity .18s ease, transform .24s cubic-bezier(.2,.9,.3,1.15); }
+#leap-hud.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+#leap-hud .lh-coin { display: block; flex: 0 0 auto; filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); }
+#leap-hud .lh-num { color: var(--c-fff); font-weight: 600; font-variant-numeric: tabular-nums; margin-left: 2px; }
+@media (prefers-reduced-motion: reduce) { #leap-hud { transition: opacity .1s linear; } }
+
+/* ===== Modern ayarlar ===== */
+#bp-page-set #settings-scroll { padding: 14px 14px 28px; }
+#settings-scroll .leap-bar { justify-content: flex-start; gap: 10px; min-height: 58px; padding: 10px 16px 10px 12px; margin-bottom: 14px; border-radius: 18px; }
+#settings-scroll .leap-bar.open { margin-bottom: 6px; }
+#settings-scroll .leap-name { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; letter-spacing: .2px; }
+#settings-scroll .leap-name::before { content: ""; width: 30px; height: 30px; flex: 0 0 auto; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23fff0a8%22/%3E%3Cstop offset=%221%22 stop-color=%22%23f2b200%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210.5%22 fill=%22url(%23g)%22 stroke=%22%23b78300%22 stroke-width=%221.2%22/%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%227.6%22 fill=%22none%22 stroke=%22%23b78300%22 stroke-opacity=%22.55%22/%3E%3Ctext x=%2212%22 y=%2216.1%22 text-anchor=%22middle%22 font-size=%2210.5%22 font-weight=%22800%22 fill=%22%238a5d00%22 font-family=%22Arial,sans-serif%22%3EL%3C/text%3E%3C/svg%3E") center / contain no-repeat; filter: drop-shadow(0 1px 3px rgba(0,0,0,.45)); }
+#settings-scroll .leap-num { flex: 1 1 auto; font-size: 18px; font-weight: 700; opacity: .95; }
+#settings-scroll .leap-num.editing { opacity: 1; }
+#settings-scroll .leap-in { height: 24px; line-height: 24px; font-size: 18px; }
+#settings-scroll .leap-ext.open { margin-bottom: 14px; }
+#settings-scroll .leap-delta { height: 42px; border-radius: 14px; padding: 0 14px; }
+
+#settings-scroll .set-block { background: var(--c-111); border: 1px solid var(--c-22); border-radius: 18px; overflow: hidden; }
+#settings-scroll .set-block + .set-block, #settings-scroll .set-block.collapsed + .set-block { margin-top: 12px; }
+#settings-scroll .set-title { justify-content: flex-start; gap: 12px; min-height: 54px; box-sizing: border-box; margin: 0; padding: 12px 14px 12px 12px; background: transparent; border-radius: 0; font-size: 15px; font-weight: 600; color: var(--c-fff); transition: background .15s ease; }
+#settings-scroll .set-title::before { content: ""; flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px; background-color: var(--c-44); background-repeat: no-repeat; background-position: center; background-size: 18px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+#settings-scroll .set-title:active { background: var(--c-1a); }
+#settings-scroll .set-title:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+#settings-scroll .set-val { flex: 1 1 auto; text-align: right; font-size: 13px; font-weight: 500; opacity: .6; }
+#settings-scroll .set-arrow { margin-left: 0; font-size: 22px; opacity: .55; }
+#settings-scroll .set-body { background: transparent; border-radius: 0; padding: 2px 12px 14px; }
+#settings-scroll #blk-live .set-title::before { background-color: #ec4899; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z%22/%3E%3C/svg%3E"); }
+#settings-scroll .sb-theme .set-title::before { background-color: #3b82f6; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%229%22/%3E%3Cpath d=%22M12 3a9 9 0 0 1 0 18z%22 fill=%22white%22/%3E%3C/svg%3E"); }
+#settings-scroll .sb-size .set-title::before { background-color: #8b5cf6; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%224 7 4 4 20 4 20 7%22/%3E%3Cline x1=%229%22 y1=%2220%22 x2=%2215%22 y2=%2220%22/%3E%3Cline x1=%2212%22 y1=%224%22 x2=%2212%22 y2=%2220%22/%3E%3C/svg%3E"); }
+#settings-scroll .sb-nick .set-title::before { background-color: #f59e0b; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2%22/%3E%3Ccircle cx=%2212%22 cy=%227%22 r=%224%22/%3E%3C/svg%3E"); }
+#settings-scroll #blk-haptic .set-title::before { background-color: #22c55e; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Crect x=%228%22 y=%223%22 width=%228%22 height=%2218%22 rx=%222%22/%3E%3Cpath d=%22M4 8v8M20 8v8%22/%3E%3C/svg%3E"); }
+#settings-scroll #blk-setup .set-title::before { background-color: #64748b; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cline x1=%224%22 y1=%2221%22 x2=%224%22 y2=%2214%22/%3E%3Cline x1=%224%22 y1=%2210%22 x2=%224%22 y2=%223%22/%3E%3Cline x1=%2212%22 y1=%2221%22 x2=%2212%22 y2=%2212%22/%3E%3Cline x1=%2212%22 y1=%228%22 x2=%2212%22 y2=%223%22/%3E%3Cline x1=%2220%22 y1=%2221%22 x2=%2220%22 y2=%2216%22/%3E%3Cline x1=%2220%22 y1=%2212%22 x2=%2220%22 y2=%223%22/%3E%3Cline x1=%221%22 y1=%2214%22 x2=%227%22 y2=%2214%22/%3E%3Cline x1=%229%22 y1=%228%22 x2=%2215%22 y2=%228%22/%3E%3Cline x1=%2217%22 y1=%2216%22 x2=%2223%22 y2=%2216%22/%3E%3C/svg%3E"); }
+
+#settings-scroll .seg { flex-direction: row; gap: 2px; padding: 3px; border: none; border-radius: 12px; overflow: visible; background: var(--c-000); }
+#settings-scroll .seg-btn { flex: 1 1 0; width: auto; min-width: 0; padding: 9px 6px; font-size: 13px; font-weight: 600; white-space: nowrap; border: none; border-radius: 9px; background: transparent; color: var(--c-88); box-shadow: none; transition: background .18s ease, color .18s ease, box-shadow .18s ease; }
+#settings-scroll .seg-btn + .seg-btn { border-top: none; }
+#settings-scroll .seg-btn.active { background: var(--c-33); color: var(--c-fff); box-shadow: 0 1px 4px rgba(var(--sh),0.5), inset 0 0 0 1px var(--c-44); }
+#settings-scroll .seg-btn.danger { background: var(--dng-bg); color: #fff; }
+#settings-scroll .seg-btn.danger:active { background: var(--dng-bg-a); }
+@media (hover: hover) and (pointer: fine) { #settings-scroll .seg-btn:not(.active):not(.danger):hover { color: var(--c-fff); background: var(--c-111); } }
+@media (prefers-reduced-motion: reduce) { #settings-scroll .set-title, #settings-scroll .seg-btn { transition: none; } }
 </style>
 </head>
 <body>
@@ -1598,7 +1581,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
       <button type="button" class="seg-btn" data-val="dynamic" aria-pressed="false">Dinamik</button>
     </div></div></div></div>
   </div>
-  <div class="set-block">
+  <div class="set-block sb-theme">
     <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Tema</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
     <div class="seg" id="seg-theme">
@@ -1607,7 +1590,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
       <button type="button" class="seg-btn" data-val="pink" aria-pressed="false">Pembe</button>
     </div></div></div></div>
   </div>
-  <div class="set-block">
+  <div class="set-block sb-size">
     <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Boyut</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
     <div class="seg" id="seg-fs">
@@ -1616,14 +1599,14 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
       <button type="button" class="seg-btn" data-val="large" aria-pressed="false">Büyük</button>
     </div></div></div></div>
   </div>
-  <div class="set-block">
+  <div class="set-block sb-nick">
     <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>İsimler</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
     <div class="seg" id="seg-nick">
       <button type="button" class="seg-btn active" data-val="show" aria-pressed="true">Göster</button>
       <button type="button" class="seg-btn" data-val="hide" aria-pressed="false">Gizle</button>
     </div>
-    <div id="nick-color-grid" role="listbox" aria-label="İsim rengi"></div></div></div></div>
+    </div></div></div>
   </div>
   <div class="set-block" id="blk-haptic">
     <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Titreşim</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
@@ -1650,7 +1633,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
     <div id="rp-actions"><span id="rp-cancel">İptal</span><span id="rp-send">Gönder</span></div>
   </div>
   </div>
-  <div id="bp-tabs"><div id="bp-tabs-in"><div id="bp-pill"></div><button type="button" class="bp-tab on" data-p="0">Bildirim<span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="1">Keşfet<span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="2">Oluştur<span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="3">Ayarlar<span class="bp-dot"></span></button></div></div>
+  <div id="bp-tabs"><div id="bp-tabs-in"><div id="bp-pill"></div><button type="button" class="bp-tab on" data-p="0" aria-label="Bildirim" title="Bildirim"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="1" aria-label="Keşfet" title="Keşfet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="2" aria-label="Oluştur" title="Oluştur"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8M8 12h8"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="3" aria-label="Ayarlar" title="Ayarlar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="bp-dot"></span></button></div></div>
 </div>
   <div id="new-msg-badge" class="new-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg><span>Yeni</span></div>
 </div>
@@ -2205,7 +2188,7 @@ function receiveLive(d) {
     div.appendChild(bubble);
     div._bubble = bubble;
     if (rep) { div.dataset.hasReply = '1'; bubble.appendChild(buildReplyContainer(rep)); }
-    if (rn.finalNick !== '') { const hdr = buildHdrRow(rn.finalNick, rn.chosenColor, id); div._hdr = hdr; bubble.appendChild(hdr); }
+    if (rn.finalNick !== '') { const hdr = buildHdrRow(rn.finalNick, id); div._hdr = hdr; bubble.appendChild(hdr); }
     const body = document.createElement('div');
     body.className = 'msg-body';
     bubble.appendChild(body);
@@ -2330,88 +2313,16 @@ function applyChatEnabled(enabled) {
 
 function isConnected() { return conn && conn.open; }
 
-const COLOR_MAP = {
-  k: 'var(--nc-k)', t: 'var(--nc-t)', s: 'var(--nc-s)', y: 'var(--nc-y)',
-  ma: 'var(--nc-ma)', l: 'var(--nc-l)', mo: 'var(--nc-mo)', p: 'var(--nc-p)', b: 'var(--nc-b)'
-};
-// ---- İsim rengi: seçilen rengin kodu ismin başına gizlice eklenir (ör. "k."), kutuda görünmez ----
-let nickColorKey = lsGet('nickColor') || '';
-if (!COLOR_MAP[nickColorKey]) nickColorKey = '';
-
-// ---- İsim → renk hafızası: bir isim yazılıp renk seçildiğinde kaydedilir, aynı isim tekrar yazılınca renk otomatik seçilir ----
-const NICK_COLOR_MAP_KEY = 'nickColorMap';
-function readNickColorMap() {
-  const m = Object.create(null);
-  try {
-    const o = JSON.parse(lsGet(NICK_COLOR_MAP_KEY) || '{}');
-    if (o && typeof o === 'object' && !Array.isArray(o)) Object.assign(m, o);
-  } catch (e) {}
-  return m;
-}
-function nickMapName() { return nickInput.value.trim().toLowerCase(); }
-let nickColorPicked = false;
-function rememberNickColor() {
-  if (editingId) return;
-  const n = nickMapName();
-  if (n === '') return;
-  const m = readNickColorMap();
-  m[n] = nickColorKey;
-  lsSet(NICK_COLOR_MAP_KEY, JSON.stringify(m));
-}
-// Yazılan isim için kayıtlı renk varsa onu seçer; kayıt yoksa mevcut seçime dokunmaz.
-function recallNickColor() {
-  const n = nickMapName();
-  if (n === '') return false;
-  const m = readNickColorMap();
-  if (!(n in m)) return false;
-  nickColorKey = COLOR_MAP[m[n]] ? m[n] : '';
-  lsSet('nickColor', nickColorKey);
-  return true;
-}
-
-// İsmin başına elle yazılan renk harfi (k. t. ma. vb.) artık renk belirlemez: yazılınca silinir. Renk yalnızca palet ile seçilir.
-function stripTypedPrefix(str) {
-  let t = String(str || '');
-  for (;;) {
-    const dot = t.indexOf('.');
-    if ((dot === 1 || dot === 2) && COLOR_MAP[t.substring(0, dot).toLowerCase()]) t = t.substring(dot + 1);
-    else break;
-  }
-  return t;
-}
-function fullNick() {
-  const n = stripTypedPrefix(nickInput.value.trim());
-  if (n === '') return '';
-  return nickColorKey ? (nickColorKey + '.' + n) : n;
-}
-function splitNickPrefix(raw) {
-  raw = String(raw || '');
-  const dot = raw.indexOf('.');
-  if (dot === 1 || dot === 2) {
-    const key = raw.substring(0, dot).toLowerCase();
-    if (COLOR_MAP[key]) return { key: key, name: raw.substring(dot + 1) };
-  }
-  return { key: '', name: raw };
-}
-function applyNickColor() {
-  let c = '';
-  if (nickColorKey && COLOR_MAP[nickColorKey]) c = COLOR_MAP[nickColorKey];
-  nickInput.style.color = c;
+// Eski sürümlerden gelen mesajlarda ismin başında renk kodu (k. t. ma. gibi) olabilir; gösterilirken silinir.
+function stripLegacyPrefix(raw) { return String(raw || '').replace(/^(?:k|t|s|y|ma|l|mo|p|b)\./i, ''); }
+function fullNick() { return nickInput.value.trim(); }
+function applyNickState() {
   // İsim kutusu boşsa mesaj kutusundaki yazı da kalın görünür
   const nameless = nickInput.value.trim() === '';
   if (messageInput.classList.contains('nameless') !== nameless) {
     messageInput.classList.toggle('nameless', nameless);
     if (typeof adjustInputHeight === 'function') { try { adjustInputHeight(); } catch (e) {} }
   }
-}
-function setNickColor(key) {
-  nickColorKey = COLOR_MAP[key] ? key : '';
-  if (!editingId) lsSet('nickColor', nickColorKey);
-  // İsim kutusu açıkken seçilen renk, isim kutusundan çıkılınca son halindeki isimle kaydolur; kutu kapalıysa hemen kaydolur
-  if (document.activeElement === nickInput && !editingId) nickColorPicked = true;
-  else rememberNickColor();
-  applyNickColor();
-  if (liveMode && liveActive) sendLive();
 }
 
 // ---- İsim geçmişi: son 5 isim saklanır. Masaüstü: isim kutusunda ←/→ ; mobil: isim kutusunu sola/sağa sürükle ----
@@ -2454,33 +2365,18 @@ function setNickFromHistory(name, dir) {
 
 nickInput.value = lsGet('nick') || '';
 pushNickHistory(nickInput.value);
-recallNickColor();
-applyNickColor();
+lsRemove('nickColor'); lsRemove('nickColorMap');   // eski isim rengi kayıtları temizlenir
+applyNickState();
 nickInput.addEventListener('focus', () => {
   // Kaydırma hareketinden sonra gelen sahte odaklanma isim kutusunu silmesin
   if (Date.now() - nickSwipeAt < 500) { try { nickInput.blur(); } catch (e) {} return; }
-  nickColorPicked = false;
   if (editingId) return;
   pushNickHistory(nickInput.value);
   nickBrowsing = false;
   { const hh = readNickHistory(); nickHistPos = (hh.length && hh[hh.length - 1] === '') ? hh.length - 1 : hh.length; }
-  nickInput.value = ''; lsSet('nick', ''); applyNickColor();
+  nickInput.value = ''; lsSet('nick', ''); applyNickState();
 });
 nickInput.addEventListener('input', () => { if (!nickHistSetting) nickBrowsing = false; });
-// Ctrl + Sol/Sağ ok: isim kutusundayken renk paletinde bir soldaki / bir sağdaki renge geçer (uçlarda durur)
-const NICK_COLOR_ORDER = ['', 'k', 't', 's', 'y', 'ma', 'l', 'mo', 'p', 'b'];
-nickInput.addEventListener('keydown', (e) => {
-  if (e.isComposing) return;
-  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-  if (!e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
-  e.preventDefault();
-  let i = NICK_COLOR_ORDER.indexOf(nickColorKey);
-  if (i < 0) i = 0;
-  const ni = i + (e.key === 'ArrowLeft' ? -1 : 1);
-  if (ni < 0 || ni >= NICK_COLOR_ORDER.length) return;
-  setNickColor(NICK_COLOR_ORDER[ni]);
-  if (window.syncNickColorUI) window.syncNickColorUI();
-});
 nickInput.addEventListener('keydown', (e) => {
   if (editingId || e.isComposing) return;
   if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
@@ -2520,7 +2416,7 @@ nickInput.addEventListener('keydown', (e) => {
     tracking = true; sx = e.touches[0].clientX; sy = e.touches[0].clientY;
   }, { passive: true });
   nickInput.addEventListener('touchmove', (e) => {
-    if (!tracking || swiped || window.__nickPalOpen) return;
+    if (!tracking || swiped) return;
     const dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
     if (Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.5) {
       swiped = true; nickSwipeAt = Date.now();
@@ -2538,35 +2434,10 @@ nickInput.addEventListener('keydown', (e) => {
 nickInput.addEventListener('blur', () => {
   if (!editingId) pushNickHistory(nickInput.value);
   nickBrowsing = false;
-  const pick = nickColorPicked;
-  nickColorPicked = false;
-  if (pick && !editingId) rememberNickColor();
 });
 nickInput.addEventListener('input', () => {
-  {
-    const before = nickInput.value, after = stripTypedPrefix(before);
-    if (after !== before) {
-      const pos = Math.max(0, (nickInput.selectionStart == null ? before.length : nickInput.selectionStart) - (before.length - after.length));
-      nickInput.value = after;
-      try { nickInput.setSelectionRange(pos, pos); } catch (e) {}
-    }
-  }
-  if (!editingId) {
-    lsSet('nick', nickInput.value);
-    if (recallNickColor()) {
-      nickColorPicked = false;
-      if (window.syncNickColorUI) window.syncNickColorUI();
-    } else if (nickMapName() !== '') {
-      // Kayıtlı olmayan isim: renk anında griye (renksiz) döner; yarım kalan seçim kaydedilmez
-      nickColorPicked = false;
-      if (nickColorKey !== '') {
-        nickColorKey = '';
-        lsSet('nickColor', '');
-        if (window.syncNickColorUI) window.syncNickColorUI();
-      }
-    }
-  }
-  applyNickColor();
+  if (!editingId) lsSet('nick', nickInput.value);
+  applyNickState();
   if (editingId) return;
   if (liveMode && liveActive) sendLive();
 });
@@ -3140,15 +3011,6 @@ function syncTypingMsg() {
   if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
 }
 
-function parseColorPrefix(nick) {
-  const dot = nick.indexOf('.');
-  if (dot === 1 || dot === 2) {
-    const key = nick.substring(0, dot).toLowerCase();
-    if (COLOR_MAP[key]) return { color: COLOR_MAP[key], name: nick.substring(dot + 1) };
-  }
-  return { color: null, name: nick };
-}
-
 const REPLY_IMG_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
 const REPLY_AUD_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="22"/></svg>';
 function makeReplyImgContent(targetId, isAud) {
@@ -3193,24 +3055,17 @@ function clipReplyText(t) {
 }
 
 function resolveNick(rawNick) {
-  let finalNick = (rawNick && rawNick.trim() !== '') ? rawNick.trim() : '';
-  let chosenColor = null;
-  const parsed = parseColorPrefix(finalNick);
-  if (parsed.color) { chosenColor = parsed.color; finalNick = parsed.name; }
-  return { finalNick: finalNick, chosenColor: chosenColor };
+  const finalNick = stripLegacyPrefix((rawNick && rawNick.trim() !== '') ? rawNick.trim() : '');
+  return { finalNick: finalNick };
 }
 
-function buildNickHeader(finalNick, chosenColor) {
+function buildNickHeader(finalNick) {
   const nickDiv = document.createElement('div');
   nickDiv.className = 'nick-hdr';
   nickDiv.style.fontWeight = '700';
   nickDiv.style.fontSize = 'var(--nick-fs)';
   nickDiv.style.marginBottom = '2px';
-  if (chosenColor) {
-    nickDiv.style.color = chosenColor;
-  } else {
-    nickDiv.style.color = 'var(--nc-g)';
-  }
+  nickDiv.style.color = 'var(--nc-g)';
   nickDiv.innerText = finalNick;
   return nickDiv;
 }
@@ -3222,10 +3077,10 @@ function msgTimeText(id) {
   return p(d.getHours()) + ':' + p(d.getMinutes());
 }
 
-function buildHdrRow(finalNick, chosenColor, id) {
+function buildHdrRow(finalNick, id) {
   const row = document.createElement('div');
   row.className = 'hdr-row';
-  row.appendChild(buildNickHeader(finalNick, chosenColor));
+  row.appendChild(buildNickHeader(finalNick));
   return row;
 }
 
@@ -5103,7 +4958,7 @@ function updateMessageContent(el, text, rawNick) {
   el._hdr = null;
   const body = el.querySelector('.msg-body');
   if (rn.finalNick !== '') {
-    const hdr = buildHdrRow(rn.finalNick, rn.chosenColor, el.id);
+    const hdr = buildHdrRow(rn.finalNick, el.id);
     el._hdr = hdr;
     { const hb = el._bubble || el; const rc = hb.querySelector(':scope > .reply-container'); hb.insertBefore(hdr, rc ? rc.nextSibling : hb.firstChild); }
   }
@@ -5125,7 +4980,7 @@ function buildReplyContainer(replyData) {
 
   if (replyData.nick && replyData.nick.trim() !== '') {
     let cleanReplyNick = replyData.nick.trim();
-    cleanReplyNick = parseColorPrefix(cleanReplyNick).name;
+    cleanReplyNick = stripLegacyPrefix(cleanReplyNick);
     const badge = document.createElement('span');
     badge.className = 'reply-nick-badge';
     badge.innerText = cleanReplyNick;
@@ -5186,7 +5041,7 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
     bubble.appendChild(buildReplyContainer(replyData));
   }
   if (finalNick !== '') {
-    const hdr = buildHdrRow(finalNick, rn.chosenColor, messageId);
+    const hdr = buildHdrRow(finalNick, messageId);
     msgDiv._hdr = hdr;
     bubble.appendChild(hdr);
   }
@@ -7167,14 +7022,12 @@ function startEdit(msgDiv) {
   editingId = msgDiv.id;
   msgDiv.classList.add('editing');
   stopLive();
-  savedDraft = { nick: nickInput.value, key: nickColorKey, text: messageInput.value };
+  savedDraft = { nick: nickInput.value, text: messageInput.value };
   savedReply = replyingTo;
   savedReplyText = replyBarText.innerText;
   replyingTo = null;
-  const sp = splitNickPrefix(msgDiv._raw.nick);
-  nickColorKey = sp.key;
-  nickInput.value = sp.name;
-  applyNickColor();
+  nickInput.value = stripLegacyPrefix(msgDiv._raw.nick);
+  applyNickState();
   messageInput.value = msgDiv._raw.text;
   liveSpaceCount = liveSpaces(messageInput.value);
   replyBarText.innerText = 'Düzenleniyor...';
@@ -7191,9 +7044,7 @@ function endEdit() {
   if (editingId) { const em = document.getElementById(editingId); if (em) em.classList.remove('editing'); }
   editingId = null;
   nickInput.value = savedDraft ? savedDraft.nick : (lsGet('nick') || '');
-  nickColorKey = savedDraft ? savedDraft.key : (lsGet('nickColor') || '');
-  if (!COLOR_MAP[nickColorKey]) nickColorKey = '';
-  applyNickColor();
+  applyNickState();
   messageInput.value = savedDraft ? savedDraft.text : '';
   liveSpaceCount = liveSpaces(messageInput.value);
   savedDraft = null;
@@ -7429,7 +7280,7 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
     st = null;
     if (!isMobileLayout() || e.touches.length !== 1) return;
     const tg = e.target;
-    if (tg && tg.closest && tg.closest('#fab, #live-toggle, #notes-btn, #bell-pop, #nick-pal, #send-btn, input, textarea, #cancel-reply-btn')) return;
+    if (tg && tg.closest && tg.closest('#fab, #live-toggle, #notes-btn, #bell-pop, #send-btn, input, textarea, #cancel-reply-btn')) return;
     const t = e.touches[0];
     st = { x: t.clientX, y: t.clientY, t0: Date.now(), mode: null, dx: 0 };
   }, { passive: true });
@@ -7783,14 +7634,29 @@ function layoutNotesPop() {
   });
 
   // Dokunma/fare: tuşa basınca (mobilde anında) dilimler açılır; basılı tutup dilime sürükleyip bırakmak seçer.
-  // Dilimlerin dışına (halkadan uzağa) sürüklemek menüyü taşır.
-  let down = null;
+  // Menüyü taşımak için tuşun üzerinde kıpırdamadan 0,3 sn basılı tutmak gerekir; ondan sonra sürüklenince yer değiştirir.
+  // Dilimlerin dışına sürüklemek menüyü artık taşımaz.
+  const HOLD_MS = 300, HOLD_SLOP = 10;
+  let down = null, holdT = null;
+  function clearHold() { clearTimeout(holdT); holdT = null; }
+  function startMove(d) {
+    if (!d || d.mode === 'move') return;
+    clearTimeout(hoverT); hoverT = null;
+    d.mode = 'move'; d.consumed = false; dragging = true;
+    closeFab(); fab.classList.add('dragging');
+    const c = center();
+    d.ox = d.lx - c.x; d.oy = d.ly - c.y;      // parmağın/farenin tuş merkezine göre ofseti korunur (zıplama olmaz)
+    try { navigator.vibrate(18); } catch (err) {}
+  }
   main.addEventListener('pointerdown', (e) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault();
     try { main.setPointerCapture(e.pointerId); } catch (err) {}
     const c = center();
-    down = { id: e.pointerId, type: e.pointerType, x: e.clientX, y: e.clientY, ox: e.clientX - c.x, oy: e.clientY - c.y, moved: false, wasOpen: fab.classList.contains('open'), mode: e.pointerType === 'mouse' ? 'mouse' : 'wheel' };
+    down = { id: e.pointerId, type: e.pointerType, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, ox: e.clientX - c.x, oy: e.clientY - c.y, moved: false, wasOpen: fab.classList.contains('open'), mode: e.pointerType === 'mouse' ? 'mouse' : 'wheel' };
+    clearHold();
+    const mine = down;
+    holdT = setTimeout(() => { holdT = null; if (down === mine && !mine.moved) startMove(mine); }, HOLD_MS);
     if (e.pointerType !== 'mouse') {
       if (down.wasOpen) { closeFab(); down.consumed = true; return; }
       openFab();
@@ -7799,43 +7665,26 @@ function layoutNotesPop() {
   });
   main.addEventListener('pointermove', (e) => {
     if (!down || e.pointerId !== down.id) return;
-    const dist = Math.hypot(e.clientX - down.x, e.clientY - down.y);
+    down.lx = e.clientX; down.ly = e.clientY;
+    if (down.mode === 'move') { setCenter(e.clientX - down.ox, e.clientY - down.oy, false); return; }
+    // 0,3 sn dolmadan kıpırdarsa taşıma iptal olur; dokunmada dilim seçimine devam eder
+    if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > HOLD_SLOP) { down.moved = true; clearHold(); }
     if (down.consumed) return;
-    if (dist > 6) down.moved = true;
-    if (down.mode === 'mouse') {
-      if (down.moved) {
-        down.mode = 'move'; dragging = true;
-        closeFab(); fab.classList.add('dragging');
-      } else return;
-    }
-    if (down.mode === 'wheel') {
-      const c = center(), d = Math.hypot(e.clientX - c.x, e.clientY - c.y);
-      if (d > R2 + 30) {
-        down.mode = 'move'; dragging = true;
-        closeFab(); fab.classList.add('dragging');
-        down.ox = 0; down.oy = 0;
-      } else { setHot(sliceAt(e.clientX, e.clientY)); return; }
-    }
-    if (down.mode === 'move') {
-      const c = center();
-      const tx = e.clientX - down.ox, ty = e.clientY - down.oy;
-      // Dokunmada merkez parmağa yumuşakça yaklaşır (ani zıplama olmasın)
-      const k = down.type === 'mouse' ? 1 : 0.45;
-      setCenter(c.x + (tx - c.x) * k, c.y + (ty - c.y) * k, false);
-    }
+    if (down.mode === 'wheel') setHot(sliceAt(e.clientX, e.clientY));
   });
   function finish(e, cancel) {
     if (!down || e.pointerId !== down.id) return;
+    clearHold();
     const d = down; down = null;
     try { main.releasePointerCapture(e.pointerId); } catch (err) {}
     fab.classList.remove('touchsel');
-    if (d.consumed) return;
     if (d.mode === 'move') {
       dragging = false; fab.classList.remove('dragging');
       setCenter(e.clientX - d.ox, e.clientY - d.oy, !cancel);
       if (cancel) placeFab();
       return;
     }
+    if (d.consumed) return;
     if (d.mode === 'wheel') {
       const el = cancel ? null : hotEl;
       if (el) { closeFab(); trigger(el); }
@@ -7856,6 +7705,28 @@ function layoutNotesPop() {
     closeFab();
   }, true);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFab(); });
+
+  // Leap göstergesi: menü açılınca / basılı tutulup taşınırken / üzerine gelinince üstte coin + Leap + sayı görünür
+  const hud = document.createElement('div');
+  hud.id = 'leap-hud'; hud.setAttribute('aria-hidden', 'true');
+  hud.innerHTML = '<svg class="lh-coin" width="22" height="22" viewBox="0 0 24 24"><defs><linearGradient id="lhg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0a8"/><stop offset="1" stop-color="#f2b200"/></linearGradient></defs><circle cx="12" cy="12" r="10.5" fill="url(#lhg)" stroke="#b78300" stroke-width="1.2"/><circle cx="12" cy="12" r="7.6" fill="none" stroke="#b78300" stroke-opacity=".55" stroke-width="1"/><text x="12" y="16.1" text-anchor="middle" font-size="10.5" font-weight="800" fill="#8a5d00" font-family="Lexend,Arial,sans-serif">L</text></svg><span class="lh-name">Leap</span><span class="lh-num" id="leap-hud-num">0</span>';
+  document.body.appendChild(hud);
+  const hudNum = hud.querySelector('#leap-hud-num');
+  let hudT = null;
+  function hudSync() {
+    const on = fab.classList.contains('open') || fab.classList.contains('dragging');
+    clearTimeout(hudT);
+    if (on) {
+      try { hudNum.textContent = leapFmt(leapVal); } catch (err) {}
+      const pr = paneEl.getBoundingClientRect();
+      hud.style.left = Math.round(pr.left + pr.width / 2) + 'px';
+      hud.style.top = pr.top > 1 ? (Math.round(pr.top) + 10) + 'px' : 'calc(env(safe-area-inset-top, 0px) + 10px)';
+      hud.classList.add('show');
+    } else {
+      hudT = setTimeout(() => hud.classList.remove('show'), 350);
+    }
+  }
+  new MutationObserver(hudSync).observe(fab, { attributes: true, attributeFilter: ['class'] });
 })();
 // Tuş şeridinin yerini seç: hem mobilde hem masaüstünde, isim kutusu görünür de gizli de olsa şerit en altta (renk şeridi varsa onun üstünde, mesaj kutusunun üstünde); dinamik mesaj tuşu şeridin en sağında.
 function placeNotesBtn() {
@@ -9226,6 +9097,19 @@ function bpSetPage(p, instant) {
   // Çanın penceresi açılıp kapanınca / sayfa değişince alıcı göstergesini eşitle
   new MutationObserver(() => { try { cmpSync(); } catch (e) {} }).observe(bellPop, { attributes: true, attributeFilter: ['class'] });
 })();
+(function syncTabsHeight() {
+  // Masaüstü: sağ menünün alt çubuğu, sohbet alanındaki metin kutusu bölümüyle aynı yükseklikte olur (üst çizgileri hizalanır)
+  const root = document.documentElement, mq = window.matchMedia('(min-width: 769px)');
+  function sync() {
+    const h = inputArea.offsetHeight;
+    if (mq.matches && h > 0) root.style.setProperty('--bp-tabs-h', h + 'px');
+    else root.style.removeProperty('--bp-tabs-h');
+  }
+  if (window.ResizeObserver) new ResizeObserver(sync).observe(inputArea);
+  window.addEventListener('resize', sync);
+  if (mq.addEventListener) mq.addEventListener('change', sync); else if (mq.addListener) mq.addListener(sync);
+  sync();
+})();
 (function initBellPages() {
   document.querySelectorAll('.bp-tab').forEach((b) => {
     b.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
@@ -9669,13 +9553,12 @@ function bpSetPage(p, instant) {
   const SEL = 'button:not(:disabled), [role="button"], [role="switch"], [role="option"], .seg-btn, .set-title, ' +
     '#eye-btn, #refresh-btn, #notes-btn, #auto-chip-x, #live-toggle, ' +
     '#scroll-down-btn, #send-btn, #cancel-reply-btn, #privacy-eye, #viewer-close, #viewer-dl, #bp-add, .bp-del, ' +
-    '#bp-actions span, .new-badge, .once-btn, #confirm-once-row, #photo-src-box button, #reset-check-row, .ncg-item, ' +
+    '#bp-actions span, .new-badge, .once-btn, #confirm-once-row, #photo-src-box button, #reset-check-row, ' +
     '.msg-act, .react-add, .react-pick button, .react-chip.mine, .cm-item, .pin-key:not(.ghost)';
   function tap(e, fromClick) {
     if (!isMobileLayout()) return;
     const t = e.target;
     if (!t || !t.closest) return;
-    if (t.closest('#nick-pal')) return;           // renk paletinin kendi tıkırtısı var
     const inMenu = !!t.closest('#settings-scroll');
     if (inMenu !== fromClick) return;            // ayarlar menüsü kaydırılabilir: orada tık anında, diğerlerinde dokunuş anında
     if (!t.closest(SEL)) return;
@@ -9746,177 +9629,6 @@ function bpSetPage(p, instant) {
   });
 })();
 
-(function initNickColorPicker() {
-  // Tüm paletlerde (açılır pencere, şerit, ayarlar tablosu) aynı sıra:
-  // gri (renksiz), kırmızı, turuncu, sarı, yeşil, mavi, lacivert, mor, pembe, beyaz
-  const OPTIONS = [
-    { key: '',   color: '#8a8a8a' },
-    { key: 'k',  color: COLOR_MAP.k },
-    { key: 't',  color: COLOR_MAP.t },
-    { key: 's',  color: COLOR_MAP.s },
-    { key: 'y',  color: COLOR_MAP.y },
-    { key: 'ma', color: COLOR_MAP.ma },
-    { key: 'l',  color: COLOR_MAP.l },
-    { key: 'mo', color: COLOR_MAP.mo },
-    { key: 'p',  color: COLOR_MAP.p },
-    { key: 'b',  color: COLOR_MAP.b }
-  ];
-  // Görünür isim kutusu: masaüstünde üzerine gelince, mobilde basılı tutunca kutunun hemen üstünde 2x5 dikey renk paleti açılır
-  const pal = document.createElement('div');
-  pal.id = 'nick-pal';
-  pal.setAttribute('role', 'listbox');
-  pal.setAttribute('aria-label', 'İsim rengi');
-  const palItems = OPTIONS.map((o) => {
-    const el = document.createElement('div');
-    el.className = 'npl-item';
-    el.dataset.key = o.key;
-    el.setAttribute('role', 'option');
-    const dot = document.createElement('span');
-    dot.className = 'nc-dot';
-    dot.style.background = o.color;
-    el.appendChild(dot);
-    pal.appendChild(el);
-    return el;
-  });
-  document.body.appendChild(pal);
-  let palHideT = null, palHot = null;
-  function palCanShow() {
-    return !document.body.classList.contains('nick-hidden') && !nickInput.disabled && nickInput.offsetParent !== null;
-  }
-  function palPlace() {
-    const r = nickInput.getBoundingClientRect();
-    pal.style.left = r.left + 'px';
-    pal.style.width = r.width + 'px';
-    pal.style.top = '0px';
-    pal.style.top = Math.max(0, Math.round(r.top - pal.offsetHeight)) + 'px';
-  }
-  function palShow() {
-    clearTimeout(palHideT); palHideT = null;
-    if (!palCanShow()) return;
-    pal.classList.add('show');
-    window.__nickPalOpen = true;
-    markGrid();
-    palPlace();
-  }
-  function palHide(delay) {
-    clearTimeout(palHideT); palHideT = null;
-    if (delay) { palHideT = setTimeout(() => palHide(0), delay); return; }
-    pal.classList.remove('show');
-    if (palHot) { palHot.classList.remove('hot'); palHot = null; }
-    window.__nickPalOpen = false;
-  }
-  function palChoose(key) {
-    if (key !== nickColorKey) {
-      setNickColor(key);
-      markGrid();
-      try { navigator.vibrate(12); } catch (err) {}
-    }
-  }
-  function palTrack(x, y) {
-    const el = document.elementFromPoint(x, y);
-    const it = el && el.closest ? el.closest('.npl-item') : null;
-    if (it === palHot) return;
-    if (palHot) palHot.classList.remove('hot');
-    palHot = it;
-    if (it) { it.classList.add('hot'); try { navigator.vibrate(6); } catch (err) {} }
-  }
-  // Masaüstü: üzerine gelince açılır, tıklayınca renk seçilir, fare uzaklaşınca kapanır
-  nickInput.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') palShow(); });
-  nickInput.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') palHide(180); });
-  pal.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') { clearTimeout(palHideT); palHideT = null; } });
-  pal.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') palHide(180); });
-  pal.addEventListener('mousedown', (e) => { if (e.cancelable) e.preventDefault(); });   // odak (klavye) kaçmasın
-  pal.addEventListener('click', (e) => {
-    const el = e.target.closest ? e.target.closest('.npl-item') : null;
-    if (el) palChoose(el.dataset.key);
-  });
-  // Mobil: isim kutusuna basılı tut, parmağı renge kaydır, bırakınca o renk seçilir
-  (function palLongPress() {
-    let lpT = null, lpX = 0, lpY = 0, held = false, wasFocused = false;
-    function openHold() {
-      if (held || !palCanShow()) return;
-      held = true;
-      nickInput.classList.add('pal-hold');
-      try { const sel = window.getSelection && window.getSelection(); if (sel) sel.removeAllRanges(); } catch (err) {}
-      palShow();
-      try { navigator.vibrate(15); } catch (err) {}
-    }
-    nickInput.addEventListener('touchstart', (e) => {
-      clearTimeout(lpT); lpT = null; held = false;
-      if (e.touches.length !== 1) return;
-      const t = e.touches[0];
-      lpX = t.clientX; lpY = t.clientY;
-      wasFocused = document.activeElement === nickInput;
-      lpT = setTimeout(() => { lpT = null; openHold(); }, 380);
-    }, { passive: true });
-    nickInput.addEventListener('touchmove', (e) => {
-      const t = e.touches[0];
-      if (!t) return;
-      const mdx = t.clientX - lpX, mdy = t.clientY - lpY;
-      // Basılı tutmadan, doğrudan yukarı sürükleyince de palet açılır (klavye açık/kapalı durumu korunur)
-      if (!held && mdy < -10 && Math.abs(mdy) > Math.abs(mdx) * 1.2) {
-        clearTimeout(lpT); lpT = null;
-        openHold();
-        if (held) { nickSwipeAt = Date.now(); if (e.cancelable) e.preventDefault(); palTrack(t.clientX, t.clientY); return; }
-      }
-      if (lpT && Math.hypot(mdx, mdy) > 12) { clearTimeout(lpT); lpT = null; }
-      if (held) { if (e.cancelable) e.preventDefault(); palTrack(t.clientX, t.clientY); }
-    }, { passive: false });
-    function end(e, commit) {
-      if (lpT) { clearTimeout(lpT); lpT = null; }
-      if (!held) return;
-      held = false;
-      if (e.cancelable) e.preventDefault();   // sahte tıklama / odaklanma olmasın
-      nickSwipeAt = Date.now();
-      nickInput.classList.remove('pal-hold');
-      const key = (commit && palHot) ? palHot.dataset.key : null;
-      palHide(0);
-      if (key !== null) palChoose(key);
-      if (!wasFocused && document.activeElement === nickInput) { try { nickInput.blur(); } catch (err) {} }
-    }
-    nickInput.addEventListener('touchend', (e) => end(e, true), { passive: false });
-    nickInput.addEventListener('touchcancel', (e) => end(e, false), { passive: false });
-    nickInput.addEventListener('contextmenu', (e) => { if (lpT || held) e.preventDefault(); });
-  })();
-  window.addEventListener('resize', () => { if (pal.classList.contains('show')) palPlace(); });
-  window.addEventListener('blur', () => palHide(0));
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') palHide(0); });
-
-  // Ayarlar: isim kutusu gizliyken görünen 5x2 renk seçici (aynı sıralama)
-  const grid = document.getElementById('nick-color-grid');
-  const gridItems = OPTIONS.map((o) => {
-    const el = document.createElement('div');
-    el.className = 'ncg-item';
-    el.dataset.key = o.key;
-    el.setAttribute('role', 'option');
-    const dot = document.createElement('span');
-    dot.className = 'nc-dot';
-    dot.style.background = o.color;
-    el.appendChild(dot);
-    if (grid) grid.appendChild(el);
-    return el;
-  });
-  function markGrid() {
-    gridItems.forEach((el) => el.classList.toggle('sel', el.dataset.key === nickColorKey));
-    palItems.forEach((el) => el.classList.toggle('sel', el.dataset.key === nickColorKey));
-  }
-  if (grid) {
-    grid.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
-    grid.addEventListener('click', (e) => {
-      const el = e.target.closest ? e.target.closest('.ncg-item') : null;
-      if (!el) return;
-      setNickColor(el.dataset.key);
-      markGrid();
-    });
-    new MutationObserver(() => { markGrid(); if (document.body.classList.contains('nick-hidden')) palHide(0); }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    markGrid();
-  }
-
-  function markSelected() {
-    markGrid();
-  }
-  window.syncNickColorUI = markSelected;
-})();
 
 renderQNote();
 updateBadges();
@@ -10016,6 +9728,8 @@ function sendLeap(type) {
 function renderLeap() {
   const el = document.getElementById('leap-num');
   if (el && !el.querySelector('input')) el.textContent = leapFmt(leapVal);
+  const hn = document.getElementById('leap-hud-num');
+  if (hn) hn.textContent = leapFmt(leapVal);
 }
 function receiveLeap(d) {
   if (!d || typeof d.v !== 'number' || !isFinite(d.v) || d.v < 0 || d.v > 999999999999999 || Math.floor(d.v) !== d.v) return;
@@ -10215,290 +9929,6 @@ function receiveLeap(d) {
   document.addEventListener('pointerup', end, true);
   document.addEventListener('mouseup', end, true);
   document.addEventListener('pointercancel', end, true);
-})();
-
-/* Saat başı kedi + ip yumağı: her SS:00'da rastgele 1 animasyon. Test: ayarlardaki "Kurulum" başlığına 5 hızlı dokunuş -> 10 sn sonra oynar */
-(function catYarnInit() {
-  try {
-    let busy = false;
-    const G = '#f2a24a', O = '#c47320', FAR = '#e2903a', D = '#d97a1e', CR = '#fde7c4', PK = '#ffc9d6';
-    const st = (f) => `fill="${f}" stroke="${O}" stroke-width="1" stroke-linejoin="round"`;
-    const ear = (a, b, c, i) => `<polygon points="${a}" ${st(G)}/><polygon points="${b}" fill="${PK}"/>`;
-    const tail = (d) => `<g class="tl"><path d="${d}" fill="none" stroke="${O}" stroke-width="6.4" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${G}" stroke-width="4.6" stroke-linecap="round"/></g>`;
-    const leg = (c, x, f) => `<rect class="lg ${c}" x="${x}" y="27" width="5" height="14" rx="2.5" ${st(f)}/>`;
-    const SIDE = '<svg class="s" viewBox="0 0 64 44">' + tail('M13 25 C1 24 0 11 7 8') + leg('lb', 14, FAR) + leg('ld', 42, FAR) +
-      `<ellipse cx="30" cy="24" rx="18" ry="9.5" ${st(G)}/><path d="M22 16.5v6M29 15v7M36 15.5v6" stroke="${D}" stroke-width="1.6" stroke-linecap="round"/>` + leg('la', 20, G) + leg('lc', 37, G) +
-      `<g class="hd" style="transform-origin:44px 22px"><g class="L0"></g><circle cx="49.5" cy="17.5" r="9.2" ${st(G)}/><g class="L1"></g></g></svg>`;
-    const SLEEP = '<svg class="z" viewBox="0 0 64 44">' +
-      `<g class="br"><ellipse cx="30" cy="30" rx="24" ry="11.5" ${st(G)}/><path d="M17 21.5c1.5 3 1.5 5.5 0 8M25 19.5v8M33 19.2v8M41 20v7" fill="none" stroke="${D}" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="17" cy="34" rx="9" ry="6.5" ${st(G)}/></g>` +
-      `<ellipse cx="25" cy="39.5" rx="5" ry="2.3" ${st(CR)}/>` +
-      `<polygon points="43.5,28 44.5,19.5 50.5,25" ${st(G)}/><polygon points="51,25 57.5,20 58.5,29.5" ${st(G)}/><polygon points="45.4,25.6 45.8,22 48.6,24.6" fill="${PK}"/><polygon points="53.6,24.2 56.2,22.2 56.6,26.4" fill="${PK}"/>` +
-      `<circle cx="50.5" cy="32" r="8.8" ${st(G)}/><path d="M48 24.2v2.6M50.5 23.6v3M53 24.2v2.6" stroke="${D}" stroke-width="1.1" stroke-linecap="round"/>` +
-      `<ellipse cx="56" cy="36" rx="4" ry="2.8" fill="${CR}"/><ellipse cx="58.6" cy="34.4" rx="1.3" ry="1" fill="#ff9db2"/><path d="M51.6 31.4Q54 34 56.6 31.4" fill="none" stroke="#3a2412" stroke-width="1" stroke-linecap="round"/><path d="M58 36l5-1M58 37l5 1.6" stroke="#fff" stroke-width=".55" stroke-linecap="round"/>` +
-      `<ellipse cx="46.5" cy="39.8" rx="5.5" ry="2.6" ${st(CR)}/><ellipse cx="55" cy="40.3" rx="4.6" ry="2.3" ${st(CR)}/>` +
-      tail('M12 30C3 35 10 39 24 39C34 39 41 39 47 38.5') + '</svg>';
-    const YARN = '<svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="22" fill="#d93636"/><g fill="none" stroke-linecap="round"><path d="M5 17C16 8 32 10 41 20M3 26C15 17 33 20 43 30M8 37C18 28 32 29 38 38M16 4C11 17 14 32 24 44M30 3C26 14 28 30 36 42" stroke="#9c1c1c" stroke-width="2.2"/><path d="M9 11C17 5 30 6 37 12M6 30C13 24 22 24 28 28" stroke="#ff8a8a" stroke-width="2"/></g></svg>';
-    const THR = '<svg class="th" viewBox="0 0 46 14"><path d="M46 3C38 3 36 11 27 10C18 9 20 3 12 6C6 8 4 12 0 11" fill="none" stroke="#d93636" stroke-width="2.4" stroke-linecap="round"/></svg>';
-
-    // Sahte-3B kafa: küre üzerindeki öğeler (kulak, göz, burun, bıyık...) yaw açısına göre her karede yeniden yansıtılır
-    function makeHead(hd) {
-      const NS = 'http://www.w3.org/2000/svg', L0 = hd.querySelector('.L0'), L1 = hd.querySelector('.L1');
-      const HX = 49.5, HY = 17.5, R = 9.2, DL = .12, d2r = Math.PI / 180;
-      const mk = (tag, at, par) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); (par || L1).appendChild(e); return e; };
-      const lay = (e, back, first) => { if (e._b === back) return; e._b = back; if (back) L0.appendChild(e); else if (first) L1.insertBefore(e, L1.firstChild); else L1.appendChild(e); };
-      const show = (e, v) => { e.style.display = v ? '' : 'none'; };
-      const S = (c, w) => ({ fill: 'none', stroke: c, 'stroke-width': w, 'stroke-linecap': 'round' });
-      const mz = mk('circle', { r: 4.2, fill: CR, stroke: O, 'stroke-width': 1 });
-      const stripes = [];
-      [0, 180].forEach((base) => [-14, 0, 14].forEach((a) => stripes.push({ a: base + a, e: mk('line', S(D, 1.2)) })));
-      const eyes = [-1, 1].map((s) => ({ s, g: mk('ellipse', { fill: '#b6e36a', stroke: '#6aa32c', 'stroke-width': .5 }), p: mk('ellipse', { fill: '#222' }), h: mk('circle', { r: .55, fill: '#fff' }) }));
-      const nose = mk('ellipse', { fill: '#ff9db2' });
-      const mouth = mk('path', S('#b5651d', .6)), mouthV = mk('line', S('#b5651d', .6));
-      const wh = []; [-1, 1].forEach((s) => [-20, -29].forEach((el) => wh.push({ s, el, e: mk('line', S('#fff', .55)) })));
-      const ears = [-1, 1].map((s) => ({ s, o: mk('polygon', { fill: G, stroke: O, 'stroke-width': 1, 'stroke-linejoin': 'round' }, L0), i: mk('polygon', { fill: PK }, L0) }));
-      return function (th) {
-        const P = (a, e, d) => {
-          const A = th + a * d2r, E = e * d2r, x = Math.cos(A) * Math.cos(E), z = Math.sin(A) * Math.cos(E);
-          return [HX + d * R * (x * Math.cos(DL) + z * Math.sin(DL)), HY - d * R * Math.sin(E), z];
-        };
-        const m = P(0, -22, .8);
-        mz.setAttribute('cx', m[0].toFixed(2)); mz.setAttribute('cy', m[1].toFixed(2)); lay(mz, m[2] < -.1, true);
-        stripes.forEach((o) => {
-          const p = P(o.a, 52, 1), q = P(o.a, 72, 1), v = (p[2] + q[2]) / 2 > .05;
-          show(o.e, v); if (v) { o.e.setAttribute('x1', p[0].toFixed(2)); o.e.setAttribute('y1', p[1].toFixed(2)); o.e.setAttribute('x2', q[0].toFixed(2)); o.e.setAttribute('y2', q[1].toFixed(2)); }
-        });
-        eyes.forEach((o) => {
-          const p = P(o.s * 40, 6, .97), zn = Math.sin(th + o.s * 40 * d2r), v = zn > .2;
-          [o.g, o.p, o.h].forEach((e) => show(e, v)); if (!v) return;
-          o.g.setAttribute('cx', p[0].toFixed(2)); o.g.setAttribute('cy', p[1].toFixed(2)); o.g.setAttribute('rx', (2.6 * zn).toFixed(2)); o.g.setAttribute('ry', 2.6);
-          o.p.setAttribute('cx', p[0].toFixed(2)); o.p.setAttribute('cy', p[1].toFixed(2)); o.p.setAttribute('rx', Math.max(.12, .8 * zn).toFixed(2)); o.p.setAttribute('ry', 1.9);
-          o.h.setAttribute('cx', (p[0] - .4 * zn).toFixed(2)); o.h.setAttribute('cy', (p[1] - 1).toFixed(2));
-        });
-        const n = P(0, -16, 1.2), fz = Math.sin(th), nv = n[2] > -.05;
-        show(nose, nv); if (nv) { nose.setAttribute('cx', n[0].toFixed(2)); nose.setAttribute('cy', n[1].toFixed(2)); nose.setAttribute('rx', (.9 + .7 * Math.abs(fz)).toFixed(2)); nose.setAttribute('ry', 1.1); }
-        const m0 = P(0, -27, 1.12), l = P(22, -31, 1.02), r = P(-22, -31, 1.02), mv = m0[2] > -.05;
-        show(mouth, mv); show(mouthV, mv);
-        if (mv) {
-          const q = (e, c) => `M${m0[0].toFixed(2)} ${m0[1].toFixed(2)}Q${((m0[0] + e[0]) / 2).toFixed(2)} ${(e[1] + 1.2).toFixed(2)} ${e[0].toFixed(2)} ${e[1].toFixed(2)}`;
-          mouth.setAttribute('d', (l[2] > -.05 ? q(l) : '') + (r[2] > -.05 ? q(r) : ''));
-          mouthV.setAttribute('x1', n[0].toFixed(2)); mouthV.setAttribute('y1', (n[1] + 1).toFixed(2)); mouthV.setAttribute('x2', m0[0].toFixed(2)); mouthV.setAttribute('y2', m0[1].toFixed(2));
-        }
-        wh.forEach((o) => {
-          const p = P(o.s * 16, o.el + 0, 1), q = P(o.s * 30, o.el + 6, 2.0), v = p[2] > -.08;
-          show(o.e, v); if (v) { o.e.setAttribute('x1', p[0].toFixed(2)); o.e.setAttribute('y1', p[1].toFixed(2)); o.e.setAttribute('x2', q[0].toFixed(2)); o.e.setAttribute('y2', q[1].toFixed(2)); }
-        });
-        ears.forEach((o) => {
-          const B = P(o.s * 62, 50, 1), zn = B[2], w = 6.5 * (.55 + .45 * Math.min(1, Math.abs(zn) * 2)), lean = 1.3 * Math.sign(B[0] - HX || 1);
-          o.o.setAttribute('points', `${(B[0] - w / 2).toFixed(2)},${(B[1] + 1.6).toFixed(2)} ${(B[0] + lean).toFixed(2)},${(B[1] - 8.6).toFixed(2)} ${(B[0] + w / 2).toFixed(2)},${(B[1] + 1.6).toFixed(2)}`);
-          const iv = zn > .15; show(o.i, iv);
-          if (iv) o.i.setAttribute('points', `${(B[0] - w * .26).toFixed(2)},${(B[1] + .8).toFixed(2)} ${(B[0] + lean * .8).toFixed(2)},${(B[1] - 5.4).toFixed(2)} ${(B[0] + w * .26).toFixed(2)},${(B[1] + .8).toFixed(2)}`);
-          lay(o.o, zn < -.05); lay(o.i, zn < -.05);
-        });
-        [nose, mouth, mouthV].forEach((e) => lay(e, false));
-      };
-    }
-    const lin = (k) => k, eo = (k) => 1 - Math.pow(1 - k, 3), ei = (k) => k * k, eio = (k) => k * k * (3 - 2 * k);
-    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-    function ground() {   // zemin = alttaki metin kutusu/tuş şeridinin üst kenarı
-      const ia = document.getElementById('input-area');
-      if (ia && getComputedStyle(ia).display !== 'none') return ia.getBoundingClientRect().top;
-      return innerHeight - 80;
-    }
-    async function play(n) {
-      if (busy) return; busy = true;
-      let rc = (document.getElementById('pane-chat') || {}).getBoundingClientRect ? document.getElementById('pane-chat').getBoundingClientRect() : null;
-      if (!rc || innerWidth < 769 || !rc.width) rc = { left: 0, width: innerWidth };   // masaüstünde sadece sohbet alanı
-      const W = rc.width, NOSE = 36, YR = 16; let Y = ground(), alive = true;
-      const cat = document.createElement('div'); cat.className = 'cf-cat'; cat.dataset.v = 's';
-      cat.innerHTML = `<div class="v">${SIDE}${SLEEP}</div>`;
-      const yarn = document.createElement('div'); yarn.className = 'cf-yarn';
-      yarn.innerHTML = `${THR}<div class="rl">${YARN}</div>`;
-      const fx = document.createElement('div'); fx.className = 'cf-fx'; fx.style.left = rc.left + 'px'; fx.style.width = rc.width + 'px';
-      fx.appendChild(yarn); fx.appendChild(cat); document.body.appendChild(fx);
-      const V = cat.firstChild, RL = yarn.lastChild, HD = cat.querySelectorAll('.hd'), H = makeHead(cat.querySelector('.hd'));
-      const C = { x: -300, jy: 0, rot: 0, sx: 1, th: 0, sy: 1, hd: [0, 0, 0], mode: '' }, Yr = { x: -300, hop: 0 };
-      const setMode = (m) => { if (C.mode !== m) { C.mode = m; cat.className = 'cf-cat ' + m; } };
-      const render = () => {
-        Y = ground();   // klavye açılıp kapanınca zemin (metin kutusu) kayar; kedi her karede onu izler
-        const bob = C.mode === 'run' ? Math.abs(Math.sin(C.x / 22 * Math.PI)) * 3.4 : C.mode === 'walk' ? Math.abs(Math.sin(C.x / 15 * Math.PI)) * 1.1 : 0;
-        cat.style.transform = `translate(${(C.x - 37.5).toFixed(1)}px,${(Y + 3.5 - 52 - bob - C.jy).toFixed(1)}px) rotate(${C.rot.toFixed(1)}deg)`;
-        V.style.transform = `scale(${C.sx.toFixed(3)},${C.sy.toFixed(3)})`;
-        const h = `translate(${C.hd[0]}px,${C.hd[1]}px) rotate(${C.hd[2]}deg)`;
-        HD.forEach((e) => { e.style.transform = h; });
-        H(C.th);
-        yarn.style.transform = `translate(${(Yr.x - YR).toFixed(1)}px,${(Y - 32 - Yr.hop).toFixed(1)}px)`;
-        RL.style.transform = `rotate(${(Yr.x * 3.58).toFixed(1)}deg)`;
-      };
-      (function lp() { if (!alive) return; render(); requestAnimationFrame(lp); })();   // uyurken de zemini takip et
-      const T = (ms, f, ez = lin) => new Promise((res) => {
-        const t0 = performance.now();
-        (function fr(now) { const k = clamp((now - t0) / ms, 0, 1); f(ez(k), k); render(); k < 1 ? requestAnimationFrame(fr) : res(); })(t0);
-      });
-      const lerpHd = (to, ms, ez = eio) => { const a = C.hd.slice(); return T(ms, (k) => { C.hd = a.map((v, i) => v + (to[i] - v) * k); }, ez); };
-      const arrive = async (to, from, ms) => {   // koşarak gelir, yavaşlayıp durur
-        setMode('run');
-        await T(ms, (k, r) => { C.x = from + (to - from) * k; if (r > .6) setMode('walk'); }, eo);
-        setMode('');
-      };
-      const butt = async (yTo, ms) => {   // kafa vuruşu: geri çekil, öne atıl, yumağı it
-        await T(260, (k) => { C.hd = [-1.2 * k, k, 10 * k]; }, eo);
-        const cx = C.x;
-        await T(120, (k) => { C.x = cx + 24 * k; C.hd = [-1.2 + 4.2 * k, 1 - 2 * k, 10 - 17 * k]; }, ei);
-        lerpHd([0, 0, 0], 400, eo);
-        const yx = Yr.x;
-        return T(ms, (k, r) => { Yr.x = yx + (yTo - yx) * k; Yr.hop = 14 * Math.sin(Math.min(1, r * 1.6) * Math.PI) * (1 - r); }, eo);
-      };
-      try {
-        if (n === 0) {            // 1) kedi ipe yetişemez
-          const ms = 2000, x1 = W + 220;
-          await T(ms, (k) => {
-            Yr.x = -40 + (x1 + 40) * k; Yr.hop = Math.abs(Math.sin(Yr.x / 34 * Math.PI)) * 3;
-            const j = clamp((k - .5) / .22, 0, 1), air = k > .5 && k < .72;
-            const lunge = k < .5 ? 0 : k < .72 ? 18 * eio(j) : 18 * (1 - clamp((k - .72) / .14, 0, 1));
-            C.x = Yr.x - YR - NOSE - (58 - 34 * k) + lunge;
-            C.jy = air ? 4 * 24 * j * (1 - j) : 0; C.rot = air ? -12 + 24 * j : 0;
-            setMode(air ? 'jump' : 'run');
-          });
-        } else if (n === 3) {     // 00:00 özel: kedi gelip ortada kıvrılıp uyur, dokununca sıçrayıp kaçar
-          yarn.style.display = 'none';
-          const xc = W * .5, x0 = -60, d0 = xc - x0;
-          setMode('walk');
-          await T(clamp(d0 / 95 * 1000, 2500, 6000), (k) => { C.x = x0 + d0 * k; }, (k) => 1 - (1 - k) * (1 - k));
-          setMode(''); await sleep(600);
-          const DEG = Math.PI / 180, legs = cat.querySelectorAll('.lg'), LD = 9.4;   // LD: yatarken gövdenin ineceği mesafe (px)
-          await T(1000, (k) => { C.th = 85 * DEG * k; }, eio);              // önce yüzünü bize çevirir
-          await sleep(350);
-          await T(2600, (k) => {                                           // yavaşça yere çöker: bacaklar katlanır, gövde ve kafa iner
-            legs.forEach((l) => { l.style.transform = `scaleY(${(1 - .57 * k).toFixed(3)})`; });
-            C.jy = -LD * k; C.hd = [k, 6.5 * k, 0];
-          }, eio);
-          await sleep(250);
-          cat.dataset.v = 'x'; const sd = cat.querySelector('.s'), sl = cat.querySelector('.z');
-          sl.style.opacity = 0; sl.style.transform = `translateY(-${LD}px)`;   // alçalmış kediyle aynı hizada başlasın
-          await T(700, (k) => { sd.style.opacity = 1 - k; sl.style.opacity = k; }, eio);
-          cat.dataset.v = 'z'; sd.style.opacity = ''; sl.style.opacity = ''; sl.style.transform = '';
-          legs.forEach((l) => { l.style.transform = ''; }); C.jy = 0; C.hd = [0, 0, 0]; C.th = 0;
-          let zi = 0;
-          const zz = () => {      // kafasının iki yanında küçük zzZ'ler çıkıp silinir
-            const side = zi % 2 ? 1 : -1, ch = ['z', 'Z', 'z'][zi % 3], sz = 11 + (zi % 3) * 3; zi++;
-            const e = document.createElement('span'); e.className = 'cf-z'; e.textContent = ch; e.style.fontSize = sz + 'px';
-            e.style.left = (side > 0 ? 66 : 38) + Math.random() * 6 + 'px'; e.style.top = 24 + Math.random() * 6 + 'px';
-            cat.appendChild(e);
-            e.animate([{ transform: 'translate(0,0) scale(.6)', opacity: 0 }, { opacity: .9, offset: .25 }, { transform: `translate(${side * (10 + Math.random() * 6)}px,-28px) scale(1.1) rotate(${side * 14}deg)`, opacity: 0 }], { duration: 2300, easing: 'ease-out' }).finished.then(() => e.remove(), () => {});
-          };
-          zz(); const zt = setInterval(zz, 620);
-          cat.style.pointerEvents = 'auto'; cat.style.cursor = 'pointer';
-          const touched = await new Promise((res) => {   // dokunana kadar uyur (dokunulmazsa 00:59'a kadar)
-            const _e = new Date(); _e.setHours(0, 59, 0, 0);   // dokunulmazsa 00:59'a kadar uyur
-            const tm = setTimeout(() => res(false), Math.max(0, _e - Date.now()));
-            const nf = (ev) => ev.preventDefault();   // dokunuş metin kutusunun odağını almasın
-            cat.addEventListener('mousedown', nf);
-            cat.addEventListener('pointerdown', (ev) => { nf(ev); clearTimeout(tm); res(true); }, { once: true });
-          });
-          clearInterval(zt); cat.style.pointerEvents = ''; cat.style.cursor = '';
-          cat.querySelectorAll('.cf-z').forEach((e) => e.remove());
-          if (touched) {                                                   // dokunuldu: bir anda sıçrar
-            cat.dataset.v = 's'; C.sy = 1;
-            setMode('jump'); const cx = C.x;
-            await T(380, (k, r) => { C.jy = 4 * 40 * r * (1 - r); C.x = cx + 26 * r; C.rot = -12 * Math.sin(r * Math.PI); }, lin);
-            C.jy = 0; C.rot = 0;
-          } else {                                                         // kendiliğinden uyandı: yavaşça kalkar, esner
-            const sd2 = cat.querySelector('.s'), sl2 = cat.querySelector('.z');
-            legs.forEach((l) => { l.style.transform = 'scaleY(.43)'; });   // yatış pozuyla aynı hizada başla
-            C.jy = -LD; C.hd = [1, 6.5, 0]; C.th = 85 * DEG;
-            cat.dataset.v = 'x'; sd2.style.opacity = 0; sl2.style.opacity = 1; sl2.style.transform = `translateY(-${LD}px)`;
-            await T(700, (k) => { sd2.style.opacity = k; sl2.style.opacity = 1 - k; }, eio);
-            cat.dataset.v = 's'; sd2.style.opacity = ''; sl2.style.opacity = ''; sl2.style.transform = '';
-            await sleep(500);
-            await T(2400, (k) => {                                         // yavaşça ayağa kalkar
-              legs.forEach((l) => { l.style.transform = `scaleY(${(.43 + .57 * k).toFixed(3)})`; });
-              C.jy = -LD * (1 - k); C.hd = [1 - k, 6.5 * (1 - k), 0];
-            }, eio);
-            legs.forEach((l) => { l.style.transform = ''; }); C.jy = 0; C.hd = [0, 0, 0];
-            await sleep(500);
-            const fl = cat.querySelectorAll('.lc,.ld'), hl = cat.querySelectorAll('.la,.lb');   // kedi esnemesi: ön bacaklar önde, popo havada
-            cat.style.transformOrigin = '28% 100%';
-            const pose = (k) => {
-              C.rot = 15 * k; C.hd = [3 * k, 5 * k, 0];
-              fl.forEach((l) => { l.style.transform = `rotate(${(-70 * k).toFixed(1)}deg)`; });
-              hl.forEach((l) => { l.style.transform = `rotate(${(-15 * k).toFixed(1)}deg)`; });
-            };
-            await T(1100, pose, eio); await sleep(1600);
-            await T(800, (k) => pose(1 - k), eio);
-            legs.forEach((l) => { l.style.transform = ''; }); cat.style.transformOrigin = ''; C.rot = 0; C.hd = [0, 0, 0];
-            await T(700, (k) => { C.th = 85 * DEG * (1 - k); }, eio);     // yüzünü yine sağa çevirir
-            await sleep(250);
-          }
-          setMode('run'); const c1 = C.x;                                  // sağa doğru koşup çıkar
-          await T(1000, (k) => { C.x = c1 + (W + 140 - c1) * k; }, ei);
-        } else if (n === 2) {     // 3) yumak kaybolur; kedi bulamaz, bakınır, yürüyüp çıkar
-          const xc = W * .5;
-          const yp = T(1300, (k) => { Yr.x = -40 + (W + 110) * k; Yr.hop = 8 * Math.abs(Math.sin(k * 4 * Math.PI)); }, ei);
-          await sleep(850);
-          await Promise.all([yp, arrive(xc, -60, 700)]);
-          await sleep(450);
-          const spin = (deg, ms) => { const a0 = C.th, a1 = deg * Math.PI / 180; return T(ms, (k) => { C.th = a0 + (a1 - a0) * k; }, eio); };
-          await spin(-105, 950); await sleep(500);      // başını arkaya çevirir: ensesi görünür
-          await spin(85, 1800); await sleep(250);       // yüzünü bize çevirir
-          await lerpHd([0, 0, -9], 500); await lerpHd([0, 0, 9], 800); await lerpHd([0, 0, 0], 450);
-          await spin(0, 900); await sleep(450);         // başını yine öne çevirir
-          setMode('walk');
-          const x0 = C.x, d = W + 80 - x0;
-          await T(clamp(d / 85 * 1000, 2500, 5000), (k) => { C.x = x0 + d * k; });
-        } else {                  // 2) yavaş yumak; kedi kafasıyla iki kez itip uzaklaştırır
-          const xm = W * .5, GAP = 26;
-          await T(3800, (k) => { Yr.x = -40 + (xm + 40) * k; }, eo);
-          await sleep(1000);
-          const cl = xm - YR - NOSE - GAP;
-          await arrive(cl, -60, 750);
-          await sleep(250);
-          const x2 = xm + (W - xm) * .45 + 50;
-          const p1 = butt(x2, 1100);
-          await sleep(480);
-          const c1 = C.x, c2 = x2 - YR - NOSE - GAP;
-          setMode('run');
-          await T(750, (k) => { C.x = c1 + (c2 - c1) * k; }, eo);
-          setMode('');
-          await p1; await sleep(150);
-          const p2 = butt(W + 160, 900);
-          await sleep(450);
-          const c3 = C.x; setMode('run');
-          await T(900, (k) => { C.x = c3 + (W + 120 - c3) * k; }, ei);
-          await p2;
-        }
-      } catch (e) {}
-      alive = false; fx.remove(); busy = false;
-    }
-    window.__catYarnPlay = play;
-    // Zamanlayıcı: 00:00'da SADECE uyuyan kedi (rastgele animasyon yok); diğer saat başlarında rastgele 1-3.
-    // Gece kedisi sağlam: o an başka animasyon oynuyorsa ya da sekme arka plandaysa vazgeçmez, 00:00-00:29 arasında
-    // uygun olduğu ilk saniyede gelir. Gün başına bir kez oynar. busy kilidi sayesinde iki kedi asla aynı anda ekranda olmaz.
-    let midDone = '', hrDone = '';
-    const tick = () => {
-      const d = new Date(), h = d.getHours(), m = d.getMinutes();
-      const dk = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
-      if (h === 0) {
-        if (m < 30 && midDone !== dk && !busy && !document.hidden) { midDone = dk; play(3); }
-        return;
-      }
-      if (m === 0 && hrDone !== dk + '-' + h) {
-        hrDone = dk + '-' + h;
-        if (!busy && !document.hidden) play(Math.random() * 3 | 0);
-      }
-    };
-    setInterval(tick, 1000);
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
-    let ck = [], pend = null;   // "Kurulum" başlığı: 5 hızlı dokunuş = rastgele animasyon, 6 = gece uyku animasyonu (10 sn sonra)
-    document.addEventListener('click', (e) => {
-      const t = e.target.closest && e.target.closest('#blk-setup > .set-title');
-      if (!t) return;
-      const now = Date.now();
-      ck = ck.filter((x) => now - x < 3000); ck.push(now);
-      if (ck.length === 5) { clearTimeout(pend); pend = setTimeout(() => play(Math.random() * 3 | 0), 10000); }
-      else if (ck.length >= 6) { ck = []; clearTimeout(pend); pend = setTimeout(() => play(3), 10000); }
-    }, true);
-  } catch (e) {}
 })();
 
 cdAnimRestore();
