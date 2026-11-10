@@ -5514,6 +5514,7 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
     }
     body.style.cursor = 'pointer';
     msgDiv._doReply = () => {
+      focusInputForReply(); // Mobilde klavye ancak kullanıcı hareketi içinde, ilk iş odaklanırsa açılır
       const activeNick = rawNick;
       replyingTo = { text: media.audio ? 'Ses' : 'Fotoğraf', nick: activeNick, targetId: messageId, img: true, aud: !!media.audio };
       replyBarText.innerText = finalNick
@@ -5521,7 +5522,7 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
         : 'Mesaja yanıt veriliyor...';
       replyBar.style.display = 'flex';
       adjustInputHeight();
-      if (liveMode && liveActive && !editingId) sendLive();
+      try { if (liveMode && liveActive && !editingId) sendLive(); } catch (e) {}
       focusInputForReply();
     };
     msgDiv.dataset.mediaUrl = media.url;
@@ -5542,6 +5543,7 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
     } else setBodyContent(textDiv, text);
 
     msgDiv._doReply = () => {
+      focusInputForReply(); // Mobilde klavye ancak kullanıcı hareketi içinde, ilk iş odaklanırsa açılır
       const activeNick = msgDiv._raw.nick;
       replyingTo = { text: (callParse(msgDiv._raw.text) !== null || dialParse(msgDiv._raw.text) !== null) ? 'Arama' : msgDiv._raw.text, nick: activeNick, targetId: messageId };
       replyBarText.innerText = msgDiv._nick
@@ -5549,7 +5551,7 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
         : 'Mesaja yanıt veriliyor...';
       replyBar.style.display = 'flex';
       adjustInputHeight();
-      if (liveMode && liveActive && !editingId) sendLive();
+      try { if (liveMode && liveActive && !editingId) sendLive(); } catch (e) {}
       focusInputForReply();
     };
     bubble.appendChild(textDiv);
@@ -7877,7 +7879,7 @@ function copyText(text) {
 function focusInputForReply() {
   if (messageInput.disabled) return;
   const go = () => {
-    try { messageInput.focus(); } catch (e) {}
+    try { messageInput.focus({ preventScroll: true }); } catch (e) { try { messageInput.focus(); } catch (e2) {} }
     try { const n = messageInput.value.length; messageInput.setSelectionRange(n, n); } catch (e) {}
   };
   go();
@@ -7953,11 +7955,11 @@ function attachSwipeReply(msgDiv) {
       return;
     }
     const commit = e.type !== 'touchcancel' && tx >= 70;
-    reset(true);
     if (commit && msgDiv.isConnected && !editingId) {
+      msgDiv._doReply(); // önce yanıt + odak (kullanıcı hareketi içinde klavye açılsın)
       if (navigator.vibrate) { try { navigator.vibrate(15); } catch (err) {} }
-      msgDiv._doReply();
     }
+    reset(true);
   };
   // Dokunuşlar sohbet alanından dinlenir (aşağıdaki yönlendirici), böylece mesajın bulunduğu satırın her yerinden sürüklenebilir
   msgDiv._sw = { start: onStart, move: onMove, end: end };
