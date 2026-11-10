@@ -1257,18 +1257,19 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 /* ===== Modern ayarlar ===== */
 #bp-page-set #settings-scroll { padding: 0 0 28px; scrollbar-width: none; -ms-overflow-style: none; }
 #bp-page-set #settings-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
-#settings-scroll .leap-bar { justify-content: flex-start; gap: 8px; min-height: 42px; padding: 6px 14px; margin: 0; border-radius: 0; border-width: 0 0 1px 0; box-shadow: none; }
-#settings-scroll .leap-bar.open { margin-bottom: 0; }
+#settings-scroll .leap-bar { justify-content: flex-start; gap: 8px; min-height: 46px; padding: 6px 14px; margin: 12px 12px 14px; border-radius: 14px; border-width: 1px; box-shadow: 0 0 8px color-mix(in srgb, var(--warn) 22%, transparent), inset 0 1px 0 rgba(255,255,255,0.12); }
+#settings-scroll .leap-bar.open { margin-bottom: 6px; }
 #settings-scroll .leap-name { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; letter-spacing: .2px; }
 #settings-scroll .leap-name::before { content: ""; width: 22px; height: 22px; flex: 0 0 auto; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23fff0a8%22/%3E%3Cstop offset=%221%22 stop-color=%22%23f2b200%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210.5%22 fill=%22url(%23g)%22 stroke=%22%23b78300%22 stroke-width=%221.2%22/%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%227.6%22 fill=%22none%22 stroke=%22%23b78300%22 stroke-opacity=%22.55%22/%3E%3Ctext x=%2212%22 y=%2216.1%22 text-anchor=%22middle%22 font-size=%2210.5%22 font-weight=%22800%22 fill=%22%238a5d00%22 font-family=%22Arial,sans-serif%22%3EL%3C/text%3E%3C/svg%3E") center / contain no-repeat; filter: drop-shadow(0 1px 3px rgba(0,0,0,.45)); }
 #settings-scroll .leap-num { flex: 1 1 auto; font-size: 15px; font-weight: 700; opacity: .95; }
 #settings-scroll .leap-num.editing { opacity: 1; }
 #settings-scroll .leap-in { height: 20px; line-height: 20px; font-size: 16px; }
-#settings-scroll .leap-ext.open { margin-bottom: 0; }
-#settings-scroll .leap-ext-row { padding: 8px 14px; border-bottom: 1px solid var(--c-33); }
+#settings-scroll .leap-ext.open { margin-bottom: 14px; }
+#settings-scroll .leap-ext-row { padding: 2px 12px 0; }
 #settings-scroll .leap-delta { height: 36px; border-radius: 10px; padding: 0 12px; }
 
-#settings-scroll .set-block { background: var(--c-1a); border: 0; border-bottom: 1px solid var(--c-33); border-radius: 0; overflow: hidden; }
+#settings-scroll .set-block { background: var(--c-1a); border: 0; border-top: 1px solid var(--c-33); border-radius: 0; overflow: hidden; }
+#settings-scroll .set-block:last-child { border-bottom: 1px solid var(--c-33); }
 #settings-scroll .set-block + .set-block, #settings-scroll .set-block.collapsed + .set-block { margin-top: 0; }
 #settings-scroll .set-title { justify-content: flex-start; gap: 10px; min-height: 44px; box-sizing: border-box; margin: 0; padding: 8px 14px; background: transparent; border-radius: 0; font-size: 14px; font-weight: 700; color: var(--c-fff); transition: background .15s ease; }
 #settings-scroll .set-title::before { content: ""; flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; background-color: var(--c-44); background-repeat: no-repeat; background-position: center; background-size: 14px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
@@ -2392,10 +2393,18 @@ nickInput.addEventListener('input', () => { if (!nickHistSetting) nickBrowsing =
 nickInput.addEventListener('keydown', (e) => {
   if (editingId || e.isComposing) return;
   if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-  if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
-  // Yalnızca kutu boşken ya da geçmişten getirilen isim görünürken devreye girer; kullanıcı yazdıysa imleç normal çalışır
-  if (!(nickInput.value === '' || nickBrowsing)) return;
+  // Ctrl + ←/→: kutuda yazı olsa bile isim geçmişinde gezinir. Yalnızca ←/→: kutu boşken ya da geçmişten getirilen isim görünürken
+  const ctrl = e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey;
+  if (!ctrl && (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey)) return;
+  if (!ctrl && !(nickInput.value === '' || nickBrowsing)) return;   // kullanıcı yazdıysa imleç normal çalışır
   e.preventDefault();
+  if (ctrl && !nickBrowsing && nickInput.value.trim() !== '') {   // yazılı isim önce geçmişe girer, sonra yanlara geçilir
+    pushNickHistory(nickInput.value);
+    const hh = readNickHistory(), cur = nickInput.value.trim().toLowerCase();
+    const ci = hh.findIndex((x) => x.trim().toLowerCase() === cur);
+    nickHistPos = ci < 0 ? hh.length : ci;
+    nickBrowsing = true;
+  }
   const h = readNickHistory();
   const emptyLast = h.length > 0 && h[h.length - 1] === '';   // son kayıt boş isimse kutudaki boşluk odur
   const endPos = emptyLast ? h.length - 1 : h.length;
