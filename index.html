@@ -229,17 +229,15 @@ body.once-viewing #fab { display: none !important; }
 .msg-act.danger.confirm { color: var(--dng); background: color-mix(in srgb, var(--dng) 18%, transparent); }
 /* Masaüstü: Yanıtla tuşu her zaman görünür ve mesaja en yakın tuştur; diğer tuşlar üzerine gelince yanında açılır */
 @keyframes act-in { from { opacity: 0; } to { opacity: 1; } }
-@media (any-hover: hover) and (any-pointer: fine) {
-  .msg-act.reply { order: -1; }
-  .msg-acts.two .msg-act.danger { grid-column: 2; }
-  .msg-acts.two .msg-act.edit { grid-column: 1; }
-  .msg-acts.two .msg-act.reply { grid-column: 2; }
-  .msg-acts.two .msg-act.copy { grid-column: 1; }
-  .msg-acts { opacity: 1; pointer-events: auto; }
-  .msg:not(.hov):not(.acts-on):not(.editing) .msg-act:not(.reply) { display: none; }
-  .msg.hov .msg-act:not(.reply), .msg.acts-on .msg-act:not(.reply) { animation: act-in 0.15s ease both; }
-  .msg:not(.hov):not(.acts-on):not(.editing) .msg-acts.over { background: none; border: 0; box-shadow: none; padding: 0; }
-}
+body.desk .msg-act.reply { order: -1; }
+body.desk .msg-acts.two .msg-act.danger { grid-column: 2; }
+body.desk .msg-acts.two .msg-act.edit { grid-column: 1; }
+body.desk .msg-acts.two .msg-act.reply { grid-column: 2; }
+body.desk .msg-acts.two .msg-act.copy { grid-column: 1; }
+body.desk .msg-acts { opacity: 1; pointer-events: auto; }
+body.desk .msg:not(.hov):not(.acts-on):not(.editing) .msg-act:not(.reply) { display: none; }
+body.desk .msg.hov .msg-act:not(.reply), body.desk .msg.acts-on .msg-act:not(.reply) { animation: act-in 0.15s ease both; }
+body.desk .msg:not(.hov):not(.acts-on):not(.editing) .msg-acts.over { background: none; border: 0; box-shadow: none; padding: 0; }
 /* Tepki: mesajın alt köşesinde yuvarlak + tuşu; basınca 3 kalp yan yana açılır, seçilen kalp aynı yerde kalır */
 .msg.has-react { margin-bottom: 12px; }
 .react-slot {
@@ -3595,16 +3593,25 @@ window.addEventListener('resize', () => {
   restActsSoon();
 });
 // Masaüstü: Yanıtla tuşu sürekli görünür olduğundan, tuşlar kapalıyken de yerleşimi ekrana sığacak şekilde ayarlanır
+let mouseSeen = false;
 const DESK_MQ = window.matchMedia ? window.matchMedia('(any-hover: hover) and (any-pointer: fine)') : { matches: false };
+function isDesk() { return DESK_MQ.matches || mouseSeen || window.innerWidth > 768; }
+function syncDesk() {
+  const d = isDesk();
+  if (document.body.classList.contains('desk') !== d) { document.body.classList.toggle('desk', d); restActsSoon(); }
+}
+window.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' && !mouseSeen) { mouseSeen = true; syncDesk(); } }, true);
+window.addEventListener('resize', syncDesk);
+if (DESK_MQ.addEventListener) try { DESK_MQ.addEventListener('change', syncDesk); } catch (e) {}
 function restActs(msg) {
-  if (!DESK_MQ.matches || !msg || !msg.classList) return;
+  if (!document.body.classList.contains('desk') || !msg || !msg.classList) return;
   if (msg.classList.contains('hov') || msg.classList.contains('acts-on') || msg.classList.contains('editing')) return;
   fitActs(msg);
 }
 let restActsRaf = 0;
 function restActsAll() {
   restActsRaf = 0;
-  if (!DESK_MQ.matches) return;
+  if (!document.body.classList.contains('desk')) return;
   const list = chatArea.getElementsByClassName('msg');
   for (let i = 0; i < list.length; i++) restActs(list[i]);
 }
@@ -3613,6 +3620,7 @@ function restActsSoon() {
   clearTimeout(restActsSoon._t);
   restActsSoon._t = setTimeout(restActsAll, 350);
 }
+syncDesk();
 try { new MutationObserver((muts) => {
   for (let i = 0; i < muts.length; i++) {
     const a = muts[i].addedNodes;
