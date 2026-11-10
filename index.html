@@ -904,9 +904,9 @@ body.no-anim #app { transition: none !important; }
 @keyframes live-word-in { from { opacity: 0; } to { opacity: 1; } }
 .live-msg .live-new, .msg .live-new { animation: live-word-in 500ms ease-out both; }
 @media (prefers-reduced-motion: reduce) { .live-msg .live-new, .msg .live-new { animation: none; } }
-@keyframes live-pulse { 0%, 100% { background-color: var(--c-111); } 50% { background-color: var(--c-22); } }
-body.live-on #message-input { animation: live-pulse 3s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { body.live-on #message-input { animation: none; } }
+/* Dinamik mod: yazı kutusunda Leap çubuğundaki sarı parıltının aynısı kayar (%40 opaklık) */
+body.live-on #message-input { background-image: linear-gradient(110deg, transparent 30%, color-mix(in srgb, var(--warn) 40%, transparent) 50%, transparent 70%); background-size: 260% 100%; background-position: 130% 0; background-repeat: no-repeat; animation: cdTagShine 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { body.live-on #message-input { animation: none; background-image: none; } }
 
 #nick-input { -webkit-touch-callout: none; touch-action: pan-y; }
 /* İsim geçmişinde gezinirken (kaydırma / ok tuşu) kısa bir kayma efekti */
@@ -10061,15 +10061,30 @@ function bpSetPage(p, instant) {
     '#eye-btn, #refresh-btn, #notes-btn, #auto-chip-x, #live-toggle, ' +
     '#scroll-down-btn, #send-btn, #cancel-reply-btn, #privacy-eye, #viewer-close, #viewer-dl, #bp-add, .bp-del, ' +
     '#bp-actions span, .new-badge, .once-btn, #confirm-once-row, #photo-src-box button, #reset-check-row, ' +
-    '.msg-act, .react-add, .react-pick button, .react-chip.mine, .cm-item, .pin-key:not(.ghost)';
+    '.msg-act, .react-add, .react-pick button, .react-chip.mine, .cm-item, .pin-key:not(.ghost), .lp-react button, .lp-item, label, input[type="checkbox"], input[type="radio"], .leap-num, .aud-play, .aud-spd, .yt-play, .yt-join, .bp-tab, .dial-opt, .ytd-b, .yts-b, .ts-use, .ts-delb, .cd-rb';
   function tap(e, fromClick) {
     if (!isMobileLayout()) return;
     const t = e.target;
     if (!t || !t.closest) return;
+    if (t.closest('#leap-hud, #fab')) return;     // bunlar kendi titreşimini verir
     const inMenu = !!t.closest('#settings-scroll');
-    if (inMenu !== fromClick) return;            // ayarlar menüsü kaydırılabilir: orada tık anında, diğerlerinde dokunuş anında
-    if (!t.closest(SEL)) return;
-    try { navigator.vibrate(8); } catch (err) {}
+    if (t.closest(SEL)) {
+      if (inMenu !== fromClick) return;          // ayarlar menüsü kaydırılabilir: orada tık anında, diğerlerinde dokunuş anında
+      try { navigator.vibrate(8); } catch (err) {}
+      return;
+    }
+    // Listede olmayan ama basılabilir görünen her şey (imleci "el" olan öğeler: satırlar, kartlar, sayılar, sekmeler...) tık anında titreşir;
+    // kaydırma sırasında değil, yalnızca gerçek dokunuşta
+    if (!fromClick) return;
+    let n = t, i = 0;
+    while (n && n !== document.body && i < 5) {
+      if (n.nodeType === 1 && n.disabled !== true && n.getAttribute('aria-disabled') !== 'true') {
+        let cur = '';
+        try { cur = getComputedStyle(n).cursor; } catch (err) {}
+        if (cur === 'pointer') { try { navigator.vibrate(8); } catch (err) {} return; }
+      }
+      n = n.parentElement; i++;
+    }
   }
   document.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') tap(e, false); }, true);
   document.addEventListener('click', (e) => { if (e.detail > 0) tap(e, true); });
