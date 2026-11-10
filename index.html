@@ -186,6 +186,13 @@ body.once-viewing #fab { display: none !important; }
 /* Tek satırlık mesajlarda tuşlar saatin yanında, aynı satırda yan yana durur */
 .msg.time-mid .msg-acts { position: static; bottom: auto; padding-bottom: 0; }
 .msg.acts-on .msg-acts, .msg.hov .msg-acts { opacity: 1; pointer-events: auto; }
+/* Kendi mesajımız çok genişse tuşlar ekrana sığmaz: sil, yanıtın üstüne; düzenle, kopyalamanın üstüne geçer (yanıtla / kopyala yerinde kalır) */
+.msg-acts.two { display: grid; grid-template-columns: 24px 24px; grid-auto-rows: 24px; direction: ltr; }
+.msg-acts.two .msg-act.danger { grid-row: 1; grid-column: 1; }
+.msg-acts.two .msg-act.edit { grid-row: 1; grid-column: 2; }
+.msg-acts.two .msg-act.reply { grid-row: 2; grid-column: 1; }
+.msg-acts.two .msg-act.copy { grid-row: 2; grid-column: 2; }
+.msg.editing .msg-acts.two { display: flex; }
 @media (any-hover: hover) {
   /* Mesajın bulunduğu satırın tamamı üzerine gelmeyi sayar; fare tuşlara giderken kapanmaz */
   .msg::before { content: ''; position: absolute; top: 0; bottom: 0; left: -100vw; right: -100vw; }
@@ -595,6 +602,7 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 .call-card[data-tone="o"], .dial-card[data-tone="o"] { background: linear-gradient(135deg, color-mix(in srgb, #ff9f1a 45%, var(--c-1a)), color-mix(in srgb, #ff9f1a 12%, var(--c-1a))); border-color: color-mix(in srgb, #ff9f1a 65%, transparent); }
 .dial-opt { width: 100%; padding: 10px 12px; border: 1px solid var(--c-33); border-radius: var(--r-md); background: var(--c-111); color: var(--c-fff); font-size: 15px; font-family: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .dial-opt:active { background: var(--hot); }
+.dial-opt.dial-cancel { color: var(--bad); }
 .call-btn.off { opacity: 0.22; filter: grayscale(0.7); pointer-events: none; }
 #call-modal {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 21000;
@@ -806,6 +814,7 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
   position: relative; flex: 0 0 50%; width: 50%; min-width: 0; height: 100%;
   display: flex; flex-direction: column; overflow: hidden; touch-action: pan-y;
 }
+#pane-settings { display: none; }
 @media (min-width: 769px) {
   #slider { width: 100%; transform: none !important; transition: none !important; }
   #pane-notes { border-left: 1px solid var(--c-1a); }
@@ -1199,6 +1208,11 @@ body.nick-hidden #message-input { border-radius: var(--r-lg) 0 0 var(--r-lg); }
   /* Masaüstü: sağ panel (bildirim / ayarlar) her zaman 36vw sabit. */
   #pane-chat { flex: 1 1 0; width: auto; min-width: 0; }
   #pane-notes { flex: 0 0 36vw; width: 36vw; }
+  /* Masaüstü: ayarlar solda sabit, sağ panelden biraz daha dar; sohbet ikisinin ortasında */
+  #pane-settings { display: flex; flex: 0 0 28vw; width: 28vw; border-right: 1px solid var(--c-1a); background: var(--c-000); }
+  #pane-settings > #bp-page-set { flex: 1 1 auto; width: 100%; height: 100%; }
+  body.desk-set .bp-tab[data-p="3"] { display: none; }
+  body.desk-set #bp-pill { width: calc((100% - 4px) / 3); }
   /* Masaüstü: yan panel (notlar) güncellenince, fareyle üstüne gelinene ya da tıklanana kadar yanıp söner */
   #pane-notes::after {
     content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 50; pointer-events: none;
@@ -1601,6 +1615,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 </div>
 <div id="panes">
 <div id="slider">
+<div id="pane-settings" class="pane"></div>
 <div id="pane-chat" class="pane">
 <div id="new-notes-badge" class="new-badge"><span class="nb-t">Yeni</span><span class="nb-d" aria-hidden="true"><i></i><i></i><i></i></span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
 <div id="fab"><div id="fab-ring"></div><div id="fab-main" title="Menü" aria-label="Menü"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2" fill="currentColor"></circle></svg></div></div>
@@ -2953,6 +2968,7 @@ function setupConnection(c) {
     if (data.type === 'notif-ack') { receiveNotifAck(data); return; }
     if (data.type === 'call-state') { receiveCallState(data); return; }
     if (data.type === 'dial-state') { receiveDialState(data); return; }
+    if (data.type === 'dial-cancel') { receiveDialCancel(data); return; }
     if (data.type === 'cmp') { receiveCmp(data); return; }
     if (data.type === 'cmp-stop') { cmpPeerClear(); return; }
     if (data.type === 'card') { receiveCard(data); return; }
@@ -3413,6 +3429,21 @@ window.addEventListener('resize', () => {
 });
 function closeSlot(m) { if (m && m._slot) m._slot.classList.remove('open'); }
 
+// Tuşlar solda ekrandan taşacaksa (kendi mesajımız, çok geniş baloncuk) iki satıra böler
+function fitActs(msg) {
+  if (!msg || !msg.classList || !msg.classList.contains('own-msg') || msg.classList.contains('time-mid')) return;
+  const acts = msg.querySelector('.msg-acts');
+  if (!acts) return;
+  acts.classList.remove('two');
+  const r = acts.getBoundingClientRect();
+  if (!r.width) return;
+  const lim = Math.max(0, chatArea.getBoundingClientRect().left);
+  if (r.left < lim + 2) acts.classList.add('two');
+}
+window.addEventListener('resize', () => {
+  const on = chatArea.querySelectorAll('.msg.acts-on, .msg.hov');
+  for (let i = 0; i < on.length; i++) fitActs(on[i]);
+});
 // Mesaja (baloncuğa) bir kez dokununca tuşlar yanında belirir; tekrar dokununca ya da başka yere basınca kapanır
 function closeActs(except) {
   const on = chatArea.querySelectorAll('.msg.acts-on');
@@ -3453,7 +3484,7 @@ function setHov(m) {
       closeSlot(old);
     }
   }
-  if (m) m.classList.add('hov');
+  if (m) { m.classList.add('hov'); fitActs(m); }
 }
 chatArea.addEventListener('pointerover', (e) => {
   if (e.pointerType !== 'mouse') return;
@@ -3489,7 +3520,7 @@ chatArea.addEventListener('click', (e) => {
   if (t.closest('button, a, input, textarea, select, audio, video, .yt-card')) return;
   try { if (window.getSelection && String(window.getSelection())) return; } catch (err) {}
   if (msg.classList.contains('acts-on')) closeActs(null);
-  else { closeActs(msg); msg.classList.add('acts-on'); armActs(msg); }
+  else { closeActs(msg); msg.classList.add('acts-on'); fitActs(msg); armActs(msg); }
 });
 document.addEventListener('click', (e) => { if (!(e.target && e.target.closest && e.target.closest('#chat-area'))) closeActs(null); });
 
@@ -5799,6 +5830,13 @@ function buildDialCard(name, own) {
         b.addEventListener('click', (e) => { e.stopPropagation(); if (el._pick) el._pick(o[0]); });
         el.appendChild(b);
       });
+      const cb = document.createElement('button');
+      cb.type = 'button';
+      cb.className = 'dial-opt dial-cancel';
+      cb.textContent = 'İptal Et';
+      ['pointerdown', 'mousedown'].forEach((t) => cb.addEventListener(t, (e) => e.preventDefault())); // mesaj kutusunun odağı gitmesin
+      cb.addEventListener('click', (e) => { e.stopPropagation(); if (el._cancel) el._cancel(); });
+      el.appendChild(cb);
       return;
     }
     let txt = 'Bir saniye...', tone = '';
@@ -5850,6 +5888,24 @@ function dialSetState(id, st, send) {
   }
   return true;
 }
+// İptal Et: komutu giren tarafın kartı ve komutu iki tarafta da komple silinir, hiç .ara girilmemiş gibi olur
+function dialCancel(id, send) {
+  if (send) {
+    if (!isConnected()) { flashStatus('Bağlı değil, arama iptal edilemedi'); return false; }
+    try { conn.send({ type: 'dial-cancel', msgId: id }); } catch (e) {}
+  }
+  if (dialTimers[id]) { clearTimeout(dialTimers[id]); delete dialTimers[id]; }
+  const o = dialReadStates();
+  if (id in o) { delete o[id]; dialWriteStates(o); }
+  removeFromHistory(id);
+  outboxRemove(id);
+  removeMessageFromUI(id);
+  return true;
+}
+function receiveDialCancel(d) {
+  if (!d || typeof d.msgId !== 'string') return;
+  dialCancel(d.msgId.slice(0, 80), false);
+}
 function receiveDialState(d) {
   if (!d || typeof d.msgId !== 'string' || typeof d.state !== 'string') return;
   dialSetState(d.msgId.slice(0, 80), d.state, false);
@@ -5866,6 +5922,11 @@ function buildDialMsgCard(msgDiv, id, name, own) {
     if (own || card._state !== 'wait') return;
     if (Date.now() - menuOpenedAt < 600) return;
     dialSetState(id, code, true);
+  };
+  card._cancel = () => {
+    if (own || card._state !== 'wait') return;
+    if (Date.now() - menuOpenedAt < 600) return;
+    dialCancel(id, true);
   };
   const saved = dialReadStates()[id];
   if (saved && saved in DIAL_RANK) {
@@ -9538,7 +9599,7 @@ function bpDots() { document.querySelectorAll('.bp-tab').forEach((b, i) => b.cla
 // Seçili olmayan sayfaya yeni gönderi gelirse o sekmenin köşesinde kırmızı nokta çıkar
 function bpMarkUnread(i) { try { noteIncomingNotif(); } catch (e) {} if (i === bpPage) return; bpUnread[i] = true; bpDots(); }
 function bpSetPage(p, instant) {
-  p = Math.max(0, Math.min(BP_PAGES - 1, p));
+  p = Math.max(0, Math.min(document.body.classList.contains('desk-set') ? 2 : BP_PAGES - 1, p));
   if (instant) bellPop.classList.add('no-anim');
   tsClose();
   bpPage = p;
@@ -9611,7 +9672,7 @@ function bpSetPage(p, instant) {
     const dx = e.clientX - g.x, dy = e.clientY - g.y;
     if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { g = null; return; }
     if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.2) {
-      if (dx < 0 && bpPage < BP_PAGES - 1) { bpSetPage(bpPage + 1); g.on = true; }
+      if (dx < 0 && bpPage < (document.body.classList.contains('desk-set') ? 2 : BP_PAGES - 1)) { bpSetPage(bpPage + 1); g.on = true; }
       else if (dx > 0 && bpPage > 0) { bpSetPage(bpPage - 1); g.on = true; }
       else if (dx > 0 && g.back && isMobileLayout()) { g.on = true; setView('chat'); }
       else g = null;
@@ -9620,6 +9681,30 @@ function bpSetPage(p, instant) {
   const end = (e) => { if (g && e.pointerId === g.id) g = null; };
   bellPop.addEventListener('pointerup', end);
   bellPop.addEventListener('pointercancel', end);
+})();
+// Masaüstünde Ayarlar sayfası sağ panelden çıkıp solda sabit menüye taşınır; mobilde eski yerine (sağ panelin 4. sayfası) döner
+(function initDeskSettings() {
+  const set = document.getElementById('bp-page-set');
+  const pane = document.getElementById('pane-settings');
+  const sl = document.getElementById('bp-slider');
+  if (!set || !pane || !sl) return;
+  function place() {
+    const desk = !mqMobile.matches;
+    document.body.classList.toggle('desk-set', desk);
+    if (desk) {
+      if (set.parentNode !== pane) pane.appendChild(set);
+      if (bpPage === 3) bpSetPage(0, true);
+    } else if (set.parentNode !== sl) sl.appendChild(set);
+  }
+  place();
+  if (mqMobile.addEventListener) mqMobile.addEventListener('change', place);
+  else if (mqMobile.addListener) mqMobile.addListener(place);
+  // Menüdeki tuşlara fareyle basınca mesaj kutusunun odağı gitmesin (yazı alanları hariç)
+  pane.addEventListener('mousedown', (e) => {
+    const t = e.target;
+    if (!t || !t.closest || t.closest('input, textarea, [contenteditable="true"]')) return;
+    if (t.closest('button, [role="button"], [role="switch"], .set-title, .leap-bar') && e.cancelable) e.preventDefault();
+  });
 })();
 (function initNotesPopup() {
   if (notesUnseen) notesBtn.classList.add('unseen');
