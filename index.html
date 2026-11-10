@@ -1368,6 +1368,8 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 #settings-scroll .leap-name::before { content: ""; width: 22px; height: 22px; flex: 0 0 auto; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23fff0a8%22/%3E%3Cstop offset=%221%22 stop-color=%22%23f2b200%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210.5%22 fill=%22url(%23g)%22 stroke=%22%23b78300%22 stroke-width=%221.2%22/%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%227.6%22 fill=%22none%22 stroke=%22%23b78300%22 stroke-opacity=%22.55%22/%3E%3Ctext x=%2212%22 y=%2216.1%22 text-anchor=%22middle%22 font-size=%2210.5%22 font-weight=%22800%22 fill=%22%238a5d00%22 font-family=%22Arial,sans-serif%22%3EL%3C/text%3E%3C/svg%3E") center / contain no-repeat; filter: drop-shadow(0 1px 3px rgba(0,0,0,.45)); }
 #settings-scroll .leap-num { flex: 1 1 auto; font-size: 15px; font-weight: 700; opacity: .95; }
 #settings-scroll .leap-num.editing { opacity: 1; }
+.leap-num:not(.editing) { overflow: hidden; }
+.leap-num-t { display: inline-block; white-space: nowrap; will-change: transform; }
 #settings-scroll .leap-in { height: 20px; line-height: 20px; font-size: 16px; }
 #settings-scroll .leap-ext.open { margin-bottom: 14px; }
 #settings-scroll .leap-ext-row { padding: 2px 12px 0; }
@@ -1404,8 +1406,21 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 @media (hover: hover) and (pointer: fine) { #settings-scroll .seg-btn:not(.active):not(.danger):hover { color: var(--c-fff); background: var(--c-111); } }
 @media (prefers-reduced-motion: reduce) { #settings-scroll .set-title, #settings-scroll .seg-btn { transition: none; } }
 
-/* Masaüstü: sağ alt çubuk ince (36px), metin kutusuyla hizalanmaz */
-@media (min-width: 769px) { :root { --bp-tabs-h: 36px; } }
+/* Masaüstü: yazma satırı (isim kutusu, metin kutusu, gönder tuşu ve sürükleyince açılan seçenekler) sağ panelin alt çubuğu gibi en alta yapışık, köşeleri düz;
+   alt çubuk bir tık uzatıldı ve ikisinin üst kenarı aynı hizada (44px). Mobil bundan etkilenmez. */
+@media (min-width: 769px) {
+  :root { --dock-h: 44px; --bp-tabs-h: 44px; }
+  #input-area { padding: 0; min-height: 0; border-top: 0; }
+  #nick-input, #message-input, #send-btn, body.nick-hidden #message-input { border-radius: 0; }
+  #nick-input { height: var(--dock-h); border-left: 0; border-bottom: 0; }
+  #message-input { height: var(--dock-h); padding: 10px 15px; border-bottom: 0; }
+  #send-btn { width: var(--dock-h); min-width: var(--dock-h); height: var(--dock-h); border-right: 0; border-bottom: 0; }
+  #ph-overlay { height: var(--dock-h); line-height: var(--dock-h); }
+  #rec-ph { line-height: calc(var(--dock-h) - 2px); }
+  .cm-item { height: var(--dock-h); }
+  #chip-menu { border-radius: 0; }
+  #chat-area { -webkit-mask-image: none; mask-image: none; }
+}
 
 /* Yüzen menü: 3 sn etkileşim olmazsa %75 saydam olur, yalnızca dış çerçevesi çok hafif parlar */
 #fab::before { content: ""; position: absolute; left: 0; top: 0; width: 46px; height: 46px; border-radius: 50%; box-sizing: border-box; pointer-events: none; z-index: 0; opacity: 0; box-shadow: 0 0 8px 1px color-mix(in srgb, var(--c-fff) 26%, transparent); transition: opacity .15s ease; }
@@ -5492,9 +5507,10 @@ chatArea.addEventListener('click', (e) => {
 }, true);
 
 function adjustInputHeight() {
-  messageInput.style.height = '42px';
+  const baseH = isMobileLayout() ? 42 : 44; // masaüstünde yazma satırı sağ alt çubukla aynı yükseklikte (44px)
+  messageInput.style.height = baseH + 'px';
   // Kutu boşken (placeholder gösteriliyorken) yükseklik hiç büyümez; uzun placeholder satır atlayıp kutuyu şişirmesin
-  if (messageInput.value !== '' && messageInput.scrollHeight > 42) {
+  if (messageInput.value !== '' && messageInput.scrollHeight > baseH) {
     messageInput.style.height = Math.min(150, messageInput.scrollHeight) + 'px';
   }
 
@@ -10397,9 +10413,41 @@ function sendLeap(type) {
   if (!isConnected()) return;
   try { conn.send({ type: type, v: leapVal, rev: leapRev, by: leapBy }); } catch (e) {}
 }
+// Leap sayısı kutuya sığmazsa, mesaj kutusundaki uzun yazı gibi yavaşça sağa kayıp başa sarar (sürekli)
+let leapAnim = null, leapRaf = 0;
+function leapTick() {
+  leapRaf = 0;
+  const el = document.getElementById('leap-num');
+  const t = el && el.querySelector('.leap-num-t');
+  if (leapAnim) { try { leapAnim.cancel(); } catch (e) {} leapAnim = null; }
+  if (!t) return;
+  t.style.transform = '';
+  const shift = Math.ceil(t.offsetWidth - el.clientWidth);
+  if (shift <= 1 || !t.animate || reducedMotion()) return;
+  const dur = shift / PH_SPEED * 1000 + PH_HOLD * 2;
+  const a = PH_HOLD / dur;
+  leapAnim = t.animate([
+    { transform: 'translateX(0)', offset: 0 },
+    { transform: 'translateX(0)', offset: a },
+    { transform: 'translateX(-' + shift + 'px)', offset: 1 - a },
+    { transform: 'translateX(-' + shift + 'px)', offset: 1 }
+  ], { duration: dur, iterations: Infinity, easing: 'linear' });
+}
+function scheduleLeapTick() { if (!leapRaf) leapRaf = requestAnimationFrame(leapTick); }
+(function initLeapTicker() {
+  const el = document.getElementById('leap-num');
+  if (el && window.ResizeObserver) new ResizeObserver(scheduleLeapTick).observe(el);
+  window.addEventListener('resize', scheduleLeapTick);
+})();
 function renderLeap() {
   const el = document.getElementById('leap-num');
-  if (el && !el.querySelector('input')) el.textContent = leapFmt(leapVal);
+  if (el && !el.querySelector('input')) {
+    const txt = leapFmt(leapVal);
+    let t = el.querySelector('.leap-num-t');
+    if (!t) { el.textContent = ''; t = document.createElement('span'); t.className = 'leap-num-t'; el.appendChild(t); }
+    if (t.textContent !== txt) t.textContent = txt;
+    scheduleLeapTick();
+  }
   const hn = document.getElementById('leap-hud-num');
   if (hn) hn.textContent = leapFmt(leapVal);
 }
