@@ -860,6 +860,13 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 .new-badge.typing .nb-d { display: inline-flex; }
 @media (max-width: 768px) { .new-badge.show.typing { animation: none; opacity: 0.9; } }
 @media (prefers-reduced-motion: reduce) { .new-badge .nb-d i { animation: none; opacity: 0.7; } }
+/* Sağ panel sayfaları arası rozetler (Bildirim / Keşfet / Oluştur): başka sayfada yeni içerik ya da yazıyor varsa o yönün kenarında çıkar; masaüstü + mobil */
+#bp-nb-l { left: 8px; }
+#bp-nb-r { right: 8px; }
+#bp-nb-l.low { margin-top: 18px; }
+.bp-nb.show { display: flex; animation: new-badge-blink 1s ease-in-out infinite; }
+.bp-nb.show.typing { animation: none; opacity: 0.9; }
+@media (prefers-reduced-motion: reduce) { .bp-nb.show { animation: none; } }
 
 @media (pointer: coarse) {
   .msg .msg-img { -webkit-touch-callout: none; }
@@ -978,6 +985,17 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 #bell-pop .bp-card { margin: 0; border-width: 0 0 1px 0; border-radius: 0; padding: 10px 14px; }
 #sb-mid { position: relative; }
 #notes-pop.show, #bell-pop.show { display: block; }
+/* Not penceresi: sohbet alanının tamamını (yazma satırı dahil) kaplar; konum/boyut JS ile (layoutPopFor) klavyeye göre ayarlanır. Çerçeve, köşe ve gölge yok */
+#notes-pop { border: 0; border-radius: 0; box-shadow: none; background: var(--c-000); z-index: 60; }
+#np-back {
+  position: absolute; top: 0; left: 0; right: 0; height: 30px; z-index: 2; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: var(--c-1a); border-bottom: 1px solid var(--c-33); color: var(--c-cc);
+  font-size: 13px; font-weight: 600; letter-spacing: .2px; cursor: pointer;
+  user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+#np-back:active { background: var(--c-33); color: var(--c-fff); }
+#np-back svg { display: block; flex: 0 0 auto; }
 /* Bildirim paneli sağ panelin tamamını kaplar: masaüstünde her zaman açık, mobilde çana basınca sağ panel açılır */
 #bell-pop { position: relative; top: auto; right: auto; bottom: auto; left: auto; width: auto; height: auto; flex: 1 1 0; min-height: 0; z-index: auto; }
 /* Karşı taraf gönderi/yanıt yazarken sohbet alanının sağ kenarında çıkan minik "yazıyor" baloncuğu (çandan fırlar gibi açılır) */
@@ -1204,7 +1222,7 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 #bp-send { background: var(--accent); color: var(--on-accent) !important; border-color: var(--accent) !important; font-weight: 700; }
 
 #np-view, #np-edit {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0; box-sizing: border-box; margin: 0;
+  position: absolute; top: 30px; left: 0; right: 0; bottom: 0; box-sizing: border-box; margin: 0;
   padding: 10px 8px; font-size: 15px; line-height: 1.25; color: var(--c-fff); background: transparent;
   white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; text-align: left;
   font-family: 'Lexend', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
@@ -1371,6 +1389,16 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 #leap-hud .lh-coin { display: block; flex: 0 0 auto; filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); }
 #leap-hud .lh-num { color: var(--c-fff); font-weight: 600; font-variant-numeric: tabular-nums; margin-left: 2px; }
 @media (prefers-reduced-motion: reduce) { #leap-hud { transition: opacity .1s linear; } }
+/* Üstten inen bildirim kutusu (mobil + masaüstü; masaüstünde sohbet sütununun ortasında): Leap göstergesiyle aynı tasarım. Açıkken Leap hızlıca solar, kutu gidince yavaşça geri gelir */
+#vn-toast { position: absolute; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 10px); z-index: 12600; display: flex; align-items: center; gap: 7px; width: max-content; max-width: calc(100% - 28px); padding: 5px 14px 5px 7px; border-radius: 999px; box-sizing: border-box; white-space: nowrap; color: var(--warn); font-size: 13px; font-weight: 700; background: color-mix(in srgb, var(--c-1a) 94%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); box-shadow: 0 6px 18px rgba(var(--sh),0.55), 0 0 12px color-mix(in srgb, var(--warn) 25%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none; user-select: none; -webkit-user-select: none; opacity: 0; transform: translate(-50%, -26px) scale(.96); transition: opacity .18s ease, transform .26s cubic-bezier(.2,.9,.3,1.15); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+#vn-toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); pointer-events: auto; cursor: pointer; }
+#vn-toast .vt-ic { display: block; flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%; background: color-mix(in srgb, var(--warn) 22%, transparent); padding: 3px; box-sizing: border-box; }
+#vn-toast .vt-ic svg { display: block; width: 16px; height: 16px; }
+#vn-toast .vt-n { flex: 0 1 auto; min-width: 0; max-width: 42%; overflow: hidden; text-overflow: ellipsis; }
+#vn-toast .vt-t { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--c-fff); font-weight: 400; opacity: .92; }
+@media (prefers-reduced-motion: reduce) { #vn-toast { transition: opacity .1s linear; transform: translate(-50%, 0); } }
+body.vt-on #leap-hud { opacity: 0 !important; pointer-events: none !important; transition: opacity .14s ease !important; }
+body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezier(.2,.9,.3,1.15); }
 
 /* ===== Modern ayarlar ===== */
 #bp-page-set #settings-scroll { padding: 0 0 28px; scrollbar-width: none; -ms-overflow-style: none; }
@@ -1440,6 +1468,13 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 #fab-main { transition: transform .15s ease, color .15s ease, opacity .15s ease; }
 #fab.idle #fab-main { opacity: .25; transition: transform .15s ease, color .15s ease, opacity .6s ease; }
 #fab.idle::before { opacity: 1; transition: opacity .6s ease; }
+/* Karşı taraf notu güncelleyip biz henüz görmediysek parlama sarıya döner ve hafifçe nabız gibi atar (menü uyanık olsa da görünür) */
+@keyframes fab-note-glow {
+  0%, 100% { box-shadow: 0 0 8px 1px color-mix(in srgb, var(--warn) 45%, transparent); transform: scale(1); }
+  50% { box-shadow: 0 0 15px 3px color-mix(in srgb, var(--warn) 85%, transparent); transform: scale(1.07); }
+}
+#fab.note-unseen::before { opacity: 1; animation: fab-note-glow 1.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { #fab.note-unseen::before { animation: none; box-shadow: 0 0 12px 2px color-mix(in srgb, var(--warn) 70%, transparent); } }
 @media (prefers-reduced-motion: reduce) { #fab::before, #fab-main, #fab.idle #fab-main { transition: none; } }
 
 /* ===== MOBİL: sabit alt sekme çubuğu (CMD | Bildirim | Keşfet | Oluştur | Ayarlar) ===== */
@@ -1661,6 +1696,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   <span id="notes-btn" title="Notlar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></span>
 </div>
 <div id="notes-pop">
+  <div id="np-back" role="button" aria-label="Geri Dön"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg><span>Geri Dön</span></div>
   <div id="np-view"></div>
   <textarea id="np-edit" spellcheck="false" autocomplete="off" autocorrect="off"></textarea>
 </div>
@@ -1820,6 +1856,8 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
   <div id="bp-tabs"><div id="bp-tabs-in"><div id="bp-pill"></div><button type="button" class="bp-tab on" data-p="0" aria-label="Bildirim" title="Bildirim"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="1" aria-label="Keşfet" title="Keşfet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="2" aria-label="Oluştur" title="Oluştur"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8M8 12h8"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="3" aria-label="Ayarlar" title="Ayarlar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab bp-cmd" data-p="chat" aria-label="CMD (sohbet)" title="CMD"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor" stroke="none" font-family="Lexend,Arial,sans-serif">CMD</text></svg><span class="bp-dot"></span></button></div></div>
 </div>
   <div id="new-msg-badge" class="new-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg><span>Yeni</span></div>
+  <div id="bp-nb-l" class="new-badge bp-nb" role="button"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg><span class="nb-t">Yeni</span><span class="nb-d" aria-hidden="true"><i></i><i></i><i></i></span></div>
+  <div id="bp-nb-r" class="new-badge bp-nb" role="button"><span class="nb-t">Yeni</span><span class="nb-d" aria-hidden="true"><i></i><i></i><i></i></span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
 </div>
 </div>
 </div>
@@ -3103,7 +3141,7 @@ function setupConnection(c) {
       if (!data.buffer || typeof data.mime !== 'string' || data.mime.indexOf('audio/') !== 0) return;
       if (data.msgId && document.getElementById(data.msgId)) return;
       appendMessage('', data.senderNick, false, (data.reply && typeof data.reply === 'object') ? data.reply : null, data.msgId, true, { url: URL.createObjectURL(new Blob([data.buffer], { type: data.mime })), audio: true, once: data.once === true, dur: Number(data.dur) || 0 });
-      noteIncomingMessage();
+      noteIncomingMessage({ nick: data.senderNick, kind: 'a', id: data.msgId });
       return;
     }
     if (data.type === 'image') {
@@ -3115,7 +3153,7 @@ function setupConnection(c) {
       if (data.msgId && document.getElementById(data.msgId)) { try { c.send({ type: 'img-ack', msgId: data.msgId }); } catch (e) {} return; }
       const url = URL.createObjectURL(new Blob([data.buffer], { type: data.mime }));
       appendMessage('', data.senderNick, false, null, data.msgId, true, { url: url, once: data.once === true });
-      noteIncomingMessage();
+      noteIncomingMessage({ nick: data.senderNick, kind: 'i', id: data.msgId });
       try { c.send({ type: 'img-ack', msgId: data.msgId }); } catch (e) {}
       return;
     }
@@ -3139,7 +3177,7 @@ function setupConnection(c) {
       const fb = fin && fin.querySelector('.msg-body');
       if (fb) { try { animateLiveWords(fb, data.msgId); } catch (e) {} }
     }
-    noteIncomingMessage();
+    noteIncomingMessage({ nick: data.senderNick, text: data.text, id: data.msgId });
     if (data.msgId) {
       rememberSeenMsg(data.msgId);
       try { c.send({ type: 'msg-ack', msgId: data.msgId }); } catch (e) {}
@@ -7888,6 +7926,7 @@ function updateBadges() {
   newNotesBadge.classList.toggle('show', mob && view === 'chat' && (unreadNotes || newNotesBadge.classList.contains('typing')));
   newMsgBadge.classList.toggle('show', mob && view === 'notes' && unreadMsgs);
   { const cb = document.querySelector('.bp-cmd'); if (cb) cb.classList.toggle('new', mob && view === 'notes' && unreadMsgs); }
+  try { updatePageBadges(); } catch (e) {}
 }
 
 let reopenKb = false;
@@ -7919,15 +7958,19 @@ function setView(v) {
   try { window.dispatchEvent(new Event('vn-view')); } catch (e) {}
 }
 
-function noteIncomingMessage() {
-  if (isMobileLayout() && view === 'notes') { unreadMsgs = true; updateBadges(); restartBadgeBlink(newMsgBadge); }
+function noteIncomingMessage(info) {
+  if (isMobileLayout() && view === 'notes') { unreadMsgs = true; updateBadges(); restartBadgeBlink(newMsgBadge); try { chatToastFor(info); } catch (e) {} }
 }
 
 function noteIncomingNotif() {
   if (isMobileLayout() && view === 'chat') { unreadNotes = true; updateBadges(); restartBadgeBlink(newNotesBadge); }
 }
 newMsgBadge.addEventListener('click', () => setView('chat'));
-newNotesBadge.addEventListener('click', () => setView('notes'));
+newNotesBadge.addEventListener('click', () => {
+  let j = null;
+  try { j = bpJumpInfo(); } catch (e) {}
+  if (j) bpGoTo(j.page, j.tgt, j.typing); else setView('notes');
+});
 if (mqMobile.addEventListener) mqMobile.addEventListener('change', updateBadges);
 else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
 
@@ -8148,6 +8191,18 @@ function layoutPopFor(notesPop, notesBtn) {
   const st = notesPop.style;
   let size;
   if (notesPop.id === 'bell-pop') return; // sağ panelde sabit yerleşik, konum hesabı gerekmez
+  {
+    // Not penceresi: sohbet alanının tamamını kaplar (metin kutusunun üstü dahil). #app görünür alana (klavyenin üstüne) kadar uzandığı için
+    // üst = ekranın en üstü, alt = sohbet panelinin altı (klavye açıkken klavyenin hemen üstü).
+    const pc = document.getElementById('pane-chat').getBoundingClientRect();
+    const mob = isMobileLayout();
+    const L = mob ? 0 : Math.max(0, Math.round(pc.left - ar.left));
+    const W = mob ? Math.round(ar.width) : Math.round(pc.width);
+    const H = Math.max(100, Math.round(Math.min(pc.bottom, ar.bottom) - ar.top));
+    st.top = '0px'; st.left = L + 'px'; st.right = 'auto'; st.bottom = 'auto';
+    st.width = W + 'px'; st.height = H + 'px';
+    return;
+  }
   if (pos === 'strip') {
     // Renk şeridinin sağındaki tuş: pencere sağ alttan, şeridin hemen üstünden yukarı doğru açılır
     const tr = typingIndicator.getBoundingClientRect();
@@ -8579,7 +8634,7 @@ function receiveNotif(d) {
   trimNotifs();
   ackNotif(id, false);
   if (bellPop.classList.contains('show')) renderNotifs();
-  bpMarkUnread(0);
+  bpMarkUnread(0, { id: id });
 }
 function receiveNotifDel(d) {
   if (!d || typeof d.id !== 'string') return;
@@ -8849,7 +8904,7 @@ function cardMergeIn(raw, animate) {
 }
 function receiveCardState(d) {
   if (!d) return;
-  let ch = false, nw = false, rn = false;
+  let ch = false, nw = false, rn = false, cardTgt = null;
   const dm = (d.del && typeof d.del === 'object') ? d.del : {};
   Object.keys(dm).slice(0, 300).forEach((k) => { const t = Number(dm[k]), id = k.slice(0, 40); if (!isFinite(t) || t <= 0 || cardDel[id] >= t) return; cardDel[id] = t; ch = true; });
   const n0 = cardList.length;
@@ -8860,12 +8915,13 @@ function receiveCardState(d) {
     const r = cardMergeIn(it, !d.h);
     if (it && typeof it.id === 'string' && r.nw) ackCard(it.id.slice(0, 40), false);
     if (r.ch) ch = true; if (r.nw) nw = true; if (r.rn) rn = true;
+    if ((r.nw || r.rn) && it && typeof it.id === 'string') cardTgt = { id: it.id.slice(0, 40), reply: !r.nw };
   });
   if (ch) {
     if (nw || rn) cmpPeerClear();
     trimCards(); cardPersist();
     if (bellPop.classList.contains('show')) renderCards();
-    if (nw || rn) bpMarkUnread(1);
+    if (nw || rn) bpMarkUnread(1, cardTgt);
   }
   if (d.h) cardSyncSoon(false); // karşı taraf yeni bağlandı: kendi durumumu da yolla, ikisi de aynı hâle gelsin
 }
@@ -9033,7 +9089,7 @@ function receiveThird(d, isHello) {
   const rpNew = !isHello && !isNew && (c.rp || []).some((r) => !(prev.rp || []).some((q) => q.id === r.id));
   if (isNew || rpNew) cmpPeerClear();
   if (bellPop.classList.contains('show')) renderCards();
-  if (isNew || rpNew) bpMarkUnread(2);
+  if (isNew || rpNew) bpMarkUnread(2, { id: c.id, reply: !isNew });
 }
 (function loadThird() {
   lsRemove('thirdOwnId'); // eski sürümden kalan cihaz kimliği artık kullanılmıyor
@@ -9346,6 +9402,7 @@ function cmpPeerClear() {
   cmpSync();
 }
 function cmpBubble(on) {
+  try { updatePageBadges(); } catch (e) {}
   // Pencere kapalıyken: sağ kenardaki "Yeni >" rozeti, içinde yazıyor noktalarıyla gelir
   if (newNotesBadge.classList.contains('typing') === !!on) return;
   newNotesBadge.classList.toggle('typing', !!on);
@@ -9490,7 +9547,7 @@ function receiveCard(d) {
   if (r.nw || r.rn) cmpPeerClear();
   trimCards(); cardPersist();
   if (bellPop.classList.contains('show')) renderCards();
-  if (r.nw || r.rn) bpMarkUnread(1);
+  if (r.nw || r.rn) bpMarkUnread(1, { id: id, reply: !r.nw });
 }
 // Yanıt ekleme (6687): 3. sayfada gönderiyle birlikte revizyonla, 2. sayfada 'card-reply' ile karşıya gider. En yeni üstte, en fazla 3; 4. yanıtla en eskisi silinir
 function addCardReply(cardId, n, b, vf) {
@@ -9767,9 +9824,193 @@ function closeCardCompose() {
 let bpPage = (() => { const v = parseInt(lsGet('bpPage') || '0', 10); return (v >= 0 && v <= 3) ? v : 0; })();
 const BP_PAGES = 4;
 const bpUnread = [false, false, false, false];
-function bpDots() { document.querySelectorAll('.bp-tab').forEach((b, i) => { if (b.classList.contains('bp-cmd')) return; b.classList.toggle('new', !!bpUnread[i]); }); }
+const bpNewTgt = [null, null, null, null], bpNewAt = [0, 0, 0, 0];
+let bpLastNew = null; // en son gelen yeni şey: {page, tgt}
+function bpDots() { document.querySelectorAll('.bp-tab').forEach((b, i) => { if (b.classList.contains('bp-cmd')) return; b.classList.toggle('new', !!bpUnread[i]); }); try { updatePageBadges(); } catch (e) {} }
+/* ===== Üstten inen bildirim kutusu (yalnızca mobil) ===== */
+const VT_ICONS = {
+  chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
+  0: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>',
+  1: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.2 7.8 14.1 14.1 7.8 16.2 9.9 9.9 16.2 7.8"></polygon></svg>',
+  2: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>'
+};
+const VT_SHOW_MS = 4200;
+let vtEl = null, vtShown = false, vtHideT = null, vtRevealT = null, vtBackT = null, vtGo = null;
+function vtSnip(t) {
+  t = String(t || '').replace(/\s+/g, ' ').trim();
+  if (!t) return '';
+  let o = t.split(' ').slice(0, 7).join(' ');
+  if (o.length > 46) o = o.slice(0, 46).trimEnd();
+  return o + (o.length < t.length ? '…' : '');
+}
+function vtBuild() {
+  if (vtEl) return;
+  vtEl = document.createElement('div');
+  vtEl.id = 'vn-toast'; vtEl.setAttribute('role', 'status');
+  vtEl.innerHTML = '<span class="vt-ic"></span><span class="vt-n"></span><span class="vt-t"></span>';
+  appEl.appendChild(vtEl);
+  vtEl.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
+  vtEl.addEventListener('contextmenu', (e) => e.preventDefault());
+  vtEl.addEventListener('click', (e) => {
+    e.stopPropagation(); e.preventDefault();
+    const go = vtGo; vtHide();
+    if (go) { try { go(); } catch (err) {} }
+  });
+  // Yukarı kaydırınca bildirim gider
+  let y0 = null;
+  vtEl.addEventListener('touchstart', (e) => { y0 = e.touches[0].clientY; }, { passive: true });
+  vtEl.addEventListener('touchmove', (e) => { if (y0 !== null && e.touches[0].clientY - y0 < -16) { y0 = null; vtHide(); } }, { passive: true });
+  vtEl.addEventListener('touchend', () => { y0 = null; }, { passive: true });
+}
+function vtHide() {
+  clearTimeout(vtHideT); clearTimeout(vtRevealT);
+  if (!vtEl) return;
+  vtEl.classList.remove('show');
+  vtGo = null;
+  if (!vtShown && !document.body.classList.contains('vt-on')) return;
+  vtShown = false;
+  clearTimeout(vtBackT);
+  // Kutu gittikten sonra Leap göstergesi (görünür olacaksa) yavaşça geri gelir
+  vtBackT = setTimeout(() => {
+    if (vtShown) return;
+    document.body.classList.add('vt-back');
+    document.body.classList.remove('vt-on');
+    setTimeout(() => document.body.classList.remove('vt-back'), 700);
+  }, 260);
+}
+function vtPlace() {
+  // Masaüstünde kutu sohbet sütununun ortasında durur; mobilde ekranın ortasında
+  if (isMobileLayout()) { vtEl.style.left = ''; vtEl.style.maxWidth = ''; return; }
+  const pc = document.getElementById('pane-chat'), ar = appEl.getBoundingClientRect();
+  if (!pc) return;
+  const pr = pc.getBoundingClientRect();
+  vtEl.style.left = Math.round(pr.left - ar.left + pr.width / 2) + 'px';
+  vtEl.style.maxWidth = Math.max(160, Math.round(pr.width - 28)) + 'px';
+}
+function vtShow(info) {
+  if (!info) return;
+  vtBuild();
+  vtPlace();
+  vtGo = info.go || null;
+  vtEl.querySelector('.vt-ic').innerHTML = VT_ICONS[info.icon] || VT_ICONS.chat;
+  vtEl.querySelector('.vt-n').textContent = info.name || '';
+  const te = vtEl.querySelector('.vt-t');
+  te.textContent = info.text || ''; te.style.display = info.text ? '' : 'none';
+  clearTimeout(vtHideT); clearTimeout(vtBackT);
+  const arm = () => { clearTimeout(vtHideT); vtHideT = setTimeout(vtHide, VT_SHOW_MS); };
+  if (vtShown) { arm(); return; }
+  const hud = document.getElementById('leap-hud');
+  const hudVisible = !!(hud && hud.classList.contains('show')) && !document.body.classList.contains('vt-on');
+  document.body.classList.remove('vt-back');
+  document.body.classList.add('vt-on'); // Leap göstergesi hızlıca solar
+  clearTimeout(vtRevealT);
+  const reveal = () => { vtShown = true; vtEl.classList.add('show'); arm(); };
+  if (hudVisible) vtRevealT = setTimeout(reveal, 190); else reveal();
+}
+// Bildirim penceresi sayfalarına (0 Bildirim, 1 Keşfet, 2 Oluştur) gelen yeni şey: bulunmadığımız sayfaysa kutu çıkar
+function bpToastFor(page, tgt) {
+  // Mobil: sohbetteyken ya da sağ panelde başka sayfadayken. Masaüstü: sağ panelde başka bir sayfa açıkken
+  if (isMobileLayout()) { if (!(view === 'chat' || (view === 'notes' && bpPage !== page))) return; }
+  else if (bpPage === page) return;
+  const id = tgt && tgt.id;
+  let name = '', text = '';
+  if (page === 0) {
+    const n = notifList.find((x) => x.id === id);
+    if (n) { name = n.t || ''; text = n.b || ''; }
+    if (!name) name = 'Bildirim';
+  } else {
+    const c = cardList.find((x) => x.id === id);
+    if (c) {
+      const r = (tgt && tgt.reply && Array.isArray(c.rp) && c.rp[0]) ? c.rp[0] : null;
+      if (r) { name = r.n || ''; text = r.b || ''; }
+      else { name = c.n || ''; text = c.b || (c.pl ? 'Oylama' : (c.c || '')); }
+    }
+    if (!name) name = page === 1 ? 'Keşfet' : 'Oluştur';
+  }
+  vtShow({ icon: page, name: name, text: vtSnip(text), go: () => bpGoTo(page, tgt || null, false) });
+}
+// Sohbet mesajı sağ paneldeyken gelirse: gönderenin ismi + mesajın ilk kelimeleri
+function chatToastFor(info) {
+  if (!info) return;
+  const text = info.kind === 'a' ? 'Sesli mesaj' : info.kind === 'i' ? 'Fotoğraf' : vtSnip(info.text);
+  vtShow({ icon: 'chat', name: String(info.nick || '').trim() || 'Sohbet', text: text, go: () => {
+    setView('chat');
+    setTimeout(() => {
+      const t = info.id ? document.getElementById(info.id) : null;
+      if (t) {
+        try { t.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+        t.classList.add('msg-flash'); setTimeout(() => t.classList.remove('msg-flash'), 800);
+      } else { chatArea.scrollTop = chatArea.scrollHeight; }
+    }, 380);
+  } });
+}
+function bpTypingPage() { return cmpRem ? cmpPageOf(cmpRem.k, cmpRem.id) : -1; }
+// Sağ panelde başka bir sayfada yeni içerik ya da "yazıyor" varsa, o sayfanın yönündeki kenarda "Yeni" (ya da üç nokta) rozeti çıkar
+function updatePageBadges() {
+  const L = document.getElementById('bp-nb-l'), R = document.getElementById('bp-nb-r');
+  if (!L || !R) return;
+  const vis = bellPop.classList.contains('show') && !bellPop.classList.contains('composing') && (!isMobileLayout() || view === 'notes');
+  const pick = (dir) => {
+    if (!vis) return null;
+    const ok = (t) => (dir < 0 ? t < bpPage : t > bpPage);
+    const tp = bpTypingPage();
+    if (tp >= 0 && tp <= 2 && ok(tp)) return { page: tp, typing: true, tgt: cmpRem ? { id: cmpRem.id, reply: cmpRem.k === 'r' } : null };
+    let best = -1;
+    for (let t = 0; t <= 2; t++) if (ok(t) && bpUnread[t] && (best < 0 || bpNewAt[t] > bpNewAt[best])) best = t;
+    return best < 0 ? null : { page: best, typing: false, tgt: bpNewTgt[best] };
+  };
+  [[L, pick(-1)], [R, pick(1)]].forEach(([el, p]) => {
+    el.classList.toggle('show', !!p);
+    el.classList.toggle('typing', !!(p && p.typing));
+    if (p) {
+      el.dataset.page = String(p.page); el.dataset.typing = p.typing ? '1' : '';
+      el.dataset.tid = (p.tgt && p.tgt.id) || ''; el.dataset.rp = (p.tgt && p.tgt.reply) ? '1' : '';
+      el.setAttribute('aria-label', p.typing ? 'Yazıyor' : 'Yeni');
+    } else { el.removeAttribute('aria-label'); }
+  });
+  L.classList.toggle('low', newMsgBadge.classList.contains('show'));
+}
+function bpJumpInfo() {
+  const tp = bpTypingPage();
+  if (tp >= 0 && tp <= 2) return { page: tp, typing: true, tgt: cmpRem ? { id: cmpRem.id, reply: cmpRem.k === 'r' } : null };
+  if (bpLastNew) return { page: bpLastNew.page, typing: false, tgt: bpLastNew.tgt };
+  return null;
+}
+// Rozete basınca: ilgili sayfaya geç ve yeni gelen / yazılan şeyin tam yerine kaydır
+function bpScrollToTarget(page, tgt, typing) {
+  const list = document.getElementById(page === 0 ? 'bp-list' : page === 1 ? 'cd-list' : page === 2 ? 'td-list' : '');
+  if (!list) return;
+  let el = null;
+  if (typing && cmpBox && cmpBox.isConnected) el = cmpBox;
+  if (!el && tgt && tgt.id) {
+    const card = Array.from(list.querySelectorAll('.bp-card')).find((c) => c.dataset.id === tgt.id);
+    if (card) el = (tgt.reply && card.querySelector('.cd-rp')) || card;
+  }
+  if (!el) { try { list.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { list.scrollTop = 0; } return; }
+  const top = Math.max(0, list.scrollTop + (el.getBoundingClientRect().top - list.getBoundingClientRect().top) - 8);
+  try { list.scrollTo({ top: top, behavior: 'smooth' }); } catch (e) { list.scrollTop = top; }
+}
+function bpGoTo(page, tgt, typing) {
+  const wasChat = isMobileLayout() && view !== 'notes';
+  bpLastNew = null;
+  if (wasChat) setView('notes');
+  bpSetPage(page, wasChat);
+  try { if (page === 0) renderNotifs(); else renderCards(); } catch (e) {}
+  try { cmpSync(); } catch (e) {}
+  setTimeout(() => bpScrollToTarget(page, tgt, typing), wasChat ? 420 : 300);
+}
+(function initPageBadgeClicks() {
+  ['bp-nb-l', 'bp-nb-r'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      bpGoTo(parseInt(el.dataset.page, 10) || 0, { id: el.dataset.tid || '', reply: !!el.dataset.rp }, !!el.dataset.typing);
+    });
+  });
+})();
 // Seçili olmayan sayfaya yeni gönderi gelirse o sekmenin köşesinde kırmızı nokta çıkar
-function bpMarkUnread(i) { try { noteIncomingNotif(); } catch (e) {} if (i === bpPage) return; bpUnread[i] = true; bpDots(); }
+function bpMarkUnread(i, tgt) { try { noteIncomingNotif(); } catch (e) {} bpLastNew = { page: i, tgt: tgt || null }; try { bpToastFor(i, tgt || null); } catch (e) {} if (i === bpPage) return; bpUnread[i] = true; bpNewTgt[i] = tgt || null; bpNewAt[i] = Date.now(); bpDots(); }
 function bpSetPage(p, instant) {
   p = Math.max(0, Math.min(document.body.classList.contains('desk-set') ? 2 : BP_PAGES - 1, p));
   if (instant) bellPop.classList.add('no-anim');
@@ -9822,7 +10063,7 @@ function bpSetPage(p, instant) {
   mo.observe(rp, { attributes: true, attributeFilter: ['class', 'data-t'] });
   window.addEventListener('pagehide', () => { if (cur) out({ type: 'cmp-stop' }); });
   // Çanın penceresi açılıp kapanınca / sayfa değişince alıcı göstergesini eşitle
-  new MutationObserver(() => { try { cmpSync(); } catch (e) {} }).observe(bellPop, { attributes: true, attributeFilter: ['class'] });
+  new MutationObserver(() => { try { cmpSync(); } catch (e) {} try { updatePageBadges(); } catch (e) {} }).observe(bellPop, { attributes: true, attributeFilter: ['class'] });
 })();
 function curPanelIdx() { return view === 'chat' ? 0 : bpPage + 1; }
 function syncMobileBar() {
@@ -9995,6 +10236,15 @@ function goPanel(idx) {
 })();
 (function initNotesPopup() {
   if (notesUnseen) notesBtn.classList.add('unseen');
+  // Yüzen menünün parlaması, not tuşundaki 'unseen' durumunu izler
+  (function syncFabNoteGlow() {
+    const fabEl = document.getElementById('fab');
+    if (!fabEl || !window.MutationObserver) return;
+    const sync = () => fabEl.classList.toggle('note-unseen', notesBtn.classList.contains('unseen') && !notesPop.classList.contains('show'));
+    new MutationObserver(sync).observe(notesBtn, { attributes: true, attributeFilter: ['class'] });
+    new MutationObserver(sync).observe(notesPop, { attributes: true, attributeFilter: ['class'] });
+    sync();
+  })();
   // Not/bildirim paneli açıkken sohbet alanına (mesajlara) basış yalnızca paneli kapatır, mesaja yanıt vermez
   let swallowClickUntil = 0;
   document.addEventListener('pointerdown', (e) => {
@@ -10058,6 +10308,13 @@ function goPanel(idx) {
   notesBtn.addEventListener('mousedown', (e) => e.preventDefault());
   notesBtn.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
   notesBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+  // En üstteki ince "Geri Dön" şeridi: not penceresini kapatır
+  const npBack = document.getElementById('np-back');
+  if (npBack) {
+    npBack.addEventListener('mousedown', (e) => e.preventDefault());
+    npBack.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+    npBack.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); closeNotesPop(); });
+  }
   npView.addEventListener('click', () => { if (!window.getSelection || window.getSelection().toString() === '') enterPopEdit(); });
   npEdit.addEventListener('input', () => { lastQInput = Date.now(); commitQNoteFromEdit(); });
   // Üst şeritteki boş alana basılınca notlar kapanır ve alttaki mesaj kutusu klavyeyle birlikte açılır
@@ -10169,7 +10426,7 @@ function goPanel(idx) {
   })();
   window.addEventListener('resize', layoutNotesPop);
   if (window.visualViewport) window.visualViewport.addEventListener('resize', layoutNotesPop);
-  if (window.ResizeObserver) { const ro = new ResizeObserver(layoutNotesPop); ro.observe(inputArea); ro.observe(appEl); ro.observe(typingIndicator); }
+  if (window.ResizeObserver) { const ro = new ResizeObserver(layoutNotesPop); ro.observe(inputArea); ro.observe(appEl); ro.observe(typingIndicator); const pcEl = document.getElementById('pane-chat'); if (pcEl) ro.observe(pcEl); }
   placeNotesBtn();
   new MutationObserver(placeNotesBtn).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   if (mqMobile.addEventListener) mqMobile.addEventListener('change', placeNotesBtn);
