@@ -360,19 +360,22 @@ body.once-viewing #fab { display: none !important; }
 body #typing-indicator { display: none !important; }
 /* Gönder tuşunu yukarı sürükleyince açılan fotoğraf / müzik arama menüsü */
 #chip-menu {
-  position: fixed; z-index: 22500; display: none; flex-direction: column; gap: 4px; padding: 4px;
-  background: var(--c-111); border: 1px solid var(--c-33); border-radius: var(--r-xl);
-  box-shadow: 0 4px 18px rgba(var(--sh),0.7); pointer-events: none; touch-action: none;
+  position: fixed; z-index: 22500; display: none; flex-direction: column; gap: 0; padding: 0;
+  background: transparent; border: 0; box-shadow: none; pointer-events: none; touch-action: none;
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
 #chip-menu.show { display: flex; }
+/* Gönder tuşunun bitişiğinden yukarı uzanan, aynı görünümde ama daha ince tuşlar */
 .cm-item {
-  width: 56px; height: 44px; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center;
-  color: var(--c-fff); font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700;
+  box-sizing: border-box; width: 100%; height: 30px; background: var(--accent); color: var(--on-accent);
+  border: 1px solid var(--c-33); border-radius: 0; display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700;
 }
+.cm-item + .cm-item { margin-top: -1px; }
+.cm-item:first-child { border-top-right-radius: var(--r-lg); }
 .cm-item.hot { background: var(--hot); }
-.cm-item .chip { width: 44px; height: 30px; }
-.cm-item .chip svg { width: 20px; height: 20px; }
+.cm-item .chip { width: 100%; height: 100%; background: transparent; color: inherit; }
+.cm-item .chip svg { width: 18px; height: 18px; stroke: currentColor; }
 #send-btn.longpress { background: var(--ok); }
 #send-btn.rec { background: #d33; animation: recp 1s ease-in-out infinite; }
 @keyframes recp { 50% { opacity: .6; } }
@@ -755,6 +758,15 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 @keyframes new-badge-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 @media (max-width: 768px) { .new-badge.show { display: flex; animation: new-badge-blink 1s ease-in-out infinite; } }
 @media (prefers-reduced-motion: reduce) { .new-badge.show { animation: none; } }
+/* Karşı taraf gönderi/yanıt yazarken: "Yeni" yerine yazıyor noktaları; ok (>) yerinde kalır, yanıp sönmez */
+.new-badge .nb-d { display: none; align-items: center; gap: 3px; height: 14px; }
+.new-badge .nb-d i { display: block; width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.3; animation: tdot-blink 1.2s ease-in-out infinite; }
+.new-badge .nb-d i:nth-child(2) { animation-delay: 0.2s; }
+.new-badge .nb-d i:nth-child(3) { animation-delay: 0.4s; }
+.new-badge.typing .nb-t { display: none; }
+.new-badge.typing .nb-d { display: inline-flex; }
+@media (max-width: 768px) { .new-badge.show.typing { animation: none; opacity: 0.9; } }
+@media (prefers-reduced-motion: reduce) { .new-badge .nb-d i { animation: none; opacity: 0.7; } }
 
 @media (pointer: coarse) {
   .msg .msg-img { -webkit-touch-callout: none; }
@@ -1515,8 +1527,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 <div id="panes">
 <div id="slider">
 <div id="pane-chat" class="pane">
-<span class="cmp-bub" aria-hidden="true"><i></i><i></i><i></i></span>
-<div id="new-notes-badge" class="new-badge"><span>Yeni</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
+<div id="new-notes-badge" class="new-badge"><span class="nb-t">Yeni</span><span class="nb-d" aria-hidden="true"><i></i><i></i><i></i></span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
 <div id="fab"><div id="fab-ring"></div><div id="fab-main" title="Menü" aria-label="Menü"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2" fill="currentColor"></circle></svg></div></div>
 <div id="chat-wrap">
   <div id="chat-area"></div>
@@ -5463,12 +5474,10 @@ function openChipMenu() {
   chipMenuItems.forEach((it) => it.classList.remove('hot'));
   chipMenuEl.classList.add('show');
   const b = sendBtn.getBoundingClientRect();
-  const mw = chipMenuEl.offsetWidth, mh = chipMenuEl.offsetHeight;
-  const vv = window.visualViewport;
-  const vW = vv ? vv.width : window.innerWidth;
-  const left = Math.max(4, Math.min(b.left + b.width / 2 - mw / 2, vW - mw - 4));
-  chipMenuEl.style.left = left + 'px';
-  chipMenuEl.style.top = Math.max(4, b.top - mh - 6) + 'px';
+  chipMenuEl.style.width = b.width + 'px';
+  const mh = chipMenuEl.offsetHeight;
+  chipMenuEl.style.left = b.left + 'px';
+  chipMenuEl.style.top = Math.max(0, b.top - mh + 1) + 'px';
   if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
 }
 function closeChipMenu() {
@@ -7251,7 +7260,7 @@ function restartBadgeBlink(el) {
 }
 function updateBadges() {
   const mob = isMobileLayout();
-  newNotesBadge.classList.toggle('show', mob && view === 'chat' && unreadNotes);
+  newNotesBadge.classList.toggle('show', mob && view === 'chat' && (unreadNotes || newNotesBadge.classList.contains('typing')));
   newMsgBadge.classList.toggle('show', mob && view === 'notes' && unreadMsgs);
 }
 
@@ -7421,7 +7430,7 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
       new MutationObserver((muts) => {
         for (const m of muts) {
           const was = (m.oldValue || '').split(/\s+/).indexOf(cls) !== -1;
-          if (!was && el.classList.contains(cls)) { flagNew(); return; }
+          if (!was && el.classList.contains(cls) && !el.classList.contains('typing')) { flagNew(); return; }
         }
       }).observe(el, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
     });
@@ -8650,16 +8659,11 @@ function cmpPeerClear() {
   cmpSync();
 }
 function cmpBubble(on) {
-  const b = document.querySelector('#pane-chat .cmp-bub');
-  if (!b) return;
-  if (on) {
-    if (cmpBubTimer) { clearTimeout(cmpBubTimer); cmpBubTimer = null; }
-    if (!b.classList.contains('show') || b.classList.contains('out')) { b.classList.remove('out'); b.classList.add('show'); }
-    return;
-  }
-  if (!b.classList.contains('show') || b.classList.contains('out')) return; // zaten kapanıyor: zamanlayıcıya dokunma
-  b.classList.add('out');
-  cmpBubTimer = setTimeout(() => { b.classList.remove('show', 'out'); cmpBubTimer = null; }, 180);
+  // Pencere kapalıyken: sağ kenardaki "Yeni >" rozeti, içinde yazıyor noktalarıyla gelir
+  if (newNotesBadge.classList.contains('typing') === !!on) return;
+  newNotesBadge.classList.toggle('typing', !!on);
+  if (on) newNotesBadge.setAttribute('aria-label', 'Yazıyor'); else newNotesBadge.removeAttribute('aria-label');
+  updateBadges();
 }
 function cmpDropBox() {
   if (cmpBox && cmpBox.parentNode) {
@@ -8670,7 +8674,7 @@ function cmpDropBox() {
   cmpBox = null; cmpBoxKey = '';
 }
 function cmpSync() {
-  if (!cmpRem && !cmpBox && !(document.querySelector('#pane-chat .cmp-bub.show'))) return;
+  if (!cmpRem && !cmpBox && !newNotesBadge.classList.contains('typing')) return;
   if (!cmpRem) { cmpDropBox(); cmpBubble(false); return; }
   const k = cmpRem.k, id = cmpRem.id;
   const open = bellPop.classList.contains('show') && !bellPop.classList.contains('composing') && bpPage === cmpPageOf(k, id);
