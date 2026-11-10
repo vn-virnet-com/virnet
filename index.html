@@ -227,6 +227,19 @@ body.once-viewing #fab { display: none !important; }
 .msg.editing .msg-act.copy, .msg.editing .msg-act.reply, .msg.editing .msg-act.danger { display: none; }
 .msg.editing .msg-act.edit { color: var(--c-fff); background: color-mix(in srgb, var(--c-fff) 18%, transparent); }
 .msg-act.danger.confirm { color: var(--dng); background: color-mix(in srgb, var(--dng) 18%, transparent); }
+/* Masaüstü: Yanıtla tuşu her zaman görünür ve mesaja en yakın tuştur; diğer tuşlar üzerine gelince yanında açılır */
+@keyframes act-in { from { opacity: 0; } to { opacity: 1; } }
+@media (hover: hover) and (pointer: fine) {
+  .msg-act.reply { order: -1; }
+  .msg-acts.two .msg-act.danger { grid-column: 2; }
+  .msg-acts.two .msg-act.edit { grid-column: 1; }
+  .msg-acts.two .msg-act.reply { grid-column: 2; }
+  .msg-acts.two .msg-act.copy { grid-column: 1; }
+  .msg-acts { opacity: 1; pointer-events: auto; }
+  .msg:not(.hov):not(.acts-on):not(.editing) .msg-act:not(.reply) { display: none; }
+  .msg.hov .msg-act:not(.reply), .msg.acts-on .msg-act:not(.reply) { animation: act-in 0.15s ease both; }
+  .msg:not(.hov):not(.acts-on):not(.editing) .msg-acts.over { background: none; border: 0; box-shadow: none; padding: 0; }
+}
 /* Tepki: mesajın alt köşesinde yuvarlak + tuşu; basınca 3 kalp yan yana açılır, seçilen kalp aynı yerde kalır */
 .msg.has-react { margin-bottom: 12px; }
 .react-slot {
@@ -3561,7 +3574,8 @@ function fitActs(msg) {
   const out = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && (r.left < L || r.right > R); };
   const probe = mid ? foot : acts;
   if (!out(probe)) return;
-  if (!mid && own && acts.querySelector('.msg-act.danger')) {
+  const active = msg.classList.contains('hov') || msg.classList.contains('acts-on') || msg.classList.contains('editing');
+  if (!mid && own && active && acts.querySelector('.msg-act.danger')) {
     acts.classList.add('two');
     if (!out(acts)) return;
     acts.classList.remove('two');
@@ -3578,7 +3592,33 @@ function fitActs(msg) {
 window.addEventListener('resize', () => {
   const on = chatArea.querySelectorAll('.msg.acts-on, .msg.hov');
   for (let i = 0; i < on.length; i++) fitActs(on[i]);
+  restActsSoon();
 });
+// Masaüstü: Yanıtla tuşu sürekli görünür olduğundan, tuşlar kapalıyken de yerleşimi ekrana sığacak şekilde ayarlanır
+const DESK_MQ = window.matchMedia ? window.matchMedia('(hover: hover) and (pointer: fine)') : { matches: false };
+function restActs(msg) {
+  if (!DESK_MQ.matches || !msg || !msg.classList) return;
+  if (msg.classList.contains('hov') || msg.classList.contains('acts-on') || msg.classList.contains('editing')) return;
+  fitActs(msg);
+}
+let restActsRaf = 0;
+function restActsAll() {
+  restActsRaf = 0;
+  if (!DESK_MQ.matches) return;
+  const list = chatArea.getElementsByClassName('msg');
+  for (let i = 0; i < list.length; i++) restActs(list[i]);
+}
+function restActsSoon() {
+  if (!restActsRaf) restActsRaf = requestAnimationFrame(restActsAll);
+  clearTimeout(restActsSoon._t);
+  restActsSoon._t = setTimeout(restActsAll, 350);
+}
+try { new MutationObserver((muts) => {
+  for (let i = 0; i < muts.length; i++) {
+    const a = muts[i].addedNodes;
+    for (let j = 0; j < a.length; j++) { const n = a[j]; if (n.nodeType === 1 && (n.classList.contains('msg') || n.querySelector('.msg'))) { restActsSoon(); return; } }
+  }
+}).observe(chatArea, { childList: true, subtree: true }); } catch (e) {}
 // Mesaja (baloncuğa) bir kez dokununca tuşlar yanında belirir; tekrar dokununca ya da başka yere basınca kapanır
 function closeActs(except) {
   const on = chatArea.querySelectorAll('.msg.acts-on');
@@ -3587,6 +3627,7 @@ function closeActs(except) {
     clearTimeout(on[i]._actsT);
     on[i].classList.remove('acts-on');
     closeSlot(on[i]);
+    restActs(on[i]);
   }
 }
 // Tıklanarak açılan tuşlar 5 saniye kullanılmazsa kendiliğinden kapanır; tuşlara dokunmak süreyi yeniler
@@ -3598,6 +3639,7 @@ function armActs(msg) {
     msg.classList.remove('acts-on');
     if (msg !== hovMsg) {
       closeSlot(msg);
+      restActs(msg);
     }
   }, 5000);
 }
@@ -3617,6 +3659,7 @@ function setHov(m) {
     old.classList.remove('hov');
     if (!old.classList.contains('acts-on')) {
       closeSlot(old);
+      restActs(old);
     }
   }
   if (m) { m.classList.add('hov'); fitActs(m); }
@@ -7715,7 +7758,7 @@ function startEdit(msgDiv) {
 }
 
 function endEdit() {
-  if (editingId) { const em = document.getElementById(editingId); if (em) em.classList.remove('editing'); }
+  if (editingId) { const em = document.getElementById(editingId); if (em) { em.classList.remove('editing'); restActs(em); } }
   editingId = null;
   nickInput.value = savedDraft ? savedDraft.nick : (lsGet('nick') || '');
   applyNickState();
