@@ -169,10 +169,10 @@ body.once-viewing #fab { display: none !important; }
 @keyframes bubble-pop-left { 0% { opacity: 0; transform: scale(0.25, 0.8); } 60% { opacity: 1; } 100% { opacity: 1; transform: scale(1, 1); } }
 .bubble.pop-left { animation: bubble-pop-left 0.22s cubic-bezier(.2, .85, .3, 1) both; transform-origin: 0 50%; }
 /* Kendi mesajım: gönderme anında hazır olana kadar gizli kalır, sonra kutudan uçarak yerine oturur */
-.bubble.fly-hide { visibility: hidden; }
-.msg.fly-ghost { position: fixed; left: 0; top: 0; margin: 0; max-width: none; z-index: 9999; pointer-events: none; will-change: transform, opacity, filter; align-self: auto; }
-.msg.fly-ghost .bubble { margin: 0; animation: none; }
-@media (prefers-reduced-motion: reduce) { .bubble.pop, .bubble.pop-left { animation: none; } }
+/* Kendi mesajım: karşı tarafın animasyonunun sağdan gelen zıt hali */
+@keyframes bubble-pop-right { 0% { opacity: 0; transform: scale(0.25, 0.8); } 60% { opacity: 1; } 100% { opacity: 1; transform: scale(1, 1); } }
+.bubble.pop-right { animation: bubble-pop-right 0.22s cubic-bezier(.2, .85, .3, 1) both; transform-origin: 100% 50%; }
+@media (prefers-reduced-motion: reduce) { .bubble.pop, .bubble.pop-left, .bubble.pop-right { animation: none; } }
 
 .msg-body { cursor: text; -webkit-user-select: text; user-select: text; }
 .msg-body.big-emoji { font-size: 64px; line-height: 1.15; font-weight: 400; padding: 2px 0; white-space: normal; }
@@ -990,7 +990,7 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 /* Not penceresi: sohbet alanının tamamını (yazma satırı dahil) kaplar; konum/boyut JS ile (layoutPopFor) klavyeye göre ayarlanır. Çerçeve, köşe ve gölge yok */
 #notes-pop { border: 0; border-radius: 0; box-shadow: none; background: var(--c-000); z-index: 60; }
 #np-back {
-  position: absolute; top: 0; left: 0; right: 0; height: 30px; z-index: 2; box-sizing: border-box;
+  position: absolute; top: 0; left: 0; right: 0; height: 30px; z-index: 5; box-sizing: border-box;
   display: flex; align-items: center; justify-content: center; gap: 6px;
   background: var(--c-1a); border-bottom: 1px solid var(--c-33); color: var(--c-cc);
   font-size: 13px; font-weight: 600; letter-spacing: .2px; cursor: pointer;
@@ -3662,65 +3662,12 @@ function followHeardLabel() {
   requestAnimationFrame(go);
   setTimeout(go, 120);
 }
-// Kendi mesajım: yazı kutusundan baloncuğun yerine, hareket bulanıklığıyla hızlıca uçar
-let flyFromRect = null;
-function flyBubble(b, from) {
-  const msg = b.closest ? b.closest('.msg') : null;
-  const tt = msg && msg._tt ? msg._tt : null;
-  if (tt) tt.classList.add('tt-wait');
-  b.classList.add('fly-hide');
-  const r0 = b.getBoundingClientRect();
-  let ghost = null, done = false;
-  const end = () => {
-    if (done) return; done = true;
-    if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
-    b.classList.remove('fly-hide');
-    if (tt) { void tt.offsetWidth; tt.classList.remove('tt-wait'); }
-  };
-  if (!r0.width || !r0.height) { end(); return; }
-  try {
-    // Gerçek baloncuk yerinde gizli durur (yerleşim hiç değişmez); uçan şey sadece hafif bir kopyadır
-    ghost = document.createElement('div');
-    ghost.className = 'msg own-msg fly-ghost';
-    const gb = b.cloneNode(true);
-    gb.classList.remove('fly-hide', 'pop', 'pop-left');
-    gb.removeAttribute('id');
-    gb.querySelectorAll('[id]').forEach((e) => e.removeAttribute('id'));
-    gb.style.width = r0.width + 'px'; gb.style.height = r0.height + 'px';
-    ghost.appendChild(gb);
-    document.body.appendChild(ghost);
-  } catch (e) { end(); return; }
-  const W = r0.width, H = r0.height, DUR = 240;
-  const sx = from.left + 12, sy = from.top + from.height / 2 - H / 2; // yazı kutusundaki yazının başı
-  const t0 = performance.now();
-  let px = sx, py = sy, pt = t0;
-  const frame = (now) => {
-    if (done) return;
-    if (!b.isConnected) { end(); return; }
-    const p = Math.min(1, (now - t0) / DUR);
-    const e = 1 - Math.pow(1 - p, 3);
-    const r = b.getBoundingClientRect(); // gizli gerçek baloncuğun o anki yeri: sohbet kayarsa hedef de kayar
-    const x = sx + (r.left - sx) * e, y = sy + (r.top - sy) * e;
-    const dt = Math.max(1, now - pt), speed = Math.hypot(x - px, y - py) / dt;
-    px = x; py = y; pt = now;
-    const blur = p >= 1 ? 0 : Math.min(3.5, speed * 0.5);
-    ghost.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
-    ghost.style.opacity = String(0.75 + 0.25 * e);
-    ghost.style.filter = blur > 0.2 ? 'blur(' + blur.toFixed(1) + 'px)' : 'none';
-    if (p >= 1) { end(); return; }
-    requestAnimationFrame(frame);
-  };
-  frame(t0);
-  requestAnimationFrame(frame);
-  setTimeout(end, 700);
-}
 function popBubble(b, opts) {
   if (!b || reducedMotion()) return;
-  if (opts && opts.own && flyFromRect) { const f = flyFromRect; flyFromRect = null; flyBubble(b, f); return; }
   const msg = b.closest ? b.closest('.msg') : null;
   const tt = msg && msg._tt ? msg._tt : null;
   if (tt) tt.classList.add('tt-wait');
-  const popCls = (opts && opts.incoming) ? 'pop-left' : 'pop';
+  const popCls = (opts && opts.incoming) ? 'pop-left' : (opts && opts.own) ? 'pop-right' : 'pop';
   b.classList.add(popCls);
   let fin = false;
   const finish = () => {
@@ -5803,9 +5750,7 @@ function sendMessage() {
   liveActive = false;
   liveId = null;
   conn.send({ text: textToSend, senderNick: currentNick, reply: replyingTo, msgId: myMsgId });
-  try { flyFromRect = messageInput.getBoundingClientRect(); } catch (e) { flyFromRect = null; }
   appendMessage(textToSend, currentNick, true, replyingTo, myMsgId);
-  flyFromRect = null;
   outboxAdd({ id: myMsgId, text: textToSend, nick: currentNick, reply: replyingTo ? JSON.parse(JSON.stringify(replyingTo)) : null, ts: Date.now() });
   scheduleUndelivered(myMsgId);
   closeReplyBar();
@@ -8201,7 +8146,8 @@ function layoutPopFor(notesPop, notesBtn) {
     const mob = isMobileLayout();
     const L = mob ? 0 : Math.max(0, Math.round(pc.left - ar.left));
     const W = mob ? Math.round(ar.width) : Math.round(pc.width);
-    const H = Math.max(100, Math.round(Math.min(pc.bottom, ar.bottom) - ar.top));
+    const bEdge = Math.min(pc.bottom, ar.bottom);
+    const H = Math.max(100, Math.ceil(bEdge - ar.top) + ((ar.bottom - bEdge) < 3 ? 2 : 0));
     st.top = '0px'; st.left = L + 'px'; st.right = 'auto'; st.bottom = 'auto';
     st.width = W + 'px'; st.height = H + 'px';
     return;
@@ -10316,6 +10262,19 @@ function goPanel(idx) {
   // En üstteki ince "Geri Dön" şeridi: not penceresini kapatır
   const npBack = document.getElementById('np-back');
   if (npBack) {
+    // Masaüstü yedek yol: imleç şeridin üstündeyse hangi öğe hedef olursa olsun (yakalama aşamasında) kapat
+    const inBack = (e) => { const r = npBack.getBoundingClientRect(); return r.width > 0 && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; };
+    let swallowBack = 0;
+    document.addEventListener('pointerdown', (e) => {
+      if (!notesPop.classList.contains('show')) return;
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (!inBack(e)) return;
+      e.preventDefault(); e.stopPropagation();
+      swallowBack = Date.now() + 500;
+      closeNotesPop();
+    }, true);
+    document.addEventListener('pointerup', (e) => { if (Date.now() < swallowBack) { e.stopPropagation(); } }, true);
+    document.addEventListener('click', (e) => { if (Date.now() < swallowBack) { swallowBack = 0; e.stopPropagation(); e.preventDefault(); } }, true);
     let backDown = false;
     npBack.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
