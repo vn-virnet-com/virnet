@@ -1409,7 +1409,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 @media (prefers-reduced-motion: reduce) { .lp-stage .msg.lp-clone, .lp-react, .lp-menu { animation: none; } #lp-overlay { transition: none; } }
 
 /* ===== Yüzen menü: Leap göstergesi ===== */
-#leap-hud { position: fixed; left: 50%; top: 10px; z-index: 12500; display: flex; align-items: center; gap: 7px; padding: 5px 14px 5px 6px; border-radius: 999px; box-sizing: border-box; white-space: nowrap; color: var(--warn); font-size: 13px; font-weight: 700; background: color-mix(in srgb, var(--c-1a) 94%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); box-shadow: 0 6px 18px rgba(var(--sh),0.55), 0 0 12px color-mix(in srgb, var(--warn) 25%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none; user-select: none; -webkit-user-select: none; opacity: 0; transform: translate(-50%, -10px) scale(.96); transition: opacity .18s ease, transform .24s cubic-bezier(.2,.9,.3,1.15); }
+#leap-hud { position: fixed; left: 50%; top: max(10px, calc(var(--strip-b, 0px) + 8px)); z-index: 12500; display: flex; align-items: center; gap: 7px; padding: 5px 14px 5px 6px; border-radius: 999px; box-sizing: border-box; white-space: nowrap; color: var(--warn); font-size: 13px; font-weight: 700; background: color-mix(in srgb, var(--c-1a) 94%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); box-shadow: 0 6px 18px rgba(var(--sh),0.55), 0 0 12px color-mix(in srgb, var(--warn) 25%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none; user-select: none; -webkit-user-select: none; opacity: 0; transform: translate(-50%, -10px) scale(.96); transition: opacity .18s ease, transform .24s cubic-bezier(.2,.9,.3,1.15), top .2s ease; }
 #leap-hud.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
 #leap-hud.show, #leap-hud.pinned { pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 #leap-hud.pinned { color: #3a2300; background: #ff9f1a; border-color: #ffbf5e; box-shadow: 0 6px 18px rgba(var(--sh),0.55), 0 0 12px rgba(255,159,26,.45); -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -1418,7 +1418,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 #leap-hud .lh-num { color: var(--c-fff); font-weight: 600; font-variant-numeric: tabular-nums; margin-left: 2px; }
 @media (prefers-reduced-motion: reduce) { #leap-hud { transition: opacity .1s linear; } }
 /* Üstten inen bildirim kutusu (mobil + masaüstü; masaüstünde sohbet sütununun ortasında): Leap göstergesiyle aynı tasarım. Açıkken Leap hızlıca solar, kutu gidince yavaşça geri gelir */
-#vn-toast { position: absolute; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 10px); z-index: 12600; display: flex; align-items: center; gap: 7px; width: max-content; max-width: calc(100% - 28px); padding: 5px 14px 5px 7px; border-radius: 999px; box-sizing: border-box; white-space: nowrap; color: var(--warn); font-size: 13px; font-weight: 700; background: color-mix(in srgb, var(--c-1a) 94%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); box-shadow: 0 6px 18px rgba(var(--sh),0.55), 0 0 12px color-mix(in srgb, var(--warn) 25%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none; user-select: none; -webkit-user-select: none; opacity: 0; transform: translate(-50%, -26px) scale(.96); transition: opacity .18s ease, transform .26s cubic-bezier(.2,.9,.3,1.15); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+#vn-toast { position: absolute; left: 50%; top: max(calc(env(safe-area-inset-top, 0px) + 10px), calc(var(--strip-b, 0px) + 8px)); z-index: 12600; display: flex; align-items: center; gap: 7px; width: max-content; max-width: calc(100% - 28px); padding: 5px 14px 5px 7px; border-radius: 999px; box-sizing: border-box; white-space: nowrap; color: var(--warn); font-size: 13px; font-weight: 700; background: color-mix(in srgb, var(--c-1a) 94%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); box-shadow: 0 6px 18px rgba(var(--sh),0.55), 0 0 12px color-mix(in srgb, var(--warn) 25%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none; user-select: none; -webkit-user-select: none; opacity: 0; transform: translate(-50%, -26px) scale(.96); transition: opacity .18s ease, transform .26s cubic-bezier(.2,.9,.3,1.15), top .2s ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 #vn-toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); pointer-events: auto; cursor: pointer; }
 #vn-toast .vt-ic { display: block; flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%; background: color-mix(in srgb, var(--warn) 22%, transparent); padding: 3px; box-sizing: border-box; }
 #vn-toast .vt-ic svg { display: block; width: 16px; height: 16px; }
@@ -1426,7 +1426,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 #vn-toast .vt-t { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--c-fff); font-weight: 400; opacity: .92; }
 @media (prefers-reduced-motion: reduce) { #vn-toast { transition: opacity .1s linear; transform: translate(-50%, 0); } }
 body.vt-on #leap-hud { opacity: 0 !important; pointer-events: none !important; transition: opacity .14s ease !important; }
-body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezier(.2,.9,.3,1.15); }
+body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezier(.2,.9,.3,1.15), top .2s ease; }
 
 /* ===== Modern ayarlar ===== */
 #bp-page-set #settings-scroll { padding: 0 0 28px; scrollbar-width: none; -ms-overflow-style: none; }
@@ -4533,7 +4533,22 @@ function ytDockUpdate() {
 setInterval(ytDockUpdate, 300);
 
 /* Üstteki şeritler (Oto. Oynat + şarkı şeridi) göründükçe mesaj alanının üst boşluğu şeritlerin altına iner; ilk mesajlar altta kalmaz */
+/* Şarkı şeridi / Oto. Oynat şeridi ekranda görünüyorsa alt kenarını (ekran koordinatı) --strip-b'ye yazar; Leap göstergesi ve bildirim baloncuğu şeridin altına iner */
+function ytStripBottomSync() {
+  let b = 0;
+  ['auto-chip', 'yt-dock'].forEach((id) => {
+    const e = document.getElementById(id);
+    if (!e || e.classList.contains('hide') || !e.classList.contains('show')) return;
+    const r = e.getBoundingClientRect();
+    if (!r.height || r.right <= 0 || r.left >= window.innerWidth) return; // mobilde sohbet bölmesi ekran dışındaysa sayılmaz
+    b = Math.max(b, r.bottom);
+  });
+  const v = b ? Math.ceil(b) + 'px' : '0px';
+  const rs = document.documentElement.style;
+  if (rs.getPropertyValue('--strip-b') !== v) rs.setProperty('--strip-b', v);
+}
 function ytTopInsetSync() {
+  try { ytStripBottomSync(); } catch (e) {}
   const area = document.getElementById('chat-area'), wrap = document.getElementById('chat-wrap');
   if (!area || !wrap) return;
   let inset = 0;
@@ -8515,7 +8530,7 @@ function layoutNotesPop() {
   function placeHud() {
     const pr = (isMobileLayout() ? panes : paneEl).getBoundingClientRect(); // mobilde sohbet bölmesi kayarken bile ortası sabit: panelin kendisine göre
     hud.style.left = Math.round(pr.left + pr.width / 2) + 'px';
-    hud.style.top = pr.top > 1 ? (Math.round(pr.top) + 10) + 'px' : 'calc(env(safe-area-inset-top, 0px) + 10px)';
+    hud.style.top = 'max(' + (pr.top > 1 ? (Math.round(pr.top) + 10) + 'px' : 'calc(env(safe-area-inset-top, 0px) + 10px)') + ', calc(var(--strip-b, 0px) + 8px))';
   }
   function hudSync() {
     const away = !isMobileLayout() || view === 'notes'; // masaüstünde Leap göstergesi hiç çıkmaz; mobilde sağ panelde gizli (sabitlenmişse sohbete dönünce geri gelir)
@@ -8526,6 +8541,7 @@ function layoutNotesPop() {
     clearTimeout(hudT);
     if (on) {
       try { hudNum.textContent = leapFmt(leapVal); } catch (err) {}
+      try { ytStripBottomSync(); } catch (err) {}
       placeHud();
       hud.classList.add('show');
     } else {
@@ -9930,6 +9946,7 @@ function vtShow(info) {
   if (!info) return;
   vtBuild();
   vtPlace();
+  try { ytStripBottomSync(); } catch (e) {}
   vtGo = info.go || null;
   vtEl.querySelector('.vt-ic').innerHTML = VT_ICONS[info.icon] || VT_ICONS.chat;
   vtEl.querySelector('.vt-n').textContent = info.name || '';
