@@ -2907,9 +2907,13 @@ function startPeer() {
     else scheduleRestart();
     return;
   }
+  // Kendi TURN sunucun varsa: konsolda localStorage.setItem('turnCfg', JSON.stringify([{urls:['turn:HOST:3478','turns:HOST:443?transport=tcp'],username:'U',credential:'P'}])) yazıp sayfayı yenile
+  let extraTurn = [];
+  try { const t = JSON.parse(lsGet('turnCfg') || '[]'); if (Array.isArray(t)) extraTurn = t; } catch (e) {}
   peer = new Peer(myId, {
     config: {
       iceServers: [
+        ...extraTurn,
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:stun.cloudflare.com:3478' },
