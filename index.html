@@ -2156,7 +2156,7 @@ function sendLive() {
   const v = messageInput.value;
   if (v.trim() === '') { stopLive(); return; }
   if (secretProfile(v)) return;   // gizli kod kelimeleri karşıya gönderilmez
-  { const lv = v.trim().toLowerCase(); if (lv === '.' || /^\.a(r(a)?)?$/.test(lv) || /^\.ara\s/.test(lv)) return; } // .ara komutu karşıya canlı gitmez
+  if (!notifCanSend()) { const lv = v.trim().toLowerCase(); if (lv === '.' || /^\.a(r(a)?)?$/.test(lv) || /^\.ara\s/.test(lv)) return; } // .ara komutu karşıya canlı gitmez
   if (!liveId) liveId = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
   liveActive = true;
   try { conn.send({ type: 'live', liveText: v, senderNick: fullNick(), liveId: liveId, reply: replyingTo }); } catch (e) {}
@@ -5514,7 +5514,7 @@ function sendMessage() {
   // ".ara İsim": normal mesaj yerine arama kartı gider
   {
     const dm = /^\.ara\s+(.+)$/i.exec(textToSend);
-    const dn = dm ? callCleanName(dm[1]) : '';
+    const dn = (dm && !notifCanSend()) ? callCleanName(dm[1]) : ''; // 6687 ile girenlerde komut çalışmaz, normal mesaj gider
     if (dn) {
       stopLive();
       sendTextNow(DIAL_PREFIX + dn);
