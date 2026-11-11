@@ -1622,6 +1622,8 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 @media (prefers-reduced-motion: reduce) { .call-card::before, .dial-card::before { animation: none; } }
 
 /* Piksel kar: yalnızca sohbet alanı (metin kutusu ve alt bar hariç), her şeyin üstünden geçer, dokunmayı engellemez */
+/* Kar: arka katman (taneler) sohbetin arkasında, ön katman (kar topu, birikenler) üstünde */
+#snow-back { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; image-rendering: pixelated; image-rendering: crisp-edges; }
 #snow-canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 24; pointer-events: none; image-rendering: pixelated; image-rendering: crisp-edges; }
 </style>
 </head>
@@ -1840,6 +1842,7 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 <div id="new-notes-badge" class="new-badge"><span class="nb-t">Yeni</span><span class="nb-d" aria-hidden="true"><i></i><i></i><i></i></span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
 <div id="fab"><div id="fab-ring"></div><div id="fab-main" title="Menü" aria-label="Menü"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2" fill="currentColor"></circle></svg></div></div>
 <div id="chat-wrap">
+  <canvas id="snow-back" aria-hidden="true"></canvas>
   <div id="chat-area"></div>
   <canvas id="snow-canvas" aria-hidden="true"></canvas>
   <div id="auto-chip" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span class="ac-txt">Oto. Oynat</span><button type="button" id="auto-chip-x" aria-label="Otomatik oynatmayı kapat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
@@ -1927,7 +1930,7 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
     </div></div></div></div>
   </div>
   <div class="set-block sb-snow" id="blk-snow">
-    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Kar</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
+    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Kar Katmanı</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
     <div class="seg" id="seg-snow">
       <button type="button" class="seg-btn active" data-val="on" aria-pressed="true">Açık</button>
@@ -11662,15 +11665,20 @@ cdAnimRestore();
 })();
 </script>
 <script>
-/* Piksel kar: seyrek yağış, rüzgar, 20 dk'lık yoğunluk/hız değişimi, ara sıra kuvvetli rüzgar ve kar topu */
+/* Piksel kar: arka katmanda seyrek yağış; rüzgar; 20 dk'lık yoğunluk/hız değişimi; kar topu; kar tanelerinin birikmesi */
 (function initPixelSnow() {
   const wrap = document.getElementById('chat-wrap');
-  const cv = document.getElementById('snow-canvas');
-  if (!wrap || !cv) return;
-  const ctx = cv.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  const KEY = 'snow';
+  const back = document.getElementById('snow-back');
+  const front = document.getElementById('snow-canvas');
+  const area = document.getElementById('chat-area');
+  if (!wrap || !back || !front) return;
+  const bctx = back.getContext('2d');    // tanelerin yağdığı en arka zemin
+  const ctx = front.getContext('2d');    // kar topu, patlama ve birikenler (en üstte)
+  bctx.imageSmoothingEnabled = false; ctx.imageSmoothingEnabled = false;
+  const KEY = 'snowLayer';   // yalnızca birikmeyi açar/kapatır
   const MIN = 60000;
+  const PILE_CAP = 5;      // metin kutusu üstündeki birikme kalınlığı sınırı (px)
+  const BUB_CAP = 3;       // mesaj balonu üstündeki birikme sınırı (px)
   const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const rnd = (a, b) => a + Math.random() * (b - a);
   const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
@@ -11683,7 +11691,13 @@ cdAnimRestore();
   const flakes = [], parts = [];
   let ball = null, gust = null;
   let wind = 0, windTarget = 0, windChangeAt = 0;
-  let nextSpawn = 0, last = 0, seeded = false, drawn = false;
+  let nextSpawn = 0, last = 0, seeded = false, drawnBack = false, drawnFront = false;
+
+  /* ---- Birikenler: yalnızca sayfa yenilenene kadar bellekte ---- */
+  const pile = { hm: new Uint8Array(0), c0: 1e9, c1: -1 };   // metin kutusunun üstü
+  const snowMap = new Map();                                  // mesaj baloncuğu -> birikme verisi
+  let bubCache = [], bubAt = 0, scrolled = true;
+  if (area) area.addEventListener('scroll', () => { scrolled = true; }, { passive: true });
 
   /* ---- Hava durumu: ~20 dk'da bir hedef değişir, değerler yavaşça ona kayar ---- */
   const MODES = [
@@ -11697,7 +11711,7 @@ cdAnimRestore();
   let dens = mode.d, spd = mode.s;
   let modeAt = 0, gustAt = 0, ballAt = 0;
 
-  /* ---- Küçük özel taneler: artı ve kar tanesi (1px hücreli piksel sanatı) ---- */
+  /* ---- Piksel sprite'lar: artı, kar tanesi, kar topu ---- */
   function pixSprite(rows) {
     const c = document.createElement('canvas');
     c.width = rows[0].length; c.height = rows.length;
@@ -11708,7 +11722,6 @@ cdAnimRestore();
   const SPR_PLUS = pixSprite(['..X..', '..X..', 'XXXXX', '..X..', '..X..']);
   const SPR_FLAKE = pixSprite(['...X...', '.X.X.X.', '..XXX..', 'XXXXXXX', '..XXX..', '.X.X.X.', '...X...']);
 
-  /* ---- Kar topu sprite'ı (2px'lik hücrelerle piksel sanatı) ---- */
   const BALL_N = 11, BALL_CELL = 2, BALL_R = BALL_N / 2;
   const ballSprite = (function () {
     const c = document.createElement('canvas');
@@ -11731,7 +11744,9 @@ cdAnimRestore();
     const w = wrap.clientWidth, h = wrap.clientHeight;
     if (!w || !h) return;
     W = w; H = h;
-    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+    if (back.width !== W || back.height !== H) { back.width = W; back.height = H; bctx.imageSmoothingEnabled = false; }
+    if (front.width !== W || front.height !== H) { front.width = W; front.height = H; ctx.imageSmoothingEnabled = false; }
+    if (pile.hm.length !== W) { const n = new Uint8Array(W); n.set(pile.hm.subarray(0, Math.min(W, pile.hm.length))); pile.hm = n; if (pile.c1 >= W) pile.c1 = W - 1; }
   }
   if (window.ResizeObserver) new ResizeObserver(resize).observe(wrap);
   window.addEventListener('resize', resize);
@@ -11739,20 +11754,26 @@ cdAnimRestore();
   function poissonGap(mean) { return clamp(-Math.log(1 - Math.random()) * mean, 0.08, 14) * 1000; }
 
   function gustEnv(t) {
-    const e = (t - gust.t0) / 1000;
-    const w = e < 2.5 ? sstep(e / 2.5) : (e < 7.5 ? 1 : (e < 17.5 ? 1 - sstep((e - 7.5) / 10) : 0));
-    const d = e < 3 ? sstep(e / 3) : (e < 12 ? 1 : (e < 37 ? 1 - sstep((e - 12) / 25) : 0));
-    return { w: w, d: d, done: e > 37 };
+    const e = (t - gust.t0) / 1000, D = gust.D;
+    const sn = Math.sin(Math.PI * clamp(e / D, 0, 1));
+    const w = e >= D ? 0 : sn * sn;                       // hızlanarak başlar, tepeye çıkar, yavaşlayarak durur
+    const d = e < D * 0.4 ? sstep(e / (D * 0.4)) : (e < D ? 1 : (e < D + 10 ? 1 - sstep((e - D) / 10) : 0));
+    return { w: w, d: d, done: e > D + 10 };
   }
 
-  function spawn(env) {
-    // %60 en küçük (2px), %25 bir tık büyük (3px), %10 bir tık daha büyük (4px kare ya da artı), %5 kar tanesi (7px)
-    const r = Math.random();
+  /* tier: 'main' (%60 2px / %25 3px / %10 4px-ya-da-artı / %5 kar tanesi), 'f2' (2px çok silik), 'f1' (1px epey silik), 'big' (kar tanesi) */
+  function spawn(env, tier) {
     let kind = 0, size = 2, a = rnd(0.4, 0.8);
-    if (r < 0.60) { size = 2; }
-    else if (r < 0.85) { size = 3; a = rnd(0.45, 0.85); }
-    else if (r < 0.95) { a = rnd(0.5, 0.85); if (Math.random() < 0.5) { kind = 1; size = 5; } else { size = 4; } }
-    else { kind = 2; size = 7; a = rnd(0.5, 0.8); }
+    if (tier === 'f2') { size = 2; a = rnd(0.13, 0.22); }
+    else if (tier === 'f1') { size = 1; a = rnd(0.14, 0.26); }
+    else if (tier === 'big') { kind = 2; size = 7; a = rnd(0.5, 0.8); }
+    else {
+      const r = Math.random();
+      if (r < 0.60) { size = 2; }
+      else if (r < 0.85) { size = 3; a = rnd(0.45, 0.85); }
+      else if (r < 0.95) { a = rnd(0.5, 0.85); if (Math.random() < 0.5) { kind = 1; size = 5; } else { size = 4; } }
+      else { kind = 2; size = 7; a = rnd(0.5, 0.8); }
+    }
     const f = {
       x: rnd(-W * 0.25, W * 1.15), y: -4,
       vy: rnd(18, 42),
@@ -11761,7 +11782,7 @@ cdAnimRestore();
       ph: rnd(0, 6.28), sw: rnd(0.4, 1.2), amp: rnd(0, 8),
       kind: kind, size: size, a: a
     };
-    if (gust && env.w > 0.05 && Math.random() < 0.65) {   // rüzgarın geldiği yandan da girsin
+    if (gust && env.w > 0.05 && Math.random() < 0.65) {
       f.x = gust.dir > 0 ? rnd(-40, 0) : rnd(W, W + 40);
       f.y = rnd(-10, H * 0.8);
     } else if (Math.abs(wind) > 24 && Math.random() < 0.4) {
@@ -11769,11 +11790,67 @@ cdAnimRestore();
       f.y = rnd(-4, H * 0.5);
     }
     flakes.push(f);
+    return f;
   }
 
   function seed(cap) {
     const n = Math.round(cap * 0.4 * Math.min(dens, 1.2));
-    for (let i = 0; i < n; i++) { spawn({ w: 0, d: 0 }); const f = flakes[flakes.length - 1]; f.x = rnd(0, W); f.y = rnd(0, H); }
+    for (let i = 0; i < n; i++) { const f = spawn({ w: 0, d: 0 }, 'main'); f.x = rnd(0, W); f.y = rnd(0, H); }
+  }
+
+  /* ---- Birikme: kum yığını mantığı; komşudan 2+ yüksek olan taşar, sınıra gelince daha fazla birikmez ---- */
+  function addUnits(ent, lo, hi, cap, x, n) {
+    const hm = ent.hm;
+    for (let k = 0; k < n; k++) {
+      let c = clamp(x + Math.floor(rnd(-1.5, 2.5)), lo, hi - 1);
+      for (let st = 0; st < 80; st++) {
+        const h = hm[c], d = Math.random() < 0.5 ? -1 : 1;
+        if (c + d >= lo && c + d < hi && hm[c + d] <= h - 2) c += d;
+        else if (c - d >= lo && c - d < hi && hm[c - d] <= h - 2) c -= d;
+        else break;
+      }
+      if (hm[c] < cap) { hm[c]++; if (c < ent.c0) ent.c0 = c; if (c > ent.c1) ent.c1 = c; }
+    }
+  }
+  function landOnBubble(b, x) {
+    let ent = snowMap.get(b.el);
+    if (!ent) {
+      let rad = 10;
+      try { rad = parseFloat(getComputedStyle(b.el).borderTopLeftRadius) || 10; } catch (e) {}
+      ent = { hm: new Uint8Array(800), rad: clamp(rad, 4, 24), c0: 1e9, c1: -1 };
+      snowMap.set(b.el, ent);
+    }
+    const w = Math.min(Math.floor(b.right - b.left), 800), rr = Math.ceil(ent.rad);
+    const lo = rr, hi = w - rr;
+    if (hi - lo < 4) return;
+    addUnits(ent, lo, hi, BUB_CAP, clamp(Math.floor(x - b.left), lo, hi - 1), 3);
+  }
+  function drawRuns(g, hm, c0, c1, x0, baseY) {
+    let c = Math.max(0, c0);
+    const end = Math.min(hm.length - 1, c1);
+    while (c <= end) {
+      const h = hm[c];
+      if (!h) { c++; continue; }
+      let e = c + 1; while (e <= end && hm[e] === h) e++;
+      g.fillRect(x0 + c, baseY - h, e - c, h);
+      c = e;
+    }
+  }
+
+  /* kar tanelerinin üstüne konabileceği baloncukların konumları (yalnızca ekranda büyük tane varken, kısa aralıklarla yenilenir) */
+  function refreshBubbles(t, wr) {
+    if (!area || (!scrolled && t - bubAt < 150)) return;
+    scrolled = false; bubAt = t; bubCache.length = 0;
+    const list = area.querySelectorAll('.bubble');
+    for (let i = 0; i < list.length; i++) {
+      const el = list[i];
+      const r = el.getBoundingClientRect();
+      if (r.width < 24 || r.height < 10) continue;
+      const top = r.top - wr.top;
+      if (r.bottom < wr.top || top > H || top < 0) continue;
+      if (el.closest('.typing-msg') || el.querySelector(':scope > .msg-body.big-emoji')) continue;
+      bubCache.push({ el: el, left: r.left - wr.left, right: r.right - wr.left, top: top });
+    }
   }
 
   /* ---- Kar topu ---- */
@@ -11805,12 +11882,18 @@ cdAnimRestore();
     }
   }
 
-  function active() { return enabled && !reduce && wrap.clientWidth > 0 && wrap.style.display !== 'none' && !document.hidden; }
+  function active() { return !reduce && wrap.clientWidth > 0 && wrap.style.display !== 'none' && !document.hidden; }
 
-  function clearAll() {
-    flakes.length = 0; parts.length = 0; ball = null; seeded = false;
-    if (drawn && W) { ctx.clearRect(0, 0, cv.width, cv.height); }
-    drawn = false;
+  function clearCanvases() {
+    if (drawnBack) { bctx.clearRect(0, 0, back.width, back.height); drawnBack = false; }
+    if (drawnFront) { ctx.clearRect(0, 0, front.width, front.height); drawnFront = false; }
+  }
+  /* geçici duraklama (sekme gizli, sohbet görünmüyor): taneler gider, birikenler kalır */
+  function pauseAll() { flakes.length = 0; parts.length = 0; ball = null; seeded = false; clearCanvases(); }
+  /* Kar Katmanı kapatılınca biriken her şey silinir (yağış devam eder) */
+  function wipePiles() {
+    snowMap.clear();
+    pile.hm = new Uint8Array(W || 0); pile.c0 = 1e9; pile.c1 = -1;
   }
 
   function frame(t) {
@@ -11818,18 +11901,18 @@ cdAnimRestore();
     if (!last) last = t;
     let dt = (t - last) / 1000; last = t;
     if (dt > 0.1) dt = 0.1;
-    if (!active()) { if (flakes.length || parts.length || ball) clearAll(); return; }
-    if (cv.width !== wrap.clientWidth || cv.height !== wrap.clientHeight) resize();
+    if (!active()) { if (flakes.length || parts.length || ball || drawnBack || drawnFront) pauseAll(); return; }
+    if (back.width !== wrap.clientWidth || back.height !== wrap.clientHeight) resize();
     if (!W) return;
 
-    if (!modeAt) { modeAt = t + rnd(16, 24) * MIN; gustAt = t + rnd(5, 10) * MIN; ballAt = t + rnd(40, 50) * MIN; windChangeAt = 0; }
+    if (!modeAt) { modeAt = t + rnd(9, 11) * MIN; gustAt = t + rnd(5, 7) * MIN; ballAt = t + rnd(40, 50) * MIN; windChangeAt = 0; }
 
     /* hava modu */
     if (t > modeAt) {
       let nm; do { nm = MODES[Math.floor(Math.random() * MODES.length)]; } while (nm === mode);
-      mode = nm; modeAt = t + rnd(16, 24) * MIN;
+      mode = nm; modeAt = t + rnd(9, 11) * MIN;
     }
-    const k = 1 - Math.exp(-dt / 45);                  // yavaş geçiş
+    const k = 1 - Math.exp(-dt / 45);
     dens += (mode.d - dens) * k; spd += (mode.s - spd) * k;
 
     /* sıradan rüzgar */
@@ -11837,9 +11920,9 @@ cdAnimRestore();
     wind += (windTarget - wind) * Math.min(1, dt * 0.6);
 
     /* kuvvetli rüzgar */
-    if (!gust && t > gustAt) { gust = { t0: t, dir: Math.random() < 0.5 ? -1 : 1, str: rnd(110, 170) }; }
+    if (!gust && t > gustAt) { gust = { t0: t, D: rnd(5, 10), dir: Math.random() < 0.5 ? -1 : 1, str: rnd(150, 230) }; }
     let env = { w: 0, d: 0 };
-    if (gust) { env = gustEnv(t); if (env.done) { gust = null; gustAt = t + rnd(5, 10) * MIN; env = { w: 0, d: 0 }; } }
+    if (gust) { env = gustEnv(t); if (env.done) { gust = null; gustAt = t + rnd(5, 7) * MIN; env = { w: 0, d: 0 }; } }
 
     /* kar topu */
     if (!ball && t > ballAt) { throwBall(t); ballAt = t + rnd(40, 50) * MIN; }
@@ -11849,27 +11932,68 @@ cdAnimRestore();
     const cap = Math.max(6, Math.round(W * H / 9000 * Math.max(dens, 0.3) * (1 + 3.5 * env.d)));
     if (!seeded) { seed(cap); seeded = true; nextSpawn = t + 400; }
     if (t > nextSpawn) {
-      if (flakes.length < cap) spawn(env);
+      if (flakes.length < cap) spawn(env, 'main');
+      if (flakes.length < cap * 1.8) {                     // çok silik 2px ve 1px taneler
+        if (Math.random() < 0.3) spawn(env, 'f2');
+        if (Math.random() < 0.45) spawn(env, 'f1');
+      }
       nextSpawn = t + poissonGap(0.9 / dMul);
     }
 
-    ctx.clearRect(0, 0, W, H);
-    drawn = true;
-    ctx.fillStyle = '#fff';
+    /* büyük tane varsa baloncukların konumunu güncel tut */
+    const wr = wrap.getBoundingClientRect();
+    let hasBig = false;
+    for (let i = 0; i < flakes.length; i++) if (flakes[i].kind === 2) { hasBig = true; break; }
+    if (hasBig && enabled) refreshBubbles(t, wr);
+
+    bctx.clearRect(0, 0, W, H);
+    drawnBack = true;
+    bctx.fillStyle = '#fff';
     for (let i = flakes.length - 1; i >= 0; i--) {
       const f = flakes[i];
+      const oy = f.y;
       f.ph += f.sw * dt;
       let wx = wind * f.windK;
       if (gust) { const kk = f.windK + (1 - f.windK) * env.w; wx += gust.dir * gust.str * env.w * kk; }
       f.x += (f.drift + wx + Math.sin(f.ph) * f.amp) * dt;
       f.y += f.vy * spd * dt;
       if (f.y > H + 4 || f.x < -60 || f.x > W + 60) { flakes.splice(i, 1); continue; }
-      ctx.globalAlpha = f.a;
+
+      if (f.kind === 2 && enabled && f.x >= 0 && f.x < W) {            // kar tanesi: baloncuğun veya metin kutusunun üstüne konar
+        const ob = oy + 3, nb = f.y + 3;
+        let hit = null;
+        for (let j = 0; j < bubCache.length; j++) {
+          const b = bubCache[j];
+          if (ob <= b.top && nb >= b.top && f.x >= b.left + 8 && f.x <= b.right - 8 && (!hit || b.top < hit.top)) hit = b;
+        }
+        if (hit) { landOnBubble(hit, f.x); flakes.splice(i, 1); continue; }
+        const col = clamp(Math.floor(f.x), 0, W - 1);
+        if (nb >= H - pile.hm[col]) { addUnits(pile, 0, W, PILE_CAP, col, 3); flakes.splice(i, 1); continue; }
+      }
+
+      bctx.globalAlpha = f.a;
       const px = Math.round(f.x), py = Math.round(f.y);
-      if (f.kind === 1) ctx.drawImage(SPR_PLUS, px - 2, py - 2);
-      else if (f.kind === 2) ctx.drawImage(SPR_FLAKE, px - 3, py - 3);
-      else ctx.fillRect(px, py, f.size, f.size);
+      if (f.kind === 1) bctx.drawImage(SPR_PLUS, px - 2, py - 2);
+      else if (f.kind === 2) bctx.drawImage(SPR_FLAKE, px - 3, py - 3);
+      else bctx.fillRect(px, py, f.size, f.size);
     }
+    bctx.globalAlpha = 1;
+
+    /* ---- ön katman ---- */
+    ctx.clearRect(0, 0, W, H);
+    drawnFront = true;
+
+    /* birikenler: baloncukların üstü (baloncukla birlikte kayar) */
+    ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.92;
+    snowMap.forEach(function (ent, el) {
+      if (!el.isConnected) { snowMap.delete(el); return; }
+      const r = el.getBoundingClientRect();
+      if (r.width < 24 || r.bottom < wr.top || r.top > wr.bottom) return;
+      drawRuns(ctx, ent.hm, Math.ceil(ent.rad), Math.min(ent.c1, Math.floor(r.width - ent.rad) - 1), Math.round(r.left - wr.left), Math.round(r.top - wr.top));
+    });
+    /* birikenler: metin kutusunun üstü */
+    drawRuns(ctx, pile.hm, pile.c0, pile.c1, 0, H);
+    ctx.globalAlpha = 1;
 
     /* kar topu hareketi */
     if (ball) {
@@ -11880,7 +12004,7 @@ cdAnimRestore();
       } else {
         ball.x = ball.x0 + (ball.x1 - ball.x0) * u;
         ball.y = ball.y0 + (ball.y1 - ball.y0) * u - 4 * ball.h * u * (1 - u);
-        if (t > ball.trailAt) {                         // arkasında küçük kar tozu
+        if (t > ball.trailAt) {
           ball.trailAt = t + 45;
           parts.push({ x: ball.x - ball.dirx * 6 + rnd(-3, 3), y: ball.y + rnd(-5, 5), vx: -ball.dirx * rnd(4, 18), vy: rnd(-8, 22), g: 90,
                        age: 0, life: rnd(0.4, 0.8), size: 2, col: Math.random() < 0.7 ? '#ffffff' : '#c9d6ea' });
@@ -11901,27 +12025,28 @@ cdAnimRestore();
 
     if (ball) {
       ctx.globalAlpha = 1;
-      ctx.imageSmoothingEnabled = false;
       ctx.drawImage(ballSprite, Math.round(ball.x - BALL_HALF), Math.round(ball.y - BALL_HALF));
     }
     ctx.globalAlpha = 1;
   }
 
-  /* ---- Ayarlar > Kar ---- */
+  /* ---- Ayarlar > Kar Katmanı (birikme) ---- */
   const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-snow .seg-btn'));
   function mark() { btns.forEach((b) => { const on = b.dataset.val === (enabled ? 'on' : 'off'); b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); }
-  function setEnabled(on) { enabled = !!on; mark(); if (!enabled) clearAll(); }
+  function setEnabled(on) { enabled = !!on; mark(); if (!enabled) wipePiles(); }
   mark();
   btns.forEach((b) => {
     b.addEventListener('pointerdown', (e) => e.preventDefault());
     b.addEventListener('click', () => { const on = b.dataset.val !== 'off'; lset(KEY, on ? 'on' : 'off'); setEnabled(on); });
   });
 
-  /* deneme için: konsoldan vnSnow.gust(), vnSnow.ball(), vnSnow.burst() */
+  /* deneme için: konsoldan vnSnow.gust(), vnSnow.ball(), vnSnow.burst(), vnSnow.flake(5) */
   window.vnSnow = {
-    gust: function () { if (!gust) gust = { t0: performance.now(), dir: Math.random() < 0.5 ? -1 : 1, str: rnd(110, 170) }; },
+    gust: function () { if (!gust) gust = { t0: performance.now(), D: rnd(5, 10), dir: Math.random() < 0.5 ? -1 : 1, str: rnd(150, 230) }; },
     ball: function () { throwBall(performance.now(), false); },
-    burst: function () { throwBall(performance.now(), true); }
+    burst: function () { throwBall(performance.now(), true); },
+    flake: function (n) { n = n || 1; for (let i = 0; i < n; i++) { const f = spawn({ w: 0, d: 0 }, 'big'); f.x = rnd(0, W); } },
+    stats: function () { let p = 0; for (let i = 0; i < pile.hm.length; i++) p += pile.hm[i]; return { pile: p, bubbles: snowMap.size, flakes: flakes.length }; }
   };
 
   resize();
