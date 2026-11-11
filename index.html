@@ -6129,7 +6129,13 @@ function buildCallCard(name) {
 }
 function callApplyState(id, st) {
   const m = document.getElementById(id);
-  if (m && m._callCard) m._callCard._set(st);
+  if (!(m && m._callCard)) return;
+  const prev = m._callCard._state;
+  m._callCard._set(st);
+  // Yeşile basılıp arama başlayınca (iki tarafta da) üstte süre baloncuğu başlar; tekrar gelen durum sayacı sıfırlamaz
+  if (st === 'accepted' && prev !== 'accepted') {
+    try { if (!(vcLive && vcLive.id === id)) vcStart(id, m._callCard._name); } catch (e) {}
+  }
 }
 function callAnswered(id) {
   const c = callReadStates()[id];
