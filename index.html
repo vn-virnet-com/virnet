@@ -3211,6 +3211,7 @@ function setupConnection(c) {
     flushOutbox(true);
     try { callResendStates(); } catch (e) {}
     try { dialResendStates(); } catch (e) {}
+    try { vcSendSync(); } catch (e) {}
     try { if (ytCurrent && ytCurrent._announce) ytCurrent._announce(); } catch (e) {}
     if (pingInterval) clearInterval(pingInterval);
     pingInterval = setInterval(() => {
@@ -3252,6 +3253,8 @@ function setupConnection(c) {
     if (data.type === 'notif-ack') { receiveNotifAck(data); return; }
     if (data.type === 'call-state') { receiveCallState(data); return; }
     if (data.type === 'dial-state') { receiveDialState(data); return; }
+    if (data.type === 'vc-sync') { receiveVcSync(data); return; }
+    if (data.type === 'vc-end') { receiveVcEnd(data); return; }
     if (data.type === 'dial-cancel') { receiveDialCancel(data); return; }
     if (data.type === 'cmp') { receiveCmp(data); return; }
     if (data.type === 'cmp-stop') { cmpPeerClear(); return; }
@@ -6160,13 +6163,13 @@ function buildCallCard(name) {
   el._set('ringing');
   return el;
 }
-function callApplyState(id, st) {
+function callApplyState(id, st, live) {
   const m = document.getElementById(id);
   if (!(m && m._callCard)) return;
   const prev = m._callCard._state;
   m._callCard._set(st);
   // Yeşile basılıp arama başlayınca (iki tarafta da) üstte süre baloncuğu başlar; tekrar gelen durum sayacı sıfırlamaz
-  if (st === 'accepted' && prev !== 'accepted') {
+  if (st === 'accepted' && prev !== 'accepted' && live) { // yalnızca gerçek anda basılan kabulde; yeniden gönderilen eski durumlar hayalet baloncuk açmaz
     try { if (!(vcLive && vcLive.id === id)) vcStart(id, m._callCard._name); } catch (e) {}
   }
 }
@@ -6179,8 +6182,8 @@ function callSetState(id, st, send) {
   const o = callReadStates();
   o[id] = st;
   callWriteStates(o);
-  callApplyState(id, st);
-  if (send && isConnected()) { try { conn.send({ type: 'call-state', msgId: id, state: st }); } catch (e) {} }
+  callApplyState(id, st, !!send);
+  if (send && isConnected()) { try { conn.send({ type: 'call-state', msgId: id, state: st, vc: st === 'accepted' ? 1 : 0 }); } catch (e) {} }
 }
 function receiveCallState(d) {
   if (!d || typeof d.msgId !== 'string' || (d.state !== 'accepted' && d.state !== 'rejected' && d.state !== 'missed')) return;
@@ -6189,7 +6192,7 @@ function receiveCallState(d) {
   const o = callReadStates();
   o[id] = d.state;
   callWriteStates(o);
-  callApplyState(id, d.state);
+  callApplyState(id, d.state, !!d.vc);
 }
 function callResendStates() {
   if (!isConnected()) return;
@@ -6280,10 +6283,57 @@ function vcShow() {
   try { ytTopInsetSync(); } catch (e) {}
 }
 function vcStart(id, name) {
+  if (vcLive && vcLive.id === id) return;
   vcLive = { id: id, name: String(name || ''), t0: Date.now() };
   lsSet(VC_KEY, JSON.stringify(vcLive));
   vcShow();
+  try { vcSendSync(); } catch (e) {}
 }
+/* Süre baloncuğu eşitleme: iki tarafta da aynı isim + aynı saniye. Biri gösteriyor, diğeri göstermiyorsa gösterenin hali diğerine de geçer;
+   ikisi de gösteriyorsa kimlik sırası küçük olan taraf esas alınır, diğeri ona uyar. */
+var VC_END_KEY = 'vnCallEnd';
+var vcLastEnd = Number(lsGet(VC_END_KEY)) || 0;
+function vcMarkEnd(at) { vcLastEnd = Math.max(vcLastEnd, at || Date.now()); lsSet(VC_END_KEY, String(vcLastEnd)); }
+function vcClearLocal() {
+  vcLive = null; lsRemove(VC_KEY); clearInterval(vcTick);
+  try { vcHideLive(); } catch (e) {}
+}
+function vcSendSync() {
+  if (!vcLive || !isConnected()) return;
+  try { conn.send({ type: 'vc-sync', id: vcLive.id, name: vcLive.name, el: Math.max(0, Date.now() - vcLive.t0) }); } catch (e) {}
+}
+function vcIAmLeader() {
+  try { return String(myId || '') < String(conn && conn.peer || ''); } catch (e) { return false; }
+}
+function receiveVcSync(d) {
+  if (!d || typeof d.id !== 'string' || typeof d.el !== 'number' || !isFinite(d.el) || d.el < 0) return;
+  const id = d.id.slice(0, 80), name = String(d.name || '').slice(0, 60), el = Math.min(d.el, 86400000);
+  const t0 = Date.now() - el;
+  if (t0 < vcLastEnd) { try { if (isConnected()) conn.send({ type: 'vc-end', id: id }); } catch (e) {} return; } // bu arama bizde çoktan bitti
+  if (vcLive) {
+    if (vcIAmLeader() && vcLive.id !== id) return; // esas alınan taraf kendi halini korur, karşı taraf ona uyacak
+    if (vcIAmLeader() && vcLive.id === id) return;
+    if (vcLive.id !== id) { vcLive = { id: id, name: name, t0: t0 }; lsSet(VC_KEY, JSON.stringify(vcLive)); vcShow(); return; }
+    let ch = false;
+    if (Math.abs(vcLive.t0 - t0) >= 250) { vcLive.t0 = t0; ch = true; }
+    if (name && vcLive.name !== name) { vcLive.name = name; ch = true; }
+    if (ch) {
+      lsSet(VC_KEY, JSON.stringify(vcLive));
+      const el2 = document.getElementById('vc-pill');
+      if (el2 && el2._n) el2._n.textContent = vcLive.name || 'Arama';
+      vcRender();
+    }
+    return;
+  }
+  vcLive = { id: id, name: name, t0: t0 };
+  lsSet(VC_KEY, JSON.stringify(vcLive));
+  vcShow();
+}
+function receiveVcEnd(d) {
+  if (!d || typeof d.id !== 'string') return;
+  if (vcLive && vcLive.id === d.id.slice(0, 80)) { vcMarkEnd(Date.now()); vcClearLocal(); }
+}
+setInterval(function () { try { vcSendSync(); } catch (e) {} }, 1000);
 function vcHideLive() {
   const el = document.getElementById('vc-pill');
   if (el) el.classList.remove('show');
@@ -6299,9 +6349,11 @@ function vcFill(slot, sec) {
 function vcAttachSlot(slot, id, fresh) {
   const saved = vcDurRead()[id];
   if (typeof saved === 'number') { vcFill(slot, saved); return; }
+  if (!fresh && vcLive) { const ets = msgTsOfId(id); if (ets && ets > vcLive.t0) { vcMarkEnd(ets); vcClearLocal(); } } // bitiş kartı geç geldiyse takılı baloncuk kalkar
   if (!(fresh && vcLive)) return; // eski geçmiş kartında süre bilinmiyorsa boşluk boş kalır
   const live = vcLive;
   vcLive = null; lsRemove(VC_KEY); clearInterval(vcTick);
+  vcMarkEnd(Date.now());
   const sec = Math.floor((Date.now() - live.t0) / 1000);
   vcDurWrite(id, sec);
   const lp = document.getElementById('vc-pill');
@@ -6356,7 +6408,7 @@ function vcFly(slot, live, sec) {
 (function () { // sayfa yenilenirse süren arama kaldığı yerden sayar
   try {
     const o = JSON.parse(lsGet(VC_KEY) || 'null');
-    if (o && o.id && o.t0 && Date.now() - o.t0 < 86400000) { vcLive = o; setTimeout(vcShow, 0); }
+    if (o && o.id && o.t0 && Date.now() - o.t0 < 86400000 && o.t0 > vcLastEnd) { vcLive = o; setTimeout(vcShow, 0); }
     else if (o) lsRemove(VC_KEY);
   } catch (e) {}
 })();
@@ -6441,7 +6493,7 @@ function dialSchedule(id, st) {
   const fin = st === 'call_open' ? 'started' : st === 'call_busy' ? 'busy' : 'timeout';
   dialTimers[id] = setTimeout(() => { delete dialTimers[id]; dialSetState(id, fin, true); }, ms);
 }
-function dialSetState(id, st, send) {
+function dialSetState(id, st, send, live) {
   if (!(st in DIAL_RANK)) return false;
   const o = dialReadStates();
   const cur = o[id] || 'wait';
@@ -6449,8 +6501,8 @@ function dialSetState(id, st, send) {
   o[id] = st;
   dialWriteStates(o);
   dialApply(id, st);
-  if (st === 'started') { try { const dm = document.getElementById(id); vcStart(id, dm && dm._dialCard ? dm._dialCard._name : ''); } catch (e) {} } // "Arama başladı" yazısına dönüştüğü an üstte süre baloncuğu başlar
-  if (send && isConnected()) { try { conn.send({ type: 'dial-state', msgId: id, state: st }); } catch (e) {} }
+  if (st === 'started' && (send || live)) { try { const dm = document.getElementById(id); vcStart(id, dm && dm._dialCard ? dm._dialCard._name : ''); } catch (e) {} } // "Arama başladı" yazısına dönüştüğü an üstte süre baloncuğu başlar
+  if (send && isConnected()) { try { conn.send({ type: 'dial-state', msgId: id, state: st, vc: st === 'started' ? 1 : 0 }); } catch (e) {} }
   if (st.indexOf('call_') === 0) {
     const m = document.getElementById(id);
     if (m && m.classList.contains('own-msg')) dialSchedule(id, st);
@@ -6477,7 +6529,7 @@ function receiveDialCancel(d) {
 }
 function receiveDialState(d) {
   if (!d || typeof d.msgId !== 'string' || typeof d.state !== 'string') return;
-  dialSetState(d.msgId.slice(0, 80), d.state, false);
+  dialSetState(d.msgId.slice(0, 80), d.state, false, !!d.vc);
 }
 function dialResendStates() {
   if (!isConnected()) return;
@@ -6500,7 +6552,8 @@ function buildDialMsgCard(msgDiv, id, name, own) {
   const saved = dialReadStates()[id];
   if (saved && saved in DIAL_RANK) {
     card._set(saved);
-    if (own && saved.indexOf('call_') === 0) dialSchedule(id, saved);
+    const dts = msgTsOfId(id);
+    if (own && saved.indexOf('call_') === 0 && dts && Date.now() - dts < 120000) dialSchedule(id, saved); // eski takılı kart kendi kendine aramayı başlatmasın
   }
   return card;
 }
