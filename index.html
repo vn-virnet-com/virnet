@@ -6511,8 +6511,9 @@ const ytsModal = document.getElementById('ytsearch-modal');
 const ytsIn = document.getElementById('ytsearch-in');
 const ytsList = document.getElementById('ytsearch-list');
 let ytsToken = 0, ytsTimer = null;
-const YTS_PIPED = ['https://pipedapi.kavin.rocks', 'https://pipedapi.adminforge.de', 'https://api.piped.private.coffee'];
-const YTS_INV = ['https://inv.nadeko.net', 'https://yewtu.be'];
+const YTS_PIPED = ['https://pipedapi.kavin.rocks', 'https://pipedapi.adminforge.de', 'https://api.piped.private.coffee', 'https://piped-api.privacy.com.de', 'https://api.piped.yt', 'https://pipedapi.drgns.space', 'https://pipedapi.owo.si', 'https://pipedapi.ducks.party', 'https://piped-api.codespace.cz', 'https://pipedapi.reallyaweso.me', 'https://pipedapi.darkness.services', 'https://pipedapi.orangenet.cc'];
+const YTS_INV = ['https://inv.nadeko.net', 'https://yewtu.be', 'https://invidious.nerdvpn.de'];
+let ytsDynPiped = null; // Piped'ın kendi güncel sunucu listesinden çekilenler (sabit liste ölürse yedek)
 
 function ytsMsg(t) { ytsList.innerHTML = ''; const d = document.createElement('div'); d.className = 'yts-msg'; d.textContent = t; ytsList.appendChild(d); }
 function ytsFetch(url) {
@@ -6520,25 +6521,52 @@ function ytsFetch(url) {
   const t = setTimeout(() => ctl.abort(), 7000);
   return fetch(url, { signal: ctl.signal }).then((r) => { clearTimeout(t); if (!r.ok) throw new Error('http'); return r.json(); });
 }
-function ytsSearchApi(q) {
+function ytsPipedItems(j) {
+  const out = [];
+  ((j && j.items) || []).forEach((it) => {
+    const m = /[?&]v=([A-Za-z0-9_-]{11})/.exec(it.url || '');
+    if (m) out.push({ id: m[1], title: it.title || '', artist: it.uploaderName || '' });
+  });
+  return out;
+}
+function ytsTryPiped(b, enc) {
+  // Önce müzik filtresi, boş dönerse normal video araması
+  return ytsFetch(b + '/search?q=' + enc + '&filter=music_songs').then((j) => {
+    const o = ytsPipedItems(j); if (o.length) return o; throw new Error('empty');
+  }).catch(() => ytsFetch(b + '/search?q=' + enc + '&filter=videos').then((j) => {
+    const o = ytsPipedItems(j); if (!o.length) throw new Error('empty'); return o;
+  }));
+}
+function ytsSearchStatic(q) {
   const enc = encodeURIComponent(q);
   const tasks = [];
-  YTS_PIPED.forEach((b) => tasks.push(ytsFetch(b + '/search?q=' + enc + '&filter=music_songs').then((j) => {
-    const out = [];
-    ((j && j.items) || []).forEach((it) => {
-      const m = /[?&]v=([A-Za-z0-9_-]{11})/.exec(it.url || '');
-      if (m) out.push({ id: m[1], title: it.title || '', artist: it.uploaderName || '' });
-    });
-    if (!out.length) throw new Error('empty');
-    return out;
-  })));
+  YTS_PIPED.forEach((b) => tasks.push(ytsTryPiped(b, enc)));
   YTS_INV.forEach((b) => tasks.push(ytsFetch(b + '/api/v1/search?type=video&q=' + enc).then((j) => {
     const out = [];
     (Array.isArray(j) ? j : []).forEach((it) => { if (it && it.videoId) out.push({ id: it.videoId, title: it.title || '', artist: it.author || '' }); });
     if (!out.length) throw new Error('empty');
     return out;
   })));
-  return Promise.any(tasks);
+  return ytAny(tasks);
+}
+// Sabit liste tamamen düşerse: Piped'ın güncel sunucu listesini çekip (çalışanlar, uptime'a göre) onlarla dener
+function ytsLoadDynPiped() {
+  if (ytsDynPiped) return Promise.resolve(ytsDynPiped);
+  return ytsFetch('https://piped-instances.kavin.rocks/').then((j) => {
+    const list = (Array.isArray(j) ? j : [])
+      .filter((x) => x && typeof x.api_url === 'string' && /^https:\/\//.test(x.api_url) && YTS_PIPED.indexOf(x.api_url) < 0)
+      .sort((a, b) => (b.uptime_24h || 0) - (a.uptime_24h || 0))
+      .slice(0, 8).map((x) => x.api_url.replace(/\/+$/, ''));
+    ytsDynPiped = list;
+    return list;
+  });
+}
+function ytsSearchApi(q) {
+  const enc = encodeURIComponent(q);
+  return ytsSearchStatic(q).catch(() => ytsLoadDynPiped().then((list) => {
+    if (!list.length) throw new Error('none');
+    return ytAny(list.map((b) => ytsTryPiped(b, enc)));
+  }));
 }
 function ytsRender(items, limit) {
   ytsList.innerHTML = '';
@@ -6629,7 +6657,7 @@ function runYtSearch() {
   ytPlStripFor(null);
   ytsMsg('Aranıyor...');
   ytsSearchApi(q).then((items) => { if (my === ytsToken) ytsRender(items); })
-    .catch(() => { if (my === ytsToken) ytsMsg('Sonuç alınamadı. Başka bir arama dene veya biraz sonra tekrar dene.'); });
+    .catch(() => { if (my === ytsToken) ytsMsg('Sonuç alınamadı. Arama sunucularına ulaşılamıyor olabilir; biraz sonra tekrar dene.'); });
 }
 function openYtSearch() {
   ytsModal.classList.add('show');
