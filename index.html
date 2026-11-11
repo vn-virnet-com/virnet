@@ -1619,6 +1619,9 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 .call-rej { background: radial-gradient(120% 110% at 28% 8%, color-mix(in srgb, var(--bad) 70%, #fff) 0%, transparent 58%), linear-gradient(160deg, color-mix(in srgb, var(--bad) 78%, transparent) 0%, color-mix(in srgb, var(--bad) 45%, transparent) 100%); }
 .call-btn:active { transform: scale(.92); }
 @media (prefers-reduced-motion: reduce) { .call-card::before, .dial-card::before { animation: none; } }
+
+/* Piksel kar: yalnızca sohbet alanı (metin kutusu ve alt bar hariç), her şeyin üstünden geçer, dokunmayı engellemez */
+#snow-canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 24; pointer-events: none; image-rendering: pixelated; image-rendering: crisp-edges; }
 </style>
 </head>
 <body>
@@ -1837,6 +1840,7 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 <div id="fab"><div id="fab-ring"></div><div id="fab-main" title="Menü" aria-label="Menü"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2" fill="currentColor"></circle></svg></div></div>
 <div id="chat-wrap">
   <div id="chat-area"></div>
+  <canvas id="snow-canvas" aria-hidden="true"></canvas>
   <div id="auto-chip" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span class="ac-txt">Oto. Oynat</span><button type="button" id="auto-chip-x" aria-label="Otomatik oynatmayı kapat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div id="scroll-down-btn" title="En son mesaja git">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -11646,6 +11650,89 @@ cdAnimRestore();
   syncBellPanel();
   if (mqMobile.addEventListener) mqMobile.addEventListener('change', syncBellPanel);
   else if (mqMobile.addListener) mqMobile.addListener(syncBellPanel);
+})();
+</script>
+<script>
+/* Piksel kar yağışı: seyrek, rastgele eğim; rüzgar zamanla yön değiştirir */
+(function initPixelSnow() {
+  const wrap = document.getElementById('chat-wrap');
+  const cv = document.getElementById('snow-canvas');
+  if (!wrap || !cv) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { cv.style.display = 'none'; return; }
+  const ctx = cv.getContext('2d');
+  const PX = 2;                       // bir "piksel" = 2 CSS px
+  let W = 0, H = 0;                   // düşük çözünürlüklü tuval boyutu
+  const flakes = [];
+  let wind = 0, windTarget = 0, windChangeAt = 0, spawnAt = 0, last = 0;
+
+  function resize() {
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    if (!w || !h) return;
+    W = Math.max(1, Math.floor(w / PX)); H = Math.max(1, Math.floor(h / PX));
+    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  }
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(wrap);
+  window.addEventListener('resize', resize);
+
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  function spawn(now) {
+    const r = Math.random();
+    const f = {
+      x: rnd(-W * 0.25, W * 1.15), y: -4,
+      vy: rnd(9, 22),                         // düşme hızı (piksel/sn)
+      drift: Math.random() < 0.35 ? 0 : rnd(-7, 7),  // kimi dümdüz, kimi eğimli
+      windK: rnd(0.35, 1.1),                  // rüzgardan etkilenme
+      ph: rnd(0, 6.28), sw: rnd(0.4, 1.2), amp: rnd(0, 4),
+      a: rnd(0.4, 0.85),
+      size: r < 0.78 ? 1 : (r < 0.96 ? 2 : 3)  // 3 = küçük artı şeklinde tane
+    };
+    // rüzgar güçlüyse yan taraftan da girsin
+    if (Math.abs(wind) > 12 && Math.random() < 0.5) { f.x = wind > 0 ? rnd(-12, 0) : rnd(W, W + 12); f.y = rnd(-4, H * 0.5); }
+    flakes.push(f);
+  }
+
+  function frame(t) {
+    requestAnimationFrame(frame);
+    if (!last) last = t;
+    let dt = (t - last) / 1000; last = t;
+    if (dt > 0.1) dt = 0.1;
+    if (document.hidden || !wrap.offsetWidth || wrap.style.display === 'none') { if (flakes.length) { flakes.length = 0; if (W) ctx.clearRect(0, 0, W, H); } return; }
+    if (cv.width !== Math.floor(wrap.clientWidth / PX)) resize();
+    if (!W) return;
+
+    // rüzgar: arada yeni hedef seçer, yavaşça ona kayar (bazen hiç esmez)
+    if (t > windChangeAt) {
+      windTarget = Math.random() < 0.3 ? 0 : rnd(-24, 24);
+      windChangeAt = t + rnd(3000, 8000);
+    }
+    wind += (windTarget - wind) * Math.min(1, dt * 0.6);
+
+    // seyrek serpiştirme (alana göre sınırlı)
+    const maxFlakes = Math.max(8, Math.round(W * H / 2600));
+    if (t > spawnAt) {
+      if (flakes.length < maxFlakes) spawn(t);
+      spawnAt = t + rnd(350, 1400);
+    }
+
+    ctx.clearRect(0, 0, W, H);
+    for (let i = flakes.length - 1; i >= 0; i--) {
+      const f = flakes[i];
+      f.ph += f.sw * dt;
+      f.x += (f.drift + wind * f.windK + Math.sin(f.ph) * f.amp) * dt;
+      f.y += f.vy * dt;
+      if (f.y > H + 4 || f.x < -16 || f.x > W + 16) { flakes.splice(i, 1); continue; }
+      const x = Math.round(f.x), y = Math.round(f.y);
+      ctx.fillStyle = 'rgba(255,255,255,' + f.a.toFixed(2) + ')';
+      if (f.size === 3) {
+        ctx.fillRect(x, y - 1, 1, 3); ctx.fillRect(x - 1, y, 3, 1);
+      } else {
+        ctx.fillRect(x, y, f.size, f.size);
+      }
+    }
+  }
+  resize();
+  requestAnimationFrame(frame);
 })();
 </script>
 </body>
