@@ -11751,7 +11751,7 @@ cdAnimRestore();
   if (window.ResizeObserver) new ResizeObserver(resize).observe(wrap);
   window.addEventListener('resize', resize);
 
-  function poissonGap(mean) { return clamp(-Math.log(1 - Math.random()) * mean, 0.08, 14) * 1000; }
+  function poissonGap(mean) { return clamp(-Math.log(1 - Math.random()) * mean, 0.03, 14) * 1000; }
 
   function gustEnv(t) {
     const e = (t - gust.t0) / 1000, D = gust.D;
@@ -11799,10 +11799,10 @@ cdAnimRestore();
   }
 
   /* ---- Birikme: kum yığını mantığı; komşudan 2+ yüksek olan taşar, sınıra gelince daha fazla birikmez ---- */
-  function addUnits(ent, lo, hi, cap, x, n, exact) {
-    const hm = ent.hm;
+  function addUnits(ent, lo, hi, cap, x, n, sp) {
+    const hm = ent.hm, spr = sp === undefined ? 2 : sp;
     for (let k = 0; k < n; k++) {
-      let c = exact ? clamp(x, lo, hi - 1) : clamp(x + Math.floor(rnd(-1.5, 2.5)), lo, hi - 1);
+      let c = spr ? clamp(x + Math.floor(rnd(-spr, spr + 1)), lo, hi - 1) : clamp(x, lo, hi - 1);
       for (let st = 0; st < 80; st++) {
         const h = hm[c], d = Math.random() < 0.5 ? -1 : 1;
         if (c + d >= lo && c + d < hi && hm[c + d] <= h - 2) c += d;
@@ -11812,7 +11812,7 @@ cdAnimRestore();
       if (hm[c] < cap) { hm[c]++; if (c < ent.c0) ent.c0 = c; if (c > ent.c1) ent.c1 = c; }
     }
   }
-  function landOnBubble(b, x, n) {
+  function landOnBubble(b, x, n, sp) {
     let ent = snowMap.get(b.el);
     if (!ent) {
       let rad = 10;
@@ -11823,7 +11823,7 @@ cdAnimRestore();
     const w = Math.min(Math.floor(b.right - b.left), 800), rr = Math.ceil(ent.rad);
     const lo = rr, hi = w - rr;
     if (hi - lo < 4) return;
-    addUnits(ent, lo, hi, BUB_CAP, clamp(Math.floor(x - b.left), lo, hi - 1), n, n === 1);
+    addUnits(ent, lo, hi, BUB_CAP, clamp(Math.floor(x - b.left), lo, hi - 1), n, sp);
   }
   function drawRuns(g, hm, c0, c1, x0, baseY) {
     let c = Math.max(0, c0);
@@ -11937,7 +11937,7 @@ cdAnimRestore();
         if (Math.random() < 0.3) spawn(env, 'f2');
         if (Math.random() < 0.45) spawn(env, 'f1');
       }
-      nextSpawn = t + poissonGap(0.9 / dMul);
+      nextSpawn = t + poissonGap(0.9 / (dMul * Math.max(1, W / 390)));   // geniş ekranda sıklık genişlikle orantılı artar
     }
 
     /* büyük tane varsa baloncukların konumunu güncel tut */
@@ -11968,7 +11968,11 @@ cdAnimRestore();
           const b = bubCache[j];
           if (ob <= b.top && nb >= b.top && f.x >= b.left + 8 && f.x <= b.right - 8 && (!hit || b.top < hit.top)) hit = b;
         }
-        if (hit) { landOnBubble(hit, f.x, big ? 3 : 1); flakes.splice(i, 1); continue; }
+        if (hit) {
+          const units = big ? 21 : (f.kind === 1 ? 9 : f.size * f.size);      // tanenin kendi piksel sayısı
+          landOnBubble(hit, f.x + (f.kind === 0 ? f.size / 2 : 0), units, Math.ceil(f.size / 2));
+          flakes.splice(i, 1); continue;
+        }
         if (big) {
           const col = clamp(Math.floor(f.x), 0, W - 1);
           if (nb >= H - pile.hm[col]) { addUnits(pile, 0, W, PILE_CAP, col, 3); flakes.splice(i, 1); continue; }
@@ -12043,6 +12047,31 @@ cdAnimRestore();
     b.addEventListener('pointerdown', (e) => e.preventDefault());
     b.addEventListener('click', () => { const on = b.dataset.val !== 'off'; lset(KEY, on ? 'on' : 'off'); setEnabled(on); });
   });
+
+  /* Metin kutusuna yazarken her 2 harfte bir kar tanesi: tepeden ya da yanlardan girer */
+  (function typingSnow() {
+    const inp = document.getElementById('message-input');
+    if (!inp) return;
+    let prevLen = 0, typed = 0;
+    inp.addEventListener('input', function () {
+      const L = inp.value.length;
+      if (L > prevLen) typed += Math.min(L - prevLen, 4);   // yapıştırma/öneri toplu gelse de taşmasın
+      prevLen = L;
+      while (typed >= 2) { typed -= 2; spawnTyped(); }
+    });
+  })();
+  function spawnTyped() {
+    if (!W || !active() || flakes.length > 90) return;
+    const f = spawn({ w: 0, d: 0 }, 'main');
+    const r = Math.random();
+    if (r < 0.45) { f.x = rnd(0, W); f.y = -4; }             // tepeden
+    else {                                                    // yanlardan, her yükseklikten
+      const left = r < 0.725;
+      f.x = left ? rnd(-20, -4) : rnd(W + 4, W + 20);
+      f.y = rnd(-4, H * 0.95);
+      f.drift = (left ? 1 : -1) * rnd(22, 55);
+    }
+  }
 
   /* deneme için: konsoldan vnSnow.gust(), vnSnow.ball(), vnSnow.burst(), vnSnow.flake(5) */
   window.vnSnow = {
