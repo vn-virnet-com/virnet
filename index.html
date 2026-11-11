@@ -1624,7 +1624,9 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 /* Piksel kar: yalnızca sohbet alanı (metin kutusu ve alt bar hariç), her şeyin üstünden geçer, dokunmayı engellemez */
 /* Kar: arka katman (taneler) sohbetin arkasında, ön katman (kar topu, birikenler) üstünde */
 #snow-back { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; image-rendering: pixelated; image-rendering: crisp-edges; }
-#snow-canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 24; pointer-events: none; image-rendering: pixelated; image-rendering: crisp-edges; }
+#snow-canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; image-rendering: pixelated; image-rendering: crisp-edges; }
+/* Baloncuk üstündeki birikme kar: baloncuğun kendi ::before katmanı (kaydırmada baloncukla birlikte kayar, şarkı kartı / oto oynat balonunun altında kalır) */
+.bubble::before { content: ''; position: absolute; left: -1px; top: -6px; width: var(--snow-w, 0px); height: var(--snow-h, 0px); background-image: var(--snow-img, none); background-repeat: no-repeat; background-position: 0 0; background-size: auto; image-rendering: pixelated; image-rendering: crisp-edges; pointer-events: none; }
 </style>
 </head>
 <body>
@@ -11879,6 +11881,7 @@ cdAnimRestore();
       }
       if (hm[c] < (capArr ? capArr[c] : cap)) {
         hm[c]++; if (c < ent.c0) ent.c0 = c; if (c > ent.c1) ent.c1 = c;
+        ent.dirty = true;
         if (ent.dl && c - lo < ent.rl) ent.dl.amt++;           // köşeye denk gelen kar: kenardan sarkıt biriktirir
         if (ent.dr && hi - 1 - c < ent.rr) ent.dr.amt++;
       }
@@ -11924,6 +11927,26 @@ cdAnimRestore();
     g.fillRect(xo, y0 + hh + L, 1, 2 + Math.floor(L * 0.6));
     if (L >= 4) g.fillRect(xi, y0 + hh + half, 1, 1 + Math.floor(L * 0.4));
     g.fillStyle = '#fff';
+  }
+
+  /* Baloncuğun birikmesini küçük bir resme çizip baloncuğun ::before katmanına koyar (DOM'a çocuk eklemez) */
+  const snowScratch = document.createElement('canvas');
+  const sg = snowScratch.getContext('2d');
+  function renderEnt(el, ent) {
+    if (!ent.w) return;
+    const PADT = 6, mi = clamp(Math.max(ent.rl, ent.rr, 0), 0, 40) | 0;
+    const wc = ent.w + 2, hc = PADT + mi + 20;
+    snowScratch.width = wc; snowScratch.height = hc;
+    sg.imageSmoothingEnabled = false;
+    sg.fillStyle = '#fff'; sg.globalAlpha = 0.92;
+    drawEnt(sg, ent, 1, PADT, ent.c0, Math.min(ent.c1, ent.w - 1));
+    drawDrip(sg, ent, -1, 1, PADT); drawDrip(sg, ent, 1, 1, PADT);
+    sg.globalAlpha = 1;
+    let url = '';
+    try { url = snowScratch.toDataURL('image/png'); } catch (e) { return; }
+    el.style.setProperty('--snow-img', 'url(' + url + ')');
+    el.style.setProperty('--snow-w', wc + 'px');
+    el.style.setProperty('--snow-h', hc + 'px');
   }
 
   /* kar tanelerinin üstüne konabileceği baloncukların konumları (yalnızca ekranda büyük tane varken, kısa aralıklarla yenilenir) */
@@ -11983,6 +12006,7 @@ cdAnimRestore();
   function pauseAll() { flakes.length = 0; parts.length = 0; ball = null; seeded = false; clearCanvases(); }
   /* Kar Katmanı kapatılınca biriken her şey silinir (yağış devam eder) */
   function wipePiles() {
+    snowMap.forEach(function (ent, el) { el.style.removeProperty('--snow-img'); el.style.removeProperty('--snow-w'); el.style.removeProperty('--snow-h'); });
     snowMap.clear();
     pile.hm = new Uint8Array(W || 0); pile.c0 = 1e9; pile.c1 = -1;
   }
@@ -12106,16 +12130,12 @@ cdAnimRestore();
     /* ---- ön katman ---- */
     ctx.globalAlpha = 1;
 
-    /* birikenler: baloncukların üstü (baloncukla birlikte kayar) */
-    ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.92;
+    /* birikenler: baloncukların üstü: balonun kendi ::before katmanına (kaydırmayla birlikte kayar) yalnızca değişince yeniden çizilir */
     snowMap.forEach(function (ent, el) {
       if (!el.isConnected) { snowMap.delete(el); return; }
-      const r = el.getBoundingClientRect();
-      if (r.width < 24 || r.bottom < wr.top || r.top > wr.bottom) return;
-      const bx = Math.round(r.left - wr.left), by = Math.round(r.top - wr.top);
-      drawEnt(ctx, ent, bx, by, ent.c0, Math.min(ent.c1, ent.w - 1));
-      drawDrip(ctx, ent, -1, bx, by); drawDrip(ctx, ent, 1, bx, by);
+      if (ent.dirty && t - (ent.rt || 0) > 120) { ent.dirty = false; ent.rt = t; renderEnt(el, ent); }
     });
+    ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.92;
     /* birikenler: metin kutusunun üstü */
     drawEnt(ctx, pile, 0, H + off, pile.c0, pile.c1);
     ctx.globalAlpha = 1;
