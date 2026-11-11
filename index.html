@@ -11689,6 +11689,7 @@ cdAnimRestore();
 
   let enabled = lget(KEY) !== 'off';
   let W = 0, H = 0;
+  let stormAcc = 0;   // tipi sırasında kesirli tane üretimi için birikim
   let off = 0, plo = 0, phi = 0;   // off: sohbet alanının altı ile metin kutusunun üstü arası (mobilde iç boşluk); plo/phi: yığının yatay aralığı
   const flakes = [], parts = [];
   let ball = null, gust = null;
@@ -11696,7 +11697,8 @@ cdAnimRestore();
   let nextSpawn = 0, last = 0, seeded = false, drawnBack = false, drawnFront = false;
 
   /* ---- Birikenler: yalnızca sayfa yenilenene kadar bellekte ---- */
-  const pile = { hm: new Uint8Array(0), c0: 1e9, c1: -1 };   // metin kutusunun üstü
+  const pile = { hm: new Uint8Array(0), ins: new Int8Array(0), cap: new Uint8Array(0), c0: 1e9, c1: -1, rl: 0, rr: 0 };   // ins: köşe kıvrımı için sütun başı iniş; cap: sütun başı dalgalı sınır   // metin kutusunun üstü
+  const radMap = new WeakMap();
   const snowMap = new Map();                                  // mesaj baloncuğu -> birikme verisi
   let bubCache = [], bubAt = 0, scrolled = true;
   if (area) area.addEventListener('scroll', () => { scrolled = true; }, { passive: true });
@@ -11742,27 +11744,67 @@ cdAnimRestore();
   })();
   const BALL_HALF = (BALL_N * BALL_CELL) / 2;
 
+  /* Yuvarlak köşe: kenardan cx uzaklıktaki sütunun, yüzeyin üst çizgisinden kaç px aşağıda olduğu */
+  function insAt(cx, w, rl, rr) {
+    let d = 0;
+    if (rl > 0 && cx < rl) { const dx = rl - cx; d = rl - Math.sqrt(Math.max(0, rl * rl - dx * dx)); }
+    if (rr > 0 && w - cx < rr) { const dx = rr - (w - cx), d2 = rr - Math.sqrt(Math.max(0, rr * rr - dx * dx)); if (d2 > d) d = d2; }
+    return Math.round(d);
+  }
+  function fillIns(arr, lo, hi, rl, rr) { for (let c = lo; c < hi; c++) arr[c] = insAt(c + 0.5 - lo, hi - lo, rl, rr); }
+  /* Metin kutusu birikme sınırı: 3-5 px arası dalgalı (2-5 sütunluk basamaklar) */
+  function waveCaps(a) {
+    let v = 4, c = 0;
+    while (c < a.length) {
+      const run = 2 + Math.floor(Math.random() * 4);
+      for (let k = 0; k < run && c < a.length; k++) a[c++] = v;
+      const o = v === 3 ? [4, 5] : (v === 5 ? [4, 3] : [3, 5]);
+      v = o[Math.floor(Math.random() * o.length)];
+    }
+  }
+  function cornerR(el) {
+    let tl = 10, tr = 10;
+    try { const cs = getComputedStyle(el); tl = parseFloat(cs.borderTopLeftRadius); tr = parseFloat(cs.borderTopRightRadius); } catch (e) {}
+    return { tl: isNaN(tl) ? 10 : tl, tr: isNaN(tr) ? 10 : tr };
+  }
+
   /* Yığının zemini: metin kutusunun gerçek üst kenarı. Mobilde #input-area'nın iç boşluğu yüzünden sohbet alanının altı ile kutunun üstü arasında boşluk var;
-     ön katman bu boşluğa kadar uzatılır, böylece kar tam kutunun üstüne oturur. */
+     ön katman bu boşluğa kadar uzatılır, böylece kar tam kutunun üstüne oturur. Yatayda kutu satırının tamamı; mobilde yuvarlak köşeleri de izler. */
+  let radAt = 0, dockKey = '';
   function measureDock() {
-    let o = 0, l = 0, r = wrap.clientWidth;
+    let o = 0, l = 0, r = wrap.clientWidth, rl = pile.rl, rr = pile.rr;
     const mi = document.getElementById('message-input'), iw = document.getElementById('input-wrapper');
     if (mi && iw && mi.offsetWidth > 0) {
       const wr = wrap.getBoundingClientRect(), m = mi.getBoundingClientRect(), w = iw.getBoundingClientRect();
       o = clamp(Math.round(m.top - wr.bottom), 0, 60);
-      if (w.width > 40) { l = Math.max(0, Math.round(w.left - wr.left) + 6); r = Math.min(wrap.clientWidth, Math.round(w.right - wr.left) - 6); }
-    }
+      if (w.width > 40) { l = Math.max(0, Math.round(w.left - wr.left)); r = Math.min(wrap.clientWidth, Math.round(w.right - wr.left)); }
+      const now = performance.now();
+      if (now - radAt > 500) {
+        radAt = now;
+        try {
+          const nk = document.getElementById('nick-input'), sb = document.getElementById('send-btn');
+          const le = (nk && nk.offsetWidth > 0) ? nk : mi, re = (sb && sb.offsetWidth > 0) ? sb : mi;
+          rl = parseFloat(getComputedStyle(le).borderTopLeftRadius) || 0; rr = parseFloat(getComputedStyle(re).borderTopRightRadius) || 0;
+        } catch (e) {}
+      }
+    } else { rl = 0; rr = 0; }
     off = o; plo = l; phi = r;
+    const key = l + ':' + r + ':' + rl + ':' + rr + ':' + pile.ins.length;
+    if (key !== dockKey && pile.ins.length >= r) { dockKey = key; pile.rl = rl; pile.rr = rr; pile.ins.fill(0); fillIns(pile.ins, l, r, rl, rr); }
   }
 
   function resize() {
     const w = wrap.clientWidth, h = wrap.clientHeight;
     if (!w || !h) return;
     W = w; H = h;
+    if (pile.hm.length !== W) {
+      const n = new Uint8Array(W); n.set(pile.hm.subarray(0, Math.min(W, pile.hm.length)));
+      pile.hm = n; pile.ins = new Int8Array(W); pile.cap = new Uint8Array(W); waveCaps(pile.cap); dockKey = '';
+      if (pile.c1 >= W) pile.c1 = W - 1;
+    }
     measureDock();
     if (back.width !== W || back.height !== H) { back.width = W; back.height = H; bctx.imageSmoothingEnabled = false; }
     if (front.width !== W || front.height !== H + off) { front.width = W; front.height = H + off; front.style.height = (H + off) + 'px'; ctx.imageSmoothingEnabled = false; }
-    if (pile.hm.length !== W) { const n = new Uint8Array(W); n.set(pile.hm.subarray(0, Math.min(W, pile.hm.length))); pile.hm = n; if (pile.c1 >= W) pile.c1 = W - 1; }
   }
   if (window.ResizeObserver) new ResizeObserver(resize).observe(wrap);
   window.addEventListener('resize', resize);
@@ -11823,42 +11865,65 @@ cdAnimRestore();
   }
 
   /* ---- Birikme: kum yığını mantığı; komşudan 2+ yüksek olan taşar, sınıra gelince daha fazla birikmez ---- */
-  function addUnits(ent, lo, hi, cap, x, n, sp) {
-    const hm = ent.hm, spr = sp === undefined ? 2 : sp;
+  /* ent.ins: sütunun kıvrım nedeniyle iniş miktarı; yüzey seviyesi = hm - ins (kum köşelerden aşağı doğru da akar). cap: sayı ya da sütun başı dizi; slide: kayma eşiği */
+  function addUnits(ent, lo, hi, cap, x, n, sp, slide) {
+    const hm = ent.hm, ins = ent.ins, spr = sp === undefined ? 2 : sp, sl = slide || 2;
+    const capArr = typeof cap === 'number' ? null : cap;
     for (let k = 0; k < n; k++) {
       let c = spr ? clamp(x + Math.floor(rnd(-spr, spr + 1)), lo, hi - 1) : clamp(x, lo, hi - 1);
       for (let st = 0; st < 80; st++) {
-        const h = hm[c], d = Math.random() < 0.5 ? -1 : 1;
-        if (c + d >= lo && c + d < hi && hm[c + d] <= h - 2) c += d;
-        else if (c - d >= lo && c - d < hi && hm[c - d] <= h - 2) c -= d;
+        const L = hm[c] - ins[c], d = Math.random() < 0.5 ? -1 : 1;
+        if (c + d >= lo && c + d < hi && hm[c + d] - ins[c + d] <= L - sl) c += d;
+        else if (c - d >= lo && c - d < hi && hm[c - d] - ins[c - d] <= L - sl) c -= d;
         else break;
       }
-      if (hm[c] < cap) { hm[c]++; if (c < ent.c0) ent.c0 = c; if (c > ent.c1) ent.c1 = c; }
+      if (hm[c] < (capArr ? capArr[c] : cap)) {
+        hm[c]++; if (c < ent.c0) ent.c0 = c; if (c > ent.c1) ent.c1 = c;
+        if (ent.dl && c - lo < ent.rl) ent.dl.amt++;           // köşeye denk gelen kar: kenardan sarkıt biriktirir
+        if (ent.dr && hi - 1 - c < ent.rr) ent.dr.amt++;
+      }
     }
   }
   function landOnBubble(b, x, n, sp) {
+    const w = Math.min(Math.floor(b.right - b.left), 800);
+    if (w < 8) return;
     let ent = snowMap.get(b.el);
     if (!ent) {
-      let rad = 10;
-      try { rad = parseFloat(getComputedStyle(b.el).borderTopLeftRadius) || 10; } catch (e) {}
-      ent = { hm: new Uint8Array(800), rad: clamp(rad, 4, 24), c0: 1e9, c1: -1 };
+      ent = { hm: new Uint8Array(800), ins: new Int8Array(800), c0: 1e9, c1: -1, w: 0, lo: 0, hi: 0, rl: -1, rr: -1, dl: { amt: 0 }, dr: { amt: 0 } };
       snowMap.set(b.el, ent);
     }
-    const w = Math.min(Math.floor(b.right - b.left), 800), rr = Math.ceil(ent.rad);
-    const lo = rr, hi = w - rr;
-    if (hi - lo < 4) return;
-    addUnits(ent, lo, hi, BUB_CAP, clamp(Math.floor(x - b.left), lo, hi - 1), n, sp);
+    if (ent.w !== w || ent.rl !== b.rl || ent.rr !== b.rr) { ent.w = w; ent.hi = w; ent.rl = b.rl; ent.rr = b.rr; ent.ins.fill(0); fillIns(ent.ins, 0, w, b.rl, b.rr); }
+    addUnits(ent, 0, w, BUB_CAP, clamp(Math.floor(x - b.left), 0, w - 1), n, sp);
   }
-  function drawRuns(g, hm, c0, c1, x0, baseY) {
+  /* sütunları çizer; zemin = top + ins (köşede kıvrımı izler), aynı yükseklik+iniş komşuları tek dikdörtgen */
+  function drawEnt(g, ent, x0, top, c0, c1) {
+    const hm = ent.hm, ins = ent.ins;
     let c = Math.max(0, c0);
     const end = Math.min(hm.length - 1, c1);
     while (c <= end) {
       const h = hm[c];
       if (!h) { c++; continue; }
-      let e = c + 1; while (e <= end && hm[e] === h) e++;
-      g.fillRect(x0 + c, baseY - h, e - c, h);
+      const iv = ins[c];
+      let e = c + 1; while (e <= end && hm[e] === h && ins[e] === iv) e++;
+      g.fillRect(x0 + c, top + iv - h, e - c, h);
       c = e;
     }
+  }
+  /* köşede biriken kardan, baloncuğun yan kenarı boyunca aşağı sarkan kar + buz sarkıtı */
+  function drawDrip(g, ent, side, x0, top) {
+    const d = side < 0 ? ent.dl : ent.dr;
+    if (!d) return;
+    const L = Math.min(9, Math.floor(d.amt / 12));
+    if (L < 1) return;
+    const col = side < 0 ? ent.lo : ent.hi - 1, hh = Math.max(1, ent.hm[col]);
+    const xo = side < 0 ? x0 + ent.lo - 1 : x0 + ent.hi, xi = side < 0 ? xo - 1 : xo + 1;
+    const y0 = top + ent.ins[col] - hh, half = Math.ceil(L / 2);
+    g.fillRect(xo, y0, 1, hh + L);
+    g.fillRect(xi, y0, 1, hh + half);
+    g.fillStyle = '#cfe6ff';
+    g.fillRect(xo, y0 + hh + L, 1, 2 + Math.floor(L * 0.6));
+    if (L >= 4) g.fillRect(xi, y0 + hh + half, 1, 1 + Math.floor(L * 0.4));
+    g.fillStyle = '#fff';
   }
 
   /* kar tanelerinin üstüne konabileceği baloncukların konumları (yalnızca ekranda büyük tane varken, kısa aralıklarla yenilenir) */
@@ -11873,7 +11938,9 @@ cdAnimRestore();
       const top = r.top - wr.top;
       if (r.bottom < wr.top || top > H || top < 0) continue;
       if (el.closest('.typing-msg') || el.querySelector(':scope > .msg-body.big-emoji')) continue;
-      bubCache.push({ el: el, left: r.left - wr.left, right: r.right - wr.left, top: top });
+      let rc = radMap.get(el); if (!rc) { rc = cornerR(el); radMap.set(el, rc); }
+      const mr = Math.min(r.width / 2, r.height / 2);
+      bubCache.push({ el: el, left: r.left - wr.left, right: r.right - wr.left, top: top, rl: Math.min(rc.tl, mr), rr: Math.min(rc.tr, mr) });
     }
   }
 
@@ -11953,19 +12020,30 @@ cdAnimRestore();
     if (!ball && t > ballAt) { throwBall(t); ballAt = t + rnd(40, 50) * MIN; }
 
     /* üretim */
-    const wideK = window.innerWidth > 768 ? 2.5 : 1;         // masaüstünde daha sık yağar
-    const dMul = dens * wideK + 9 * env.d;                   // tipide sıklık hava modundan bağımsız ~10 kat
+    const wideK = window.innerWidth > 768 ? 1.6 : 1;         // masaüstünde daha sık yağar
+    const dMul = dens * wideK;
     const cap = Math.max(6, Math.round(W * H / 9000 * (Math.max(dens, 0.3) * wideK + 8 * env.d)));
     if (!seeded) { seed(cap); seeded = true; nextSpawn = t + 400; }
     if (t > nextSpawn) {
-      const nSp = 1 + Math.floor(env.d * 2);                // tipide her seferde birkaç tane
-      for (let q = 0; q < nSp; q++) if (flakes.length < cap) spawn(env, 'main');
+      if (flakes.length < cap) spawn(env, 'main');
       if (flakes.length < cap * 1.8) {                     // çok silik 2px ve 1px taneler
         if (Math.random() < 0.3) spawn(env, 'f2');
         if (Math.random() < 0.45) spawn(env, 'f1');
       }
       nextSpawn = t + poissonGap(0.9 / (dMul * Math.max(1, W / 390)));   // geniş ekranda sıklık genişlikle orantılı artar
     }
+    /* tipi: yandan esen karda tane ekranı hızla geçtiği için ekrandaki yoğunluk ~ üretim / EKRAN YÜKSEKLİĞİ ile orantılıdır (genişlikle değil).
+       Bu yüzden üretim yüksekliğe göre verilir: mobilde de masaüstünde de aynı yoğunlukta görünür. Hava modundan bağımsız. */
+    if (env.d > 0) {
+      stormAcc += 0.11 * H * env.d * dt;                      // saniyede ~0.11*H ana tane (H=800 -> ~88/sn)
+      let g = 0;
+      while (stormAcc >= 1 && g++ < 60) {
+        stormAcc -= 1;
+        if (flakes.length < cap) spawn(env, 'main');
+        if (Math.random() < 0.12) spawn(env, 'f2');
+        if (Math.random() < 0.18) spawn(env, 'f1');
+      }
+    } else stormAcc = 0;
 
     /* büyük tane varsa baloncukların konumunu güncel tut */
     const wr = wrap.getBoundingClientRect();
@@ -11992,24 +12070,26 @@ cdAnimRestore();
         const big = f.kind === 2;
         const bot = big ? 3 : (f.kind === 1 ? 2 : f.size);
         const ob = oy + bot, nb = f.y + bot;
-        let hit = null;
+        let hit = null, hitY = 0;
         for (let j = 0; j < bubCache.length; j++) {
           const b = bubCache[j];
-          if (ob <= b.top && nb >= b.top && f.x >= b.left + 8 && f.x <= b.right - 8 && (!hit || b.top < hit.top)) hit = b;
+          if (f.x < b.left || f.x >= b.right || f.passed === b.el) continue;
+          const sy = b.top + insAt(f.x - b.left, b.right - b.left, b.rl, b.rr);   // köşelerde yüzey kıvrımla aşağı iner
+          if (ob <= sy && nb >= sy && (!hit || sy < hitY)) { hit = b; hitY = sy; }
         }
         if (hit) {
-          if (f.skip > 0) f.skip--;                                           // bu yüzeyi es geç, arkasından düşmeye devam et
+          if (f.skip > 0) { f.skip--; f.passed = hit.el; }                                           // bu yüzeyi es geç, arkasından düşmeye devam et
           else {
             const units = big ? 21 : (f.kind === 1 ? 9 : f.size * f.size);    // tanenin kendi piksel sayısı
             landOnBubble(hit, f.x + (f.kind === 0 ? f.size / 2 : 0), units * BUB_MULT, Math.ceil(f.size / 2) + 1);
             flakes.splice(i, 1); continue;
           }
         }
-        if (big || f.size >= 4) {                              // kar tanesi, artı ve 4px taneler metin kutusuna da birikir
+        {                                                       // silik olmayan her tane metin kutusuna da birikir (kendi piksel sayısı kadar)
           const col = Math.floor(f.kind === 0 ? f.x + f.size / 2 : f.x);
-          if (!f.nopile && col >= plo && col < phi && nb >= H + off - pile.hm[col]) {
+          if (!f.nopile && col >= plo && col < phi && nb >= H + off - pile.ins[col] - pile.hm[col]) {
             if (f.skip > 0) { f.skip--; f.nopile = true; }                    // metin kutusunu da es geçebilir (geçince bir daha çarpmaz)
-            else { addUnits(pile, plo, phi, PILE_CAP, col, big ? 3 : 2); flakes.splice(i, 1); continue; }
+            else { addUnits(pile, plo, phi, pile.cap, col, big ? 21 : (f.kind === 1 ? 9 : f.size * f.size), Math.ceil(f.size / 2) + 1, 3); flakes.splice(i, 1); continue; }
           }
         }
       }
@@ -12032,10 +12112,12 @@ cdAnimRestore();
       if (!el.isConnected) { snowMap.delete(el); return; }
       const r = el.getBoundingClientRect();
       if (r.width < 24 || r.bottom < wr.top || r.top > wr.bottom) return;
-      drawRuns(ctx, ent.hm, Math.ceil(ent.rad), Math.min(ent.c1, Math.floor(r.width - ent.rad) - 1), Math.round(r.left - wr.left), Math.round(r.top - wr.top));
+      const bx = Math.round(r.left - wr.left), by = Math.round(r.top - wr.top);
+      drawEnt(ctx, ent, bx, by, ent.c0, Math.min(ent.c1, ent.w - 1));
+      drawDrip(ctx, ent, -1, bx, by); drawDrip(ctx, ent, 1, bx, by);
     });
     /* birikenler: metin kutusunun üstü */
-    drawRuns(ctx, pile.hm, pile.c0, pile.c1, 0, H + off);
+    drawEnt(ctx, pile, 0, H + off, pile.c0, pile.c1);
     ctx.globalAlpha = 1;
 
     /* kar topu hareketi */
@@ -12114,7 +12196,7 @@ cdAnimRestore();
     ball: function () { throwBall(performance.now(), false); },
     burst: function () { throwBall(performance.now(), true); },
     flake: function (n) { n = n || 1; for (let i = 0; i < n; i++) { const f = spawn({ w: 0, d: 0 }, 'big'); f.x = rnd(0, W); } },
-    stats: function () { let p = 0; for (let i = 0; i < pile.hm.length; i++) p += pile.hm[i]; return { pile: p, bubbles: snowMap.size, flakes: flakes.length }; }
+    stats: function () { let p = 0; for (let i = 0; i < pile.hm.length; i++) p += pile.hm[i]; return { pile: p, bubbles: snowMap.size, flakes: flakes.length, dens: +dens.toFixed(2), spd: +spd.toFixed(2), hedefMod: mode }; }
   };
 
   resize();
