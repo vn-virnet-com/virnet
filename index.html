@@ -1619,6 +1619,149 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 .call-rej { background: radial-gradient(120% 110% at 28% 8%, color-mix(in srgb, var(--bad) 70%, #fff) 0%, transparent 58%), linear-gradient(160deg, color-mix(in srgb, var(--bad) 78%, transparent) 0%, color-mix(in srgb, var(--bad) 45%, transparent) 100%); }
 .call-btn:active { transform: scale(.92); }
 @media (prefers-reduced-motion: reduce) { .call-card::before, .dial-card::before { animation: none; } }
+
+/* ===== LIQUID GLASS (tüm site) ===== */
+/* =====================================================================
+   LIQUID GLASS v3 - TÜM site tek dil. Bu blok index.html içine hazır eklendi.
+   Listeyle değil KURALLA çalışır: her <button>, her input/textarea/select, her *-box / *-modal
+   otomatik cam olur. Yeni eklediğin tuş da (tema, JS ile üretilen tuşlar dahil) kendiliğinden cam olur.
+   Hiç JS yok: odak / klavye davranışına dokunmaz.
+
+   Üç malzeme, her yerde aynı:
+     ANAHTAR  = tuşlar        (blur yok, ışık kenarı + hafif dolgu)  -> ucuz
+     YÜZEY    = kartlar/kutular (blur yok, daha dolgun)               -> ucuz
+     CAM      = yüzen şeyler  (gerçek blur)                           -> sadece üst üste binenler
+   Renkli tuşlar (yeşil/kırmızı/beyaz vurgu) rengini korur, sadece aynı kenar ışığını alır.
+   Mesaj balonları tema renginde KATI kalır (temaların anlamı burada).
+   ===================================================================== */
+
+:root {
+  --lg-key:  linear-gradient(135deg, color-mix(in srgb, #fff 13%, transparent), color-mix(in srgb, #fff 5%, transparent) 55%, color-mix(in srgb, #fff 9%, transparent));
+  --lg-flat: linear-gradient(135deg, color-mix(in srgb, #fff 6%, transparent), color-mix(in srgb, #fff 1%, transparent) 50%, color-mix(in srgb, #fff 4%, transparent)), color-mix(in srgb, var(--c-1a) 55%, transparent);
+  --lg-fill: linear-gradient(135deg, color-mix(in srgb, #fff 9%, transparent), color-mix(in srgb, #fff 1.5%, transparent) 38%, color-mix(in srgb, #fff 1.5%, transparent) 62%, color-mix(in srgb, #fff 6%, transparent)), color-mix(in srgb, var(--c-1a) 40%, transparent);
+  /* iOS 26 imzası: sol-üst ve sağ-alt köşede parlayan ince kenar, jel/elips parlaması yok */
+  --lg-rim: inset 1.5px 1.5px 0.5px -1px rgba(255,255,255,.55), inset -1.5px -1.5px 0.5px -1px rgba(255,255,255,.28), inset 0 0 0 1px rgba(255,255,255,.07), inset 0 0 22px -10px rgba(255,255,255,.16);
+  --lg-rim-sm: inset 1.5px 1.5px 0.5px -1px rgba(255,255,255,.4), inset -1px -1px 0.5px -1px rgba(255,255,255,.18), inset 0 0 0 1px rgba(255,255,255,.05);
+  --lg-drop: 0 0 0 .5px rgba(0,0,0,.28), 0 10px 28px -10px rgba(0,0,0,.45);
+  --lg-drop-sm: 0 0 0 .5px rgba(0,0,0,.25), 0 4px 12px -5px rgba(0,0,0,.4);
+  --lg-line: color-mix(in srgb, #fff 9%, transparent);
+  --lg-blur: blur(14px) saturate(160%);
+}
+
+/* ---------- 1) ANAHTAR: bütün nötr tuşlar ---------- */
+:is(button, [role="button"], .dial-opt, .once-btn, .chip-search, .chip-photo, .yts-b, .pin-key, .seg-btn, .set-title, #np-back, #ytsearch-x, #ytsearch-whale, #ytsearch-slots, #ytsearch-clear, .leap-delta, .yt-play, .yt-join, #scroll-down-btn, #fab-main, #yt-dock .ytd-b, #auto-chip-x, #viewer-close, #viewer-dl)
+:not(#save-btn, #send-btn, .aud-play, #codes-close, #stor-close, #idle-yes, .seg-btn.danger, #bp-pill, #td-add, #cd-add, .cd-rp-add, #ts-add, .ts-use, .ts-delb, #bp-add, .new-badge, .yts-b.on, .pin-key.ghost, .pin-key.del, .msg-act, .react-add, .react-pick button, .aud-spd, .bp-tab, .cd-rb, .lp-react button, .lp-item, .tab-plain)
+:not(#\9):not(#\9) {
+  background: var(--lg-key);
+  border-color: var(--lg-line);
+  box-shadow: var(--lg-rim-sm), var(--lg-drop-sm);
+}
+/* aynı tuş ailesi, basılınca hepsi aynı tepki */
+:is(button, [role="button"], .dial-opt, .seg-btn, .set-title, .pin-key, #yt-dock .ytd-b, #auto-chip-x, #scroll-down-btn):active:not(:disabled):not(#\9):not(#\9) {
+  background: linear-gradient(135deg, color-mix(in srgb, #fff 26%, transparent), color-mix(in srgb, #fff 12%, transparent));
+  transform: scale(.96);
+}
+.seg-btn.active:not(#\9):not(#\9) { background: linear-gradient(135deg, color-mix(in srgb, #fff 22%, transparent), color-mix(in srgb, #fff 10%, transparent)); box-shadow: inset 0 0 0 1.5px var(--accent), var(--lg-rim-sm); }
+#yt-dock .ytd-b.on:not(#\9):not(#\9) { background: linear-gradient(135deg, color-mix(in srgb, #fff 30%, transparent), color-mix(in srgb, #fff 14%, transparent)); box-shadow: var(--lg-rim-sm), 0 0 14px -2px color-mix(in srgb, #fff 30%, transparent); }
+
+/* içi şeffaf ikon tuşları (mesaj eylemleri, tepkiler, sekmeler): aynı kenar ışığıyla basılma hali */
+:is(.msg-act, .react-add, .react-pick button, .aud-spd, .bp-tab, .cd-rb, .lp-react button, .lp-item):active:not(#\9):not(#\9) { background: var(--lg-key); box-shadow: var(--lg-rim-sm); }
+
+/* renkli tuşlar (vurgu/yeşil/kırmızı): rengi korur, aynı ışık kenarını + gölgeyi alır = "renkli cam" */
+:is(#save-btn, #send-btn, .aud-play, #codes-close, #stor-close, #idle-yes, .seg-btn.danger, #td-add, #cd-add, .cd-rp-add, #ts-add, .ts-use, .ts-delb, #bp-add, .yts-b.on):not(#\9):not(#\9) {
+  border-color: transparent; box-shadow: var(--lg-rim), var(--lg-drop-sm);
+}
+#bp-pill:not(#\9):not(#\9) { box-shadow: var(--lg-rim); }
+:is(#save-btn, #codes-close, #stor-close, #idle-yes, #td-add, #cd-add, #ts-add, #bp-add):active { filter: brightness(.9); }
+
+/* ---------- 2) GİRİŞLER: her input / textarea / select ---------- */
+:is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]), textarea, select):not(#\9):not(#\9) {
+  background: var(--lg-flat);
+  border-color: var(--lg-line);
+  box-shadow: inset 1.5px 1.5px 0.5px -1px rgba(255,255,255,.35), inset 0 0 14px -8px rgba(255,255,255,.14);
+}
+:is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]), textarea, select):focus:not(#\9):not(#\9) {
+  border-color: color-mix(in srgb, #fff 26%, transparent);
+  box-shadow: inset 1.5px 1.5px 0.5px -1px rgba(255,255,255,.5), 0 0 0 3px color-mix(in srgb, #fff 6%, transparent);
+}
+
+/* ---------- 3) YÜZEY: kartlar, kutular, satırlar (blur yok) ---------- */
+:is(.bp-card, .cmp-box, .pl-ed-box, #bp-tabs-in, .yts-slot, .yts-row, #ytpl-strip, .seg, .aud-pl, .reply-container, .leap-bar, .yt-card, .cd-tag, #td-compose, #cd-compose, #rp-compose, #ts-compose, #bp-compose):not(#\9):not(#\9) {
+  background: var(--lg-flat);
+  border-color: var(--lg-line);
+  box-shadow: var(--lg-rim-sm);
+}
+#settings-scroll .set-block:not(#\9) { background: transparent; border-top-color: var(--lg-line); }
+#bp-tabs:not(#\9) { background: color-mix(in srgb, var(--c-111) 70%, transparent); border-top-color: var(--lg-line); }
+.bp-card .bp-card, .leap-bar .leap-bar { box-shadow: none; }
+
+/* ---------- 4) CAM: yüzen şeyler, gerçek blur ---------- */
+:is(#auto-chip, #yt-dock, #leap-hud, #vn-toast, .vc-pill, .call-card, .dial-card, #notes-pop, #chip-menu, .msg-acts.over, .react-pick, #ts-bubble,
+    #call-box, #confirm-box, #refresh-box, #reset-box, #codes-box, #stor-box, #idle-box, #ytsearch-box):not(#\9):not(#\9) {
+  background: var(--lg-fill);
+  border-color: transparent;
+  box-shadow: var(--lg-rim), var(--lg-drop);
+  -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur);
+}
+#scroll-down-btn:not(#\9):not(#\9), #fab-main:not(#\9):not(#\9) { -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); }
+#photo-src-box { background: transparent; box-shadow: none; }
+
+/* sağ panel bildirim paneli: tam kaplayan, çerçevesiz */
+#bell-pop:not(#\9) { background: color-mix(in srgb, var(--c-111) 88%, transparent); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* Leap sarı cam */
+#leap-hud:not(#\9) { background: linear-gradient(135deg, color-mix(in srgb, var(--warn) 24%, transparent), color-mix(in srgb, var(--warn) 6%, transparent) 55%, color-mix(in srgb, var(--warn) 14%, transparent)), color-mix(in srgb, var(--c-1a) 40%, transparent); }
+#leap-hud.pinned:not(#\9) { background: linear-gradient(135deg, color-mix(in srgb, var(--warn) 46%, transparent), color-mix(in srgb, var(--warn) 22%, transparent)), color-mix(in srgb, var(--c-1a) 35%, transparent); box-shadow: var(--lg-rim), 0 0 18px -2px color-mix(in srgb, var(--warn) 45%, transparent); }
+#yt-dock { border-radius: 26px; }
+
+/* eski "baloncuk" parlama katmanları kapalı */
+#leap-hud::before, #vn-toast::before, #yt-dock .ytd-b::before, #yt-dock .ytd-b::after, #auto-chip-x::before, #auto-chip-x::after { display: none; }
+.call-card::before, .dial-card::before { opacity: .45; }
+
+/* pencere arkasındaki karartma: cam bir şeyi kırabilsin diye seyrek + hafif blur */
+:is([id$="-modal"]):not(#\9) { background: color-mix(in srgb, var(--c-000) 55%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+
+/* ---------- 5) DUVAR KAĞIDI + BALONLAR ----------
+   En arkada tema renginin koyu tonu (düz renk + çok hafif ışık). Balonlar bunun üstünde cam:
+   BLUR YOK (düz zemine blur görünmez, sadece telefonu yorar) -> yarı saydam dolgu + kenar ışığı.
+   Tema değişince duvar kağıdı ve balonların tonu birlikte değişir. */
+#app {
+  background:
+    radial-gradient(80% 50% at 15% 0%, color-mix(in srgb, var(--c-66) 20%, transparent), transparent 70%),
+    radial-gradient(70% 45% at 100% 100%, color-mix(in srgb, var(--c-55) 16%, transparent), transparent 70%),
+    color-mix(in srgb, var(--c-1a) 78%, var(--c-000));
+}
+#status-bar, #input-area { background: transparent; }
+
+.bubble {
+  background: linear-gradient(135deg, color-mix(in srgb, #fff 15%, transparent), color-mix(in srgb, #fff 6%, transparent) 55%, color-mix(in srgb, #fff 10%, transparent));
+  background-color: color-mix(in srgb, #fff 4%, transparent);
+  box-shadow: var(--lg-rim-sm), 0 0 0 .5px rgba(0,0,0,.25), 0 3px 10px -5px rgba(0,0,0,.4);
+}
+/* kendi mesajın biraz daha dolgun: iki taraf hâlâ ayırt edilsin */
+.msg.own-msg .bubble { background: linear-gradient(135deg, color-mix(in srgb, #fff 22%, transparent), color-mix(in srgb, #fff 10%, transparent) 55%, color-mix(in srgb, #fff 16%, transparent)); background-color: color-mix(in srgb, #fff 5%, transparent); }
+.bubble:has(> .msg-body.big-emoji), .msg[data-call="1"] .bubble { background: transparent; box-shadow: none; }
+
+/* ---------- 6) İKİNCİ GEÇİŞ: ayarlar, etiketler, panel ve ince tuşlar (denetimden çıkan kalanlar) ---------- */
+:root { --lg-wall: radial-gradient(80% 50% at 15% 0%, color-mix(in srgb, var(--c-66) 20%, transparent), transparent 70%), radial-gradient(70% 45% at 100% 100%, color-mix(in srgb, var(--c-55) 16%, transparent), transparent 70%), color-mix(in srgb, var(--c-1a) 78%, var(--c-000)); }
+/* tam kaplayan paneller aynı duvar kağıdını alır (şeffaf olsalar altındaki görünürdü) */
+#pane-settings, #pin-lock, #bp-page-set, #privacy-cover { background: var(--lg-wall); }
+#setup-panel, .set-body, #typing-indicator { background: transparent; }
+:is(#reply-bar, .cm-lab, #rec-trash, #rec-lock, .pl-o, .pl-o.mine, .codes-val, #stor-bar, #stor-list, .react-core, .reply-thumb, #fab-ring > .fab-item, .yts-slot-in, .yts-slot-cv, #ytpl-cover, .cd-tag, #setup-panel input):not(#\9):not(#\9) {
+  background: var(--lg-flat); border-color: var(--lg-line); box-shadow: var(--lg-rim-sm);
+}
+:is(#ts-strip, .lp-menu):not(#\9):not(#\9) { background: var(--lg-fill); box-shadow: var(--lg-rim), var(--lg-drop); -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); }
+.cd-tag.fire:not(#\9):not(#\9) { background: linear-gradient(135deg, color-mix(in srgb, var(--warn) 30%, transparent), color-mix(in srgb, var(--warn) 12%, transparent)); box-shadow: var(--lg-rim-sm); }
+/* arama tuşları: jel parlamasını (Aero hissi) atıp düz renkli cam */
+.call-acc:not(#\9):not(#\9) { background: linear-gradient(135deg, color-mix(in srgb, var(--ok) 75%, transparent), color-mix(in srgb, var(--ok) 40%, transparent)); border-color: transparent; box-shadow: var(--lg-rim), var(--lg-drop-sm); }
+.call-rej:not(#\9):not(#\9) { background: linear-gradient(135deg, color-mix(in srgb, var(--bad) 75%, transparent), color-mix(in srgb, var(--bad) 40%, transparent)); border-color: transparent; box-shadow: var(--lg-rim), var(--lg-drop-sm); }
+.dial-opt.dial-cancel:not(#\9):not(#\9) { background: var(--lg-key); border-color: var(--lg-line); box-shadow: var(--lg-rim-sm), var(--lg-drop-sm); }
+
+@media (prefers-reduced-transparency: reduce) { :root { --lg-blur: none; } }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --lg-fill: color-mix(in srgb, var(--c-1a) 92%, transparent); }
+}
+
 </style>
 </head>
 <body>
