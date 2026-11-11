@@ -475,20 +475,6 @@ body #typing-indicator { display: none !important; }
 .aud-once { align-self:flex-start; margin-left:44px; white-space:nowrap; font-size:11px; font-weight:700; color:var(--c-88); border:1px solid var(--c-55); border-radius: var(--r-sm); padding:0 4px; }
 .aud-pl.used { opacity:.65; }
 .aud-heard { align-self:flex-start; margin-left:44px; white-space:nowrap; font-size:11px; font-weight:700; color:var(--c-88); }
-/* Ses transkripti: kapalıyken tek satır, açılınca 3 satırlık kaydırılabilir söz alanı; oynarken söylenen kelime anında yanar */
-.aud-tr { position:relative; display:flex; align-items:flex-start; gap:6px; margin:2px 0 0 4px; padding:5px 6px 5px 8px; background:var(--c-111); border:1px solid var(--c-26); border-radius:10px; cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation; -webkit-user-select:none; user-select:none; }
-.aud-tr-txt { position:relative; flex:1; min-width:0; font-size:12.5px; line-height:18px; color:var(--c-cc); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; scroll-behavior:smooth; }
-.aud-tr.open .aud-tr-txt { white-space:normal; overflow-x:hidden; overflow-y:auto; max-height:54px; overscroll-behavior:contain; scrollbar-width:none; -webkit-overflow-scrolling:touch; touch-action:pan-y; overflow-wrap:anywhere; }
-.aud-tr.open .aud-tr-txt::-webkit-scrollbar { display:none; width:0; height:0; }
-.aud-tr-chev { flex:0 0 auto; width:16px; height:18px; display:flex; align-items:center; justify-content:center; color:var(--c-77); transition:transform .18s ease; }
-.aud-tr-chev svg { display:block; }
-.aud-tr.open .aud-tr-chev { transform:rotate(180deg); }
-.aud-tr .w { transition:color .12s ease, background-color .12s ease; border-radius:3px; }
-.aud-tr.sync .w { color:var(--c-66); }
-.aud-tr.sync .w.on { color:var(--c-dd); }
-.aud-tr.sync .w.cur { color:var(--accent); background:var(--hot); }
-.set-note { margin-top:8px; font-size:12px; color:var(--c-88); }
-@media (prefers-reduced-motion: reduce) { .aud-tr-txt { scroll-behavior:auto; } .aud-tr-chev, .aud-tr .w { transition:none; } }
 .typing-msg .rec-mic { display:inline-flex; color:var(--c-88); animation: tdot-blink 1s ease-in-out infinite; }
 /* Ses kaydediyor simgesi baloncuğun içinde dikey olarak tam ortalanır */
 .typing-msg .msg-body:has(> .rec-mic) { display:flex; align-items:center; min-height:calc(var(--msg-fs) * 1.3); }
@@ -1477,7 +1463,6 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 #settings-scroll #blk-haptic .set-title::before { background-color: #22c55e; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Crect x=%228%22 y=%223%22 width=%228%22 height=%2218%22 rx=%222%22/%3E%3Cpath d=%22M4 8v8M20 8v8%22/%3E%3C/svg%3E"); }
 #settings-scroll #blk-setup .set-title::before { background-color: #64748b; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cline x1=%224%22 y1=%2221%22 x2=%224%22 y2=%2214%22/%3E%3Cline x1=%224%22 y1=%2210%22 x2=%224%22 y2=%223%22/%3E%3Cline x1=%2212%22 y1=%2221%22 x2=%2212%22 y2=%2212%22/%3E%3Cline x1=%2212%22 y1=%228%22 x2=%2212%22 y2=%223%22/%3E%3Cline x1=%2220%22 y1=%2221%22 x2=%2220%22 y2=%2216%22/%3E%3Cline x1=%2220%22 y1=%2212%22 x2=%2220%22 y2=%223%22/%3E%3Cline x1=%221%22 y1=%2214%22 x2=%227%22 y2=%2214%22/%3E%3Cline x1=%229%22 y1=%228%22 x2=%2215%22 y2=%228%22/%3E%3Cline x1=%2217%22 y1=%2216%22 x2=%2223%22 y2=%2216%22/%3E%3C/svg%3E"); }
 
-#settings-scroll .sb-trans .set-title::before { background-color: #06b6d4; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z%22/%3E%3Cpath d=%22M19 10v2a7 7 0 0 1-14 0v-2%22/%3E%3Cline x1=%2212%22 y1=%2219%22 x2=%2212%22 y2=%2222%22/%3E%3C/svg%3E"); }
 #settings-scroll .seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; padding: 2px; border: none; border-radius: 10px; overflow: visible; background: var(--c-000); }
 #settings-scroll .seg.measure { display: flex !important; width: max-content; }
 #settings-scroll .seg.measure .seg-btn { flex: 0 0 auto !important; }
@@ -1979,17 +1964,6 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
       <button type="button" class="seg-btn active" data-val="on" aria-pressed="true">Açık</button>
       <button type="button" class="seg-btn" data-val="off" aria-pressed="false">Kapalı</button>
     </div></div></div></div>
-  </div>
-  <div class="set-block sb-trans" id="blk-trans">
-    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Transkript</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
-    <div class="set-collapse"><div class="set-clip"><div class="set-body">
-    <div class="seg" id="seg-trans">
-      <button type="button" class="seg-btn" data-val="off" aria-pressed="false">Kapalı</button>
-      <button type="button" class="seg-btn active" data-val="tr" aria-pressed="true">Türkçe</button>
-      <button type="button" class="seg-btn" data-val="en" aria-pressed="false">English</button>
-    </div>
-    <div class="set-note" id="trans-note" style="display:none">Bu tarayıcı konuşma tanımayı desteklemiyor.</div>
-    </div></div></div>
   </div>
   <div class="set-block" id="blk-setup">
     <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Kurulum</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
@@ -3311,7 +3285,7 @@ function setupConnection(c) {
       hideRecIndicator();
       if (!data.buffer || typeof data.mime !== 'string' || data.mime.indexOf('audio/') !== 0) return;
       if (data.msgId && document.getElementById(data.msgId)) return;
-      appendMessage('', data.senderNick, false, (data.reply && typeof data.reply === 'object') ? data.reply : null, data.msgId, true, { url: URL.createObjectURL(new Blob([data.buffer], { type: data.mime })), audio: true, once: data.once === true, dur: Number(data.dur) || 0, tr: data.once === true ? null : trClean(data.tr) });
+      appendMessage('', data.senderNick, false, (data.reply && typeof data.reply === 'object') ? data.reply : null, data.msgId, true, { url: URL.createObjectURL(new Blob([data.buffer], { type: data.mime })), audio: true, once: data.once === true, dur: Number(data.dur) || 0 });
       noteIncomingMessage({ nick: data.senderNick, kind: 'a', id: data.msgId });
       return;
     }
@@ -7206,11 +7180,10 @@ function closeConfirm(doSend) {
   if (pendingAudio) {
     clearAudioPreview();
     const ab = pendingAudio, ao = !!confirmOnce.checked, ad = pendingAudioDur;
-    const atr = pendingAudioTr; pendingAudioTr = null;
     pendingAudio = null; confirmOnce.checked = false;
     confirmPreview.style.display = '';
     document.getElementById('confirm-text').textContent = 'Fotoğraf gönderilsin mi?';
-    if (doSend) sendAudio(ab, ao, ad, atr);
+    if (doSend) sendAudio(ab, ao, ad);
     return;
   }
   confirmPreview.removeAttribute('src');
@@ -7259,72 +7232,6 @@ function recGuardStart() {
     ytPauseAllPlaying(); // kayıt sırasında (oto oynatla vb.) başlayan her şarkıyı durdur
   }, 100);
 }
-/* ===== Transkript: kayıt sırasında tarayıcının konuşma tanıması arka planda çalışır; her kelimenin ilk göründüğü an (ms) kaydedilir ===== */
-const TR_LAT = 350;                       // tanıma gecikmesi tahmini: kelime bu kadar önce söylenmiş sayılır
-let trCur = null, trRec = null, trWant = false, pendingAudioTr = null;
-function trLangPref() { const v = lsGet('trLang'); return (v === 'en' || v === 'off') ? v : 'tr'; }
-function trSR() { return window.SpeechRecognition || window.webkitSpeechRecognition || null; }
-function trStart() {
-  trWant = false; trCur = null;
-  try { if (trRec) trRec.abort(); } catch (e) {}
-  const SR = trSR(), l = trLangPref();
-  if (!SR || l === 'off') return;
-  trCur = { lang: l, base: [], words: [], restarts: 0, dead: false };
-  trWant = true;
-  trBegin(SR, trCur);
-}
-function trStop() {
-  trWant = false;
-  try { if (trRec) trRec.stop(); } catch (e) {}   // stop: bekleyen son sonucu da getirir
-}
-function trBegin(SR, tr) {
-  let r;
-  try { r = new SR(); } catch (e) { return; }
-  trRec = r;
-  r.lang = tr.lang === 'en' ? 'en-US' : 'tr-TR';
-  r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
-  const sess = [];
-  let lastEv = Date.now() - recT0;
-  r.onresult = (ev) => {
-    let acc = '';
-    for (let i = 0; i < ev.results.length; i++) {
-      const alt = ev.results[i][0];
-      const t = alt && alt.transcript ? alt.transcript.trim() : '';
-      if (!t) continue;
-      // Bazı Android sürümleri her sonuçta metni baştan tekrar verir: öyleyse birleştirme, değiştir
-      acc = (acc && t.toLowerCase().indexOf(acc.toLowerCase()) === 0) ? t : (acc ? acc + ' ' + t : t);
-    }
-    const toks = acc.split(/\s+/).filter(Boolean);
-    const now = Date.now() - recT0;
-    if (toks.length < sess.length) sess.length = toks.length;
-    for (let i = 0; i < sess.length; i++) sess[i].w = toks[i];
-    const add = toks.length - sess.length;
-    if (add > 0) {
-      let p = sess.length ? sess[sess.length - 1].t : (tr.base.length ? tr.base[tr.base.length - 1].t : 0);
-      const from = Math.max(lastEv, now - add * 400);   // aynı anda gelen kelimeleri araya yay
-      for (let k = 0; k < add; k++) {
-        const tt = add === 1 ? now : from + (now - from) * (k + 1) / add;
-        const t = Math.max(p, Math.round(tt - TR_LAT), 0);
-        p = t;
-        sess.push({ w: toks[sess.length], t: t });
-      }
-    }
-    lastEv = now;
-    tr.words = tr.base.concat(sess);
-  };
-  r.onerror = (ev) => {
-    const e = ev && ev.error;
-    if (e === 'not-allowed' || e === 'service-not-allowed' || e === 'audio-capture' || e === 'network' || e === 'language-not-supported') tr.dead = true;
-  };
-  r.onend = () => {
-    tr.base = tr.words.slice();
-    if (trRec === r) trRec = null;
-    if (tr.dead || !trWant || trCur !== tr || !recMR || tr.restarts >= 20) return;
-    tr.restarts++;   // sessizlikte tarayıcı tanımayı kapatır: kayıt sürüyorsa yeniden başlat
-    setTimeout(() => { if (trWant && trCur === tr && recMR) trBegin(SR, tr); }, 150);
-  };
-  try { r.start(); } catch (e) {}
-}
 async function startRec() {
   if (recMR) return;
   if (!window.MediaRecorder) { flashStatus('Bu tarayıcı ses kaydını desteklemiyor'); return; }
@@ -7361,15 +7268,13 @@ async function startRec() {
       const recLen = (Date.now() - recT0) / 1000;
       setAudSess('playback');
       setTimeout(relRecHold, 450); // ses yönlendirmesi kulaklığa dönsün diye kısa bekle
-      pendingAudioTr = null;
       if (ok && recChunks.length) {
         if (recLen < 1) flashStatus('Ses çok kısa, gönderilmedi');
-        else { pendingAudioTr = trCur; askAudio(new Blob(recChunks, { type: mime }), recLen); }
+        else askAudio(new Blob(recChunks, { type: mime }), recLen);
       }
     };
     mr.start();
     recT0 = Date.now(); sendRec('rec'); recBeat = setInterval(() => sendRec('rec'), 2000);
-    trStart();
     recGuardStart();
     sendBtn.classList.add('rec');
     showRecUi();
@@ -7481,7 +7386,6 @@ function stopRec(send) {
   hideRecUi();
   if (!recMR) return;
   recSend = !!send;
-  trStop();
   try { if (recMR.state !== 'inactive') recMR.stop(); } catch (e) {}
 }
 /* Ses kaydı/ses mesajı sırasında çalan şarkıyı duraklat, bitince devam ettir */
@@ -7562,87 +7466,6 @@ function setAudRate(r) {
     o.btn.classList.toggle('fast', r !== 1);
     try { o.a.playbackRate = r; } catch (e) {}
   });
-}
-function trPack(tr, once) {
-  if (!tr || once || !tr.words || !tr.words.length) return null;   // tek seferlik seslerde transkript gönderilmez
-  return { l: tr.lang, w: tr.words.slice(0, 600).map((x) => [String(x.w).slice(0, 40), x.t]) };
-}
-function trClean(raw) {
-  if (!raw || typeof raw !== 'object' || !Array.isArray(raw.w)) return null;
-  const out = [];
-  for (let i = 0; i < raw.w.length && i < 600; i++) {
-    const e = raw.w[i];
-    if (!Array.isArray(e) || typeof e[0] !== 'string') continue;
-    const t = Number(e[1]);
-    if (!isFinite(t)) continue;
-    out.push({ w: e[0].slice(0, 40), t: Math.max(0, t) });
-  }
-  return out.length ? { lang: raw.l === 'en' ? 'en' : 'tr', words: out } : null;
-}
-const TR_CHEV = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
-function buildAudTr(words, a) {
-  const box = document.createElement('div'); box.className = 'aud-tr';
-  box.setAttribute('role', 'button'); box.setAttribute('aria-expanded', 'false'); box.setAttribute('aria-label', 'Transkript');
-  const txt = document.createElement('div'); txt.className = 'aud-tr-txt';
-  const spans = [];
-  words.forEach((w, i) => {
-    const sp = document.createElement('span'); sp.className = 'w'; sp.textContent = w.w;
-    txt.appendChild(sp);
-    if (i < words.length - 1) txt.appendChild(document.createTextNode(' '));
-    spans.push(sp);
-  });
-  const chev = document.createElement('span'); chev.className = 'aud-tr-chev'; chev.innerHTML = TR_CHEV;
-  box.appendChild(txt); box.appendChild(chev);
-  let idx = -1, raf = 0, lastTop = -1, holdUntil = 0;
-  const findIdx = (ms) => {          // t <= ms olan son kelime
-    let lo = 0, hi = words.length - 1, r = -1;
-    while (lo <= hi) { const m = (lo + hi) >> 1; if (words[m].t <= ms) { r = m; lo = m + 1; } else hi = m - 1; }
-    return r;
-  };
-  const follow = () => {
-    if (idx < 0) return;
-    const sp = spans[idx];
-    if (box.classList.contains('open')) {
-      if (Date.now() < holdUntil) return;            // kullanıcı kaydırıyorsa karışma
-      const top = sp.offsetTop;
-      if (top === lastTop) return;
-      lastTop = top;
-      txt.scrollTop = Math.max(0, top - Math.round((txt.clientHeight - sp.offsetHeight) / 2));   // aktif satır ortada
-    } else {
-      const l = sp.offsetLeft, w = txt.clientWidth;
-      if (l < txt.scrollLeft || l + sp.offsetWidth > txt.scrollLeft + w - 12) txt.scrollLeft = Math.max(0, l - Math.round(w * 0.3));
-    }
-  };
-  const setIdx = (n) => {
-    if (n === idx) return;
-    if (idx >= 0) spans[idx].classList.remove('cur');
-    if (n > idx) { for (let i = idx + 1; i <= n; i++) spans[i].classList.add('on'); }
-    else { for (let i = idx; i > n; i--) spans[i].classList.remove('on'); }
-    idx = n;
-    if (n >= 0) spans[n].classList.add('cur');
-    follow();
-  };
-  const tick = () => { raf = 0; if (a.paused) return; setIdx(findIdx(a.currentTime * 1000)); raf = requestAnimationFrame(tick); };
-  a.addEventListener('play', () => { box.classList.add('sync'); if (!raf) raf = requestAnimationFrame(tick); });
-  a.addEventListener('pause', () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } });
-  a.addEventListener('seeked', () => { if (box.classList.contains('sync')) setIdx(findIdx(a.currentTime * 1000)); });
-  a.addEventListener('ended', () => {
-    if (raf) { cancelAnimationFrame(raf); raf = 0; }
-    setIdx(-1); box.classList.remove('sync'); lastTop = -1; txt.scrollTop = 0; txt.scrollLeft = 0;
-  });
-  ['touchstart', 'wheel'].forEach((ev) => txt.addEventListener(ev, () => { holdUntil = Date.now() + 2500; }, { passive: true }));
-  box.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const o = !box.classList.contains('open');
-    box.classList.toggle('open', o);
-    box.setAttribute('aria-expanded', o ? 'true' : 'false');
-    lastTop = -1; holdUntil = 0; txt.scrollTop = 0; txt.scrollLeft = 0;
-    requestAnimationFrame(() => {
-      follow();
-      try { if (typeof stickToBottom !== 'undefined' && stickToBottom) chatArea.scrollTop = chatArea.scrollHeight; } catch (er) {}
-    });
-  });
-  return box;
 }
 const AUD_PLAY = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="7 4 20 12 7 20"/></svg>';
 const AUD_PAUSE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>';
@@ -7730,7 +7553,6 @@ function buildAudioPlayer(media, isOwn, id, msgDiv) {
     try { a.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * T; } catch (er) {}
     paint();
   });
-  if (media.tr && media.tr.words && media.tr.words.length && !once) pl.insertBefore(buildAudTr(media.tr.words, a), row.nextSibling);
   pl._audio = a;
   return pl;
 }
@@ -7757,7 +7579,7 @@ function askAudio(blob, dur) {
   confirmSize.textContent = (blob.size / 1024).toFixed(0) + ' KB';
   confirmModal.classList.add('show');
 }
-async function sendAudio(blob, once, dur, tr) {
+async function sendAudio(blob, once, dur) {
   if (!isConnected()) {
     flashStatus('Bağlı değil, ses gönderilmedi');
     return;
@@ -7767,9 +7589,8 @@ async function sendAudio(blob, once, dur, tr) {
     const id = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
     const nick = fullNick();
     const rep = replyingTo ? JSON.parse(JSON.stringify(replyingTo)) : null; // yanıtlanan mesaj varsa ses de yanıt olarak gider
-    const trp = trPack(tr, once);
-    conn.send({ type: 'audio', buffer: buf, mime: blob.type, senderNick: nick, msgId: id, once: !!once, dur: dur || 0, reply: rep, tr: trp });
-    appendMessage('', nick, true, rep, id, true, { url: URL.createObjectURL(blob), audio: true, once: !!once, dur: dur || 0, tr: trClean(trp) });
+    conn.send({ type: 'audio', buffer: buf, mime: blob.type, senderNick: nick, msgId: id, once: !!once, dur: dur || 0, reply: rep });
+    appendMessage('', nick, true, rep, id, true, { url: URL.createObjectURL(blob), audio: true, once: !!once, dur: dur || 0 });
     if (rep) { closeReplyBar(); rearmViewerReply(); }
   } catch (e) { flashStatus('Ses gönderilemedi'); }
 }
@@ -11227,26 +11048,6 @@ function goPanel(idx) {
       lsSet(KEY, val);
       apply(val);
     });
-  });
-})();
-
-(function initTransSetting() {
-  const KEY = 'trLang';
-  const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-trans .seg-btn'));
-  const norm = (v) => (v === 'off' || v === 'en') ? v : 'tr';
-  function apply(val) {
-    btns.forEach((b) => {
-      const on = b.dataset.val === val;
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-  }
-  apply(norm(lsGet(KEY)));
-  const note = document.getElementById('trans-note');
-  if (note && !(window.SpeechRecognition || window.webkitSpeechRecognition)) note.style.display = '';
-  btns.forEach((b) => {
-    b.addEventListener('pointerdown', (e) => e.preventDefault());
-    b.addEventListener('click', () => { const v = norm(b.dataset.val); lsSet(KEY, v); apply(v); });
   });
 })();
 
