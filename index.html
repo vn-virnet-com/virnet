@@ -3075,6 +3075,12 @@ function startPeer() {
     config: {
       iceServers: [
         ...extraTurn,
+        // Metered TURN (kendi hesabımız): aynı ağ türündeki (wifi+wifi / mobil+mobil) cihazlar buradan bağlanır
+        { urls: 'stun:stun.relay.metered.ca:80' },
+        { urls: 'turn:global.relay.metered.ca:80', username: '26c1a1a41acb0d1f87326ba8', credential: 'OuGOX/tj4vMJQbmx' },
+        { urls: 'turn:global.relay.metered.ca:80?transport=tcp', username: '26c1a1a41acb0d1f87326ba8', credential: 'OuGOX/tj4vMJQbmx' },
+        { urls: 'turn:global.relay.metered.ca:443', username: '26c1a1a41acb0d1f87326ba8', credential: 'OuGOX/tj4vMJQbmx' },
+        { urls: 'turns:global.relay.metered.ca:443?transport=tcp', username: '26c1a1a41acb0d1f87326ba8', credential: 'OuGOX/tj4vMJQbmx' },
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:stun.cloudflare.com:3478' },
