@@ -11753,6 +11753,12 @@ cdAnimRestore();
 
   function poissonGap(mean) { return clamp(-Math.log(1 - Math.random()) * mean, 0.03, 14) * 1000; }
 
+  /* yön sırayla değişir: bir sağdan, bir soldan eser; karlar baloncukların arasına girer */
+  let gustDir = Math.random() < 0.5 ? -1 : 1;
+  function startGust(t) {
+    gustDir = -gustDir;
+    gust = { t0: t, D: rnd(6, 10), dir: gustDir, str: rnd(170, 240) };
+  }
   function gustEnv(t) {
     const e = (t - gust.t0) / 1000, D = gust.D;
     const sn = Math.sin(Math.PI * clamp(e / D, 0, 1));
@@ -11782,7 +11788,7 @@ cdAnimRestore();
       ph: rnd(0, 6.28), sw: rnd(0.4, 1.2), amp: rnd(0, 8),
       kind: kind, size: size, a: a, faint: (tier === 'f2' || tier === 'f1')
     };
-    if (gust && env.w > 0.05 && Math.random() < 0.65) {
+    if (gust && env.w > 0.05 && Math.random() < 0.8) {
       f.x = gust.dir > 0 ? rnd(-40, 0) : rnd(W, W + 40);
       f.y = rnd(-10, H);                                   // yanlardan tüm yükseklikten (alt yanlar dahil)
     } else if (Math.abs(wind) > 12 && Math.random() < clamp(Math.abs(wind) / 70, 0, 0.55)) {
@@ -11905,7 +11911,7 @@ cdAnimRestore();
     if (back.width !== wrap.clientWidth || back.height !== wrap.clientHeight) resize();
     if (!W) return;
 
-    if (!modeAt) { modeAt = t + rnd(9, 11) * MIN; gustAt = t + rnd(5, 7) * MIN; ballAt = t + rnd(40, 50) * MIN; windChangeAt = 0; }
+    if (!modeAt) { modeAt = t + rnd(9, 11) * MIN; gustAt = t + rnd(2, 3) * MIN; ballAt = t + rnd(40, 50) * MIN; windChangeAt = 0; }
 
     /* hava modu */
     if (t > modeAt) {
@@ -11920,9 +11926,9 @@ cdAnimRestore();
     wind += (windTarget - wind) * Math.min(1, dt * 0.6);
 
     /* kuvvetli rüzgar */
-    if (!gust && t > gustAt) { gust = { t0: t, D: rnd(5, 10), dir: Math.random() < 0.5 ? -1 : 1, str: rnd(150, 230) }; }
+    if (!gust && t > gustAt) { startGust(t); gustAt = t + rnd(2, 3) * MIN; }   // her 2-3 dk'da bir mutlaka
     let env = { w: 0, d: 0 };
-    if (gust) { env = gustEnv(t); if (env.done) { gust = null; gustAt = t + rnd(5, 7) * MIN; env = { w: 0, d: 0 }; } }
+    if (gust) { env = gustEnv(t); if (env.done) { gust = null; env = { w: 0, d: 0 }; } }
 
     /* kar topu */
     if (!ball && t > ballAt) { throwBall(t); ballAt = t + rnd(40, 50) * MIN; }
@@ -11973,9 +11979,9 @@ cdAnimRestore();
           landOnBubble(hit, f.x + (f.kind === 0 ? f.size / 2 : 0), units, Math.ceil(f.size / 2));
           flakes.splice(i, 1); continue;
         }
-        if (big) {
-          const col = clamp(Math.floor(f.x), 0, W - 1);
-          if (nb >= H - pile.hm[col]) { addUnits(pile, 0, W, PILE_CAP, col, 3); flakes.splice(i, 1); continue; }
+        if (big || f.size >= 4) {                              // kar tanesi, artı ve 4px taneler metin kutusuna da birikir
+          const col = clamp(Math.floor(f.kind === 0 ? f.x + f.size / 2 : f.x), 0, W - 1);
+          if (nb >= H - pile.hm[col]) { addUnits(pile, 0, W, PILE_CAP, col, big ? 3 : 2); flakes.splice(i, 1); continue; }
         }
       }
 
@@ -12075,7 +12081,7 @@ cdAnimRestore();
 
   /* deneme için: konsoldan vnSnow.gust(), vnSnow.ball(), vnSnow.burst(), vnSnow.flake(5) */
   window.vnSnow = {
-    gust: function () { if (!gust) gust = { t0: performance.now(), D: rnd(5, 10), dir: Math.random() < 0.5 ? -1 : 1, str: rnd(150, 230) }; },
+    gust: function () { if (!gust) startGust(performance.now()); },
     ball: function () { throwBall(performance.now(), false); },
     burst: function () { throwBall(performance.now(), true); },
     flake: function (n) { n = n || 1; for (let i = 0; i < n; i++) { const f = spawn({ w: 0, d: 0 }, 'big'); f.x = rnd(0, W); } },
