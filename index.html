@@ -2184,7 +2184,7 @@ let restartTimer = null;
 let retryInterval = null;
 let pingInterval = null;
 let missedPings = 0;
-const PING_MAX_MISS = 9; // 2 sn aralıkla ~20 sn cevap gelmezse bağlantı ölü sayılır (eskiden ~8 sn)
+const PING_MAX_MISS = 4; // 4 sn aralıkla ~20 sn cevap gelmezse bağlantı ölü sayılır
 let stickToBottom = true;
 let downSince = Date.now();
 let lastPeerStart = 0;
@@ -3225,7 +3225,7 @@ function setupConnection(c) {
         handleDisconnect();
         try { dead.close(); } catch (e) {}
       }
-    }, 2000);
+    }, 4000);
   };
 
   if (c.open) onOpen(); else c.on('open', onOpen);
@@ -7388,7 +7388,7 @@ async function startRec() {
     if (!longReady) { st.getTracks().forEach((t) => t.stop()); setAudSess('playback'); relRecHold(); return; }
     recStream = st; recChunks = []; recSend = false;
     // Sesi sıkıştırıp boğmasın: Opus + yüksek bitrate (desteklenmiyorsa tarayıcı varsayılanı)
-    let mrOpts = { audioBitsPerSecond: 128000 };
+    let mrOpts = { audioBitsPerSecond: 64000 };
     try {
       const pref = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4'];
       for (let i = 0; i < pref.length; i++) { if (MediaRecorder.isTypeSupported(pref[i])) { mrOpts.mimeType = pref[i]; break; } }
@@ -7733,6 +7733,29 @@ async function sendAudio(blob, once, dur) {
   } catch (e) { flashStatus('Ses gönderilemedi'); }
 }
 
+/* Fotoğraf sıkıştırma: uzun kenar 1280, kısa kenar 720'yi geçmez; JPEG kalite 0.8 */
+async function shrinkImage(file) {
+  try {
+    if (!file || !/^image\/(jpeg|png|webp|heic|heif|avif|bmp)$/i.test(file.type || '')) return null;
+    let bmp;
+    try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+    catch (e0) { bmp = await createImageBitmap(file); }
+    const w0 = bmp.width, h0 = bmp.height;
+    const long0 = Math.max(w0, h0), short0 = Math.min(w0, h0);
+    const k = Math.min(1, 1280 / long0, 720 / short0);
+    const w = Math.max(1, Math.round(w0 * k)), h = Math.max(1, Math.round(h0 * k));
+    const cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    const g = cv.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, w, h);
+    g.drawImage(bmp, 0, 0, w, h);
+    try { bmp.close(); } catch (e1) {}
+    const blob = await new Promise((res) => cv.toBlob(res, 'image/jpeg', 0.8));
+    if (!blob || blob.size >= file.size) return null; // küçülmediyse orijinali gönder
+    return { buf: await blob.arrayBuffer(), mime: 'image/jpeg' };
+  } catch (e) { return null; }
+}
+
 async function sendImage(file, url, once) {
   if (pendingImageId && Date.now() < busyUntil) {
     try { URL.revokeObjectURL(url); } catch (e) {}
@@ -7745,14 +7768,16 @@ async function sendImage(file, url, once) {
     return;
   }
   try {
-    const buf = await readAsArrayBuffer(file);
+    const sh = await shrinkImage(file);
+    const buf = sh ? sh.buf : await readAsArrayBuffer(file);
+    const sendMime = sh ? sh.mime : file.type;
     if (!isConnected()) throw new Error('baglanti yok');
     const id = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
     const nick = fullNick();
     pendingImageId = id;
     busyUntil = Date.now() + 20000 + (buf.byteLength / (100 * 1024)) * 1000;
     conn.send({ type: 'img-start', size: buf.byteLength });
-    conn.send({ type: 'image', buffer: buf, mime: file.type, senderNick: nick, msgId: id, once: !!once });
+    conn.send({ type: 'image', buffer: buf, mime: sendMime, senderNick: nick, msgId: id, once: !!once });
     appendMessage('', nick, true, null, id, true, { url: url, once: !!once });
     const el = document.getElementById(id);
     if (el) el.classList.add('img-pending');
@@ -11800,7 +11825,7 @@ cdAnimRestore();
   const KEY = 'snowLayer';   // yalnızca birikmeyi açar/kapatır
   const MIN = 60000;
   const PILE_CAP = 5;      // metin kutusu üstündeki birikme kalınlığı sınırı (px)
-  const BUB_CAP = 5;       // mesaj balonu üstündeki birikme sınırı (px)
+  const BUB_CAP = 4;       // (artık kullanılmıyor) balon birikme sınırı; gerçek aralık BUB_MIN/BUB_MAX
   const BUB_MULT = 3;      // balona düşen tanenin birikim çarpanı (mesajlar hızlı aktığı için birikim görünsün)
   const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const rnd = (a, b) => a + Math.random() * (b - a);
@@ -12043,10 +12068,12 @@ cdAnimRestore();
     const y0 = top + ent.ins[col] - hh, half = Math.ceil(L / 2);
     g.fillRect(xo, y0, 1, hh + L);
     g.fillRect(xi, y0, 1, hh + half);
-    g.fillStyle = '#cfe6ff';
-    g.fillRect(xo, y0 + hh + L, 1, 2 + Math.floor(L * 0.6));
-    if (L >= 4) g.fillRect(xi, y0 + hh + half, 1, 1 + Math.floor(L * 0.4));
-    g.fillStyle = '#fff';
+    if (d.ice) {                                           // buz dikiti: çok nadir
+      g.fillStyle = '#cfe6ff';
+      g.fillRect(xo, y0 + hh + L, 1, 2 + Math.floor(L * 0.6));
+      if (L >= 4) g.fillRect(xi, y0 + hh + half, 1, 1 + Math.floor(L * 0.4));
+      g.fillStyle = '#fff';
+    }
   }
 
   /* Baloncuğun birikmesini küçük bir resme çizip baloncuğun ::before katmanına koyar (DOM'a çocuk eklemez) */
@@ -12086,6 +12113,56 @@ cdAnimRestore();
       bubCache.push({ el: el, left: r.left - wr.left, right: r.right - wr.left, top: top, rl: Math.min(rc.tl, mr), rr: Math.min(rc.tr, mr) });
     }
   }
+
+  /* ---- Hazır birikmiş kar: yağan taneler hiçbir yere konmaz; kar katmanı açıkken kutunun ve balonların üstü baştan "maksimum" dolu, geniş dalgalı ---- */
+  let bubDirty = true, ensureAt = 0, pileKey = '';
+  const PILE_MIN = 3, PILE_MAX = 6;   // metin kutusunun üstündeki kar kalınlığı aralığı (px)
+  const BUB_MIN = 2, BUB_MAX = 4;     // balonların üstündeki kar kalınlığı aralığı (px)
+  const makeWave = () => ({ l1: rnd(9, 15), l2: rnd(4, 7), f1: rnd(0, 6.283), f2: rnd(0, 6.283) });
+  const pileWave = makeWave();
+  /* kenardan sarkan kar: çoğu balonda var, boyu değişken (1-7 px); buz dikiti ~%4 ihtimalle */
+  const makeDrip = () => ({ amt: Math.random() < 0.15 ? 0 : Math.floor(rnd(1, 7.99)) * 12, ice: Math.random() < 0.04 });
+  function waveFill(arr, lo, hi, mn, mx, p) {
+    for (let c = lo; c < hi; c++) {
+      const v = 0.65 * Math.sin((c - lo) / p.l1 + p.f1) + 0.35 * Math.sin((c - lo) / p.l2 + p.f2);
+      arr[c] = Math.round(mn + (mx - mn) * clamp((v * 1.25 + 1) / 2, 0, 1));
+    }
+  }
+  function fillPile() {
+    pile.hm.fill(0);
+    const hi = Math.min(phi, W);
+    if (hi <= plo) { pile.c0 = 1e9; pile.c1 = -1; return; }
+    waveFill(pile.hm, plo, hi, PILE_MIN, PILE_MAX, pileWave);
+    pile.c0 = plo; pile.c1 = hi - 1;
+  }
+  function ensureBubbles(t) {
+    if (!area || !bubDirty || t - ensureAt < 200) return;
+    ensureAt = t; bubDirty = false;
+    const list = area.querySelectorAll('.bubble');
+    let budget = 8;
+    for (let i = list.length - 1; i >= 0; i--) {
+      const el = list[i];
+      if (el.closest('.typing-msg') || el.querySelector(':scope > .msg-body.big-emoji')) continue;
+      const w = Math.min(el.offsetWidth, 800), h = el.offsetHeight;
+      if (w < 24 || h < 10) continue;
+      let rc = radMap.get(el); if (!rc) { rc = cornerR(el); radMap.set(el, rc); }
+      const mr = Math.min(w / 2, h / 2), rl = Math.min(rc.tl, mr), rr = Math.min(rc.tr, mr);
+      let ent = snowMap.get(el);
+      if (ent && ent.w === w && ent.rl === rl && ent.rr === rr) continue;
+      if (budget-- <= 0) { bubDirty = true; break; }
+      if (!ent) {
+        ent = { hm: new Uint8Array(800), ins: new Int8Array(800), c0: 0, c1: -1, w: 0, lo: 0, hi: 0, rl: -1, rr: -1, wave: makeWave(), dl: makeDrip(), dr: makeDrip() };
+        snowMap.set(el, ent);
+      }
+      ent.w = w; ent.hi = w; ent.rl = rl; ent.rr = rr;
+      ent.ins.fill(0); fillIns(ent.ins, 0, w, rl, rr);
+      ent.hm.fill(0); waveFill(ent.hm, 0, w, BUB_MIN, BUB_MAX, ent.wave);
+      ent.c0 = 0; ent.c1 = w - 1; ent.dirty = true; ent.rt = 0;
+    }
+  }
+  if (area && window.MutationObserver) new MutationObserver(function () { bubDirty = true; }).observe(area, { childList: true, subtree: true, characterData: true });
+  if (area) area.addEventListener('load', function () { bubDirty = true; }, true);
+  window.addEventListener('resize', function () { bubDirty = true; });
 
   /* ---- Kar topu ---- */
   function throwBall(t, forceBurst) {
@@ -12129,6 +12206,7 @@ cdAnimRestore();
     snowMap.forEach(function (ent, el) { el.style.removeProperty('--snow-img'); el.style.removeProperty('--snow-w'); el.style.removeProperty('--snow-h'); });
     snowMap.clear();
     pile.hm = new Uint8Array(W || 0); pile.c0 = 1e9; pile.c1 = -1;
+    pileKey = '';
   }
 
   function frame(t) {
@@ -12140,6 +12218,7 @@ cdAnimRestore();
     measureDock();
     if (back.width !== wrap.clientWidth || back.height !== wrap.clientHeight || front.height !== wrap.clientHeight + off) resize();
     if (!W) return;
+    if (enabled) { const pk = W + ':' + plo + ':' + phi; if (pk !== pileKey && phi > plo) { pileKey = pk; fillPile(); } }
 
     if (!modeAt) { modeAt = t + rnd(9, 11) * MIN; gustAt = t + rnd(2, 3) * MIN; ballAt = t + rnd(40, 50) * MIN; windChangeAt = 0; }
 
@@ -12190,10 +12269,7 @@ cdAnimRestore();
     } else stormAcc = 0;
 
     /* büyük tane varsa baloncukların konumunu güncel tut */
-    const wr = wrap.getBoundingClientRect();
-    let hasBig = false;
-    for (let i = 0; i < flakes.length; i++) if (!flakes[i].faint) { hasBig = true; break; }
-    if (hasBig && enabled) refreshBubbles(t, wr);
+    if (enabled) ensureBubbles(t);
 
     bctx.clearRect(0, 0, W, H);
     drawnBack = true;
@@ -12209,34 +12285,6 @@ cdAnimRestore();
       f.x += (f.drift + wx + Math.sin(f.ph) * f.amp) * dt;
       f.y += f.vy * spd * dt;
       if (f.y > H + off + 4 || f.x < -60 || f.x > W + 60) { flakes.splice(i, 1); continue; }
-
-      if (enabled && !f.faint && f.x >= 0 && f.x < W) {      // silik olmayan taneler baloncuğun üstüne konar; yalnızca kar tanesi metin kutusuna da
-        const big = f.kind === 2;
-        const bot = big ? 3 : (f.kind === 1 ? 2 : f.size);
-        const ob = oy + bot, nb = f.y + bot;
-        let hit = null, hitY = 0;
-        for (let j = 0; j < bubCache.length; j++) {
-          const b = bubCache[j];
-          if (f.x < b.left || f.x >= b.right || f.passed === b.el) continue;
-          const sy = b.top + insAt(f.x - b.left, b.right - b.left, b.rl, b.rr);   // köşelerde yüzey kıvrımla aşağı iner
-          if (ob <= sy && nb >= sy && (!hit || sy < hitY)) { hit = b; hitY = sy; }
-        }
-        if (hit) {
-          if (f.skip > 0) { f.skip--; f.passed = hit.el; }                                           // bu yüzeyi es geç, arkasından düşmeye devam et
-          else {
-            const units = big ? 21 : (f.kind === 1 ? 9 : f.size * f.size);    // tanenin kendi piksel sayısı
-            landOnBubble(hit, f.x + (f.kind === 0 ? f.size / 2 : 0), units * BUB_MULT, Math.ceil(f.size / 2) + 1);
-            flakes.splice(i, 1); continue;
-          }
-        }
-        {                                                       // silik olmayan her tane metin kutusuna da birikir (kendi piksel sayısı kadar)
-          const col = Math.floor(f.kind === 0 ? f.x + f.size / 2 : f.x);
-          if (!f.nopile && col >= plo && col < phi && nb >= H + off - pile.ins[col] - pile.hm[col]) {
-            if (f.skip > 0) { f.skip--; f.nopile = true; }                    // metin kutusunu da es geçebilir (geçince bir daha çarpmaz)
-            else { addUnits(pile, plo, phi, pile.cap, col, big ? 21 : (f.kind === 1 ? 9 : f.size * f.size), Math.ceil(f.size / 2) + 1, 3); flakes.splice(i, 1); continue; }
-          }
-        }
-      }
 
       const px = Math.round(f.x), py = Math.round(f.y);
       const g = (off > 0 && py > H - 6) ? ctx : bctx;         // sohbet alanının altındaki boşlukta (kutuya inerken) ön katmanda çizilir
@@ -12298,7 +12346,7 @@ cdAnimRestore();
   /* ---- Ayarlar > Kar Katmanı (birikme) ---- */
   const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-snow .seg-btn'));
   function mark() { btns.forEach((b) => { const on = b.dataset.val === (enabled ? 'on' : 'off'); b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); }
-  function setEnabled(on) { enabled = !!on; mark(); if (!enabled) wipePiles(); }
+  function setEnabled(on) { enabled = !!on; mark(); if (!enabled) wipePiles(); else { bubDirty = true; pileKey = ''; } }
   mark();
   btns.forEach((b) => {
     b.addEventListener('pointerdown', (e) => e.preventDefault());
