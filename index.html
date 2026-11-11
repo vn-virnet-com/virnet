@@ -1619,40 +1619,6 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 .call-rej { background: radial-gradient(120% 110% at 28% 8%, color-mix(in srgb, var(--bad) 70%, #fff) 0%, transparent 58%), linear-gradient(160deg, color-mix(in srgb, var(--bad) 78%, transparent) 0%, color-mix(in srgb, var(--bad) 45%, transparent) 100%); }
 .call-btn:active { transform: scale(.92); }
 @media (prefers-reduced-motion: reduce) { .call-card::before, .dial-card::before { animation: none; } }
-
-/* ===== BİRLEŞİK DAMLA-CAM DİLİ: tüm tuş/baloncuk/kart aynı yarıçap, aynı yansıma, aynı efekt (tema renkleri arka yansımayı boyar) ===== */
-:root{--gr:23px;--r-xs:var(--gr);--r-sm:var(--gr);--r-md:var(--gr);--r-lg:var(--gr);--r-xl:var(--gr);--r-pill:var(--gr);
---gb:color-mix(in srgb,var(--c-33) 82%,var(--c-000));--g-rim:color-mix(in srgb,var(--c-cc) 26%,transparent);
---g-sheen:linear-gradient(160deg,color-mix(in srgb,var(--c-fff) 14%,transparent),color-mix(in srgb,var(--c-fff) 3%,transparent) 48%,color-mix(in srgb,var(--c-fff) 8%,transparent));
---g-sh:inset 0 1px 0 color-mix(in srgb,var(--c-fff) 40%,transparent),inset 0 -1px 0 color-mix(in srgb,var(--c-fff) 12%,transparent),inset 0 0 10px color-mix(in srgb,var(--c-fff) 7%,transparent),0 3px 10px rgba(var(--sh),.28)}
-:where(button,input:is([type=text],[type=password],[type=search],[type=number],[type=time],[type=datetime-local],[type=tel],:not([type])),textarea,select,#fab-main,#fab-ring>.fab-item,#scroll-down-btn,.msg-act,.react-chip,.reply-container,.aud-pl,.once-btn,.yt-card,.yts-slot,.yts-row,#ytpl-strip,[id$="-modal"]>div,#bell-pop,#notes-pop,#chip-menu,.bp-card,.set-body,.set-title,.cmp-box,.cd-tag,.ts-t,.pl-o,.pl-ed-box,.cd-vf-box,#bp-tabs-in,#save-btn,#send-btn,#call-send,#confirm-yes,#refresh-yes,#reset-no,#codes-close,#stor-close,#photo-src-cam,.aud-play,.cmp-bub,#bp-pill,#td-add,#td-send,#cd-add,#cd-send,.cd-rp-add,#rp-send,#ts-add,.ts-use,#ts-send,#bp-add,#bp-send,.new-badge,.seg-btn.danger,.seg-btn.active,.msg-act.danger.confirm,#ytpl-strip .yts-b.on,.dial-opt,.call-btn){border:1px solid var(--g-rim)!important;background-image:var(--g-sheen)!important;box-shadow:var(--g-sh)!important}
-:where(button,input:is([type=text],[type=password],[type=search],[type=number],[type=time],[type=datetime-local],[type=tel],:not([type])),textarea,select,#fab-main,#fab-ring>.fab-item,#scroll-down-btn,.msg-act,.react-chip,.reply-container,.aud-pl,.once-btn,.yt-card,.yts-slot,.yts-row,#ytpl-strip,[id$="-modal"]>div,#bell-pop,#notes-pop,#chip-menu,.bp-card,.set-body,.set-title,.cmp-box,.cd-tag,.ts-t,.pl-o,.pl-ed-box,.cd-vf-box,#bp-tabs-in){background-color:color-mix(in srgb,var(--c-33) 58%,transparent)!important}
-:where(button,input:is([type=text],[type=password],[type=search],[type=number],[type=time],[type=datetime-local],[type=tel],:not([type])),textarea,select,#fab-main,#fab-ring>.fab-item,#scroll-down-btn,.msg-act,.react-chip,.reply-container,.aud-pl,.once-btn,.yt-card,.yts-slot,.yts-row,#ytpl-strip,[id$="-modal"]>div,#bell-pop,#notes-pop,#chip-menu,.bp-card,.set-body,.set-title,.cmp-box,.cd-tag,.ts-t,.pl-o,.pl-ed-box,.cd-vf-box,#bp-tabs-in,#save-btn,#send-btn,#call-send,#confirm-yes,#refresh-yes,#reset-no,#codes-close,#stor-close,#photo-src-cam,.aud-play,.cmp-bub,#bp-pill,#td-add,#td-send,#cd-add,#cd-send,.cd-rp-add,#rp-send,#ts-add,.ts-use,#ts-send,#bp-add,#bp-send,.new-badge,.seg-btn.danger,.seg-btn.active,.msg-act.danger.confirm,#ytpl-strip .yts-b.on,.dial-opt,.call-btn,.call-card,.dial-card,#yt-dock,#auto-chip,#auto-chip-x,#leap-hud,#vn-toast,.vc-pill,.vc-slot,#rec-trash,#rec-lock,#reset-box-mark,#reset-check-row,#confirm-once-row,#confirm-preview,.yt-track,.ytd-track,.ytd-prog,.pl-fill,.aud-bars,.aud-spd,.msg-img,.reply-thumb,.yts-row img,.pin-dot,.bp-tab,#td-actions span,#cd-actions span,#ts-actions span,#rp-actions span,#bp-actions span,.cd-rb,.cd-num,.pl-ed-q,.pl-ed-o,.bubble){border-radius:var(--gr)!important}
-:where(#fab-main,#fab-ring>.fab-item,#scroll-down-btn,[id$="-modal"]>div,#bell-pop,#notes-pop,#chip-menu,#bp-tabs-in){-webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%)}
-:where(.msg:not([data-call="1"]) .bubble:not(:has(>.msg-body.big-emoji))){background-color:var(--gb)!important;background-image:none!important;border:1px solid var(--g-rim)!important;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--c-fff) 28%,transparent),inset 0 -1px 0 color-mix(in srgb,var(--c-fff) 8%,transparent),0 2px 6px rgba(var(--sh),.25)!important}
-@media (hover:hover){:where(button,input:is([type=text],[type=password],[type=search],[type=number],[type=time],[type=datetime-local],[type=tel],:not([type])),textarea,select,#fab-main,#fab-ring>.fab-item,#scroll-down-btn,.msg-act,.react-chip,.reply-container,.aud-pl,.once-btn,.yt-card,.yts-slot,.yts-row,#ytpl-strip,[id$="-modal"]>div,#bell-pop,#notes-pop,#chip-menu,.bp-card,.set-body,.set-title,.cmp-box,.cd-tag,.ts-t,.pl-o,.pl-ed-box,.cd-vf-box,#bp-tabs-in):hover{background-color:color-mix(in srgb,var(--c-77) 40%,transparent)!important}}
-:where(button,input:is([type=text],[type=password],[type=search],[type=number],[type=time],[type=datetime-local],[type=tel],:not([type])),textarea,select,#fab-main,#fab-ring>.fab-item,#scroll-down-btn,.msg-act,.react-chip,.reply-container,.aud-pl,.once-btn,.yt-card,.yts-slot,.yts-row,#ytpl-strip,[id$="-modal"]>div,#bell-pop,#notes-pop,#chip-menu,.bp-card,.set-body,.set-title,.cmp-box,.cd-tag,.ts-t,.pl-o,.pl-ed-box,.cd-vf-box,#bp-tabs-in):active,:where(button,input:is([type=text],[type=password],[type=search],[type=number],[type=time],[type=datetime-local],[type=tel],:not([type])),textarea,select,#fab-main,#fab-ring>.fab-item,#scroll-down-btn,.msg-act,.react-chip,.reply-container,.aud-pl,.once-btn,.yt-card,.yts-slot,.yts-row,#ytpl-strip,[id$="-modal"]>div,#bell-pop,#notes-pop,#chip-menu,.bp-card,.set-body,.set-title,.cmp-box,.cd-tag,.ts-t,.pl-o,.pl-ed-box,.cd-vf-box,#bp-tabs-in).hot{background-color:color-mix(in srgb,var(--c-88) 46%,transparent)!important}
-/* Yapışık gruplar tek damla gibi: giriş çubuğu ve segmentler; iç kenarlar düz, dış uçlar aynı yarıçap */
-#nick-input{border-radius:var(--gr) 0 0 var(--gr)!important;border-right-width:0!important}
-#message-input{border-radius:0!important;border-right-width:0!important}
-#send-btn{border-radius:0 var(--gr) var(--gr) 0!important}
-#send-btn.cm-join{border-top-right-radius:0!important}
-.seg-btn{border-radius:0!important}.seg-btn:first-child{border-radius:var(--gr) 0 0 var(--gr)!important}.seg-btn:last-child{border-radius:0 var(--gr) var(--gr) 0!important}.seg-btn:only-child{border-radius:var(--gr)!important}.seg-btn+.seg-btn{border-left-width:0!important}
-/* Dip dibe mesajlar: araya gergin boğum (menisküs) */
-.msg.own-msg+.msg.own-msg:not([data-call="1"]):not(.typing-msg) .bubble::before,.msg:not(.own-msg)+.msg:not(.own-msg):not([data-call="1"]):not(.typing-msg) .bubble::before,#yt-neck{content:'';position:absolute;z-index:1;pointer-events:none;left:50%;width:min(40px,calc(100% - 16px));transform:translateX(-50%);background:var(--gb);-webkit-mask:radial-gradient(circle 7px at 0 50%,transparent 6.5px,#000 7px),radial-gradient(circle 7px at 100% 50%,transparent 6.5px,#000 7px);-webkit-mask-composite:source-in;mask:radial-gradient(circle 7px at 0 50%,transparent 6.5px,#000 7px),radial-gradient(circle 7px at 100% 50%,transparent 6.5px,#000 7px);mask-composite:intersect}
-.msg.own-msg+.msg.own-msg:not([data-call="1"]):not(.typing-msg) .bubble::before,.msg:not(.own-msg)+.msg:not(.own-msg):not([data-call="1"]):not(.typing-msg) .bubble::before{top:-12px;height:16px}
-#yt-neck{display:none;width:44px;margin-left:-22px;z-index:6}
-/* Kapanış: önce yazı silinir, sonra damla yuvarlaklaşır, sonra küçülüp yok olur (36px baloncuklar + pencereler) */
-#auto-chip,#vc-pill{transition:display .34s allow-discrete,opacity .1s ease .24s,transform .12s ease .22s,clip-path .14s cubic-bezier(.4,0,.2,1) .08s,top .3s cubic-bezier(.2,.9,.3,1);clip-path:inset(-14px round 36px)}
-#auto-chip:not(.show),#vc-pill:not(.show){opacity:0;transform:scale(.15);clip-path:inset(-14px calc(50% - 18px) round 36px)}
-#auto-chip:not(.show)>*,#vc-pill:not(.show)>*{opacity:0;transition:opacity .08s ease}
-[id$="-modal"]{transition:display .3s allow-discrete,opacity .1s ease .2s}
-[id$="-modal"]:not(.show){opacity:0}
-[id$="-modal"]>div{transition:transform .16s ease .12s,opacity .1s ease .1s}
-[id$="-modal"]:not(.show)>div{opacity:0;transform:scale(.55)}
-[id$="-modal"]:not(.show)>div>*{opacity:0;transition:opacity .08s ease}
-@starting-style{[id$="-modal"].show{opacity:0}[id$="-modal"].show>div{opacity:0;transform:scale(.8)}}
-@media (prefers-reduced-motion:reduce){#auto-chip,#vc-pill,[id$="-modal"],[id$="-modal"]>div{transition:none}}
 </style>
 </head>
 <body>
@@ -4694,7 +4660,6 @@ function ytChipSync() {
   const c = document.getElementById('auto-chip'); if (!c) return;
   const t = ytChipTop() + 'px';
   if (c.style.top !== t) c.style.top = t;
-  try { ytNeckSync(); } catch (e) {}
 }
 // Üstteki şeritlerin (şarkı şeridi + Oto. Oynat) chat-wrap üstüne göre alt kenarı; kayma bitmeden hedef konum esas alınır
 function ytStripRelBottom() {
@@ -7944,11 +7909,10 @@ function removeMessageFromUI(id) {
       // Önce solar (kırmızı kalır), sonra yüksekliği kapanır; alttaki mesajlar yukarı kayar
       const ease = 'cubic-bezier(.22,.61,.36,1)';
       el.classList.add('deleting', 'del-press');
-      glassDrop(el._bubble || el.querySelector('.bubble'));
       el.style.height = h + 'px';
       el.style.overflow = 'hidden';
       void el.offsetHeight;
-      el.style.transition = 'opacity 0.1s ease 0.2s, height 0.3s ' + ease + ' 0.18s, margin-top 0.3s ' + ease + ' 0.18s, margin-bottom 0.3s ' + ease + ' 0.18s';
+      el.style.transition = 'opacity 0.3s ease, height 0.3s ' + ease + ' 0.18s, margin-top 0.3s ' + ease + ' 0.18s, margin-bottom 0.3s ' + ease + ' 0.18s';
       el.style.opacity = '0';
       el.style.height = '0px';
       el.style.marginTop = '0px';
@@ -11683,19 +11647,6 @@ cdAnimRestore();
   if (mqMobile.addEventListener) mqMobile.addEventListener('change', syncBellPanel);
   else if (mqMobile.addListener) mqMobile.addListener(syncBellPanel);
 })();
-</script>
-<script>
-/* Damla kapanışı: yazı silinir -> damla yuvarlaklaşır -> küçülüp yok olur (~0.3 sn; yalnızca clip-path/transform/opacity) */
-function glassDrop(b){if(!b||!b.animate)return;const w=b.offsetWidth,h=b.offsetHeight,d=Math.min(w,h),x=(w-d)/2,y=(h-d)/2,o='inset(0 round 23px)',c='inset('+y+'px '+x+'px round '+d/2+'px)';
-Array.from(b.children).forEach(k=>k.animate([{opacity:1},{opacity:0}],{duration:90,fill:'forwards'}));
-b.animate([{clipPath:o,transform:'scale(1)',offset:0},{clipPath:o,transform:'scale(1)',offset:.28},{clipPath:c,transform:'scale(1)',offset:.62},{clipPath:c,transform:'scale(0)',offset:1}],{duration:300,easing:'ease-in-out',fill:'forwards'});}
-/* Şarkı şeridi ile Oto. Oynat baloncuğu arasındaki boğum */
-function ytNeckSync(){const c=document.getElementById('auto-chip'),d=document.getElementById('yt-dock');if(!c||!d)return;let n=document.getElementById('yt-neck');
-if(!n){n=document.createElement('i');n.id='yt-neck';c.parentNode.appendChild(n);}
-if(!c.classList.contains('show')||!d.classList.contains('show')||d.classList.contains('hide')){n.style.display='none';return;}
-const db=d.offsetTop+d.offsetHeight,g=(parseFloat(c.style.top)||0)-db;
-if(g<0||g>40){n.style.display='none';return;}
-n.style.display='block';n.style.top=(db-4)+'px';n.style.height=(g+8)+'px';}
 </script>
 </body>
 </html>
