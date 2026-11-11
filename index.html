@@ -505,7 +505,7 @@ body #typing-indicator { display: none !important; }
 .once-btn:disabled:active { background: var(--c-111); }
 
 /* Spotify tarzı şarkı kartı */
-.yt-card, #yt-dock, #auto-chip { --yt-a12: color-mix(in srgb, var(--c-fff) 12%, transparent); --yt-a16: color-mix(in srgb, var(--c-fff) 16%, transparent); --yt-a20: color-mix(in srgb, var(--c-fff) 20%, transparent); --yt-a25: color-mix(in srgb, var(--c-fff) 25%, transparent); --yt-a28: color-mix(in srgb, var(--c-fff) 28%, transparent); --yt-a35: color-mix(in srgb, var(--c-fff) 35%, transparent); --yt-a42: color-mix(in srgb, var(--c-fff) 42%, transparent); --yt-a50: color-mix(in srgb, var(--c-fff) 50%, transparent); --yt-a60: color-mix(in srgb, var(--c-fff) 60%, transparent); --yt-a72: color-mix(in srgb, var(--c-fff) 72%, transparent); --yt-a75: color-mix(in srgb, var(--c-fff) 75%, transparent); --yt-a82: color-mix(in srgb, var(--c-fff) 82%, transparent); --yt-a88: color-mix(in srgb, var(--c-fff) 88%, transparent); }
+.yt-card, #yt-dock, #auto-chip, #leap-hud, #vn-toast, .vc-pill, .call-card, .dial-card { --yt-a12: color-mix(in srgb, var(--c-fff) 12%, transparent); --yt-a16: color-mix(in srgb, var(--c-fff) 16%, transparent); --yt-a20: color-mix(in srgb, var(--c-fff) 20%, transparent); --yt-a25: color-mix(in srgb, var(--c-fff) 25%, transparent); --yt-a28: color-mix(in srgb, var(--c-fff) 28%, transparent); --yt-a35: color-mix(in srgb, var(--c-fff) 35%, transparent); --yt-a42: color-mix(in srgb, var(--c-fff) 42%, transparent); --yt-a50: color-mix(in srgb, var(--c-fff) 50%, transparent); --yt-a60: color-mix(in srgb, var(--c-fff) 60%, transparent); --yt-a72: color-mix(in srgb, var(--c-fff) 72%, transparent); --yt-a75: color-mix(in srgb, var(--c-fff) 75%, transparent); --yt-a82: color-mix(in srgb, var(--c-fff) 82%, transparent); --yt-a88: color-mix(in srgb, var(--c-fff) 88%, transparent); }
 .yt-card { display: block; position: relative; box-sizing: border-box; width: 100%; max-width: none; margin: 6px 0 0;  border-radius: var(--r-xl); background: var(--c-1a); color: var(--c-fff); overflow: hidden; white-space: normal; cursor: default; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; font-family: 'Lexend', sans-serif; line-height: 1.2; box-shadow: 0 4px 18px rgba(0,0,0,.35); }
 .yt-card * { -webkit-tap-highlight-color: transparent; }
 .yt-bg { position: absolute; inset: -24px; background: #333 center / cover no-repeat; filter: blur(26px) saturate(1.2); opacity: .22; pointer-events: none; }
@@ -639,18 +639,10 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 .call-card.mine .call-btn { pointer-events: none; cursor: default; }
 
 /* Arama kartları: ortak görünüm + duruma göre gradyan ton (g = yeşil, r = kırmızı, o = turuncu) */
-.call-card, .dial-card {
-  box-sizing: border-box; min-width: 190px; padding: 12px 16px; border: 1px solid var(--c-33); border-radius: var(--r-md);
-  background: var(--c-1a); color: var(--c-fff); text-align: center; transition: background .35s, border-color .35s;
-}
 .dial-card { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .dial-card.opts { gap: 8px; align-items: stretch; }
 .call-name, .dial-name { font-weight: 700; font-size: 16px; overflow-wrap: anywhere; }
 .call-card .call-title, .dial-status { font-weight: 500; font-size: 13px; opacity: 0.92; }
-.call-card[data-tone="g"], .dial-card[data-tone="g"] { background: linear-gradient(135deg, color-mix(in srgb, var(--ok) 45%, var(--c-1a)), color-mix(in srgb, var(--ok) 12%, var(--c-1a))); border-color: color-mix(in srgb, var(--ok) 65%, transparent); }
-.call-card[data-tone="r"], .dial-card[data-tone="r"] { background: linear-gradient(135deg, color-mix(in srgb, var(--bad) 45%, var(--c-1a)), color-mix(in srgb, var(--bad) 12%, var(--c-1a))); border-color: color-mix(in srgb, var(--bad) 65%, transparent); }
-.dial-card[data-tone="d"] { background: linear-gradient(135deg, #3d4045, #232529); border-color: #4b4e54; }
-.call-card[data-tone="o"], .dial-card[data-tone="o"] { background: linear-gradient(135deg, color-mix(in srgb, #ff9f1a 45%, var(--c-1a)), color-mix(in srgb, #ff9f1a 12%, var(--c-1a))); border-color: color-mix(in srgb, #ff9f1a 65%, transparent); }
 .dial-opt { width: 100%; padding: 10px 12px; border: 1px solid var(--c-33); border-radius: var(--r-md); background: var(--c-111); color: var(--c-fff); font-size: 15px; font-family: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .dial-opt:active { background: var(--hot); }
 .dial-opt.dial-cancel { color: var(--bad); }
@@ -1526,6 +1518,107 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
   #app > #bp-tabs #bp-pill { width: calc((100% - 4px) / 5); border-radius: var(--r-sm); }
   #bell-pop #bp-clip, #bell-pop.composing #bp-clip { bottom: 0; }
 }
+
+/* ===== Liquid glass baloncuklar: Oto. Oynat / Leap / bildirim / arama baloncuğu aynı cam diliyle ===== */
+#leap-hud, #vn-toast, .vc-pill {
+  box-sizing: border-box; height: 36px; isolation: isolate; overflow: hidden; font-family: 'Lexend', sans-serif; line-height: 1.25;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--c-fff) 16%, transparent) 0%, color-mix(in srgb, var(--c-fff) 5%, transparent) 45%, color-mix(in srgb, var(--c-fff) 9%, transparent) 100%), color-mix(in srgb, var(--c-1a) 62%, transparent);
+  border: 1px solid var(--yt-a20);
+  box-shadow: inset 0 1px 0 var(--yt-a35), inset 0 -1px 0 var(--yt-a12), inset 0 0 14px var(--yt-a12), 0 8px 24px rgba(0,0,0,.38), 0 1px 3px rgba(0,0,0,.3);
+  -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+}
+#leap-hud::before, #vn-toast::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; background: radial-gradient(120% 120% at 12% -20%, var(--yt-a28) 0%, transparent 55%), linear-gradient(115deg, transparent 38%, var(--yt-a12) 50%, transparent 62%); opacity: .8; }
+/* Leap: hafif sarı tonlu cam; sabitlenince daha dolgun sarı + yavaş geçen ışık */
+#leap-hud { padding: 0 15px 0 7px; gap: 7px; color: var(--warn);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--warn) 26%, transparent) 0%, color-mix(in srgb, var(--warn) 7%, transparent) 50%, color-mix(in srgb, var(--warn) 14%, transparent) 100%), color-mix(in srgb, var(--c-1a) 62%, transparent);
+  border-color: color-mix(in srgb, var(--warn) 34%, var(--yt-a20));
+  box-shadow: inset 0 1px 0 var(--yt-a42), inset 0 -1px 0 color-mix(in srgb, var(--warn) 16%, transparent), inset 0 0 14px color-mix(in srgb, var(--warn) 14%, transparent), 0 8px 24px rgba(0,0,0,.38), 0 1px 3px rgba(0,0,0,.3);
+  -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); }
+#leap-hud::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; opacity: 0; transform: translateX(-100%); background: linear-gradient(110deg, transparent 32%, color-mix(in srgb, var(--warn) 55%, transparent) 50%, transparent 68%); transition: opacity .3s ease; }
+#leap-hud.pinned { color: var(--warn);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--warn) 52%, transparent) 0%, color-mix(in srgb, var(--warn) 22%, transparent) 50%, color-mix(in srgb, var(--warn) 36%, transparent) 100%), color-mix(in srgb, var(--c-1a) 55%, transparent);
+  border-color: color-mix(in srgb, var(--warn) 78%, transparent);
+  box-shadow: inset 0 1.5px 0 var(--yt-a60), inset 0 -1px 0 color-mix(in srgb, var(--warn) 40%, transparent), inset 0 0 16px color-mix(in srgb, var(--warn) 34%, transparent), 0 0 16px color-mix(in srgb, var(--warn) 42%, transparent), 0 8px 24px rgba(0,0,0,.38);
+  -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); }
+#leap-hud.pinned::after { opacity: 1; animation: vcSweep 3s ease-in-out infinite; }
+#leap-hud.pinned .lh-num { color: var(--c-fff); }
+#leap-hud .lh-coin { filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
+/* Bildirim: nötr cam, sarı ikon */
+#vn-toast { padding: 0 15px 0 7px; gap: 7px; color: var(--c-fff); }
+#vn-toast .vt-n { font-weight: 700; color: var(--c-fff); }
+#vn-toast .vt-ic { color: var(--warn); background: color-mix(in srgb, var(--warn) 24%, transparent); box-shadow: inset 0 1px 0 var(--yt-a35); }
+/* Arama baloncuğu (canlı + "Bitti" hali): yeşil cam, içinde yavaş dolaşan yeşil ışık; kırmızıya geçince aynı katman kırmızı olur */
+@keyframes vcSweep { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(100%); } }
+@keyframes vcIn { 0% { opacity: 0; transform: translateY(-10px) scale(.94); } 100% { opacity: 1; transform: none; } }
+@keyframes vcLand { 0% { transform: scale(1); } 45% { transform: scale(1.07); } 100% { transform: scale(1); } }
+@keyframes vcDriftA { 0% { transform: translate(-10%, 0) scale(1); } 50% { transform: translate(70%, 12%) scale(1.15); } 100% { transform: translate(25%, -14%) scale(.95); } }
+@keyframes vcDriftB { 0% { transform: translate(10%, -6%) scale(1.05); } 50% { transform: translate(-60%, 10%) scale(.9); } 100% { transform: translate(-20%, -10%) scale(1.12); } }
+#vc-pill { display: none; position: absolute; top: 6px; left: 0; right: 0; margin: 0 auto; z-index: 5; width: max-content; max-width: calc(100% - 16px); }
+#vc-pill.show { display: flex; animation: vcIn .26s cubic-bezier(.2,.9,.3,1.15); }
+.vc-pill { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 15px; border-radius: 999px; white-space: nowrap; font-size: 12.5px; font-weight: 600; color: var(--c-fff); text-shadow: 0 1px 2px rgba(0,0,0,.35); transition: top .3s cubic-bezier(.2,.9,.3,1); -webkit-user-select: none; user-select: none; }
+.vc-pill > span:not(.vc-fx) { position: relative; }
+.vc-pill .vc-n { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
+.vc-pill .vc-sep { opacity: .6; }
+.vc-pill .vc-t { flex: 0 0 auto; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; letter-spacing: .2px; }
+.vc-fx { position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; overflow: hidden; }
+.vc-fx i { position: absolute; display: block; border-radius: 50%; filter: blur(9px); }
+.vc-fx i:nth-child(1) { left: -12%; top: -45%; width: 62%; height: 150%; animation: vcDriftA 7s ease-in-out infinite alternate; }
+.vc-fx i:nth-child(2) { right: -14%; top: -25%; width: 55%; height: 140%; animation: vcDriftB 9s ease-in-out infinite alternate; }
+.vc-g { background: linear-gradient(160deg, color-mix(in srgb, var(--ok) 36%, transparent) 0%, color-mix(in srgb, var(--ok) 10%, transparent) 55%, color-mix(in srgb, var(--ok) 20%, transparent) 100%); box-shadow: inset 0 0 14px color-mix(in srgb, var(--ok) 38%, transparent), inset 0 1px 0 color-mix(in srgb, var(--ok) 55%, var(--c-fff)); }
+.vc-g i:nth-child(1) { background: radial-gradient(closest-side, color-mix(in srgb, var(--ok) 70%, transparent), transparent); }
+.vc-g i:nth-child(2) { background: radial-gradient(closest-side, color-mix(in srgb, var(--ok) 50%, transparent), transparent); }
+.vc-r { opacity: 0; background: linear-gradient(160deg, color-mix(in srgb, var(--bad) 40%, transparent) 0%, color-mix(in srgb, var(--bad) 12%, transparent) 55%, color-mix(in srgb, var(--bad) 24%, transparent) 100%); box-shadow: inset 0 0 14px color-mix(in srgb, var(--bad) 42%, transparent), inset 0 1px 0 color-mix(in srgb, var(--bad) 55%, var(--c-fff)); }
+.vc-r i:nth-child(1) { background: radial-gradient(closest-side, color-mix(in srgb, var(--bad) 70%, transparent), transparent); }
+.vc-r i:nth-child(2) { background: radial-gradient(closest-side, color-mix(in srgb, var(--bad) 50%, transparent), transparent); }
+.vc-pill.vc-fly { position: fixed; margin: 0; z-index: 13000; pointer-events: none; transition: none; }
+.vc-pill.vc-static { position: relative; width: 100%; box-shadow: inset 0 1px 0 var(--yt-a35), inset 0 0 12px var(--yt-a12), 0 2px 6px rgba(0,0,0,.3); }
+/* "Arama sonlandı" kartındaki koyu boşluk: baloncuk buraya iner */
+.vc-slot { box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: max-content; min-width: 120px; max-width: 100%; height: 36px; margin: 2px auto 0; border-radius: 999px; background: color-mix(in srgb, #000 50%, transparent); border: 1px solid color-mix(in srgb, var(--c-fff) 8%, transparent); box-shadow: inset 0 2px 7px rgba(0,0,0,.6), inset 0 -1px 0 color-mix(in srgb, var(--c-fff) 7%, transparent); }
+.vc-slot.land { animation: vcLand .3s cubic-bezier(.2,.9,.3,1.3); }
+@media (prefers-reduced-motion: reduce) { .vc-fx i, #leap-hud.pinned::after, #vc-pill.show, .vc-slot.land { animation: none; } }
+
+/* ===== Arama kartları: mesaj baloncuğunun dışında, sohbetin yatay ortasında, liquid glass ===== */
+@property --tc { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+@property --tk { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
+@keyframes ccDrift { 0% { background-position: 0% 0%, 100% 100%, 0 0; } 100% { background-position: 100% 70%, 0% 20%, 0 0; } }
+.msg[data-call="1"], .msg.own-msg[data-call="1"] { align-self: center; align-items: center; max-width: min(88%, 300px); margin-top: 10px; margin-bottom: 4px; }
+.msg[data-call="1"] .bubble { background: transparent; box-shadow: none; padding: 0; border-radius: 22px; white-space: normal; max-width: 100%; }
+.msg[data-call="1"] .bubble > .hdr-row, .msg[data-call="1"] .time-tag { display: none; }
+.msg[data-call="1"] .bubble.pop, .msg[data-call="1"] .bubble.pop-left, .msg[data-call="1"] .bubble.pop-right { transform-origin: 50% 50%; }
+.call-card, .dial-card {
+  --tc: var(--c-fff); --tk: 0%;
+  position: relative; isolation: isolate; overflow: hidden; box-sizing: border-box; min-width: 220px; max-width: 100%; padding: 14px 18px; border-radius: 22px;
+  text-align: center; color: var(--c-fff); font-family: 'Lexend', sans-serif; line-height: 1.25;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--tc) var(--tk), transparent) 0%, color-mix(in srgb, var(--tc) calc(var(--tk) * .3), transparent) 55%, color-mix(in srgb, var(--tc) calc(var(--tk) * .6), transparent) 100%),
+    linear-gradient(160deg, color-mix(in srgb, var(--c-fff) 16%, transparent) 0%, color-mix(in srgb, var(--c-fff) 5%, transparent) 45%, color-mix(in srgb, var(--c-fff) 9%, transparent) 100%), color-mix(in srgb, var(--c-1a) 62%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tc) calc(var(--tk) * 1.3), var(--yt-a20));
+  box-shadow: inset 0 1px 0 var(--yt-a35), inset 0 -1px 0 var(--yt-a12), inset 0 0 18px color-mix(in srgb, var(--tc) calc(var(--tk) * .9), transparent), 0 8px 24px rgba(0,0,0,.38), 0 1px 3px rgba(0,0,0,.3);
+  -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+  transition: --tc .5s ease, --tk .5s ease;
+}
+.call-card::before, .dial-card::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(60% 80% at 20% 0%, color-mix(in srgb, var(--tc) calc(var(--tk) * 1.8), transparent), transparent 70%), radial-gradient(55% 70% at 85% 100%, color-mix(in srgb, var(--tc) calc(var(--tk) * 1.3), transparent), transparent 70%), linear-gradient(115deg, transparent 38%, var(--yt-a12) 50%, transparent 62%);
+  background-size: 150% 150%, 150% 150%, 100% 100%; opacity: .85; animation: ccDrift 9s ease-in-out infinite alternate; }
+.call-card::after, .dial-card::after { content: ''; position: absolute; left: 18px; right: 18px; top: 0; height: 1px; z-index: -1; pointer-events: none; background: linear-gradient(90deg, transparent, var(--yt-a42), transparent); }
+.call-card[data-tone="g"], .dial-card[data-tone="g"] { --tc: var(--ok); --tk: 28%; }
+.call-card[data-tone="r"], .dial-card[data-tone="r"] { --tc: var(--bad); --tk: 30%; }
+.call-card[data-tone="o"], .dial-card[data-tone="o"] { --tc: #ffb21e; --tk: 28%; }
+.dial-card[data-tone="d"] { --tc: var(--c-fff); --tk: 7%; }
+.dial-card { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.dial-card.opts { gap: 8px; align-items: stretch; width: min(260px, 100%); }
+.call-name, .dial-name { font-weight: 700; font-size: 16px; overflow-wrap: anywhere; text-shadow: 0 1px 2px rgba(0,0,0,.3); }
+.call-card .call-title, .dial-status { font-weight: 500; font-size: 13px; opacity: 0.92; }
+/* Cam düğmeler: aynı dil, renkli yansımayla */
+.dial-opt { position: relative; isolation: isolate; overflow: hidden; border: 1px solid var(--yt-a20); border-radius: 14px; font-family: 'Lexend', sans-serif; font-size: 14px; font-weight: 500; color: var(--c-fff);
+  background: radial-gradient(120% 110% at 28% 0%, var(--yt-a28) 0%, transparent 60%), linear-gradient(160deg, var(--yt-a20) 0%, var(--yt-a12) 55%, var(--yt-a16) 100%);
+  box-shadow: inset 0 1px 0 var(--yt-a42), inset 0 -2px 3px var(--yt-a12), 0 2px 6px rgba(0,0,0,.25); transition: transform .12s, background .15s; }
+.dial-opt:active { transform: scale(.97); background: radial-gradient(120% 110% at 28% 0%, var(--yt-a50) 0%, transparent 60%), linear-gradient(160deg, var(--yt-a35) 0%, var(--yt-a16) 55%, var(--yt-a25) 100%); }
+.dial-opt.dial-cancel { color: var(--dng); border-color: color-mix(in srgb, var(--bad) 40%, var(--yt-a20)); background: radial-gradient(120% 110% at 28% 0%, color-mix(in srgb, var(--bad) 40%, transparent) 0%, transparent 60%), linear-gradient(160deg, color-mix(in srgb, var(--bad) 26%, transparent) 0%, color-mix(in srgb, var(--bad) 8%, transparent) 55%, color-mix(in srgb, var(--bad) 16%, transparent) 100%); }
+.call-btn { position: relative; isolation: isolate; overflow: hidden; border: 1px solid var(--yt-a28); box-shadow: inset 0 1.5px 1px var(--yt-a60), inset 0 -2px 3px var(--yt-a20), 0 3px 8px rgba(0,0,0,.34); }
+.call-acc { background: radial-gradient(120% 110% at 28% 8%, color-mix(in srgb, var(--ok) 70%, #fff) 0%, transparent 58%), linear-gradient(160deg, color-mix(in srgb, var(--ok) 78%, transparent) 0%, color-mix(in srgb, var(--ok) 45%, transparent) 100%); }
+.call-rej { background: radial-gradient(120% 110% at 28% 8%, color-mix(in srgb, var(--bad) 70%, #fff) 0%, transparent 58%), linear-gradient(160deg, color-mix(in srgb, var(--bad) 78%, transparent) 0%, color-mix(in srgb, var(--bad) 45%, transparent) 100%); }
+.call-btn:active { transform: scale(.92); }
+@media (prefers-reduced-motion: reduce) { .call-card::before, .dial-card::before { animation: none; } }
 </style>
 </head>
 <body>
@@ -4570,6 +4663,13 @@ function ytChipSync() {
 }
 // Üstteki şeritlerin (şarkı şeridi + Oto. Oynat) chat-wrap üstüne göre alt kenarı; kayma bitmeden hedef konum esas alınır
 function ytStripRelBottom() {
+  let rel = ytStripRelBottomBase();
+  const p = document.getElementById('vc-pill');
+  if (p && p.classList.contains('show') && p.offsetHeight) rel = Math.max(rel, vcPillTop() + p.offsetHeight); // arama baloncuğu da şeritlerin altına sayılır: Leap / bildirim onun altına iner
+  return rel;
+}
+// Şarkı şeridi + Oto. Oynat baloncuğunun alt kenarı (arama baloncuğu hariç)
+function ytStripRelBottomBase() {
   let rel = 0;
   const d = document.getElementById('yt-dock');
   if (d && d.classList.contains('show') && !d.classList.contains('hide') && d.offsetHeight) rel = d.offsetTop + d.offsetHeight;
@@ -4580,6 +4680,7 @@ function ytStripRelBottom() {
 /* Şarkı şeridi / Oto. Oynat baloncuğu ekranda görünüyorsa alt kenarını (ekran koordinatı) --strip-b'ye yazar; Leap göstergesi ve bildirim baloncuğu şeridin altına iner */
 function ytStripBottomSync() {
   try { ytChipSync(); } catch (e) {}
+  try { const vp = document.getElementById('vc-pill'); if (vp) { const vt = vcPillTop() + 'px'; if (vp.style.top !== vt) vp.style.top = vt; } } catch (e) {}
   let b = 0;
   const wrap = document.getElementById('chat-wrap');
   if (wrap) {
@@ -6045,6 +6146,10 @@ function buildCallMsgCard(msgDiv, id, name, own, fresh) {
     endCard.classList.add('mine');
     msgDiv._callCard = endCard;
     endCard._set('ended');
+    const slot = document.createElement('div');
+    slot.className = 'vc-slot';
+    endCard.appendChild(slot);
+    try { vcAttachSlot(slot, id, !!fresh); } catch (e) {}
     return endCard;
   }
   const card = buildCallCard(name);
@@ -6067,6 +6172,137 @@ function buildCallMsgCard(msgDiv, id, name, own, fresh) {
   if (age >= CALL_TIMEOUT_MS) setTimeout(miss, 0); else setTimeout(miss, CALL_TIMEOUT_MS - age);
   return card;
 }
+
+/* ===== Arama süre baloncuğu: "Arama başladı" olunca üstte İsim • süre; "Arama sonlandı" kartı gelince karttaki boşluğa iner ===== */
+var VC_KEY = 'vnCallLive', VC_DUR_KEY = 'vnCallDur';
+var vcLive = null, vcTick = 0;
+function vcFmt(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  const p = (n) => (n < 10 ? '0' : '') + n;
+  return h > 0 ? p(h) + ':' + p(m) + ':' + p(s) : p(m) + ':' + p(s); // 59:59'dan sonra 01:00:00
+}
+function vcBuildPill(cls, id) {
+  const el = document.createElement('div');
+  el.className = 'vc-pill' + (cls ? ' ' + cls : '');
+  if (id) el.id = id;
+  el.innerHTML = '<span class="vc-fx vc-g"><i></i><i></i></span><span class="vc-fx vc-r"><i></i><i></i></span><span class="vc-n"></span><span class="vc-sep">\u2022</span><span class="vc-t"></span>';
+  el._g = el.querySelector('.vc-g'); el._r = el.querySelector('.vc-r');
+  el._n = el.querySelector('.vc-n'); el._t = el.querySelector('.vc-t');
+  el._setP = (p) => { el._g.style.opacity = String(1 - p); el._r.style.opacity = String(p); }; // 0 = yeşil, 1 = kırmızı
+  return el;
+}
+function vcDurRead() { try { const o = JSON.parse(lsGet(VC_DUR_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; } catch (e) { return {}; } }
+function vcDurWrite(id, sec) {
+  const o = vcDurRead(); o[id] = sec;
+  const keys = Object.keys(o); while (keys.length > 100) delete o[keys.shift()];
+  try { lsSet(VC_DUR_KEY, JSON.stringify(o)); } catch (e) {}
+}
+function vcPillTop() { const b = ytStripRelBottomBase(); return b ? b + 6 : 6; }
+function vcEnsure() {
+  let el = document.getElementById('vc-pill');
+  if (!el) { el = vcBuildPill('', 'vc-pill'); el.setAttribute('role', 'status'); chatWrap.appendChild(el); }
+  return el;
+}
+function vcRender() {
+  if (!vcLive) return;
+  const el = document.getElementById('vc-pill');
+  if (!el || !el._t) return;
+  const t = vcFmt((Date.now() - vcLive.t0) / 1000);
+  if (el._t.textContent !== t) el._t.textContent = t;
+}
+function vcShow() {
+  if (!vcLive) return;
+  const el = vcEnsure();
+  el._n.textContent = vcLive.name || 'Arama';
+  el._setP(0);
+  el.style.top = vcPillTop() + 'px';
+  vcRender();
+  el.classList.add('show');
+  clearInterval(vcTick); vcTick = setInterval(vcRender, 250);
+  try { ytTopInsetSync(); } catch (e) {}
+}
+function vcStart(id, name) {
+  vcLive = { id: id, name: String(name || ''), t0: Date.now() };
+  lsSet(VC_KEY, JSON.stringify(vcLive));
+  vcShow();
+}
+function vcHideLive() {
+  const el = document.getElementById('vc-pill');
+  if (el) el.classList.remove('show');
+  try { ytTopInsetSync(); } catch (e) {}
+}
+// Dolu (kırmızı, "Bitti • süre") baloncuk boşluğun içine yerleşir
+function vcFill(slot, sec) {
+  slot.textContent = '';
+  const st = vcBuildPill('vc-static');
+  st._n.textContent = 'Bitti'; st._t.textContent = vcFmt(sec); st._setP(1);
+  slot.appendChild(st);
+}
+function vcAttachSlot(slot, id, fresh) {
+  const saved = vcDurRead()[id];
+  if (typeof saved === 'number') { vcFill(slot, saved); return; }
+  if (!(fresh && vcLive)) return; // eski geçmiş kartında süre bilinmiyorsa boşluk boş kalır
+  const live = vcLive;
+  vcLive = null; lsRemove(VC_KEY); clearInterval(vcTick);
+  const sec = Math.floor((Date.now() - live.t0) / 1000);
+  vcDurWrite(id, sec);
+  const lp = document.getElementById('vc-pill');
+  if (lp && lp._t) lp._t.textContent = vcFmt(sec); // süre sonlanma anında donar
+  vcSizeSlot(slot, sec);
+  let tries = 0;
+  const go = () => {
+    if (!slot.isConnected) { if (++tries < 30) setTimeout(go, 50); else { vcHideLive(); vcFill(slot, sec); } return; }
+    vcFly(slot, live, sec);
+  };
+  setTimeout(go, 420); // kart belirip alta kayana kadar kısa bekleme
+}
+function vcSizeSlot(slot, sec) {
+  const probe = vcBuildPill('vc-static');
+  probe._n.textContent = 'Bitti'; probe._t.textContent = vcFmt(sec);
+  probe.style.cssText = 'position:fixed;left:-9999px;top:0;width:max-content;visibility:hidden;';
+  document.body.appendChild(probe);
+  const w = Math.ceil(probe.getBoundingClientRect().width);
+  probe.remove();
+  slot.style.width = w + 'px';
+}
+function vcFly(slot, live, sec) {
+  const lp = document.getElementById('vc-pill');
+  const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if (!lp || !lp.classList.contains('show') || reduce) { vcHideLive(); vcFill(slot, sec); slot.classList.add('land'); return; }
+  const src = lp.getBoundingClientRect();
+  const w1 = Math.max(60, slot.getBoundingClientRect().width || 120);
+  const fly = vcBuildPill('vc-fly');
+  fly._n.textContent = live.name || 'Arama'; fly._t.textContent = vcFmt(sec); fly._setP(0);
+  fly.style.left = src.left + 'px'; fly.style.top = src.top + 'px'; fly.style.width = src.width + 'px';
+  document.body.appendChild(fly);
+  fly._n.textContent = 'Bitti';
+  vcHideLive(); // üstteki yer boşalır: Leap / bildirim yukarı çıkar
+  const DUR = 820, t0 = performance.now();
+  const ease = (x) => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  const step = (now) => {
+    const k = Math.min(1, (now - t0) / DUR), e = ease(k);
+    const tg = slot.isConnected ? slot.getBoundingClientRect() : null;
+    if (!tg) { fly.remove(); return; }
+    const ty = Math.min(Math.max(tg.top, 6), window.innerHeight - 42); // kart ekran dışındaysa ekranın içinde kalır
+    fly.style.left = (src.left + (tg.left - src.left) * e) + 'px';
+    fly.style.top = (src.top + (ty - src.top) * e) + 'px';
+    fly.style.width = (src.width + (w1 - src.width) * e) + 'px';
+    fly._setP(e);
+    if (k < 1) { requestAnimationFrame(step); return; }
+    vcFill(slot, sec);
+    fly.remove();
+    slot.classList.add('land');
+  };
+  requestAnimationFrame(step);
+}
+(function () { // sayfa yenilenirse süren arama kaldığı yerden sayar
+  try {
+    const o = JSON.parse(lsGet(VC_KEY) || 'null');
+    if (o && o.id && o.t0 && Date.now() - o.t0 < 86400000) { vcLive = o; setTimeout(vcShow, 0); }
+    else if (o) lsRemove(VC_KEY);
+  } catch (e) {}
+})();
 
 /* ===== ".ara İsim" komutu: komutu girene "Bir saniye..." kartı, karşıya seçenekli kart gider ===== */
 function dialParse(text) {
@@ -6156,6 +6392,7 @@ function dialSetState(id, st, send) {
   o[id] = st;
   dialWriteStates(o);
   dialApply(id, st);
+  if (st === 'started') { try { const dm = document.getElementById(id); vcStart(id, dm && dm._dialCard ? dm._dialCard._name : ''); } catch (e) {} } // "Arama başladı" yazısına dönüştüğü an üstte süre baloncuğu başlar
   if (send && isConnected()) { try { conn.send({ type: 'dial-state', msgId: id, state: st }); } catch (e) {} }
   if (st.indexOf('call_') === 0) {
     const m = document.getElementById(id);
