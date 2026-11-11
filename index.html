@@ -11678,7 +11678,8 @@ cdAnimRestore();
   const KEY = 'snowLayer';   // yalnızca birikmeyi açar/kapatır
   const MIN = 60000;
   const PILE_CAP = 5;      // metin kutusu üstündeki birikme kalınlığı sınırı (px)
-  const BUB_CAP = 3;       // mesaj balonu üstündeki birikme sınırı (px)
+  const BUB_CAP = 5;       // mesaj balonu üstündeki birikme sınırı (px)
+  const BUB_MULT = 3;      // balona düşen tanenin birikim çarpanı (mesajlar hızlı aktığı için birikim görünsün)
   const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const rnd = (a, b) => a + Math.random() * (b - a);
   const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
@@ -11688,6 +11689,7 @@ cdAnimRestore();
 
   let enabled = lget(KEY) !== 'off';
   let W = 0, H = 0;
+  let off = 0, plo = 0, phi = 0;   // off: sohbet alanının altı ile metin kutusunun üstü arası (mobilde iç boşluk); plo/phi: yığının yatay aralığı
   const flakes = [], parts = [];
   let ball = null, gust = null;
   let wind = 0, windTarget = 0, windChangeAt = 0;
@@ -11740,12 +11742,26 @@ cdAnimRestore();
   })();
   const BALL_HALF = (BALL_N * BALL_CELL) / 2;
 
+  /* Yığının zemini: metin kutusunun gerçek üst kenarı. Mobilde #input-area'nın iç boşluğu yüzünden sohbet alanının altı ile kutunun üstü arasında boşluk var;
+     ön katman bu boşluğa kadar uzatılır, böylece kar tam kutunun üstüne oturur. */
+  function measureDock() {
+    let o = 0, l = 0, r = wrap.clientWidth;
+    const mi = document.getElementById('message-input'), iw = document.getElementById('input-wrapper');
+    if (mi && iw && mi.offsetWidth > 0) {
+      const wr = wrap.getBoundingClientRect(), m = mi.getBoundingClientRect(), w = iw.getBoundingClientRect();
+      o = clamp(Math.round(m.top - wr.bottom), 0, 60);
+      if (w.width > 40) { l = Math.max(0, Math.round(w.left - wr.left) + 6); r = Math.min(wrap.clientWidth, Math.round(w.right - wr.left) - 6); }
+    }
+    off = o; plo = l; phi = r;
+  }
+
   function resize() {
     const w = wrap.clientWidth, h = wrap.clientHeight;
     if (!w || !h) return;
     W = w; H = h;
+    measureDock();
     if (back.width !== W || back.height !== H) { back.width = W; back.height = H; bctx.imageSmoothingEnabled = false; }
-    if (front.width !== W || front.height !== H) { front.width = W; front.height = H; ctx.imageSmoothingEnabled = false; }
+    if (front.width !== W || front.height !== H + off) { front.width = W; front.height = H + off; front.style.height = (H + off) + 'px'; ctx.imageSmoothingEnabled = false; }
     if (pile.hm.length !== W) { const n = new Uint8Array(W); n.set(pile.hm.subarray(0, Math.min(W, pile.hm.length))); pile.hm = n; if (pile.c1 >= W) pile.c1 = W - 1; }
   }
   if (window.ResizeObserver) new ResizeObserver(resize).observe(wrap);
@@ -11757,14 +11773,14 @@ cdAnimRestore();
   let gustDir = Math.random() < 0.5 ? -1 : 1;
   function startGust(t) {
     gustDir = -gustDir;
-    gust = { t0: t, D: rnd(6, 10), dir: gustDir, str: rnd(170, 240) };
+    gust = { t0: t, D: 10, dir: gustDir, str: rnd(240, 330) };   // tipi: 10 sn boyunca yoğun kar + sert yan rüzgar
   }
   function gustEnv(t) {
     const e = (t - gust.t0) / 1000, D = gust.D;
-    const sn = Math.sin(Math.PI * clamp(e / D, 0, 1));
-    const w = e >= D ? 0 : sn * sn;                       // hızlanarak başlar, tepeye çıkar, yavaşlayarak durur
-    const d = e < D * 0.4 ? sstep(e / (D * 0.4)) : (e < D ? 1 : (e < D + 10 ? 1 - sstep((e - D) / 10) : 0));
-    return { w: w, d: d, done: e > D + 10 };
+    /* rüzgar: 1.5 sn'de tam güce çıkar, D'ye kadar sürer, son 1.5 sn'de dinir; yoğunluk: 1.2 sn'de tepeye çıkar, D'den sonra 3 sn'de söner */
+    const w = e < 1.5 ? sstep(e / 1.5) : (e < D - 1.5 ? 1 : (e < D ? 1 - sstep((e - (D - 1.5)) / 1.5) : 0));
+    const d = e < 1.2 ? sstep(e / 1.2) : (e < D ? 1 : (e < D + 3 ? 1 - sstep((e - D) / 3) : 0));
+    return { w: w, d: d, done: e > D + 3 };
   }
 
   /* tier: 'main' (%60 2px / %25 3px / %10 4px-ya-da-artı / %5 kar tanesi), 'f2' (2px çok silik), 'f1' (1px epey silik), 'big' (kar tanesi) */
@@ -11786,7 +11802,9 @@ cdAnimRestore();
       drift: Math.random() < 0.35 ? 0 : rnd(-14, 14),
       windK: rnd(0.35, 1.1),
       ph: rnd(0, 6.28), sw: rnd(0.4, 1.2), amp: rnd(0, 8),
-      kind: kind, size: size, a: a, faint: (tier === 'f2' || tier === 'f1')
+      kind: kind, size: size, a: a, faint: (tier === 'f2' || tier === 'f1'),
+      skip: (function () { const r = Math.random(); return r < 0.40 ? 0 : (r < 0.65 ? 1 : (r < 0.85 ? 2 : 3)); })(),   // çarptığı ilk 0-3 yüzeyi (baloncuk ya da metin kutusu) es geçer
+      nopile: false
     };
     if (gust && env.w > 0.05 && Math.random() < 0.8) {
       f.x = gust.dir > 0 ? rnd(-40, 0) : rnd(W, W + 40);
@@ -11867,7 +11885,7 @@ cdAnimRestore();
     const x0 = fromLeft ? -BALL_HALF - 4 : W + BALL_HALF + 4;
     let x1, y0, y1, h, T;
     if (burst) {
-      x1 = rnd(W * 0.2, W * 0.8); y0 = rnd(H * 0.15, H * 0.5); y1 = H - 4; h = rnd(H * 0.08, H * 0.2);
+      x1 = rnd(W * 0.2, W * 0.8); y0 = rnd(H * 0.15, H * 0.5); y1 = H + off - 4; h = rnd(H * 0.08, H * 0.2);
       T = Math.max(1.0, Math.abs(x1 - x0) / rnd(220, 300));
     } else {
       x1 = fromLeft ? W + BALL_HALF + 4 : -BALL_HALF - 4;
@@ -11908,7 +11926,8 @@ cdAnimRestore();
     let dt = (t - last) / 1000; last = t;
     if (dt > 0.1) dt = 0.1;
     if (!active()) { if (flakes.length || parts.length || ball || drawnBack || drawnFront) pauseAll(); return; }
-    if (back.width !== wrap.clientWidth || back.height !== wrap.clientHeight) resize();
+    measureDock();
+    if (back.width !== wrap.clientWidth || back.height !== wrap.clientHeight || front.height !== wrap.clientHeight + off) resize();
     if (!W) return;
 
     if (!modeAt) { modeAt = t + rnd(9, 11) * MIN; gustAt = t + rnd(2, 3) * MIN; ballAt = t + rnd(40, 50) * MIN; windChangeAt = 0; }
@@ -11934,11 +11953,13 @@ cdAnimRestore();
     if (!ball && t > ballAt) { throwBall(t); ballAt = t + rnd(40, 50) * MIN; }
 
     /* üretim */
-    const dMul = dens * (1 + 4 * env.d);
-    const cap = Math.max(6, Math.round(W * H / 9000 * Math.max(dens, 0.3) * (1 + 3.5 * env.d)));
+    const wideK = window.innerWidth > 768 ? 2.5 : 1;         // masaüstünde daha sık yağar
+    const dMul = dens * wideK + 9 * env.d;                   // tipide sıklık hava modundan bağımsız ~10 kat
+    const cap = Math.max(6, Math.round(W * H / 9000 * (Math.max(dens, 0.3) * wideK + 8 * env.d)));
     if (!seeded) { seed(cap); seeded = true; nextSpawn = t + 400; }
     if (t > nextSpawn) {
-      if (flakes.length < cap) spawn(env, 'main');
+      const nSp = 1 + Math.floor(env.d * 2);                // tipide her seferde birkaç tane
+      for (let q = 0; q < nSp; q++) if (flakes.length < cap) spawn(env, 'main');
       if (flakes.length < cap * 1.8) {                     // çok silik 2px ve 1px taneler
         if (Math.random() < 0.3) spawn(env, 'f2');
         if (Math.random() < 0.45) spawn(env, 'f1');
@@ -11954,7 +11975,9 @@ cdAnimRestore();
 
     bctx.clearRect(0, 0, W, H);
     drawnBack = true;
-    bctx.fillStyle = '#fff';
+    ctx.clearRect(0, 0, W, H + off);
+    drawnFront = true;
+    bctx.fillStyle = '#fff'; ctx.fillStyle = '#fff';
     for (let i = flakes.length - 1; i >= 0; i--) {
       const f = flakes[i];
       const oy = f.y;
@@ -11963,7 +11986,7 @@ cdAnimRestore();
       if (gust) { const kk = f.windK + (1 - f.windK) * env.w; wx += gust.dir * gust.str * env.w * kk; }
       f.x += (f.drift + wx + Math.sin(f.ph) * f.amp) * dt;
       f.y += f.vy * spd * dt;
-      if (f.y > H + 4 || f.x < -60 || f.x > W + 60) { flakes.splice(i, 1); continue; }
+      if (f.y > H + off + 4 || f.x < -60 || f.x > W + 60) { flakes.splice(i, 1); continue; }
 
       if (enabled && !f.faint && f.x >= 0 && f.x < W) {      // silik olmayan taneler baloncuğun üstüne konar; yalnızca kar tanesi metin kutusuna da
         const big = f.kind === 2;
@@ -11975,27 +11998,33 @@ cdAnimRestore();
           if (ob <= b.top && nb >= b.top && f.x >= b.left + 8 && f.x <= b.right - 8 && (!hit || b.top < hit.top)) hit = b;
         }
         if (hit) {
-          const units = big ? 21 : (f.kind === 1 ? 9 : f.size * f.size);      // tanenin kendi piksel sayısı
-          landOnBubble(hit, f.x + (f.kind === 0 ? f.size / 2 : 0), units, Math.ceil(f.size / 2));
-          flakes.splice(i, 1); continue;
+          if (f.skip > 0) f.skip--;                                           // bu yüzeyi es geç, arkasından düşmeye devam et
+          else {
+            const units = big ? 21 : (f.kind === 1 ? 9 : f.size * f.size);    // tanenin kendi piksel sayısı
+            landOnBubble(hit, f.x + (f.kind === 0 ? f.size / 2 : 0), units * BUB_MULT, Math.ceil(f.size / 2) + 1);
+            flakes.splice(i, 1); continue;
+          }
         }
         if (big || f.size >= 4) {                              // kar tanesi, artı ve 4px taneler metin kutusuna da birikir
-          const col = clamp(Math.floor(f.kind === 0 ? f.x + f.size / 2 : f.x), 0, W - 1);
-          if (nb >= H - pile.hm[col]) { addUnits(pile, 0, W, PILE_CAP, col, big ? 3 : 2); flakes.splice(i, 1); continue; }
+          const col = Math.floor(f.kind === 0 ? f.x + f.size / 2 : f.x);
+          if (!f.nopile && col >= plo && col < phi && nb >= H + off - pile.hm[col]) {
+            if (f.skip > 0) { f.skip--; f.nopile = true; }                    // metin kutusunu da es geçebilir (geçince bir daha çarpmaz)
+            else { addUnits(pile, plo, phi, PILE_CAP, col, big ? 3 : 2); flakes.splice(i, 1); continue; }
+          }
         }
       }
 
-      bctx.globalAlpha = f.a;
       const px = Math.round(f.x), py = Math.round(f.y);
-      if (f.kind === 1) bctx.drawImage(SPR_PLUS, px - 2, py - 2);
-      else if (f.kind === 2) bctx.drawImage(SPR_FLAKE, px - 3, py - 3);
-      else bctx.fillRect(px, py, f.size, f.size);
+      const g = (off > 0 && py > H - 6) ? ctx : bctx;         // sohbet alanının altındaki boşlukta (kutuya inerken) ön katmanda çizilir
+      g.globalAlpha = f.a;
+      if (f.kind === 1) g.drawImage(SPR_PLUS, px - 2, py - 2);
+      else if (f.kind === 2) g.drawImage(SPR_FLAKE, px - 3, py - 3);
+      else g.fillRect(px, py, f.size, f.size);
     }
-    bctx.globalAlpha = 1;
+    bctx.globalAlpha = 1; ctx.globalAlpha = 1;
 
     /* ---- ön katman ---- */
-    ctx.clearRect(0, 0, W, H);
-    drawnFront = true;
+    ctx.globalAlpha = 1;
 
     /* birikenler: baloncukların üstü (baloncukla birlikte kayar) */
     ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.92;
@@ -12006,7 +12035,7 @@ cdAnimRestore();
       drawRuns(ctx, ent.hm, Math.ceil(ent.rad), Math.min(ent.c1, Math.floor(r.width - ent.rad) - 1), Math.round(r.left - wr.left), Math.round(r.top - wr.top));
     });
     /* birikenler: metin kutusunun üstü */
-    drawRuns(ctx, pile.hm, pile.c0, pile.c1, 0, H);
+    drawRuns(ctx, pile.hm, pile.c0, pile.c1, 0, H + off);
     ctx.globalAlpha = 1;
 
     /* kar topu hareketi */
@@ -12030,7 +12059,7 @@ cdAnimRestore();
     for (let i = parts.length - 1; i >= 0; i--) {
       const q = parts[i];
       q.age += dt; q.vy += q.g * dt; q.x += q.vx * dt; q.y += q.vy * dt;
-      if (q.age >= q.life || q.y > H + 2) { parts.splice(i, 1); continue; }
+      if (q.age >= q.life || q.y > H + off + 2) { parts.splice(i, 1); continue; }
       const r = q.age / q.life;
       ctx.globalAlpha = r < 0.5 ? 1 : 1 - (r - 0.5) / 0.5;
       ctx.fillStyle = q.col;
