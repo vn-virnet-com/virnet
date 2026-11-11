@@ -2154,7 +2154,9 @@ const SEEN_KEY = 'seenMsgIdsV1';
 const SEEN_MAX = 80;
 const outboxTries = {};   // id -> { n: deneme sayısı, t: son deneme zamanı }
 const undeliveredTimers = {};
+let _outboxMem = [];
 function readOutbox() {
+  return _outboxMem.slice();
   try {
     const arr = JSON.parse(lsGet(OUTBOX_KEY) || '[]');
     if (!Array.isArray(arr)) return [];
@@ -2162,6 +2164,8 @@ function readOutbox() {
   } catch (e) { return []; }
 }
 function writeOutbox(list) {
+  _outboxMem = list.slice(-OUTBOX_MAX);
+  return;
   let safe = list.slice(-OUTBOX_MAX);
   while (safe.length > 0) {
     try { localStorage.setItem(OUTBOX_KEY, JSON.stringify(safe)); return; }
@@ -2258,6 +2262,8 @@ function rememberSeenMsg(id) {
 
 const HISTORY_KEY = 'chatHistory';
 const MAX_HISTORY = 1;
+// GİZLİLİK: mesaj metni artık diske (localStorage) hiç yazılmaz; açılışta eski kalıntılar da silinir.
+lsRemove('chatHistory'); lsRemove('msgDraft'); lsRemove('outboxV1');
 const MEDIA_PLACEHOLDER = '[Burada bir medya içeriği vardı]';
 
 const HEARTS = {
@@ -2318,6 +2324,7 @@ function sanitizeEntry(e) {
 }
 
 function readHistory() {
+  return [];
   try {
     const raw = lsGet(HISTORY_KEY);
     if (!raw) return [];
@@ -2328,6 +2335,8 @@ function readHistory() {
 }
 
 function writeHistory(list) {
+  lsRemove(HISTORY_KEY);
+  return false;
   let safe = (Array.isArray(list) ? list : [])
     .map(sanitizeEntry).filter((x) => x).slice(-MAX_HISTORY);
 
@@ -2344,6 +2353,7 @@ function writeHistory(list) {
 }
 
 function saveMessageToHistory(entry) {
+  return;
   const list = readHistory();
   if (entry.id && list.some(m => m.id === entry.id)) return;
   list.push(entry);
@@ -2351,6 +2361,8 @@ function saveMessageToHistory(entry) {
 }
 
 function enforceHistoryLimit() {
+  lsRemove(HISTORY_KEY);
+  return;
   const raw = lsGet(HISTORY_KEY);
   if (raw === null) return;
   const clean = JSON.stringify(readHistory());
@@ -2577,8 +2589,7 @@ const DRAFT_KEY = 'msgDraft';
 // Yazılıp gönderilmemiş metin localStorage'da tutulur; site kapanıp açılsa da kutuda kalır.
 function saveDraft() {
   if (editingId || messageInput.disabled) return;
-  const v = messageInput.value;
-  if (v) lsSet(DRAFT_KEY, v); else lsRemove(DRAFT_KEY);
+  return; // taslak diske yazılmaz
 }
 function restoreDraft() {
   const v = lsGet(DRAFT_KEY);
