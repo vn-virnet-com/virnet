@@ -12206,7 +12206,7 @@ cdAnimRestore();
 
   /* ---- Üst şerit baloncukları: şarkı şeridi, Oto. Oynat, arama süre baloncuğu. Mesaj baloncuklarındaki gibi üstlerinde hazır birikmiş kar durur.
      Bunlar mutlak konumlu, kayan ve overflow:hidden olduğundan (::before/::after da dolu) kar ön katman canvas'ına her karede o anki konumlarına çizilir; kenar boşluğu 6 px, kar en fazla 4 px ---- */
-  const TOP_IDS = ['yt-dock', 'auto-chip', 'vc-pill'];
+  const TOP_IDS = ['yt-dock', 'auto-chip', 'vc-pill', 'leap-hud', 'vn-toast'];   // şarkı şeridi, Oto. Oynat, arama süresi, Leap, bildirim baloncuğu
   const topMap = new Map();
   function drawTopSnow() {
     let wr = null;
@@ -12233,6 +12233,7 @@ cdAnimRestore();
       if (!wr) wr = wrap.getBoundingClientRect();
       const r = el.getBoundingClientRect();
       const x0 = Math.round(r.left - wr.left), top = Math.round(r.top - wr.top);
+      if (top < 0 || r.left + r.width / 2 < wr.left || r.left + r.width / 2 > wr.right) continue;   // sohbet alanının dışında kalan (ör. masaüstünde sağ panel üstü) baloncuğa kar çizilmez
       ctx.globalAlpha = 0.92 * alpha; ctx.fillStyle = '#fff';
       drawEnt(ctx, ent, x0, top, ent.c0, ent.c1);
       drawDrip(ctx, ent, -1, x0, top); drawDrip(ctx, ent, 1, x0, top);
