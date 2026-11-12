@@ -12340,6 +12340,102 @@ cdAnimRestore();
     }
   }
 
+  /* ---- Tavşan gittikten sonra: metin kutusunun en solundaki kar sağa sürüklenir. Sürüklenen yer temizlenir, parmağın hemen sağında
+     kar topu büyüyerek yuvarlanır; kardan adamın eski yerine varınca kardan adama dönüşür ve temizlenen kar kutuya geri gelir ---- */
+  let drag = null, regrow = null;
+  const DRAG_ZONE = 48;
+  function dragAvail() { return enabled && smBroken && rbDone && !regrow && W > 0 && Math.min(phi, W) - plo >= 120; }
+  function dragD(p) { return Math.round(3 + 11 * Math.sqrt(clamp(p, 0, 1))); }
+  function dragTarget() { const hi = Math.min(phi, W); return hi - SM_GAP - SM_W + 10; }
+  function dragProg(dx) { return clamp((dx - plo) / Math.max(20, dragTarget() - plo - 8), 0, 1); }
+  /* dokunulan nokta tutma bölgesinde mi? (kutunun hemen üstü; ilk tutuşta en sol bölge, sonrakilerde topun yanı) */
+  function dragZone(cx, cy) {
+    if (!dragAvail()) return false;
+    const wr = wrap.getBoundingClientRect(), x = cx - wr.left, y = cy - wr.top, base = H + off;
+    if (y < base - 24 || y > base - 1) return false;
+    if (!drag) return x >= plo && x <= plo + DRAG_ZONE;
+    const D = dragD(dragProg(drag.dx));
+    return x >= drag.dx - 16 && x <= drag.dx + D + 24;
+  }
+  function dragDown(e, cx, cy, id) {
+    if (!dragZone(cx, cy)) return false;
+    const x = cx - wrap.getBoundingClientRect().left;
+    if (!drag) drag = { dx: plo - 1, ptr: true, ptrX: x, off: 0, id: id, roll: 0, by: 0, puff: 0 };
+    else { drag.ptr = true; drag.ptrX = x; drag.id = id; drag.off = drag.dx - x; }
+    return true;
+  }
+  document.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (dragDown(e, e.clientX, e.clientY, e.pointerId) && e.cancelable) e.preventDefault();
+  }, true);
+  document.addEventListener('pointermove', function (e) {
+    if (!drag || !drag.ptr || e.pointerId !== drag.id) return;
+    drag.ptrX = e.clientX - wrap.getBoundingClientRect().left;
+    if (e.cancelable) e.preventDefault();
+  }, true);
+  function dragUp(e) { if (drag && drag.ptr && e.pointerId === drag.id) drag.ptr = false; }
+  document.addEventListener('pointerup', dragUp, true);
+  document.addEventListener('pointercancel', dragUp, true);
+  /* dokunmatikte sürüklerken sohbetin kaymasını ve metin kutusunun odaklanmasını engelle */
+  document.addEventListener('touchstart', function (e) { const t = e.touches && e.touches[0]; if (t && dragZone(t.clientX, t.clientY) && e.cancelable) e.preventDefault(); }, { capture: true, passive: false });
+  document.addEventListener('touchmove', function (e) { if (drag && drag.ptr && e.cancelable) e.preventDefault(); }, { capture: true, passive: false });
+
+  function dragFinish(bx, by) {
+    for (let i = 0; i < 34; i++) {
+      const ang = -Math.PI * rnd(0.02, 0.98), sp = rnd(30, 150);
+      parts.push({ x: bx + rnd(-6, 6), y: by + rnd(-6, 4), vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, g: 300, age: 0, life: rnd(0.5, 1.0), size: Math.random() < 0.75 ? 2 : 3, col: Math.random() < 0.7 ? '#ffffff' : '#c9d6ea' });
+    }
+    smBroken = false; smHits = 0; smShake = 0; smItems = []; smRect = null; smBrokenAt = 0; smNext = 0; smStart = -1;
+    rb = null; rbDone = false; drag = null;
+    const hi = Math.min(phi, W), tgt = new Uint8Array(W);
+    waveFill(tgt, plo, hi, PILE_MIN, PILE_MAX, pileWave);
+    regrow = { t: 0, tgt: tgt, lo: plo, hi: hi };
+  }
+  function drawRoll(cx, cy, D, roll) {
+    const r = D / 2, a = roll / Math.max(1, r), sx = [], sy = [];
+    for (let k = 0; k < 2; k++) { const ak = a + k * 2.4; sx.push(Math.floor(r + Math.cos(ak) * r * 0.5)); sy.push(Math.floor(r + Math.sin(ak) * r * 0.5)); }
+    const l0 = Math.round(cx - r), t0 = Math.round(cy - r);
+    for (let y = 0; y < D; y++) for (let x = 0; x < D; x++) {
+      const dx = x + 0.5 - r, dy = y + 0.5 - r, d = Math.hypot(dx, dy);
+      if (d > r - 0.15) continue;
+      const l = (-dx - dy) / (r * 1.4);
+      let col = l > 0.35 ? '#ffffff' : (l > -0.15 ? '#eaf0f8' : (l > -0.55 ? '#c9d6ea' : '#a9b9d6'));
+      if (d > r - 1.05 && l < 0.2) col = '#a9b9d6';
+      if ((x === sx[0] && y === sy[0]) || (x === sx[1] && y === sy[1])) col = '#c9d6ea';
+      ctx.fillStyle = col; ctx.fillRect(l0 + x, t0 + y, 1, 1);
+    }
+  }
+  function updateDrag(now, dt) {
+    if (regrow) {                                  // temizlenen kar soldan sağa kutuya geri gelir
+      regrow.t += dt;
+      const span = Math.max(1, regrow.hi - regrow.lo);
+      for (let c = regrow.lo; c < regrow.hi; c++) {
+        const k = clamp((regrow.t - ((c - regrow.lo) / span) * 0.7) / 0.35, 0, 1), v = Math.round(regrow.tgt[c] * sstep(k));
+        if (v > pile.hm[c]) pile.hm[c] = v;
+      }
+      if (regrow.t >= 1.3) { regrow = null; fillPile(); }
+      return;
+    }
+    if (!drag) return;
+    if (!dragAvail()) { drag = null; return; }
+    const hi = Math.min(phi, W), base = H + off, tx = dragTarget();
+    const f = clamp(drag.ptr ? drag.ptrX + drag.off : drag.dx, plo, hi);
+    if (f > drag.dx) {
+      const a = Math.max(plo, Math.floor(drag.dx) + 1), b = Math.min(hi - 1, Math.floor(f) + 2);
+      for (let c = a; c <= b; c++) pile.hm[c] = 0;                              // sürüklenen yerin karı temizlenir
+      drag.roll += f - drag.dx; drag.dx = f;
+      drag.puff -= dt;
+      if (drag.puff <= 0) { drag.puff = 0.05; parts.push({ x: f + rnd(-1, 2), y: base - rnd(1, 4), vx: rnd(-8, 22), vy: rnd(-34, -8), g: 120, age: 0, life: rnd(0.3, 0.6), size: 1, col: Math.random() < 0.7 ? '#ffffff' : '#c9d6ea' }); }
+    }
+    const D = dragD(dragProg(drag.dx)), bx = drag.dx + D / 2 + 3;
+    const c = clamp(Math.round(bx), plo, hi - 1), gy = base + pile.ins[c] - pile.hm[c];
+    const want = gy + 1 - D / 2;
+    drag.by = drag.by ? drag.by + (want - drag.by) * Math.min(1, dt * 18) : want;
+    if (bx >= tx - 2) { dragFinish(tx, drag.by); return; }
+    ctx.globalAlpha = 1;
+    drawRoll(bx, drag.by, D, drag.roll);
+  }
+
   /* ---- Kar topu ---- */
   function throwBall(t, forceBurst) {
     if (ball || !W) return false;
@@ -12382,7 +12478,7 @@ cdAnimRestore();
     snowMap.forEach(function (ent, el) { el.style.removeProperty('--snow-img'); el.style.removeProperty('--snow-w'); el.style.removeProperty('--snow-h'); });
     snowMap.clear(); topMap.clear();
     pile.hm = new Uint8Array(W || 0); pile.c0 = 1e9; pile.c1 = -1;
-    pileKey = '';
+    pileKey = ''; drag = null; regrow = null;
   }
 
   function frame(t) {
@@ -12394,7 +12490,7 @@ cdAnimRestore();
     measureDock();
     if (back.width !== wrap.clientWidth || back.height !== wrap.clientHeight || front.height !== wrap.clientHeight + off + ext) resize();
     if (!W) return;
-    if (enabled) { const pk = W + ':' + plo + ':' + phi; if (pk !== pileKey && phi > plo) { pileKey = pk; fillPile(); } }
+    if (enabled) { const pk = W + ':' + plo + ':' + phi; if (pk !== pileKey && phi > plo) { pileKey = pk; drag = null; regrow = null; fillPile(); } }
 
     if (!modeAt) { modeAt = t + rnd(9, 11) * MIN; gustAt = t + rnd(2, 3) * MIN; ballAt = t + rnd(40, 50) * MIN; windChangeAt = 0; }
 
@@ -12483,7 +12579,7 @@ cdAnimRestore();
     /* birikenler: metin kutusunun üstü */
     drawEnt(ctx, pile, 0, H + off, pile.c0, pile.c1);
     ctx.globalAlpha = 1;
-    if (enabled) { drawTopSnow(); drawSnowman(); drawRabbit(t, dt); }
+    if (enabled) { drawTopSnow(); drawSnowman(); drawRabbit(t, dt); updateDrag(t, dt); }
 
     /* kar topu hareketi */
     if (ball) {
@@ -12569,6 +12665,7 @@ cdAnimRestore();
     burst: function () { throwBall(performance.now(), true); },
     flake: function (n) { n = n || 1; for (let i = 0; i < n; i++) { const f = spawn({ w: 0, d: 0 }, 'big'); f.x = rnd(0, W); } },
     rabbit: function () { smBrokenAt = performance.now() - RB_WAIT; },   // tavşanı hemen çağır (önce kardan adam patlamış olmalı)
+    dragReady: function () { rb = null; rbDone = true; },   // sürüklemeyi hemen dene (önce kardan adam patlamış olmalı)
     stats: function () { let p = 0; for (let i = 0; i < pile.hm.length; i++) p += pile.hm[i]; return { pile: p, bubbles: snowMap.size, flakes: flakes.length, dens: +dens.toFixed(2), spd: +spd.toFixed(2), hedefMod: mode }; }
   };
 
