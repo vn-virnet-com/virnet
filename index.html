@@ -7275,8 +7275,14 @@ function handlePhotoFile(f) {
   pendingUrl = URL.createObjectURL(f);
   confirmPreview.src = pendingUrl;
   confirmOnce.checked = false;
-  confirmSize.textContent = (f.size / 1048576).toFixed(2) + ' MB • orijinal boyutta gönderilir';
+  confirmSize.textContent = 'Hazırlanıyor…';
   confirmModal.classList.add('show');
+  shrinkImage(f).then((r) => {
+    if (pendingFile !== f) return;
+    const mb = (n) => (n / 1048576).toLocaleString('tr-TR', { maximumFractionDigits: 2 }) + ' MB';
+    if (!r) { confirmSize.textContent = mb(f.size) + ' • olduğu gibi gönderilir'; return; }
+    confirmSize.textContent = r.w + '×' + r.h + ' • ' + mb(r.bytes) + (r.down ? ' • 720p\'ye küçültülerek gönderilir' : ' • kendi boyutunda gönderilir');
+  });
 }
 fileInput.addEventListener('change', () => { onPhotoPicked(fileInput); if (window.__kbPicker) window.__kbPicker.end(); });
 cameraInput.addEventListener('change', () => { onPhotoPicked(cameraInput); if (window.__kbPicker) window.__kbPicker.end(); });
@@ -7701,26 +7707,34 @@ async function sendAudio(blob, once, dur) {
   } catch (e) { flashStatus('Ses gönderilemedi'); }
 }
 
-/* Fotoğraf sıkıştırma: uzun kenar 1280, kısa kenar 720'yi geçmez; JPEG kalite 0.8 */
-async function shrinkImage(file) {
+/* Fotoğraf küçültme: 1280x720 (720p) kutusuna sığacak şekilde, EN-BOY ORANI KORUNARAK. Zaten 720p ve altıysa dokunulmaz (orijinal gider).
+   Sonuç dosya başına önbelleğe alınır: onay ekranındaki boyut ile gönderilen aynı şey olur. */
+const shrinkCache = new WeakMap();
+function shrinkImage(file) {
+  if (!file) return Promise.resolve(null);
+  if (!shrinkCache.has(file)) shrinkCache.set(file, shrinkImageRaw(file));
+  return shrinkCache.get(file);
+}
+async function shrinkImageRaw(file) {
   try {
-    if (!file || !/^image\/(jpeg|png|webp|heic|heif|avif|bmp)$/i.test(file.type || '')) return null;
+    if (!/^image\/(jpeg|png|webp|heic|heif|avif|bmp)$/i.test(file.type || '')) return null;
     let bmp;
     try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
     catch (e0) { bmp = await createImageBitmap(file); }
     const w0 = bmp.width, h0 = bmp.height;
-    const long0 = Math.max(w0, h0), short0 = Math.min(w0, h0);
-    const k = Math.min(1, 1280 / long0, 720 / short0);
+    const k = Math.min(1, 1280 / Math.max(w0, h0), 720 / Math.min(w0, h0));
+    if (k >= 1) { try { bmp.close(); } catch (e) {} return { w: w0, h: h0, bytes: file.size, down: false }; } // ≤720p: olduğu gibi
     const w = Math.max(1, Math.round(w0 * k)), h = Math.max(1, Math.round(h0 * k));
     const cv = document.createElement('canvas');
     cv.width = w; cv.height = h;
     const g = cv.getContext('2d');
     g.fillStyle = '#fff'; g.fillRect(0, 0, w, h);
+    g.imageSmoothingQuality = 'high';
     g.drawImage(bmp, 0, 0, w, h);
     try { bmp.close(); } catch (e1) {}
     const blob = await new Promise((res) => cv.toBlob(res, 'image/jpeg', 0.8));
-    if (!blob || blob.size >= file.size) return null; // küçülmediyse orijinali gönder
-    return { buf: await blob.arrayBuffer(), mime: 'image/jpeg' };
+    if (!blob || blob.size >= file.size) return { w: w0, h: h0, bytes: file.size, down: false }; // küçülmediyse orijinal
+    return { buf: await blob.arrayBuffer(), mime: 'image/jpeg', w: w, h: h, bytes: blob.size, down: true };
   } catch (e) { return null; }
 }
 
@@ -7737,8 +7751,8 @@ async function sendImage(file, url, once) {
   }
   try {
     const sh = await shrinkImage(file);
-    const buf = sh ? sh.buf : await readAsArrayBuffer(file);
-    const sendMime = sh ? sh.mime : file.type;
+    const buf = sh && sh.buf ? sh.buf : await readAsArrayBuffer(file);
+    const sendMime = sh && sh.buf ? sh.mime : file.type;
     if (!isConnected()) throw new Error('baglanti yok');
     const id = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
     const nick = fullNick();
