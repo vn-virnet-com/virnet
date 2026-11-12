@@ -3899,12 +3899,14 @@ function growBubble(b, mutate) {
   if (!b || !b.isConnected || reducedMotion()) { mutate(); return; }
   const h0 = b.offsetHeight;
   if (b._gt) { clearTimeout(b._gt); b._gt = null; }
-  b.style.transition = 'none'; b.style.width = ''; b.style.height = ''; b.style.overflow = '';
+  b.style.transition = 'none'; b.style.width = ''; b.style.height = ''; b.style.overflow = ''; b.style.clipPath = '';
   mutate();
   const h1 = b.offsetHeight;
   // Genişlik animasyonu yok: yeni kelime daralan baloncukta alt satıra sarıp sonra yana geçiyordu. Sadece yükseklik yumuşakça değişir.
   if (!h0 || h0 === h1) return;
-  b.style.height = h0 + 'px'; b.style.overflow = 'hidden';
+  b.style.height = h0 + 'px';
+  // overflow:hidden baloncuğun üstüne taşan kar katmanını (::before, top:-6px) da kırpıp animasyon boyunca yok ediyordu; yalnızca alt kenarı kırp, üst/yan taşmaya izin ver
+  b.style.clipPath = 'inset(-16px -4px 0 -4px)';
   void b.offsetWidth;
   const ease = 'cubic-bezier(.22,.61,.36,1)';
   b.style.transition = 'height 0.3s ' + ease + ', background-color 0.4s ease, box-shadow 0.2s ease';
@@ -3917,7 +3919,7 @@ function growBubble(b, mutate) {
   follow();
   b._gt = setTimeout(() => {
     b._gt = null;
-    b.style.transition = ''; b.style.height = ''; b.style.overflow = '';
+    b.style.transition = ''; b.style.height = ''; b.style.overflow = ''; b.style.clipPath = '';
     if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
   }, 340);
 }
@@ -6310,6 +6312,7 @@ function receiveVcSync(d) {
   const id = d.id.slice(0, 80), name = String(d.name || '').slice(0, 60), el = Math.min(d.el, 86400000);
   const t0 = Date.now() - el;
   if (t0 < vcLastEnd) { try { if (isConnected()) conn.send({ type: 'vc-end', id: id }); } catch (e) {} return; } // bu arama bizde çoktan bitti
+  if (!(vcLive && vcLive.id === id) && !document.getElementById(id)) return; // sohbette bu aramanın kartı yoksa baloncuk açılmaz (kart gelince sonraki eşitleme açar)
   if (vcLive) {
     if (vcIAmLeader() && vcLive.id !== id) return; // esas alınan taraf kendi halini korur, karşı taraf ona uyacak
     if (vcIAmLeader() && vcLive.id === id) return;
@@ -6334,6 +6337,26 @@ function receiveVcEnd(d) {
   if (vcLive && vcLive.id === d.id.slice(0, 80)) { vcMarkEnd(Date.now()); vcClearLocal(); }
 }
 setInterval(function () { try { vcSendSync(); } catch (e) {} }, 1000);
+/* Arama süresi yalnızca iki taraf da sohbetteyken sürer. Sayfa yenilenirse (1 dk içinde) kaldığı yerden devam eder ve eşitlenir.
+   Biri sayfayı 1 dk'dan uzun kapatırsa (ya da karşı tarafın bağlantısı 1 dk yoksa) baloncuk iki tarafta da kalkar; yeni arama kartı gelene kadar açılmaz. */
+var VC_ALIVE_KEY = 'vnCallAlive', VC_GRACE = 60000, vcOffSince = 0;
+function vcStamp() { if (vcLive) lsSet(VC_ALIVE_KEY, String(Date.now())); }
+function vcDrop() {
+  const id = vcLive ? vcLive.id : '';
+  vcMarkEnd(Date.now());                                  // eski eşitlemeler baloncuğu geri getirmesin
+  try { if (id && isConnected()) conn.send({ type: 'vc-end', id: id }); } catch (e) {}
+  vcClearLocal(); vcOffSince = 0;
+}
+setInterval(function () {
+  if (!vcLive) { vcOffSince = 0; return; }
+  const now = Date.now();
+  vcStamp();
+  if (isConnected()) { vcOffSince = 0; return; }
+  if (!vcOffSince) vcOffSince = now;
+  else if (now - vcOffSince >= VC_GRACE) vcDrop();        // karşı tarafla (ya da internetle) 1 dk'dır bağlantı yok
+}, 1000);
+window.addEventListener('pagehide', vcStamp);
+document.addEventListener('visibilitychange', function () { if (document.hidden) vcStamp(); });
 function vcHideLive() {
   const el = document.getElementById('vc-pill');
   if (el) el.classList.remove('show');
@@ -6408,7 +6431,10 @@ function vcFly(slot, live, sec) {
 (function () { // sayfa yenilenirse süren arama kaldığı yerden sayar
   try {
     const o = JSON.parse(lsGet(VC_KEY) || 'null');
-    if (o && o.id && o.t0 && Date.now() - o.t0 < 86400000 && o.t0 > vcLastEnd) { vcLive = o; setTimeout(vcShow, 0); }
+    const alive = Number(lsGet(VC_ALIVE_KEY)) || 0, nw = Date.now();
+    const sameDay = o && o.t0 && new Date(o.t0).toDateString() === new Date(nw).toDateString();
+    if (o && o.id && o.t0 && sameDay && nw - alive <= VC_GRACE && o.t0 > vcLastEnd) { vcLive = o; setTimeout(vcShow, 0); }
+    else if (o) { vcMarkEnd(nw); lsRemove(VC_KEY); }      // 1 dk'dan uzun kapalı kalmış ya da başka günün araması: baloncuk yok
     else if (o) lsRemove(VC_KEY);
   } catch (e) {}
 })();
@@ -11837,7 +11863,7 @@ cdAnimRestore();
   let enabled = lget(KEY) !== 'off';
   let W = 0, H = 0;
   let stormAcc = 0;   // tipi sırasında kesirli tane üretimi için birikim
-  let off = 0, plo = 0, phi = 0;   // off: sohbet alanının altı ile metin kutusunun üstü arası (mobilde iç boşluk); plo/phi: yığının yatay aralığı
+  let off = 0, ext = 0, plo = 0, phi = 0;   // off: sohbet alanının altı ile metin kutusunun üstü arası (mobilde iç boşluk); plo/phi: yığının yatay aralığı
   const flakes = [], parts = [];
   let ball = null, gust = null;
   let wind = 0, windTarget = 0, windChangeAt = 0;
@@ -11920,24 +11946,38 @@ cdAnimRestore();
   let radAt = 0, dockKey = '';
   function measureDock() {
     let o = 0, l = 0, r = wrap.clientWidth, rl = pile.rl, rr = pile.rr;
+    let nkOn = false, sbOn = false, nkR = 0, sbL = 0, dyL = 0, dyR = 0;
     const mi = document.getElementById('message-input'), iw = document.getElementById('input-wrapper');
     if (mi && iw && mi.offsetWidth > 0) {
       const wr = wrap.getBoundingClientRect(), m = mi.getBoundingClientRect(), w = iw.getBoundingClientRect();
       o = clamp(Math.round(m.top - wr.bottom), 0, 60);
       if (w.width > 40) { l = Math.max(0, Math.round(w.left - wr.left)); r = Math.min(wrap.clientWidth, Math.round(w.right - wr.left)); }
+      const nk = document.getElementById('nick-input'), sb = document.getElementById('send-btn');
+      nkOn = !!(nk && nk.offsetWidth > 0); sbOn = !!(sb && sb.offsetWidth > 0);
+      /* metin kutusu çok satıra uzayınca isim ve gönder kutuları daha aşağıda kalır: o sütunlarda kar kendi kutusunun üst çizgisine iner */
+      if (nkOn) { const nr = nk.getBoundingClientRect(); nkR = Math.round(nr.right - wr.left); dyL = clamp(Math.round(nr.top - m.top), 0, 90); }
+      if (sbOn) { const sr = sb.getBoundingClientRect(); sbL = Math.round(sr.left - wr.left); dyR = clamp(Math.round(sr.top - m.top), 0, 90); }
       const now = performance.now();
       if (now - radAt > 500) {
         radAt = now;
         try {
-          const nk = document.getElementById('nick-input'), sb = document.getElementById('send-btn');
-          const le = (nk && nk.offsetWidth > 0) ? nk : mi, re = (sb && sb.offsetWidth > 0) ? sb : mi;
+          const le = nkOn ? nk : mi, re = sbOn ? sb : mi;
           rl = parseFloat(getComputedStyle(le).borderTopLeftRadius) || 0; rr = parseFloat(getComputedStyle(re).borderTopRightRadius) || 0;
         } catch (e) {}
       }
     } else { rl = 0; rr = 0; }
     off = o; plo = l; phi = r;
-    const key = l + ':' + r + ':' + rl + ':' + rr + ':' + pile.ins.length;
-    if (key !== dockKey && pile.ins.length >= r) { dockKey = key; pile.rl = rl; pile.rr = rr; pile.ins.fill(0); fillIns(pile.ins, l, r, rl, rr); }
+    /* yuvarlak köşede kar eğriyi izleyip kutu çizgisinin ALTINA kadar iner: canvas o kadar uzatılır, yoksa kıvrımdaki kar kırpılıp havada kalıyordu */
+    const nExt = Math.min(130, Math.ceil(Math.max(rl, rr, nkOn ? rl + dyL : 0, sbOn ? rr + dyR : 0)) + 1);
+    ext = (rl > 0 || rr > 0 || dyL > 0 || dyR > 0) ? nExt : 0;
+    const key = [l, r, rl, rr, nkOn ? nkR : -1, sbOn ? sbL : -1, dyL, dyR, pile.ins.length].join(':');
+    if (key !== dockKey && pile.ins.length >= r) {
+      dockKey = key; pile.rl = rl; pile.rr = rr; pile.ins.fill(0);
+      const a = nkOn ? clamp(nkR, l, r) : l, b = sbOn ? clamp(sbL, a, r) : r;
+      fillIns(pile.ins, a, b, nkOn ? 0 : rl, sbOn ? 0 : rr);                       // metin kutusunun kendisi
+      if (nkOn && a > l) { fillIns(pile.ins, l, a, rl, 0); for (let c = l; c < a; c++) pile.ins[c] += dyL; }   // isim kutusu
+      if (sbOn && r > b) { fillIns(pile.ins, b, r, 0, rr); for (let c = b; c < r; c++) pile.ins[c] += dyR; }   // gönder tuşu
+    }
   }
 
   function resize() {
@@ -11951,7 +11991,7 @@ cdAnimRestore();
     }
     measureDock();
     if (back.width !== W || back.height !== H) { back.width = W; back.height = H; bctx.imageSmoothingEnabled = false; }
-    if (front.width !== W || front.height !== H + off) { front.width = W; front.height = H + off; front.style.height = (H + off) + 'px'; ctx.imageSmoothingEnabled = false; }
+    if (front.width !== W || front.height !== H + off + ext) { front.width = W; front.height = H + off + ext; front.style.height = (H + off + ext) + 'px'; ctx.imageSmoothingEnabled = false; }
   }
   if (window.ResizeObserver) new ResizeObserver(resize).observe(wrap);
   window.addEventListener('resize', resize);
@@ -12164,6 +12204,42 @@ cdAnimRestore();
   if (area) area.addEventListener('load', function () { bubDirty = true; }, true);
   window.addEventListener('resize', function () { bubDirty = true; });
 
+  /* ---- Üst şerit baloncukları: şarkı şeridi, Oto. Oynat, arama süre baloncuğu. Mesaj baloncuklarındaki gibi üstlerinde hazır birikmiş kar durur.
+     Bunlar mutlak konumlu, kayan ve overflow:hidden olduğundan (::before/::after da dolu) kar ön katman canvas'ına her karede o anki konumlarına çizilir; kenar boşluğu 6 px, kar en fazla 4 px ---- */
+  const TOP_IDS = ['yt-dock', 'auto-chip', 'vc-pill'];
+  const topMap = new Map();
+  function drawTopSnow() {
+    let wr = null;
+    for (let i = 0; i < TOP_IDS.length; i++) {
+      const el = document.getElementById(TOP_IDS[i]);
+      if (!el) continue;
+      const w = Math.min(el.offsetWidth, 800), h = el.offsetHeight;
+      if (w < 24 || h < 10) continue;                       // gizli (display:none) ya da henüz yerleşmemiş
+      let alpha = 1;
+      try { alpha = parseFloat(getComputedStyle(el).opacity); } catch (e) {}
+      if (!(alpha > 0.02)) continue;                        // solarak kapanırken kar da solar
+      let ent = topMap.get(el);
+      if (!ent) {
+        ent = { hm: new Uint8Array(800), ins: new Int8Array(800), c0: 0, c1: -1, w: 0, h: 0, lo: 0, hi: 0, rl: -1, rr: -1, wave: makeWave(), dl: makeDrip(), dr: makeDrip() };
+        topMap.set(el, ent);
+      }
+      if (ent.w !== w || ent.h !== h) {
+        const rc = cornerR(el), mr = Math.min(w / 2, h / 2), rl = Math.min(rc.tl, mr), rr = Math.min(rc.tr, mr);
+        ent.w = w; ent.h = h; ent.hi = w; ent.rl = rl; ent.rr = rr;
+        ent.ins.fill(0); fillIns(ent.ins, 0, w, rl, rr);
+        ent.hm.fill(0); waveFill(ent.hm, 0, w, BUB_MIN, BUB_MAX, ent.wave);
+        ent.c0 = 0; ent.c1 = w - 1;
+      }
+      if (!wr) wr = wrap.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      const x0 = Math.round(r.left - wr.left), top = Math.round(r.top - wr.top);
+      ctx.globalAlpha = 0.92 * alpha; ctx.fillStyle = '#fff';
+      drawEnt(ctx, ent, x0, top, ent.c0, ent.c1);
+      drawDrip(ctx, ent, -1, x0, top); drawDrip(ctx, ent, 1, x0, top);
+    }
+    ctx.globalAlpha = 1;
+  }
+
   /* ---- Kar topu ---- */
   function throwBall(t, forceBurst) {
     if (ball || !W) return false;
@@ -12204,7 +12280,7 @@ cdAnimRestore();
   /* Kar Katmanı kapatılınca biriken her şey silinir (yağış devam eder) */
   function wipePiles() {
     snowMap.forEach(function (ent, el) { el.style.removeProperty('--snow-img'); el.style.removeProperty('--snow-w'); el.style.removeProperty('--snow-h'); });
-    snowMap.clear();
+    snowMap.clear(); topMap.clear();
     pile.hm = new Uint8Array(W || 0); pile.c0 = 1e9; pile.c1 = -1;
     pileKey = '';
   }
@@ -12216,7 +12292,7 @@ cdAnimRestore();
     if (dt > 0.1) dt = 0.1;
     if (!active()) { if (flakes.length || parts.length || ball || drawnBack || drawnFront) pauseAll(); return; }
     measureDock();
-    if (back.width !== wrap.clientWidth || back.height !== wrap.clientHeight || front.height !== wrap.clientHeight + off) resize();
+    if (back.width !== wrap.clientWidth || back.height !== wrap.clientHeight || front.height !== wrap.clientHeight + off + ext) resize();
     if (!W) return;
     if (enabled) { const pk = W + ':' + plo + ':' + phi; if (pk !== pileKey && phi > plo) { pileKey = pk; fillPile(); } }
 
@@ -12273,7 +12349,7 @@ cdAnimRestore();
 
     bctx.clearRect(0, 0, W, H);
     drawnBack = true;
-    ctx.clearRect(0, 0, W, H + off);
+    ctx.clearRect(0, 0, W, H + off + ext);
     drawnFront = true;
     bctx.fillStyle = '#fff'; ctx.fillStyle = '#fff';
     for (let i = flakes.length - 1; i >= 0; i--) {
@@ -12307,6 +12383,7 @@ cdAnimRestore();
     /* birikenler: metin kutusunun üstü */
     drawEnt(ctx, pile, 0, H + off, pile.c0, pile.c1);
     ctx.globalAlpha = 1;
+    if (enabled) drawTopSnow();
 
     /* kar topu hareketi */
     if (ball) {
