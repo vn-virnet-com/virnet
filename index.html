@@ -5287,7 +5287,7 @@ function buildYtCard(id, url) {
       const early = now - sessStart < 4000; // açılışta oynatıcı hazırlanırken müdahale etme
       const thr = (now - sessStart < 15000) ? 0.8 : 0.6;
       if (d.p) {
-        if (st !== 1 && st !== 3) {
+        if (st !== 1 && st !== 3 && st !== 0) {
           if (early) { if (st !== 3) { wantPlay = true; try { player.playVideo(); } catch (e) {} } return; }
           mute(); wantPlay = true; try { if (Math.abs(cur - hostPos) > 1) player.seekTo(hostPos + 0.2, true); player.playVideo(); } catch (e) {} lastFix = now; return;
         }
@@ -11779,7 +11779,7 @@ cdAnimRestore();
   let nextSpawn = 0, last = 0, seeded = false, drawnBack = false, drawnFront = false;
 
   /* ---- Birikenler: yalnızca sayfa yenilenene kadar bellekte ---- */
-  const pile = { hm: new Uint8Array(0), ins: new Int8Array(0), cap: new Uint8Array(0), c0: 1e9, c1: -1, rl: 0, rr: 0 };   // ins: köşe kıvrımı için sütun başı iniş; cap: sütun başı dalgalı sınır   // metin kutusunun üstü
+  const pile = { hm: new Uint8Array(0), ins: new Int16Array(0), cap: new Uint8Array(0), c0: 1e9, c1: -1, rl: 0, rr: 0 };   // ins: köşe kıvrımı için sütun başı iniş; cap: sütun başı dalgalı sınır   // metin kutusunun üstü
   const radMap = new WeakMap();
   const snowMap = new Map();                                  // mesaj baloncuğu -> birikme verisi
   let bubCache = [], bubAt = 0, scrolled = true;
@@ -11864,8 +11864,8 @@ cdAnimRestore();
       const nk = document.getElementById('nick-input'), sb = document.getElementById('send-btn');
       nkOn = !!(nk && nk.offsetWidth > 0); sbOn = !!(sb && sb.offsetWidth > 0);
       /* metin kutusu çok satıra uzayınca isim ve gönder kutuları daha aşağıda kalır: o sütunlarda kar kendi kutusunun üst çizgisine iner */
-      if (nkOn) { const nr = nk.getBoundingClientRect(); nkR = Math.round(nr.right - wr.left); dyL = clamp(Math.round(nr.top - m.top), 0, 90); }
-      if (sbOn) { const sr = sb.getBoundingClientRect(); sbL = Math.round(sr.left - wr.left); dyR = clamp(Math.round(sr.top - m.top), 0, 90); }
+      if (nkOn) { const nr = nk.getBoundingClientRect(); nkR = Math.round(nr.right - wr.left); dyL = clamp(Math.round(nr.top - m.top), 0, 260); }
+      if (sbOn) { const sr = sb.getBoundingClientRect(); sbL = Math.round(sr.left - wr.left); dyR = clamp(Math.round(sr.top - m.top), 0, 260); }
       const now = performance.now();
       if (now - radAt > 500) {
         radAt = now;
@@ -11877,7 +11877,7 @@ cdAnimRestore();
     } else { rl = 0; rr = 0; }
     off = o; plo = l; phi = r;
     /* yuvarlak köşede kar eğriyi izleyip kutu çizgisinin ALTINA kadar iner: canvas o kadar uzatılır, yoksa kıvrımdaki kar kırpılıp havada kalıyordu */
-    const nExt = Math.min(130, Math.ceil(Math.max(rl, rr, nkOn ? rl + dyL : 0, sbOn ? rr + dyR : 0)) + 1);
+    const nExt = Math.min(320, Math.ceil(Math.max(rl, rr, nkOn ? rl + dyL : 0, sbOn ? rr + dyR : 0)) + 1);
     ext = (rl > 0 || rr > 0 || dyL > 0 || dyR > 0) ? nExt : 0;
     const key = [l, r, rl, rr, nkOn ? nkR : -1, sbOn ? sbL : -1, dyL, dyR, pile.ins.length].join(':');
     if (key !== dockKey && pile.ins.length >= r) {
@@ -11895,7 +11895,7 @@ cdAnimRestore();
     W = w; H = h;
     if (pile.hm.length !== W) {
       const n = new Uint8Array(W); n.set(pile.hm.subarray(0, Math.min(W, pile.hm.length)));
-      pile.hm = n; pile.ins = new Int8Array(W); pile.cap = new Uint8Array(W); waveCaps(pile.cap); dockKey = '';
+      pile.hm = n; pile.ins = new Int16Array(W); pile.cap = new Uint8Array(W); waveCaps(pile.cap); dockKey = '';
       if (pile.c1 >= W) pile.c1 = W - 1;
     }
     measureDock();
@@ -12738,6 +12738,59 @@ cdAnimRestore();
 
   resize();
   requestAnimationFrame(frame);
+})();
+</script>
+
+<script>
+/* ytGuard: (1) kendiliğinden başa sarmayı geri alır, (2) bitmiş şarkının yeniden başlamasını engeller,
+   (3) karışık çalmada bitiş olayı kaçsa da sıradakine geçer, aynı şarkı art arda gelmez, çift atlama olmaz */
+(() => {
+  let userAt = 0;
+  ['pointerdown', 'keydown', 'touchstart'].forEach((e) => addEventListener(e, () => { userAt = Date.now(); }, true));
+  const byUser = () => Date.now() - userAt < 4000;
+
+  // ytPlNext sarmalayıcı: 1,5 sn içinde çift çağrıyı yutar, aynı şarkıya denk gelirse bir daha atlar
+  const rawNext = ytPlNext;
+  let lastNext = 0;
+  ytPlNext = function (force) {
+    const now = Date.now();
+    if (!force && now - lastNext < 1500 && Date.now() - userAt > 600) return;
+    lastNext = now;
+    const prev = ytPl && ytPl.order[ytPl.pos];
+    rawNext();
+    if (ytPl && ytPl.order.length > 1 && ytPl.order[ytPl.pos] === prev) rawNext();
+  };
+
+  let S = { c: null };
+  setInterval(() => {
+    try {
+      const c = (typeof ytsGhost !== 'undefined' && ytsGhost) || ytDockCard || ytCurrent;
+      if (!c || !c._getState) return;
+      const s = c._getState(), now = Date.now();
+      if (S.c !== c) { S = { c: c, id: c._ytId, lastT: 0, lastAt: now, endedAt: 0 }; }
+      if (s.st === 0) {
+        if (!S.endedAt) S.endedAt = now;
+        // bitiş olayı kaçtıysa 2,5 sn sonra zorla sıradakine geç
+        if (ytPl && c === ytsGhost && now - S.endedAt > 2500) { S.endedAt = now + 1e9; ytPlNext(true); }
+        return;
+      }
+      if (s.st === 1) {
+        // bitmişti, sonra kullanıcı dokunmadan yeniden çalmaya başladı = döngü
+        if (S.endedAt && !byUser() && s.dur && s.cur < s.dur - 2) {
+          S.endedAt = 0;
+          if (ytPl && c === ytsGhost) ytPlNext(true); else c._pause();
+          return;
+        }
+        // kullanıcı dokunmadan başa atladı: eski konuma geri dön (eşleşmedeyse sinyal zaten ev sahibine göre düzeltir)
+        if (S.lastT > 10 && s.cur < 3 && S.lastT - s.cur > 8 && !byUser()) {
+          c._startAt(S.lastT + (now - S.lastAt) / 1000, true);
+          S.lastAt = now;
+          return;
+        }
+        S.lastT = s.cur; S.lastAt = now; S.endedAt = 0;
+      }
+    } catch (e) {}
+  }, 400);
 })();
 </script>
 </body>
