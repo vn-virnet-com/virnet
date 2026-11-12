@@ -120,7 +120,7 @@ body.once-viewing #fab { display: none !important; }
 #chat-wrap { flex: 1 1 auto; min-height: 0; position: relative; display: none; }
 #chat-area {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  overflow-y: auto; overflow-x: hidden; padding: 10px 12px 16px;
+  overflow-y: auto; overflow-x: hidden; padding: 10px 12px 32px; /* alt boşluk: son mesajın altına sarkan tepki (+) düğmesi alttaki 12px'lik solmanın dışında kalsın */
   display: flex; flex-direction: column; gap: 2px;
   font-size: 18px; line-height: 1.4;
   /* Mesaj kutusuyla sohbet arasındaki çizgi yerine alt kenarda kısacık, çok hafif bir solma */
@@ -11619,7 +11619,9 @@ cdAnimRestore();
     const h = b.querySelector(':scope > .hdr-row');
     if (h) h.style.display = '';
     wrap.appendChild(b);
-    wrap.style.maxWidth = Math.min(chatArea.clientWidth * 0.78, 720) + 'px';
+    const acs = getComputedStyle(chatArea);
+    const innerW = chatArea.clientWidth - (parseFloat(acs.paddingLeft) || 0) - (parseFloat(acs.paddingRight) || 0);
+    wrap.style.maxWidth = Math.min(innerW * 0.78, 720) + 'px';
     return wrap;
   }
 
@@ -11697,6 +11699,7 @@ cdAnimRestore();
     }
     clone.style.top = Math.round(cTop) + 'px';
     react.style.top = Math.round(trayTop) + 'px';
+    try { if (window.vnSnow && window.vnSnow.fitClone) window.vnSnow.fitClone(m._bubble, clone.querySelector('.bubble')); } catch (e) {}
 
     ov.addEventListener('click', () => { if (Date.now() - openedAt < 350) return; close(true); });
     ['pointerdown', 'mousedown'].forEach((t) => ov.addEventListener(t, (e) => e.preventDefault())); // yazma kutusunun odağı gitmesin
@@ -12740,7 +12743,29 @@ cdAnimRestore();
   }
 
   /* deneme için: konsoldan vnSnow.gust(), vnSnow.ball(), vnSnow.burst(), vnSnow.flake(5) */
+  /* Uzun basma kopyası: kopyadaki baloncuk asıl baloncukla aynı genişlikte olmayabilir (gizli isim satırı, farklı sınır, yeniden satır kırma).
+     Asıl baloncuğun kar dalgası korunur, genişlik farkı kadar kısaltılır ya da aynı dalgayla uzatılır; kar kopyanın tam boyuna oturur */
+  function fitCloneSnow(src, dst) {
+    const se = src && snowMap.get(src);
+    if (!se || !se.w || !dst) return;
+    const w = Math.min(dst.offsetWidth, 800), h = dst.offsetHeight;
+    if (w < 24 || h < 10) return;
+    const rc = cornerR(dst), mr = Math.min(w / 2, h / 2);
+    const rl = Math.min(rc.tl, mr), rr = Math.min(rc.tr, mr);
+    const ent = { hm: new Uint8Array(800), ins: new Int8Array(800), c0: 0, c1: w - 1, w: w, lo: 0, hi: w, rl: rl, rr: rr, wave: se.wave || makeWave(), dl: se.dl || makeDrip(), dr: se.dr || makeDrip() };
+    const keep = Math.min(w, se.w);
+    ent.hm.set(se.hm.subarray(0, keep));
+    if (w > se.w) {
+      const tmp = new Uint8Array(800);
+      waveFill(tmp, 0, w, BUB_MIN, BUB_MAX, ent.wave);
+      for (let c = se.w; c < w; c++) ent.hm[c] = tmp[c];
+    }
+    fillIns(ent.ins, 0, w, rl, rr);
+    renderEnt(dst, ent);
+  }
+
   window.vnSnow = {
+    fitClone: fitCloneSnow,
     gust: function () { if (!gust) startGust(performance.now()); },
     ball: function () { throwBall(performance.now(), false); },
     burst: function () { throwBall(performance.now(), true); },
