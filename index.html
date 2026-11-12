@@ -2871,16 +2871,42 @@ refreshModal.addEventListener('click', (e) => { if (e.target === refreshModal) c
 /* 3828 şifresiyle girenler sohbete bağlantı (pinterest, tiktok vb.) gönderemez */
 const nolinkModal = document.getElementById('nolink-modal');
 let nolinkKbWas = false;
-const LINK_RE = /(?:https?:\/\/|ftp:\/\/|www\.)\S+|\b(?:[a-z0-9-]+\.)+(?:com|net|org|io|co|tv|me|app|gg|ly|be|it|tr|info|biz|xyz|link|site|online|store|dev|ai|ru|de|uk|us|fm|to|cc|ws|vc|sh|lat|page|shop|club|pro|top|live)\b(?:\/\S*)?/i;
-function hasLink(t) { return LINK_RE.test(String(t || '').normalize('NFKC')); }
+const LINK_TLDS = 'com|net|org|edu|gov|int|mil|info|biz|name|pro|mobi|app|dev|io|ai|co|tv|me|gg|ly|be|it|fm|to|cc|ws|vc|sh|lat|xyz|top|site|online|store|shop|club|live|link|page|click|cloud|tech|blog|news|media|wiki|art|fun|world|life|space|website|digital|network|email|agency|studio|design|world|zone|today|social|chat|team|group|center|work|works|games|game|bet|casino|porn|sex|xxx|adult|tr|de|uk|us|ru|fr|es|nl|pl|ua|jp|cn|kr|in|br|ar|mx|ca|au|nz|eu|ch|at|se|no|dk|fi|gr|cz|ro|bg|hu|pt|ie|il|ir|iq|sa|ae|az|kz|id|vn|th|my|ph|pk|bd|eg|ma|dz|tn|za|ng|ke|cy|nu|su|so|st|tk|ml|ga|cf|gq|ink|bio|icu|win|vip|wtf|lol|one|day|ltd|inc|llc|biz|asia|tel|jobs|travel|museum|coop|aero|cat|im|is|la|li|lu|lv|lt|ee|by|am|ge|md|mk|rs|hr|si|sk|ba|al|me|ac|ad|ag|ax|bz|cx|dj|gl|gs|ht|ky|mn|mu|nf|pm|pw|re|sc|sx|tc|tf|tl|tm|vg|vu|wf|yt';
+const LINK_RE = new RegExp('(?:[a-z][a-z0-9+.-]{1,15}:\\/\\/|www\\.|mailto:|tel:)\\S+|(?:^|[^a-z0-9@])(?:[a-z0-9-]+\\.)+(?:' + LINK_TLDS + ')(?![a-z0-9-])|\\b[a-z0-9-]+(?:\\.[a-z0-9-]+)*\\.[a-z]{2,24}\\/\\S*|\\b\\d{1,3}(?:\\.\\d{1,3}){3}(?::\\d+)?(?:\\/\\S*)?', 'i');
+function linkNorm(t) {
+  return String(t || '').normalize('NFKC')
+    .replace(/[\u200B-\u200F\u2060\uFEFF\u00AD]/g, '')          // görünmez karakterlerle gizlemeyi boz
+    .replace(/[\u3002\uFF0E\u2024\u2027\u00B7]/g, '.')          // nokta benzeri karakterler
+    .replace(/\s*(?:\[\.\]|\(\.\)|\{\.\})\s*/g, '.')            // tiktok[.]com
+    .replace(/\s*\.\s*(?=(?:com|net|org|io|me|tv|it|be|co|app|gg|ly|xyz|tr)(?![a-z0-9]))/gi, '.');   // "tiktok . com"
+}
+function hasLink(t) { return LINK_RE.test(linkNorm(t)); }
 function linkBlocked(t) { try { return thirdCanSend() && hasLink(t); } catch (e) { return false; } }
+let nolinkAt = 0;
+/* Engellenen mesaj: kutudaki her şey silinir, uyarı penceresi açılır */
+function blockLinkSend() {
+  const wasEdit = !!editingId;
+  try { stopLive(); } catch (e) {}
+  openNolinkModal();
+  if (wasEdit) { endEdit(); return; }   // düzenleme iptal olur, önceki taslak geri gelir
+  messageInput.value = '';
+  try { saveDraft(); } catch (e) {}
+  liveSpaceCount = 0;
+  try { clearLiveIdle(); } catch (e) {}
+  liveLastSent = null;
+  adjustInputHeight();
+}
 function openNolinkModal() {
-  nolinkKbWas = document.activeElement === messageInput;
+  nolinkKbWas = nolinkKbWas || document.activeElement === messageInput;
+  nolinkAt = Date.now();
   nolinkModal.classList.add('show');
+  try { messageInput.blur(); } catch (e) {}
 }
 function closeNolinkModal() {
+  if (Date.now() - nolinkAt < 600) return;   // gönder tuşundan kalan dokunuş/click pencereyi hemen kapatmasın
   nolinkModal.classList.remove('show');
-  if (nolinkKbWas) { try { messageInput.focus({ preventScroll: true }); } catch (e) {} }
+  const kb = nolinkKbWas; nolinkKbWas = false;
+  if (kb) { try { messageInput.focus({ preventScroll: true }); } catch (e) {} }
 }
 document.getElementById('nolink-ok').addEventListener('pointerdown', (e) => e.preventDefault());
 document.getElementById('nolink-ok').addEventListener('click', closeNolinkModal);
@@ -5909,7 +5935,7 @@ function sendMessage() {
   const textToSend = messageInput.value.trim();
   const currentNick = fullNick();
   if (textToSend === '') return;
-  if (linkBlocked(textToSend)) { openNolinkModal(); return; }
+  if (linkBlocked(textToSend)) { blockLinkSend(); return; }
   if (!isConnected()) { setStatus('Bağlı değil, mesaj gönderilmedi', false); return; }
 
   if (myTypingTimeout) clearTimeout(myTypingTimeout);
@@ -7192,7 +7218,7 @@ sendBtn.addEventListener('pointerup', (event) => {
   if (!inside) return;
   {
     sendMessage();
-    setTimeout(() => { messageInput.focus(); }, 10);
+    setTimeout(() => { if (!nolinkModal.classList.contains('show')) messageInput.focus(); }, 10);
   }
 });
 
@@ -8165,7 +8191,7 @@ function commitEdit() {
   const newText = messageInput.value.trim();
   const newNick = fullNick();
   if (newText === '') return;
-  if (linkBlocked(newText)) { openNolinkModal(); return; }
+  if (linkBlocked(newText)) { blockLinkSend(); return; }
   if (!isConnected()) { setStatus('Bağlı değil, mesaj düzenlenmedi', false); return; }
   if (newText !== el._raw.text || newNick !== el._raw.nick) {
     try { conn.send({ type: 'edit', msgId: id, text: newText, senderNick: newNick }); } catch (e) {}
