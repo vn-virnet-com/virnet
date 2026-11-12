@@ -12314,7 +12314,9 @@ cdAnimRestore();
       if (!it.rest) {
         it.vy += 420 * dtI; it.x += it.vx * dtI; it.y += it.vy * dtI;
         const c = clamp(Math.round(it.x), 0, W - 1);
-        const gy = Math.min(baseY + pile.ins[c] - pile.hm[c], hi) - 2;
+        let gy = baseY + pile.ins[c] - pile.hm[c] - 1;
+        const mi = c - (x0 + 4);
+        if (mi >= 0 && mi < prof.length) gy = hi - prof[mi];
         if (it.vy > 0 && it.y >= gy) { it.y = gy; it.rest = true; }
       }
       const x = Math.round(it.x), y = Math.round(it.y);
