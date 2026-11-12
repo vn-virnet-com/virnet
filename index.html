@@ -12241,6 +12241,82 @@ cdAnimRestore();
     ctx.globalAlpha = 1;
   }
 
+  /* ---- Minik kardan adam: metin kutusunun sağ köşesinde, yığının üstünde durur (yalnızca kar katmanı açıkken). 16x15 px;
+     havuç burun, 3 zeytin düğme, tek büyük + tek küçük kar topu, daldan kollar. Hafif çapraz: bize göre sola, kendisine göre sağa bakar.
+     Dakikada bir kendi sol koluyla (bize göre sağdaki) el sallar: dal düz kalır, gövdeye saplı ucu sabit, öbür ucu yukarı aşağı döner ---- */
+  const SM_W = 16, SM_H = 15, SM_PIV = [12, 9];            // sprite boyu; sallanan dalın gövdeye saplı sabit ucu
+  const SNOWMAN = (function () {
+    const grid = [];
+    for (let y = 0; y < SM_H; y++) grid.push(new Array(SM_W).fill(''));
+    const put = (x, y, c) => { if (x >= 0 && x < SM_W && y >= 0 && y < SM_H) grid[y][x] = c; };
+    const span = (y, a, b, c) => { for (let x = a; x <= b; x++) put(x, y, c); };
+    /* küçük top (baş): 0-5. satırlar; büyük top (gövde): 6-14. satırlar */
+    span(0, 6, 8, 'W');
+    span(1, 5, 9, 'W');
+    for (let y = 2; y <= 4; y++) span(y, 4, 10, 'W');
+    span(5, 6, 8, 'W');                                      // boyun: baş ile gövde arasında hafif daralma
+    span(6, 5, 9, 'W'); span(7, 4, 10, 'W');
+    for (let y = 8; y <= 12; y++) span(y, 3, 11, 'W');
+    span(13, 4, 10, 'W'); span(14, 5, 9, 'W');
+    /* gölge: sağ-alt kenarlar biraz mavimsi */
+    const sh = [];
+    for (let y = 0; y < SM_H; y++) for (let x = 0; x < SM_W; x++) if (grid[y][x] === 'W' && (y + 1 >= SM_H || x + 1 >= SM_W || grid[y + 1][x + 1] === '')) sh.push([x, y]);
+    sh.forEach((q) => { grid[q[1]][q[0]] = 'S'; });
+    /* yüz bize göre sola çevrik: gözler ve havuç burun sola kaymış, burun sola uzanır */
+    put(5, 2, 'K'); put(7, 2, 'K');
+    put(5, 3, 'C'); put(4, 3, 'C'); put(3, 3, 'D');
+    /* zeytin düğmeler: 1x2 dikey oval, üstü koyu altı biraz açık; gövdenin çevrik ekseninde (bir sütun solda) */
+    [7, 10, 13].forEach((y) => { put(6, y, 'O'); put(6, y + 1, 'P'); });
+    /* kendisinin sağ kolu (bize göre sol): sabit düz dal */
+    put(2, 9, 'B'); put(1, 8, 'B'); put(0, 7, 'B');
+    const col = { W: '#ffffff', S: '#c9d6ea', K: '#1b1b1f', C: '#ff8a1f', D: '#d96a00', O: '#2f3b17', P: '#5d7030', B: '#7a4b22' };
+    const c = document.createElement('canvas'); c.width = SM_W; c.height = SM_H;
+    const g = c.getContext('2d');
+    for (let y = 0; y < SM_H; y++) for (let x = 0; x < SM_W; x++) if (grid[y][x]) { g.fillStyle = col[grid[y][x]]; g.fillRect(x, y, 1, 1); }
+    return c;
+  })();
+  const SM_GAP = 9;                                          // kutunun sağ kenarına uzaklık (px)
+  const SM_ARM = 3, SM_REST = 45, SM_WAVE_MS = 1900, SM_EVERY = 60000;
+  let smNext = 0, smStart = -1;
+  /* kolun açısı (derece, yataydan yukarı): normalde 45°; el sallarken 30°-90° arasında gidip gelir, başı ve sonu yumuşak */
+  function smAngle(now) {
+    if (smStart < 0) { if (!smNext) smNext = now + 10000; if (now < smNext) return SM_REST; smStart = now; smNext = now + SM_EVERY; }
+    const e = now - smStart;
+    if (e >= SM_WAVE_MS) { smStart = -1; return SM_REST; }
+    const w = Math.min(1, e / 250, (SM_WAVE_MS - e) / 250);
+    const wave = 62 + 28 * Math.sin(2 * Math.PI * 2.3 * (e / 1000) - Math.PI / 2);
+    return SM_REST + w * (wave - SM_REST);
+  }
+  function drawSnowman() {
+    const hi = Math.min(phi, W);
+    const x0 = hi - SM_GAP - SM_W;
+    if (x0 < plo + 8 || hi - plo < 120) return;
+    const cm = document.getElementById('chip-menu');
+    if (cm && cm.classList.contains('show')) return;        // gönder menüsü açıkken menünün altında kalmasın
+    const base = H + off;
+    let surf = 1e9;                                          // gövde altındaki en yüksek kar yüzeyi
+    for (let c = x0 + 3; c <= x0 + 11; c++) { const y = base + pile.ins[c] - pile.hm[c]; if (y < surf) surf = y; }
+    if (surf > 1e8) return;
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#ffffff';
+    for (let c = x0 + 4; c <= x0 + 10; c++) {                // altındaki küçük kar yığını: yüzey dalgalı olsa da havada kalmasın
+      const y = base + pile.ins[c] - pile.hm[c];
+      if (y > surf) ctx.fillRect(c, surf, 1, y - surf + 1);
+    }
+    const y0 = Math.round(surf) - SM_H + 1;
+    ctx.drawImage(SNOWMAN, x0, y0);
+    /* sallanan dal: düz çizgi, (12,9) ucu gövdede sabit; öbür ucu açıyla döner */
+    const a = smAngle(performance.now()) * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+    ctx.fillStyle = '#7a4b22';
+    let lx = -1, ly = -1;
+    for (let k = 0; k <= SM_ARM * 2; k++) {
+      const r = k / 2, px = Math.round(SM_PIV[0] + r * ca), py = Math.round(SM_PIV[1] - r * sa);
+      if (px === lx && py === ly) continue;
+      lx = px; ly = py;
+      ctx.fillRect(x0 + px, y0 + py, 1, 1);
+    }
+  }
+
   /* ---- Kar topu ---- */
   function throwBall(t, forceBurst) {
     if (ball || !W) return false;
@@ -12384,7 +12460,7 @@ cdAnimRestore();
     /* birikenler: metin kutusunun üstü */
     drawEnt(ctx, pile, 0, H + off, pile.c0, pile.c1);
     ctx.globalAlpha = 1;
-    if (enabled) drawTopSnow();
+    if (enabled) { drawTopSnow(); drawSnowman(); }
 
     /* kar topu hareketi */
     if (ball) {
