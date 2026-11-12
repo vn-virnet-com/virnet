@@ -2266,21 +2266,9 @@ const undeliveredTimers = {};
 let _outboxMem = [];
 function readOutbox() {
   return _outboxMem.slice();
-  try {
-    const arr = JSON.parse(lsGet(OUTBOX_KEY) || '[]');
-    if (!Array.isArray(arr)) return [];
-    return arr.filter((m) => m && typeof m.id === 'string' && typeof m.text === 'string');
-  } catch (e) { return []; }
 }
 function writeOutbox(list) {
   _outboxMem = list.slice(-OUTBOX_MAX);
-  return;
-  let safe = list.slice(-OUTBOX_MAX);
-  while (safe.length > 0) {
-    try { localStorage.setItem(OUTBOX_KEY, JSON.stringify(safe)); return; }
-    catch (e) { safe = safe.slice(1); }
-  }
-  lsRemove(OUTBOX_KEY);
 }
 function outboxAdd(entry) {
   const list = readOutbox().filter((m) => m.id !== entry.id);
@@ -2369,8 +2357,6 @@ function rememberSeenMsg(id) {
   lsSet(SEEN_KEY, JSON.stringify(list));
 }
 
-const HISTORY_KEY = 'chatHistory';
-const MAX_HISTORY = 1;
 // GİZLİLİK: mesaj metni artık diske (localStorage) hiç yazılmaz; açılışta eski kalıntılar da silinir.
 lsRemove('chatHistory'); lsRemove('msgDraft'); lsRemove('outboxV1');
 const MEDIA_PLACEHOLDER = '[Burada bir medya içeriği vardı]';
@@ -2406,79 +2392,6 @@ const HEART_KINDS = Object.keys(HEARTS);
 const HEART_GRID = ['white','gray','pink','purple','red','lblue','blue','sparkle','growing','broken','sob','melt','flushed','cool','devil','skull','crossbones','love','brow','plead','thumb','thumbdown','heartshands','mid','wave']; // uzun basma / sağ tık tepsisi: 5x5
 const HEART_PICK = ['red', 'pink', 'white']; // yandaki küçük seçici yalnızca kalpleri gösterir; 9'lu seçim uzun basma menüsünde
 
-function sanitizeEntry(e) {
-  if (!e || typeof e !== 'object' || typeof e.text !== 'string') return null;
-  let reply = null;
-  if (e.reply && typeof e.reply === 'object' && typeof e.reply.text === 'string') {
-    reply = {
-      text: e.reply.text,
-      nick: typeof e.reply.nick === 'string' ? e.reply.nick : '',
-      targetId: typeof e.reply.targetId === 'string' ? e.reply.targetId : null,
-      img: e.reply.img === true,
-      aud: e.reply.aud === true
-    };
-  }
-  let react = null;
-  if (e.react && typeof e.react === 'object' && HEART_KINDS.indexOf(e.react.kind) !== -1) {
-    react = { kind: e.react.kind, mine: e.react.mine === true };
-  }
-  return {
-    text: e.text,
-    nick: typeof e.nick === 'string' ? e.nick : '',
-    own:  e.own === true,
-    id:   typeof e.id === 'string' ? e.id : null,
-    reply: reply,
-    react: react
-  };
-}
-
-function readHistory() {
-  return [];
-  try {
-    const raw = lsGet(HISTORY_KEY);
-    if (!raw) return [];
-    const arr = JSON.parse(raw);
-    if (!Array.isArray(arr)) return [];
-    return arr.map(sanitizeEntry).filter((x) => x).slice(-MAX_HISTORY);
-  } catch (e) { return []; }
-}
-
-function writeHistory(list) {
-  lsRemove(HISTORY_KEY);
-  return false;
-  let safe = (Array.isArray(list) ? list : [])
-    .map(sanitizeEntry).filter((x) => x).slice(-MAX_HISTORY);
-
-  while (safe.length > 0) {
-    try {
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(safe));
-      return true;
-    } catch (e) {
-      safe = safe.slice(1);
-    }
-  }
-  lsRemove(HISTORY_KEY);
-  return false;
-}
-
-function saveMessageToHistory(entry) {
-  return;
-  const list = readHistory();
-  if (entry.id && list.some(m => m.id === entry.id)) return;
-  list.push(entry);
-  writeHistory(list);
-}
-
-function enforceHistoryLimit() {
-  lsRemove(HISTORY_KEY);
-  return;
-  const raw = lsGet(HISTORY_KEY);
-  if (raw === null) return;
-  const clean = JSON.stringify(readHistory());
-  if (raw !== clean) {
-    writeHistory(readHistory());
-  }
-}
 
 function escapeHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -3238,8 +3151,6 @@ function setupConnection(c) {
     if (data.type === 'typing-stop') { hideTypingIndicator(); return; }
     if (data.type === 'rec')      { showRecIndicator(); return; }
     if (data.type === 'rec-stop') { hideRecIndicator(); return; }
-    if (data.type === 'notes' || data.type === 'notes-hello') return; // eski sürümden gelen ortak not mesajları yok sayılır
-    if (data.type === 'members' || data.type === 'members-hello') return; // eski sürümden gelen üye listesi mesajları yok sayılır
     if (data.type === 'leap' || data.type === 'leap-hello') { receiveLeap(data); return; }
     if (data.type === 'notif') { receiveNotif(data); return; }
     if (data.type === 'notif-del') { receiveNotifDel(data); return; }
@@ -3255,10 +3166,6 @@ function setupConnection(c) {
     if (data.type === 'card-clear') { receiveCardClear(); return; }
     if (data.type === 'card-state') { receiveCardState(data); return; }
     if (data.type === 'card-del') { receiveCardDel(data); return; }
-    if (data.type === 'card-react') { receiveCardReact(data); return; }
-    if (data.type === 'card-reply') { receiveCardReply(data); return; }
-    if (data.type === 'card-poll') { receiveCardPoll(data); return; }
-    if (data.type === 'card-count') { receiveCardCount(data); return; }
     if (data.type === 'card-fire') { receiveCardFire(data); return; }
     if (data.type === 'card-fire-sync') { receiveCardFireSync(data); return; }
     if (data.type === 'strip-hello') { receiveStrip(data, true); return; }
@@ -5737,16 +5644,6 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
   // Yeni mesaj (gelen veya giden) küçükten büyüyerek belirir
   if (persist && !suppressReveal) popBubble(bubble, { own: !!isOwnMessage, incoming: !isOwnMessage });
 
-  if (persist) {
-    saveMessageToHistory({
-      text: media ? MEDIA_PLACEHOLDER : text,
-      nick: rawNick,
-      own: !!isOwnMessage,
-      id: messageId,
-      reply: media ? null : replyData
-    });
-  }
-
   if (isOwnMessage || stickToBottom) {
     stickToBottom = true;
     // Yeni mesajın yeri tek adımda belirlenir: hemen en alta oturt, gecikmeli ikinci kayma yok (boşluk büyüyüp kısalmasın)
@@ -5759,25 +5656,14 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
   return messageId;
 }
 
-function restoreHistory() {
-  enforceHistoryLimit();
-  readHistory().forEach(m => {
-    appendMessage(m.text, m.nick, m.own, m.reply, m.id, false, null);
-    if (m.react) setReaction(document.getElementById(m.id), m.react.kind, m.react.mine);
-  });
-}
 function restoreOutbox() {
   readOutbox().forEach((m) => {
     if (!document.getElementById(m.id)) appendMessage(m.text, m.nick || '', true, m.reply || null, m.id, false, null);
     setUndelivered(m.id, true);
   });
 }
-if (myId && friendId) { restoreHistory(); restoreOutbox(); }
+if (myId && friendId) { restoreOutbox(); }
 
-setInterval(enforceHistoryLimit, 5000);
-window.addEventListener('storage', (e) => {
-  if (e.key === HISTORY_KEY || e.key === null) enforceHistoryLimit();
-});
 
 function updateScrollBtn() {
   scrollDownBtn.classList.toggle('show', !stickToBottom);
@@ -6537,7 +6423,6 @@ function dialCancel(id, send) {
   if (dialTimers[id]) { clearTimeout(dialTimers[id]); delete dialTimers[id]; }
   const o = dialReadStates();
   if (id in o) { delete o[id]; dialWriteStates(o); }
-  removeFromHistory(id);
   outboxRemove(id);
   removeMessageFromUI(id);
   return true;
@@ -8056,21 +7941,6 @@ document.addEventListener('keydown', (event) => {
   if (target && target !== active) { try { target.focus(); } catch (e) {} }
 }, true);
 
-function updateHistoryEntry(id, text, nick, ownFlag) {
-  const list = readHistory();
-  let changed = false;
-  list.forEach((m) => {
-    if (m.id === id && (ownFlag === undefined || m.own === ownFlag)) { m.text = text; m.nick = nick; changed = true; }
-  });
-  if (changed) writeHistory(list);
-}
-
-function removeFromHistory(id, ownFlag) {
-  const list = readHistory();
-  const next = list.filter((m) => !(m.id === id && (ownFlag === undefined || m.own === ownFlag)));
-  if (next.length !== list.length) writeHistory(next);
-}
-
 function removeMessageFromUI(id) {
   const el = document.getElementById(id);
   if (el) {
@@ -8119,7 +7989,6 @@ function deleteOwnMessage(id) {
   if (!el || !el.classList.contains('own-msg')) return;
   if (!isConnected()) { el.classList.remove('del-press'); setStatus('Bağlı değil, mesaj silinemedi', false); return; }
   try { conn.send({ type: 'delete', msgId: id }); } catch (e) {}
-  removeFromHistory(id, true);
   outboxRemove(id);
   removeMessageFromUI(id);
 }
@@ -8128,7 +7997,6 @@ function receiveDelete(d) {
   if (!d || typeof d.msgId !== 'string') return;
   const el = document.getElementById(d.msgId);
   if (el && el.classList.contains('own-msg')) return;
-  removeFromHistory(d.msgId, false);
   removeMessageFromUI(d.msgId);
 }
 
@@ -8137,15 +8005,7 @@ function receiveEdit(d) {
   const nick = (typeof d.senderNick === 'string') ? d.senderNick.trim() : '';
   const el = document.getElementById(d.msgId);
   if (el && el.classList.contains('own-msg')) return;
-  updateHistoryEntry(d.msgId, d.text, nick, false);
   if (el) updateMessageContent(el, d.text, nick);
-}
-
-function setHistoryReact(id, react) {
-  const list = readHistory();
-  let changed = false;
-  list.forEach((m) => { if (m.id === id) { m.react = react; changed = true; } });
-  if (changed) writeHistory(list);
 }
 
 function setReaction(el, kind, mine) {
@@ -8180,7 +8040,6 @@ function addReaction(id, kind) {
   if (!isConnected()) { setStatus('Bağlı değil, tepki gönderilmedi', false); return; }
   try { conn.send({ type: 'react', msgId: id, kind: kind }); } catch (e) {}
   setReaction(el, kind, true);
-  setHistoryReact(id, { kind: kind, mine: true });
 }
 
 function removeMyReaction(id) {
@@ -8189,7 +8048,6 @@ function removeMyReaction(id) {
   if (!isConnected()) { setStatus('Bağlı değil, tepki silinemedi', false); return; }
   try { conn.send({ type: 'unreact', msgId: id }); } catch (e) {}
   setReaction(el, null);
-  setHistoryReact(id, null);
 }
 
 function receiveReact(d) {
@@ -8197,7 +8055,6 @@ function receiveReact(d) {
   const el = document.getElementById(d.msgId);
   if (!el || !el.classList.contains('own-msg') || el._reaction) return;
   setReaction(el, d.kind, false);
-  setHistoryReact(d.msgId, { kind: d.kind, mine: false });
 }
 
 function receiveUnreact(d) {
@@ -8205,7 +8062,6 @@ function receiveUnreact(d) {
   const el = document.getElementById(d.msgId);
   if (!el || !el.classList.contains('own-msg') || !el._reaction || el._reaction.mine) return;
   setReaction(el, null);
-  setHistoryReact(d.msgId, null);
 }
 
 function findLastEditableOwn() {
@@ -8275,7 +8131,6 @@ function commitEdit() {
   if (newText !== el._raw.text || newNick !== el._raw.nick) {
     try { conn.send({ type: 'edit', msgId: id, text: newText, senderNick: newNick }); } catch (e) {}
     updateMessageContent(el, newText, newNick);
-    updateHistoryEntry(id, newText, newNick, true);
     outboxUpdate(id, newText, newNick);
   }
   endEdit();
@@ -9729,7 +9584,6 @@ function toggleTagFire(id, i) {
   if (isConnected()) { try { conn.send({ type: 'card-fire', id: id, f: f.slice(), t: tm }); } catch (e) {} }
   renderCards();
 }
-function receiveCardCount(d) { /* durum artık 'card-state' ile gelir */ }
 let cdEditing = false, cdRenderPending = false;
 function cdStartEdit(rb, c) {
   if (cdEditing) return;
@@ -10078,7 +9932,6 @@ function addCardReply(cardId, n, b, vf) {
   renderCards();
   return true;
 }
-function receiveCardReply(d) { /* durum artık 'card-state' ile gelir */ }
 // Oy sayısı değiştirme (6687): 3. sayfada gönderiyle birlikte revizyonla, 2. sayfada 'card-poll' ile karşıya gider
 // 3828: 2. sayfadaki gönderilerde seçeneğe basınca oy verir (+1); aynı seçeneğe tekrar basınca geri alır, başka seçeneğe basınca oyunu taşır
 function pollSyncOut(c, inst) {
@@ -10154,7 +10007,6 @@ function plStartEdit(sp, id, i) {
   inp.addEventListener('blur', () => finish(true));
   try { inp.focus(); const L = inp.value.length; inp.setSelectionRange(L, L); } catch (e) {}
 }
-function receiveCardPoll(d) { /* durum artık 'card-state' ile gelir */ }
 function receiveCardDel(d) {
   if (!d || typeof d.id !== 'string') return;
   const id = d.id.slice(0, 40);
@@ -10165,7 +10017,6 @@ function receiveCardDel(d) {
   cardPersist();
   ackCard(id, true);
 }
-function receiveCardReact(d) { /* durum artık 'card-state' ile gelir */ }
 function receiveCardAck(d) {
   if (!d || typeof d.id !== 'string') return;
   if (d.del) cardOutbox = cardOutbox.filter((o) => !(o.op === 'del' && o.id === d.id));
