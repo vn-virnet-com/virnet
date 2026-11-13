@@ -11803,5 +11803,118 @@ cdAnimRestore();
   }, 400);
 })();
 </script>
+<script>
+/* Çevrimdışı oyun "Çevir": karakter otomatik koşar, dokununca yerçekimi tavana/zemine çevrilir. Bağlantı ~5 sn yoksa açılır, bağlanınca kapanır. */
+(function(){
+  var wrap=document.getElementById('chat-wrap'),ia=document.getElementById('input-area'); if(!wrap||!ia)return;
+  var H=170,TY=12,BY=H-12,PX=60,box=document.createElement('div');
+  box.style.cssText='display:none;flex:0 0 auto;position:relative;width:100%;height:'+H+'px;background:var(--c-000);border-top:1px solid var(--c-33);touch-action:none;user-select:none;-webkit-user-select:none';
+  var cv=document.createElement('canvas'); cv.style.cssText='width:100%;height:100%;display:block';
+  box.appendChild(cv); ia.parentNode.insertBefore(box,ia);
+  var cx=cv.getContext('2d'),W=0,raf=0,last=0,shown=false,st,hi=0,stars=[],C={};
+  try{hi=+localStorage.getItem('flipHi')||0;}catch(e){}
+  function reset(){st={run:false,dead:false,t:0,py:BY-8,vy:0,g:1,rot:0,tr:0,sp:230,sc:0,coins:0,off:0,nd:380,o:[],c:[],p:[],sh:0};}
+  function size(){
+    var d=window.devicePixelRatio||1;W=box.clientWidth;cv.width=W*d;cv.height=H*d;cx.setTransform(d,0,0,d,0,0);
+    stars=[];for(var i=0;i<28;i++)stars.push({x:Math.random()*W,y:TY+6+Math.random()*(BY-TY-12),s:.04+Math.random()*.16});
+  }
+  function col(){
+    var s=getComputedStyle(document.documentElement);
+    function g(n,d){return(s.getPropertyValue(n)||'').trim()||d;}
+    C={fg:g('--c-cc','#ccc'),mu:g('--c-66','#666'),bg:g('--c-000','#000'),coin:g('--warn','#ffd23f'),bad:g('--bad','#f44')};
+  }
+  function burst(x,y,n,c){for(var i=0;i<n;i++)st.p.push({x:x,y:y,vx:(Math.random()-.5)*260,vy:(Math.random()-.5)*260,l:.5,c:c});}
+  function tap(){
+    if(st.dead){if(st.t>.4){reset();st.run=true;}return;}
+    if(!st.run){st.run=true;return;}
+    st.g=-st.g; st.vy=st.g*220; st.tr+=Math.PI/2;
+  }
+  function spawn(){
+    var r=Math.random(),t=r<.34?'f':r<.68?'c':'m',w=t==='m'?26:22*(Math.random()<.4?2:1);
+    st.o.push({x:W+20,w:w,t:t});
+    if(Math.random()<.6)st.c.push({x:W+20+w+st.sp*.35,y:[TY+12,H/2,BY-12][Math.random()*3|0]});
+    st.nd=st.sp*(.8+Math.random()*.6)+w+50;
+  }
+  function upd(dt){
+    for(var i=st.p.length-1;i>=0;i--){var q=st.p[i];q.x+=q.vx*dt;q.y+=q.vy*dt;q.l-=dt;if(q.l<=0)st.p.splice(i,1);}
+    st.sh=Math.max(0,st.sh-dt);
+    if(st.dead){st.t+=dt;return;}
+    if(!st.run){st.off+=40*dt;return;}
+    st.sp=Math.min(520,st.sp+dt*7);st.sc+=dt*st.sp/30;st.off+=st.sp*dt;
+    st.vy+=st.g*2600*dt;st.py+=st.vy*dt;
+    if(st.g>0&&st.py>=BY-8){st.py=BY-8;st.vy=0;}
+    if(st.g<0&&st.py<=TY+8){st.py=TY+8;st.vy=0;}
+    st.rot+=(st.tr-st.rot)*Math.min(1,dt*16);
+    if(st.p.length<80)st.p.push({x:PX-6,y:st.py,vx:-st.sp*.3,vy:(Math.random()-.5)*20,l:.3,c:C.mu});
+    st.nd-=st.sp*dt;if(st.nd<=0)spawn();
+    var y0=st.py-6,y1=st.py+6,k;
+    for(k=st.o.length-1;k>=0;k--){
+      var o=st.o[k];o.x-=st.sp*dt;
+      if(o.x+o.w<-10){st.o.splice(k,1);continue;}
+      if(o.x+3<PX+6&&o.x+o.w-3>PX-6&&(o.t==='f'?y1>BY-16:o.t==='c'?y0<TY+16:(y1>64&&y0<106))){
+        st.dead=true;st.t=0;st.sh=.35;burst(PX,st.py,26,C.bad);
+        if(st.sc>hi){hi=st.sc;try{localStorage.setItem('flipHi',Math.floor(hi));}catch(e){}}
+        return;
+      }
+    }
+    for(k=st.c.length-1;k>=0;k--){
+      var c=st.c[k];c.x-=st.sp*dt;
+      if(c.x<-10){st.c.splice(k,1);continue;}
+      if(Math.abs(c.x-PX)<14&&Math.abs(c.y-st.py)<14){st.c.splice(k,1);st.coins++;st.sc+=25;burst(c.x,c.y,10,C.coin);}
+    }
+  }
+  function pad(n){return('0000'+Math.floor(n)).slice(-5);}
+  function draw(){
+    cx.clearRect(0,0,W,H);cx.save();
+    if(st.sh>0)cx.translate((Math.random()-.5)*st.sh*24,(Math.random()-.5)*st.sh*24);
+    cx.fillStyle=C.fg;cx.globalAlpha=.25;
+    stars.forEach(function(s){cx.fillRect(((s.x-st.off*s.s)%W+W)%W,s.y,2,2);});
+    cx.globalAlpha=1;cx.fillStyle=C.mu;cx.fillRect(0,TY,W,1);cx.fillRect(0,BY,W,1);
+    st.o.forEach(function(o){
+      cx.fillStyle=C.fg;
+      if(o.t==='m'){cx.fillRect(o.x,64,o.w,42);cx.fillStyle=C.bg;cx.fillRect(o.x+5,70,o.w-10,30);return;}
+      for(var i=0;i<o.w/22;i++){
+        var x=o.x+i*22;cx.beginPath();
+        if(o.t==='f'){cx.moveTo(x,BY);cx.lineTo(x+11,BY-20);cx.lineTo(x+22,BY);}
+        else{cx.moveTo(x,TY);cx.lineTo(x+11,TY+20);cx.lineTo(x+22,TY);}
+        cx.fill();
+      }
+    });
+    cx.fillStyle=C.coin;
+    st.c.forEach(function(c){cx.beginPath();cx.arc(c.x,c.y,6,0,6.3);cx.fill();});
+    st.p.forEach(function(q){cx.globalAlpha=Math.min(1,q.l*2.5);cx.fillStyle=q.c;cx.fillRect(q.x,q.y,3,3);});
+    cx.globalAlpha=1;
+    if(!st.dead){
+      cx.save();cx.translate(PX,st.py);cx.rotate(st.rot);
+      cx.fillStyle=C.fg;cx.fillRect(-8,-8,16,16);cx.fillStyle=C.bg;cx.fillRect(2,-4,3,3);cx.restore();
+    }
+    cx.font='12px monospace';cx.fillStyle=C.mu;cx.textAlign='right';cx.fillText('HI '+pad(hi)+'  '+pad(st.sc),W-10,34);
+    cx.textAlign='left';cx.fillStyle=C.coin;cx.fillText('● '+st.coins,10,34);
+    cx.textAlign='center';cx.fillStyle=C.fg;
+    if(!st.run)cx.fillText('Bağlantı yok · dokun: yerçekimini çevir',W/2,H/2+4);
+    else if(st.dead&&st.t>.2)cx.fillText('Bitti · tekrar için dokun',W/2,H/2+4);
+    cx.restore();
+  }
+  function loop(ts){
+    if(!shown)return;
+    var dt=Math.min(.05,(ts-last)/1000||0);last=ts;upd(dt);draw();raf=requestAnimationFrame(loop);
+  }
+  function show(){if(shown)return;shown=true;box.style.display='block';size();col();reset();last=performance.now();raf=requestAnimationFrame(loop);}
+  function hide(){if(!shown)return;shown=false;cancelAnimationFrame(raf);box.style.display='none';reset();}
+  box.addEventListener('pointerdown',function(e){e.preventDefault();tap();});
+  document.addEventListener('keydown',function(e){
+    if(!shown||(e.key!==' '&&e.key!=='ArrowUp'&&e.key!=='ArrowDown'))return;
+    var t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
+    e.preventDefault();tap();
+  });
+  window.addEventListener('resize',function(){if(shown)size();});
+  var n=0;
+  setInterval(function(){
+    var ok;
+    try{ok=isConnected()||wrap.offsetParent===null||!(myId&&friendId);}catch(e){ok=true;}
+    if(ok){n=0;hide();}else if(++n>=5)show();
+  },1000);
+})();
+</script>
 </body>
 </html>
