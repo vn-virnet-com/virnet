@@ -4997,7 +4997,7 @@ function buildYtCard(id, url) {
   };
   const seekSec = (t) => {
     if (!player || !ready) return;
-    muteUntil = 0; localActAt = Date.now();
+    muteUntil = 0; localActAt = Date.now(); card._endLatch = 0;
     try { player.seekTo(t, true); } catch (e) {}
     say('seek', t);
     updateLyrics(t, true);
@@ -5052,12 +5052,15 @@ function buildYtCard(id, url) {
         events: {
           onReady: () => {
             ready = true; errTries = 0;
+            // Bitiş kilidi: şarkı bitince kullanıcı kendisi dokunmadan hiçbir kod (senkron, kalp atışı, bekleyen konum...) onu yeniden başlatamaz
+            try { const pl = player; ['playVideo', 'seekTo'].forEach((m) => { const o = pl[m]; if (typeof o !== 'function' || o._lk) return; const w = function () { if (card._endLatch) return; return o.apply(pl, arguments); }; w._lk = 1; pl[m] = w; }); } catch (e) {}
             card.classList.remove('is-loading');
             applyPending();
             if (wantPlay && !held()) { try { player.playVideo(); } catch (e) {} }
           },
           onStateChange: (ev) => {
             const st = ev.data;
+            if (st === 1 && card._endLatch) { try { player.pauseVideo(); } catch (e) {} return; }
             if (st === 1) {
               if (ytCurrent && ytCurrent !== card) ytCurrent._pause();
               ytCurrent = card;
@@ -5077,6 +5080,7 @@ function buildYtCard(id, url) {
               stopTimer();
               try { say('pause', player.getCurrentTime() || 0); } catch (e) {}
             } else if (st === 0) {
+              card._endLatch = Date.now();
               card.classList.remove('is-playing', 'is-loading');
               btn.innerHTML = YT_PLAY; btn.setAttribute('aria-label', 'Oynat');
               stopTimer();
@@ -5122,7 +5126,7 @@ function buildYtCard(id, url) {
     try {
       const st = player.getPlayerState();
       // Kullanıcının kendi dokunuşu: bastırma (mute) penceresi içinde olsa bile karşıya iletilsin ve yerel kalp atışı düzeltmesi bunu geri çevirmesin
-      muteUntil = 0; localActAt = Date.now();
+      muteUntil = 0; localActAt = Date.now(); card._endLatch = 0;
       if (st === 1 || st === 3) { wantPlay = false; player.pauseVideo(); }
       else { wantPlay = true; player.playVideo(); }
     } catch (e) {}
@@ -5295,6 +5299,7 @@ function buildYtCard(id, url) {
   // Başlatma: iki taraf da aynı mutlak (ortak saat) anında oynatır
   const schedule = (leaderAt, localAt, pos) => {
     clearInterval(pollTimer); pollTimer = null;
+    card._endLatch = 0;
     const tok = startTok;
     try { mute(); player.pauseVideo(); player.seekTo(pos, true); } catch (e) {}
     const fire = () => {
@@ -5339,6 +5344,7 @@ function buildYtCard(id, url) {
   };
   const toggleReady = () => {
     if (failed || sync || starting) return;
+    card._endLatch = 0;
     if (card._locked) return; // başka şarkıya hazır verilmiş
     if (!isConnected()) { flash('Bağlantı yok'); return; }
     if (!player) create();
