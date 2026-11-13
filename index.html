@@ -450,15 +450,20 @@ body #typing-indicator { display: none !important; }
 @keyframes recblink { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
 /* Kaydı basılı tutarken yukarıda çıkan çöp kutusu: üstüne sürükleyip bırakınca kayıt iptal olur */
 #rec-trash, #rec-lock {
-  position: fixed; z-index: 22500; display: none; align-items: center; justify-content: center;
-  width: 56px; height: 64px; border-radius: var(--r-pill); background: var(--c-111); border: 1px solid var(--c-33);
-  color: var(--c-fff); box-shadow: 0 4px 18px rgba(var(--sh),0.7); pointer-events: none; touch-action: none;
-  -webkit-user-select: none; user-select: none; transition: transform .12s ease-out, background .12s, color .12s;
+  position: fixed; z-index: 22500; display: none; align-items: center; justify-content: center; box-sizing: border-box;
+  width: 42px; height: 42px; background: var(--c-111); border: 1px solid var(--c-33); border-bottom: 0;
+  color: #fff; pointer-events: none; touch-action: none;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; transition: background .12s;
 }
+/* Gönder tuşunun üstünde bitişik dizilim: kilit tam üstte (sağ üst köşe yuvarlak), çöp kovası onun solunda */
+#rec-lock { border-radius: 0 var(--r-lg) 0 0; }
+#rec-trash { border-radius: var(--r-lg) 0 0 0; border-right: 0; }
+#rec-trash.solo { border-radius: var(--r-lg) var(--r-lg) 0 0; border-right: 1px solid var(--c-33); }
+#rec-trash svg, #rec-lock svg { display: block; width: 20px; height: 20px; stroke: #fff; pointer-events: none; }
 #rec-trash.show, #rec-lock.show { display: flex; animation: rtin .15s ease-out; }
-#rec-lock.hot { background: var(--accent); border-color: var(--accent); color: var(--on-accent); transform: scale(1.18); }
+#rec-lock.hot { background: var(--hot); border-color: var(--hot); }
 #rec-trash.tap { pointer-events: auto; cursor: pointer; }
-#rec-trash.hot { background: #d33; border-color: #d33; color: #fff; transform: scale(1.18); }
+#rec-trash.hot { background: #d33; border-color: #d33; }
 @keyframes rtin { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 #confirm-audio { display: none; width: 100%; justify-content: center; }
 #confirm-audio .aud-pl { width: 100%; }
@@ -7390,8 +7395,8 @@ async function startRec() {
 /* Kayıt arayüzü: kırmızı yanıp sönen placeholder + yukarıda çöp kutusu */
 let recTrashEl = null, recLockEl = null;
 const recPhSpan = document.querySelector('#rec-ph span');
-const REC_TRASH_SVG = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
-const REC_LOCK_SVG = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+const REC_TRASH_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
+const REC_LOCK_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 const REC_TXT = 'Ses kaydediliyor...', REC_TXT_TRASH = 'Bırakınca iptal edilecek', REC_TXT_LOCK = 'Bırakınca kilitlenecek', REC_TXT_LOCKED = 'Ses kaydediliyor... (kilitli)';
 function showRecUi() {
   const wrap = document.getElementById('msg-wrap');
@@ -7422,19 +7427,26 @@ function showRecUi() {
   recLockEl.classList.remove('hot');
   recTrashEl.classList.add('show');
   recLockEl.classList.add('show');
+  recTrashEl.classList.remove('solo');
+  placeRecUi();
+}
+// Kilit gönder tuşunun hemen üstünde, çöp kovası kilidin solunda (bitişik)
+function placeRecUi() {
+  if (!recTrashEl || !recLockEl) return;
   const b = sendBtn.getBoundingClientRect();
-  const mw = recTrashEl.offsetWidth, mh = recTrashEl.offsetHeight;
-  const vv = window.visualViewport;
-  const vW = vv ? vv.width : window.innerWidth;
-  const tl = Math.max(4, Math.min(b.left + b.width / 2 - mw / 2, vW - mw - 4));
-  const top = Math.max(4, b.top - mh - 40);
-  recTrashEl.style.left = tl + 'px';
-  recTrashEl.style.top = top + 'px';
-  // Kilit çöp kutusunun solunda (yer yoksa sağında)
-  let ll = tl - mw - 14;
-  if (ll < 4) ll = Math.min(tl + mw + 14, vW - mw - 4);
-  recLockEl.style.left = ll + 'px';
+  const w = b.width, h = b.height;
+  [recTrashEl, recLockEl].forEach((el) => { el.style.width = w + 'px'; el.style.height = h + 'px'; });
+  const top = Math.max(0, b.top - h);
+  recLockEl.style.left = b.left + 'px';
   recLockEl.style.top = top + 'px';
+  if (recLocked) {
+    recTrashEl.classList.add('solo');
+    recTrashEl.style.left = b.left + 'px';
+  } else {
+    recTrashEl.classList.remove('solo');
+    recTrashEl.style.left = Math.max(0, b.left - w) + 'px';
+  }
+  recTrashEl.style.top = top + 'px';
 }
 function hideRecUi() {
   const wrap = document.getElementById('msg-wrap');
@@ -7448,7 +7460,7 @@ function recZoneAt(x, y) {
     const el = z[1];
     if (!el || !el.classList.contains('show')) return;
     const r = el.getBoundingClientRect();
-    if (x >= r.left - 36 && x <= r.right + 36 && y >= r.top - 36 && y <= r.bottom + 24) {
+    if (x >= r.left - 16 && x <= r.right + 16 && y >= r.top - 50 && y <= r.bottom - 6) {
       const d = Math.abs(x - (r.left + r.width / 2)) + Math.abs(y - (r.top + r.height / 2));
       if (d < bestD) { bestD = d; best = z[0]; }
     }
@@ -7478,6 +7490,7 @@ function lockRec() {
   recLocked = true;
   if (recLockEl) recLockEl.classList.remove('show', 'hot');
   if (recTrashEl) { recTrashEl.classList.remove('hot'); recTrashEl.classList.add('tap'); }
+  placeRecUi();
   if (recPhSpan) recPhSpan.textContent = REC_TXT_LOCKED;
   if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
 }
