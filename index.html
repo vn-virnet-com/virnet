@@ -6705,28 +6705,58 @@ function receiveGameClose(d) {
 
 /* ===== Kuks Feva oyunu: kuşbakışı, iki kişilik. Ev sahibi (kimlik sırası küçük taraf) oyunu işletir, durumu saniyede 10 kez karşıya yollar; karşı taraf yalnızca tıklamalarını yollar ===== */
 var GM_ST = [
-  { id: 'crate', x: 5, y: 32, w: 12, h: 10, sx: 22, sy: 37, l: 'Biftek', c: '#b34a4a' },
-  { id: 'g0', x: 5, y: 44, w: 12, h: 10, sx: 22, sy: 49, l: 'Izgara', c: '#3b3b40' },
-  { id: 'g1', x: 5, y: 56, w: 12, h: 10, sx: 22, sy: 61, l: 'Izgara', c: '#3b3b40' },
-  { id: 'bun', x: 5, y: 68, w: 12, h: 10, sx: 22, sy: 73, l: 'Ekmek', c: '#c98f4a' },
-  { id: 'f0', x: 83, y: 32, w: 12, h: 10, sx: 78, sy: 37, l: 'Patates', c: '#d1a823' },
-  { id: 'f1', x: 83, y: 44, w: 12, h: 10, sx: 78, sy: 49, l: 'Patates', c: '#d1a823' },
-  { id: 'brd', x: 83, y: 56, w: 12, h: 10, sx: 78, sy: 61, l: 'Patso', c: '#c98f4a' },
+  { id: 'crate', x: 5, y: 30.5, w: 12, h: 9.5, sx: 22, sy: 35.5, l: 'Biftek', c: '#b34a4a' },
+  { id: 'g0', x: 5, y: 41.3, w: 12, h: 9.5, sx: 22, sy: 46.3, l: 'Izgara', c: '#3b3b40' },
+  { id: 'g1', x: 5, y: 52.1, w: 12, h: 9.5, sx: 22, sy: 57.1, l: 'Izgara', c: '#3b3b40' },
+  { id: 'bun', x: 5, y: 62.9, w: 12, h: 9.5, sx: 22, sy: 67.9, l: 'Ekmek', c: '#c98f4a' },
+  { id: 'lettuce', x: 5, y: 73.7, w: 12, h: 9.5, sx: 22, sy: 78.7, l: 'Marul', c: '#3f8f3a', u: 3 },
+  { id: 'f0', x: 83, y: 30.5, w: 12, h: 9.5, sx: 78, sy: 35.5, l: 'Patates', c: '#d1a823' },
+  { id: 'f1', x: 83, y: 41.3, w: 12, h: 9.5, sx: 78, sy: 46.3, l: 'Patates', c: '#d1a823' },
+  { id: 'brd', x: 83, y: 52.1, w: 12, h: 9.5, sx: 78, sy: 57.1, l: 'Patso', c: '#c98f4a' },
+  { id: 'ket', x: 83, y: 62.9, w: 12, h: 9.5, sx: 78, sy: 67.9, l: 'Ketçap', c: '#8f2a2a', u: 5 },
+  { id: 'may', x: 83, y: 73.7, w: 12, h: 9.5, sx: 78, sy: 78.7, l: 'Mayonez', c: '#e8dcae', d: 1, u: 7 },
   { id: 'cola', x: 5, y: 85, w: 10, h: 10, sx: 11, sy: 80, l: 'Kola', c: '#a82424' },
   { id: 'water', x: 18, y: 85, w: 10, h: 10, sx: 23, sy: 80, l: 'Su', c: '#2f86c9' },
   { id: 'p0', x: 40, y: 85, w: 10, h: 10, sx: 45, sy: 80, l: 'Tabak', c: '#ececec' },
   { id: 'p1', x: 53, y: 85, w: 10, h: 10, sx: 58, sy: 80, l: 'Tabak', c: '#ececec' },
   { id: 'p2', x: 66, y: 85, w: 10, h: 10, sx: 71, sy: 80, l: 'Tabak', c: '#ececec' },
-  { id: 'trash', x: 86, y: 85, w: 10, h: 11, sx: 80, sy: 80, l: 'Çöp', c: '#555a62' }
+  { id: 'trash', x: 86, y: 85, w: 10, h: 11, sx: 82, sy: 81, l: 'Çöp', c: '#555a62' }
 ];
-var GM_WANT = { burger: ['🍔', 'Hamburger'], cola: ['🥤', 'Kola'], water: ['💧', 'Su'], patso: ['🥙', 'Patso'] };
-var GM_WK = Object.keys(GM_WANT), GM_SKIN = ['#f2c6a0', '#d9a07a', '#a86f4d', '#f5d7b8', '#8d5a3b'], GM_HAIR = ['#3a2a1c', '#c9482b', '#e6c34a', '#2c2f6b', '#555'];
+// Seviye ayarları: her seviye 50 sn, 12 seviye = 10 dk. 4. seviyeden sonra her şey (yürüme, pişme, sabır, müşteri gelişi) eşit oranda hızlanır, artış giderek büyür
+var GM_LVSEC = 50, GM_MAXLV = 12;
+var GM_UNL = { 3: 'lburger', 5: 'patsoK', 7: 'patsoM' }; // seviye -> o seviyede ilk gelen yeni sipariş
+var GM_LVMSG = {
+  2: ['Müşteriler artıyor'],
+  3: ['Yeni: MARUL', 'Hamburgerin içine marul koy', 'Marulsuz isteyene marulsuz ver'],
+  4: ['Hızlanmaya başlıyoruz!'],
+  5: ['Yeni: KETÇAP', 'Patsoya ketçap sık'],
+  6: ['Daha da hızlı!'],
+  7: ['Yeni: MAYONEZ', 'Ketçap, mayonez ya da ikisi birden'],
+  12: ['Son seviye: tam panik!']
+};
+function gmLevel(el) { return Math.min(GM_MAXLV, Math.floor(el / GM_LVSEC) + 1); }
+function gmSpeedOf(lv) { const k = Math.max(0, lv - 3); return 1 + .06 * k + .0106 * k * k; }
+function gmOn(S, st) { return ((S && S.lv) || 1) >= (st.u || 1); }
+var GM_WANT = { burger: ['🍔', 'Hamburger'], lburger: ['🍔', 'Marullu'], cola: ['🥤', 'Kola'], water: ['💧', 'Su'], patso: ['🥙', 'Patso'], patsoK: ['🥙', 'Ketçaplı'], patsoM: ['🥙', 'Mayonezli'], patsoKM: ['🥙', 'Karışık'] };
+var GM_MADE = ['burger', 'lburger', 'patso', 'patsoK', 'patsoM', 'patsoKM'];
+function gmWant(lv) {
+  const c = GM_WK[Math.floor(Math.random() * 4)];
+  if (c === 'burger') return (lv >= 3 && Math.random() < .5) ? 'lburger' : 'burger';
+  if (c === 'patso') {
+    const sc = []; if (lv >= 5) sc.push('patsoK'); if (lv >= 7) sc.push('patsoM', 'patsoKM');
+    if (sc.length && Math.random() > (lv >= 7 ? .2 : .4)) return sc[Math.floor(Math.random() * sc.length)];
+    return 'patso';
+  }
+  return c;
+}
+function gmPat(lv, w) { return Math.max(28, 48 - 2 * (lv - 1)) + ({ lburger: 8, patsoK: 6, patsoM: 6, patsoKM: 12 }[w] || 0); }
+var GM_WK = ['burger', 'cola', 'water', 'patso'], GM_SKIN = ['#f2c6a0', '#d9a07a', '#a86f4d', '#f5d7b8', '#8d5a3b'], GM_HAIR = ['#3a2a1c', '#c9482b', '#e6c34a', '#2c2f6b', '#555'];
 var GM_COOK = { g: [5, 14], f: [4, 12] };
 var gm = null;
 function gmCX(i) { return 10 + i * 20; }
 function gmNew() {
-  const P = (x) => ({ x: x, y: 50, h: null, tx: null, ty: 0, a: null });
-  return { ph: 0, cc: [null, null], el: 0, nx: 1.5, sc: 0, ms: 0, pl: [P(40), P(60)], gr: [{ s: 0, t: 0 }, { s: 0, t: 0 }], fr: [{ s: 0, t: 0 }, { s: 0, t: 0 }], bun: 0, brd: 0, pt: [null, null, null], cu: [null, null, null, null, null] };
+  const P = (x) => ({ x: x, y: 50, h: null, tx: null, ty: 0, a: null, sq: null });
+  return { ph: 0, cc: [null, null], el: 0, lv: 1, sp: 1, bn: 0, lt: 0, nw: null, hf: null, nx: 1.5, sc: 0, ms: 0, pl: [P(40), P(60)], gr: [{ s: 0, t: 0 }, { s: 0, t: 0 }], fr: [{ s: 0, t: 0 }, { s: 0, t: 0 }], bun: 0, brd: 0, pt: [null, null, null], cu: [null, null, null, null, null] };
 }
 function gmInit(stage, id) {
   gmStop(true);
@@ -6769,8 +6799,9 @@ function gmClick(e) {
   const x = (e.clientX - r.left - gm.ox) / gm.k, y = (e.clientY - r.top - gm.oy) / gm.k;
   if (x < 0 || y < 0 || x > 100 || y > 100) return;
   let a = null, tx = x, ty = y;
+  { const ov = gm.vis[vcIAmLeader() ? 1 : 0]; if (ov && Math.hypot(x - ov.x, y - (ov.y - 2)) < 6.5) { a = 'h5'; tx = ov.x; ty = ov.y; } }
   for (let i = 0; i < 5; i++) if (Math.abs(x - gmCX(i)) < 9 && y > 5 && y < 27) { a = 'c' + i; tx = gmCX(i); ty = 31; }
-  if (!a) for (const st of GM_ST) if (x >= st.x - 1.5 && x <= st.x + st.w + 1.5 && y >= st.y - 1.5 && y <= st.y + st.h + 1.5) { a = st.id; tx = st.sx; ty = st.sy; break; }
+  if (!a) for (const st of GM_ST) if (gmOn(gm.S, st) && x >= st.x - 1.5 && x <= st.x + st.w + 1.5 && y >= st.y - 1.5 && y <= st.y + st.h + 1.5) { a = st.id; tx = st.sx; ty = st.sy; break; }
   gmSfxPlay('tap');
   if (vcIAmLeader()) gmAction(gm.S, 0, tx, ty, a);
   else { try { if (isConnected()) conn.send({ type: 'game-act', msgId: gm.id, tx: tx, ty: ty, a: a }); } catch (er) {} }
@@ -6778,7 +6809,7 @@ function gmClick(e) {
 function gmAction(S, i, tx, ty, a) {
   if (S.ph === 0) return;
   tx = Math.max(6, Math.min(94, +tx || 0)); ty = Math.max(30, Math.min(95, +ty || 0));
-  if (a !== null && !(typeof a === 'string' && (/^c[0-4]$/.test(a) || GM_ST.some((st) => st.id === a)))) a = null;
+  if (a !== null && !(typeof a === 'string' && (/^c[0-4]$/.test(a) || a === 'h5' || GM_ST.some((st) => st.id === a && gmOn(S, st))))) a = null;
   const p = S.pl[i]; if (!p) return;
   p.tx = tx; p.ty = ty; p.a = a;
 }
@@ -6850,12 +6881,25 @@ function gmDo(S, p, a) {
     else if (m[1] === 'f' && !h && g.s === 0) { g.s = 1; g.t = 0; }
     else if (!h && g.s >= 2) { p.h = g.s === 2 ? (m[1] === 'g' ? 'cooked' : 'fries') : 'burnt'; g.s = 0; g.t = 0; }
   }
-  else if (a === 'bun') { if (h === 'cooked' && !S.bun) { S.bun = 1; p.h = null; } else if (!h && S.bun) { p.h = 'burger'; S.bun = 0; } }
+  else if (a === 'bun') {
+    if (h === 'cooked' && !S.bun) { S.bun = 1; p.h = null; }
+    else if (h === 'lettuce' && !S.lt) { S.lt = 1; p.h = null; }
+    else if (!h && S.bun) { p.h = S.lt ? 'lburger' : 'burger'; S.bun = 0; S.lt = 0; }
+    else if (!h && S.lt) { p.h = 'lettuce'; S.lt = 0; }
+  }
+  else if (a === 'lettuce') { if (!h) p.h = 'lettuce'; }
+  else if (a === 'ket' || a === 'may') {
+    const o = /^patso(K?)(M?)$/.exec(h || '');
+    if (o) {
+      const nk = a === 'ket' || o[1] === 'K', nm = a === 'may' || o[2] === 'M', nh = 'patso' + (nk ? 'K' : '') + (nm ? 'M' : '');
+      if (nh !== h) { p.h = nh; p.sq = { k: a, t: .55 }; }
+    }
+  }
   else if (a === 'brd') { if (h === 'fries' && !S.brd) { S.brd = 1; p.h = null; } else if (!h && S.brd) { p.h = 'patso'; S.brd = 0; } }
   else if (a === 'cola' || a === 'water') { if (!h) p.h = a; }
   else if ((m = /^p([0-2])$/.exec(a))) {
     const i = +m[1], pt = S.pt[i];
-    if ((h === 'burger' || h === 'patso') && !pt) { S.pt[i] = h; p.h = null; } else if (!h && pt) { p.h = pt; S.pt[i] = null; }
+    if (GM_MADE.indexOf(h) >= 0 && !pt) { S.pt[i] = h; p.h = null; } else if (!h && pt) { p.h = pt; S.pt[i] = null; }
   }
   else if (a === 'trash') { p.h = null; }
   else if ((m = /^c([0-4])$/.exec(a))) {
@@ -6866,8 +6910,22 @@ function gmDo(S, p, a) {
 function gmStep(S, dt) {
   if (S.ph === 0) return; // renkler seçilene kadar oyun başlamaz
   S.el += dt;
-  const lvl = Math.floor(S.el / 60);
-  S.pl.forEach((p) => {
+  const nl = gmLevel(S.el);
+  if (!(S.lv >= 1)) S.lv = 1;
+  if (nl > S.lv) { S.lv = nl; S.bn = 0; if (GM_UNL[nl]) S.nw = GM_UNL[nl]; S.nx = Math.min(S.nx, 2.5); }
+  S.bn = (S.bn || 0) + dt;
+  const lv = S.lv;
+  S.sp = (S.sp || 1) + (gmSpeedOf(lv) - (S.sp || 1)) * Math.min(1, dt * 1.2);
+  dt *= S.sp; // bundan sonrası oyun zamanı: yürüme, pişme, sabır, müşteri gelişi hep birlikte hızlanır
+  if (S.hf) { S.hf.t += dt; if (S.hf.t >= .9) S.hf = null; }
+  S.pl.forEach((p, i) => {
+    if (p.sq) { p.sq.t -= dt; if (p.sq.t <= 0) p.sq = null; }
+    if (S.hf && (i === S.hf.a || i === 1 - S.hf.a)) return; // beşlik sırasında ikisi de durur
+    if (p.a === 'h5') {
+      const o = S.pl[1 - i];
+      if (Math.hypot(o.x - p.x, o.y - p.y) <= 7.5) { p.a = null; p.tx = null; if (!S.hf) S.hf = { a: i, t: 0 }; return; }
+      p.tx = o.x; p.ty = o.y; // diğer oyuncunun peşinden gider
+    }
     if (p.tx === null) return;
     const dx = p.tx - p.x, dy = p.ty - p.y, d = Math.hypot(dx, dy), st = 38 * dt;
     if (d <= st) { p.x = p.tx; p.y = p.ty; p.tx = null; if (p.a) { const a = p.a; p.a = null; gmDo(S, p, a); } }
@@ -6887,13 +6945,13 @@ function gmStep(S, dt) {
   }
   S.nx -= dt;
   if (S.nx <= 0) {
-    const maxC = Math.min(5, 2 + lvl), free = [];
+    const maxC = Math.min(5, 2 + Math.floor(lv / 2.5)), free = [];
     for (let i = 0; i < 5; i++) if (!S.cu[i]) free.push(i);
     if (n < maxC && free.length) {
-      const m = Math.max(14, 45 - 5 * lvl);
-      S.cu[free[Math.floor(Math.random() * free.length)]] = { w: GM_WK[Math.floor(Math.random() * 4)], t: m, m: m, k: Math.floor(Math.random() * 5), q: Math.floor(Math.random() * 5) };
+      const w = S.nw || gmWant(lv), m = gmPat(lv, w); S.nw = null;
+      S.cu[free[Math.floor(Math.random() * free.length)]] = { w: w, t: m, m: m, k: Math.floor(Math.random() * 5), q: Math.floor(Math.random() * 5) };
     }
-    S.nx = Math.max(2.2, 9 - 1.3 * lvl) * (0.8 + Math.random() * 0.4);
+    S.nx = Math.max(3.2, 9.5 - .6 * (lv - 1)) * (0.8 + Math.random() * 0.4);
   }
 }
 function gmLoop(ts) {
@@ -6912,12 +6970,51 @@ function gmLoop(ts) {
 }
 function gmRR(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function gmTxt(c, s, x, y, z, col, bold) { c.font = (bold ? '700 ' : '500 ') + z + "px 'Lexend', sans-serif"; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = col; c.fillText(s, x, y); }
+function gmBurger(c, x, y, z, lt) {
+  const W = z * .95, H = z * .78, t = y - H / 2, l = x - W / 2;
+  c.fillStyle = '#d9954a'; gmRR(c, l, t + H * .8, W, H * .2, z * .08); c.fill();
+  c.fillStyle = '#5a2f1a'; gmRR(c, l - z * .02, t + H * .58, W + z * .04, H * .24, z * .1); c.fill();
+  if (lt) {
+    const lx = l - z * .07, lw = W + z * .14, ly = t + H * .46, n = 5;
+    c.fillStyle = '#5cc24a'; c.beginPath(); c.moveTo(lx, ly + H * .14);
+    for (let i = 0; i < n; i++) c.quadraticCurveTo(lx + lw * (i + .5) / n, ly - H * .08, lx + lw * (i + 1) / n, ly + H * .14);
+    c.lineTo(lx + lw, ly + H * .2); c.lineTo(lx, ly + H * .2); c.closePath(); c.fill();
+  }
+  c.fillStyle = '#e0a152'; c.beginPath(); c.moveTo(l, t + H * .52); c.quadraticCurveTo(l, t - H * .08, x, t); c.quadraticCurveTo(l + W, t - H * .08, l + W, t + H * .52); c.closePath(); c.fill();
+  c.fillStyle = '#fff3d0';
+  [[-.2, .26], [.02, .14], [.22, .27]].forEach((d) => { c.beginPath(); c.ellipse(x + W * d[0], t + H * d[1], z * .04, z * .025, 0, 0, 7); c.fill(); });
+}
+function gmBottle(c, x, y, z, col) {
+  const w = z * .42, h = z * .62, t = y - h / 2 + z * .1;
+  c.fillStyle = col; gmRR(c, x - w / 2, t, w, h, z * .1); c.fill();
+  c.fillStyle = '#fff'; gmRR(c, x - w * .32, t + h * .35, w * .64, h * .32, z * .04); c.fill();
+  c.fillStyle = col; c.beginPath(); c.moveTo(x - w * .32, t + 1e-3); c.lineTo(x + w * .32, t + 1e-3); c.lineTo(x + w * .12, t - z * .14); c.lineTo(x - w * .12, t - z * .14); c.closePath(); c.fill();
+  c.fillStyle = '#f2f2f2'; gmRR(c, x - w * .14, t - z * .24, w * .28, z * .11, z * .03); c.fill();
+}
+function gmSauce(c, x, y, z, k, m) {
+  c.save(); c.lineCap = 'round'; c.lineJoin = 'round'; c.lineWidth = Math.max(.5, z * .11);
+  [[k, '#d62a2a', -.12], [m, '#fffbe0', .1]].forEach((q) => {
+    if (!q[0]) return;
+    const yy = y + z * q[2], x0 = x - z * .3;
+    c.strokeStyle = q[1]; c.beginPath(); c.moveTo(x0, yy);
+    for (let i = 1; i <= 4; i++) c.lineTo(x0 + z * .15 * i, yy + (i % 2 ? -1 : 1) * z * .07);
+    c.stroke();
+  });
+  c.restore();
+}
 function gmItem(c, k, x, y, z) {
+  if (k === 'burger' || k === 'lburger') { gmBurger(c, x, y, z, k === 'lburger'); return; }
+  if (k === 'ket' || k === 'may') { gmBottle(c, x, y, z, k === 'ket' ? '#d62a2a' : '#f0e2a0'); return; }
+  if (typeof k === 'string' && k.indexOf('patso') === 0) {
+    c.font = z + 'px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#000'; c.fillText('🥙', x, y + z * .05);
+    if (k.length > 5) gmSauce(c, x, y, z, k.indexOf('K') > 0, k.indexOf('M') > 0);
+    return;
+  }
   if (k === 'raw' || k === 'cooked' || k === 'burnt') {
     c.fillStyle = k === 'raw' ? '#e0707a' : k === 'cooked' ? '#7a4326' : '#1c1c1c';
     c.beginPath(); c.arc(x, y, z * .42, 0, 7); c.fill(); c.strokeStyle = 'rgba(0,0,0,.4)'; c.lineWidth = .35; c.stroke(); return;
   }
-  const e = { burger: '🍔', fries: '🍟', patso: '🥙', cola: '🥤', water: '💧', bun: '🍞', bread: '🥖', trash: '🗑️' }[k];
+  const e = { lettuce: '🥬', fries: '🍟', patso: '🥙', cola: '🥤', water: '💧', bun: '🍞', bread: '🥖', trash: '🗑️' }[k];
   c.font = z + 'px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#000'; c.fillText(e, x, y + z * .05);
 }
 function gmBar(c, x, y, w, f, col) { c.fillStyle = 'rgba(0,0,0,.45)'; gmRR(c, x, y, w, 1.3, .6); c.fill(); c.fillStyle = col; gmRR(c, x, y, Math.max(.01, w * Math.min(1, Math.max(0, f))), 1.3, .6); c.fill(); }
@@ -6933,16 +7030,28 @@ function gmDraw(me) {
   for (let y = 40; y < 97; y += 12) { c.beginPath(); c.moveTo(3, y); c.lineTo(97, y); c.stroke(); }
   if (!S) { gmTxt(c, 'Bağlanıyor...', 50, 55, 5, '#fff', true); return; }
   // istasyonlar
+  const lv = (S.lv || 1), sp = S.sp || 1;
   GM_ST.forEach((st) => {
+    if (!gmOn(S, st)) {
+      c.save(); c.globalAlpha = .3; c.strokeStyle = '#fff'; c.lineWidth = .4; c.setLineDash([1.2, 1]); gmRR(c, st.x, st.y, st.w, st.h, 1.6); c.stroke(); c.restore();
+      gmTxt(c, '🔒', st.x + st.w / 2, st.y + 3.6, 3.6, '#000', false); gmTxt(c, 'Seviye ' + st.u, st.x + st.w / 2, st.y + 7, 2.2, 'rgba(255,255,255,.55)', true);
+      return;
+    }
     c.fillStyle = 'rgba(0,0,0,.25)'; gmRR(c, st.x + .5, st.y + .8, st.w, st.h, 1.6); c.fill();
     c.fillStyle = st.c; gmRR(c, st.x, st.y, st.w, st.h, 1.6); c.fill();
     c.strokeStyle = 'rgba(0,0,0,.4)'; c.lineWidth = .4; c.stroke();
     if (st.l === 'Izgara') { c.strokeStyle = 'rgba(255,255,255,.18)'; for (let i = 1; i < 5; i++) { c.beginPath(); c.moveTo(st.x + 1, st.y + i * 2); c.lineTo(st.x + st.w - 1, st.y + i * 2); c.stroke(); } }
     c.save(); c.lineWidth = .5; c.strokeStyle = 'rgba(0,0,0,.7)'; c.font = "700 2.3px 'Lexend', sans-serif"; c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.strokeText(st.l, st.x + st.w / 2, st.y + 2); c.fillStyle = st.l === 'Tabak' ? '#333' : '#fff'; c.fillText(st.l, st.x + st.w / 2, st.y + 2); c.restore();
+    c.strokeText(st.l, st.x + st.w / 2, st.y + 2); c.fillStyle = (st.l === 'Tabak' || st.d) ? '#333' : '#fff'; c.fillText(st.l, st.x + st.w / 2, st.y + 2); c.restore();
     const cx = st.x + st.w / 2, cy = st.y + st.h / 2 + 1, id = st.id; let m;
+    if (st.u && st.u === lv && (S.bn || 0) < 10) { c.save(); c.strokeStyle = 'rgba(255,255,255,' + (.55 + .45 * Math.sin((S.bn || 0) * 8)) + ')'; c.lineWidth = .8; gmRR(c, st.x - .6, st.y - .6, st.w + 1.2, st.h + 1.2, 2); c.stroke(); c.restore(); }
     if (id === 'crate') gmItem(c, 'raw', cx, cy, 7);
-    else if (id === 'bun') gmItem(c, S.bun ? 'burger' : 'bun', cx, cy, 7);
+    else if (id === 'bun') {
+      if (S.bun) gmItem(c, S.lt ? 'lburger' : 'burger', cx, cy, 7);
+      else { gmItem(c, 'bun', cx, cy, 7); if (S.lt) gmItem(c, 'lettuce', cx + 3.4, cy - 2.4, 4.2); }
+    }
+    else if (id === 'lettuce') gmItem(c, 'lettuce', cx, cy, 7);
+    else if (id === 'ket' || id === 'may') gmItem(c, id, cx, cy, 7);
     else if (id === 'brd') gmItem(c, S.brd ? 'patso' : 'bread', cx, cy, 7);
     else if (id === 'cola' || id === 'water' || id === 'trash') gmItem(c, id, cx, cy, 6.5);
     else if ((m = /^p([0-2])$/.exec(id))) { c.fillStyle = '#fff'; c.beginPath(); c.arc(cx, cy, 4, 0, 7); c.fill(); c.strokeStyle = '#bbb'; c.lineWidth = .4; c.stroke(); if (S.pt[+m[1]]) gmItem(c, S.pt[+m[1]], cx, cy, 6); }
@@ -6956,13 +7065,13 @@ function gmDraw(me) {
   // müşteriler
   for (let i = 0; i < 5; i++) {
     const u = S.cu[i]; if (!u) continue;
-    const x = gmCX(i), w = GM_WANT[u.w], f = u.t / u.m;
+    const x = gmCX(i), w = GM_WANT[u.w] || GM_WANT.burger, f = u.t / u.m, lb = (u.w === 'burger' && lv >= 3) ? 'Marulsuz' : w[1];
     c.fillStyle = GM_HAIR[u.q || 0]; c.beginPath(); c.arc(x, 21.4, 4.4, 0, 7); c.fill();
     c.fillStyle = GM_SKIN[u.k || 0]; c.beginPath(); c.arc(x, 22, 3.8, 0, 7); c.fill();
     c.fillStyle = '#222'; c.beginPath(); c.arc(x - 1.3, 22.2, .5, 0, 7); c.arc(x + 1.3, 22.2, .5, 0, 7); c.fill();
     c.fillStyle = '#fff'; gmRR(c, x - 8.5, 5.5, 17, 11.5, 2.2); c.fill();
     c.beginPath(); c.moveTo(x - 1.6, 17); c.lineTo(x + 1.6, 17); c.lineTo(x, 18.6); c.closePath(); c.fill();
-    gmItem(c, u.w, x, 9.8, 4.6); gmTxt(c, w[1], x, 13.6, 2.4, '#222', true);
+    gmItem(c, u.w, x, 9.8, 4.6); gmTxt(c, lb, x, 13.6, 2.4, '#222', true);
     gmBar(c, x - 6.5, 15, 13, f, f > .5 ? '#4cd964' : f > .25 ? '#ffb21e' : '#ff4d3d');
   }
   // oyuncular
@@ -6975,9 +7084,40 @@ function gmDraw(me) {
     c.fillStyle = '#222'; c.beginPath(); c.arc(v.x - 1.1, v.y + .2, .5, 0, 7); c.arc(v.x + 1.1, v.y + .2, .5, 0, 7); c.fill();
     if (i === me) { c.strokeStyle = '#fff'; c.lineWidth = .5; c.setLineDash([1, 1]); c.beginPath(); c.arc(v.x, v.y, 4.3, 0, 7); c.stroke(); c.setLineDash([]); }
     if (p.h) { c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.arc(v.x, v.y - 9.2, 3.3, 0, 7); c.fill(); gmItem(c, p.h, v.x, v.y - 9.2, 5); }
+    if (p.sq && typeof p.sq.t === 'number') {
+      const sst = GM_ST.find((q) => q.id === p.sq.k);
+      if (sst) {
+        const sx = sst.x + sst.w / 2, sy = sst.y + sst.h / 2, ex = v.x, ey = v.y - 9.2, f = Math.min(1, (.55 - p.sq.t) / .15);
+        c.save(); c.globalAlpha = Math.max(0, Math.min(1, p.sq.t / .2)); c.strokeStyle = p.sq.k === 'ket' ? '#d62a2a' : '#fffbe0'; c.lineWidth = 1.3; c.lineCap = 'round';
+        c.beginPath(); c.moveTo(sx, sy); c.quadraticCurveTo((sx + ex) / 2, Math.min(sy, ey) - 6, sx + (ex - sx) * f, sy + (ey - sy) * f); c.stroke(); c.restore();
+      }
+    }
   });
+  if (S.hf && typeof S.hf.t === 'number') {
+    const A = g.vis[0], B = g.vis[1], u = Math.max(0, Math.min(1, S.hf.t / .9));
+    const r = u < .3 ? u / .3 : u < .7 ? 1 : (1 - u) / .3, mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2 - 3;
+    [A, B].forEach((v, i) => {
+      const sx = v.x, sy = v.y - 1, hx = sx + (mx - sx) * r, hy = sy + (my - sy) * r;
+      c.save(); c.lineCap = 'round'; c.strokeStyle = gmCol(S, i); c.lineWidth = 1.4; c.beginPath(); c.moveTo(sx, sy); c.lineTo(hx, hy); c.stroke();
+      c.fillStyle = '#f2c6a0'; c.strokeStyle = 'rgba(0,0,0,.45)'; c.lineWidth = .3; c.beginPath(); c.arc(hx, hy, 1.4, 0, 7); c.fill(); c.stroke(); c.restore();
+    });
+    if (u >= .3 && u < .75) {
+      const k = (u - .3) / .45;
+      c.save(); c.globalAlpha = 1 - k; c.strokeStyle = '#ffd23f'; c.lineWidth = .6; c.lineCap = 'round';
+      for (let n = 0; n < 8; n++) { const an = n * Math.PI / 4 + .3; c.beginPath(); c.moveTo(mx + Math.cos(an) * (2 + 3 * k), my + Math.sin(an) * (2 + 3 * k)); c.lineTo(mx + Math.cos(an) * (3.6 + 4 * k), my + Math.sin(an) * (3.6 + 4 * k)); c.stroke(); }
+      c.restore();
+    }
+  }
   gmTxt(c, 'Skor: ' + S.sc, 14, 2.8, 3.2, '#fff', true);
-  gmTxt(c, 'Seviye: ' + (Math.floor(S.el / 60) + 1), 50, 2.8, 3.2, '#ffd23f', true);
+  gmTxt(c, 'Seviye: ' + lv + (sp > 1.03 ? ' · ×' + sp.toFixed(1) : ''), 50, 2.8, 3.2, '#ffd23f', true);
+  if (lv > 1 && (S.bn || 0) < 3.6) {
+    const bt = S.bn || 0, al = Math.max(0, Math.min(1, bt / .25, (3.6 - bt) / .6)), ms = GM_LVMSG[lv] || ['Daha da hızlı!'];
+    c.save(); c.globalAlpha = al * .82; c.fillStyle = '#1b1410'; gmRR(c, 8, 44, 84, 12 + ms.length * 4.6, 3); c.fill(); c.restore();
+    c.save(); c.globalAlpha = al;
+    gmTxt(c, 'SEVİYE ' + lv, 50, 50.5, 6.5, '#ffd23f', true);
+    ms.forEach((t, i) => gmTxt(c, t, 50, 57 + i * 4.6, i === 0 && ms.length > 1 ? 3.8 : 3.2, i === 0 && ms.length > 1 ? '#7dff7d' : '#fff', i === 0));
+    c.restore();
+  }
   gmTxt(c, 'Kaçan: ' + S.ms, 86, 2.8, 3.2, '#ff7a6b', true);
 }
 
@@ -7051,6 +7191,9 @@ function gmSfxPlay(k) {
     case 'make': gmNoise(t, .12, .4, 'lowpass', 700); gmTone(t, 260, .14, 'sine', .45, 130); gmTone(t + .1, 520, .1, 'triangle', .3, 780); break;
     case 'pour': for (let i = 0; i < 4; i++) { const f = 500 + Math.random() * 600; gmTone(t + i * .06, f, .07, 'sine', .3, f * 1.5); } break;
     case 'trash': gmNoise(t, .3, .5, 'bandpass', 1200, null, 1.2); gmTone(t, 200, .2, 'triangle', .25, 80); break;
+    case 'lvl': [392, 523, 659, 784, 1047].forEach((f, i) => gmTone(t + i * .08, f, .26, 'square', .2)); gmTone(t + .4, 1568, .5, 'sine', .25); break;
+    case 'squirt': gmNoise(t, .2, .4, 'bandpass', 1700, null, 1.6); gmTone(t, 260, .16, 'sine', .25, 520); break;
+    case 'clap': gmNoise(t + .27, .09, .7, 'highpass', 1500); gmTone(t + .27, 700, .06, 'square', .2, 300); break;
     case 'start': [523, 659, 784, 1047].forEach((f, i) => gmTone(t + i * .09, f, .22, 'square', .2)); break;
   }
 }
@@ -7073,7 +7216,7 @@ function gmAuTick() {
   const ctx = A.ctx; if (ctx.state !== 'running') return;
   const now = ctx.currentTime;
   if (A.on) {
-    const spb = 60 / 112 / 2;
+    const sp = (gm.S && gm.S.sp) || 1, spb = 60 / (112 * (1 + (sp - 1) * .38)) / 2;
     if (!A.nt || A.nt < now - .3) A.nt = now + .06;
     while (A.nt < now + .22) { gmMusicStep(A, A.step, A.nt); A.nt += spb; A.step = (A.step + 1) & 31; }
   }
@@ -7088,16 +7231,18 @@ function gmAuSiz(lvl) {
 // Her iki tarafta da durum farkından ses üretilir (ev sahibi de karşı taraf da aynı sesleri duyar)
 function gmSfx(S) {
   const g = gm; if (!g) return;
-  const cur = { sc: S.sc, ms: S.ms, ph: S.ph, gr: S.gr.map((q) => q.s), fr: S.fr.map((q) => q.s), bun: S.bun, brd: S.brd, pt: S.pt.slice(), h: S.pl.map((p) => p.h), cu: S.cu.map((c) => (c ? 1 : 0)) };
+  const cur = { sc: S.sc, ms: S.ms, ph: S.ph, lv: S.lv || 1, lt: S.lt ? 1 : 0, hf: S.hf ? 1 : 0, gr: S.gr.map((q) => q.s), fr: S.fr.map((q) => q.s), bun: S.bun, brd: S.brd, pt: S.pt.slice(), h: S.pl.map((p) => p.h), cu: S.cu.map((c) => (c ? 1 : 0)) };
   const P = g.pv; g.pv = cur;
   let n = 0; cur.gr.concat(cur.fr).forEach((x) => { if (x === 1 || x === 2) n++; });
   gmAuSiz(gmAu && gmAu.on ? Math.min(.5, n * .22) : 0);
   if (!P) return;
   if (P.ph === 0 && cur.ph === 1) gmSfxPlay('start');
+  if (cur.lv > P.lv) gmSfxPlay('lvl');
+  if (cur.hf && !P.hf) gmSfxPlay('clap');
   if (cur.sc > P.sc) gmSfxPlay('serve');
   if (cur.ms > P.ms) gmSfxPlay('miss');
   for (let i = 0; i < cur.cu.length; i++) if (!P.cu[i] && cur.cu[i]) { gmSfxPlay('bell'); break; }
-  let st = cur.bun !== P.bun || cur.brd !== P.brd;
+  let st = cur.bun !== P.bun || cur.brd !== P.brd || cur.lt !== P.lt;
   for (let i = 0; i < 3; i++) if (cur.pt[i] !== P.pt[i]) st = true;
   [['gr', 'sear'], ['fr', 'fry']].forEach((q) => {
     cur[q[0]].forEach((x, i) => {
@@ -7112,8 +7257,9 @@ function gmSfx(S) {
   for (let i = 0; i < cur.h.length; i++) {
     const a = P.h[i], b = cur.h[i];
     if (a === b) continue;
-    if (!a && b) gmSfxPlay(b === 'cola' || b === 'water' ? 'pour' : (b === 'burger' || b === 'patso') ? 'make' : 'pick');
+    if (!a && b) gmSfxPlay(b === 'cola' || b === 'water' ? 'pour' : GM_MADE.indexOf(b) >= 0 ? 'make' : 'pick');
     else if (a && !b) { if (cur.sc === P.sc) gmSfxPlay(st ? 'put' : 'trash'); }
+    else if (a && b && a.indexOf('patso') === 0 && b.indexOf('patso') === 0) gmSfxPlay('squirt');
   }
 }
 
