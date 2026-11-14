@@ -545,6 +545,9 @@ body #typing-indicator { display: none !important; }
 .yt-card.is-loading .yt-play { opacity: .6; }
 .yt-join { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; height: 30px; padding: 0 14px; border: 1px solid transparent; border-radius: var(--r-xl); background: var(--c-fff); color: var(--c-000); font: 700 12px/1 'Lexend', sans-serif; cursor: pointer; touch-action: manipulation; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
 .yt-join svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+.yt-cnt { font-variant-numeric: tabular-nums; padding: 3px 7px; border-radius: 999px; background: color-mix(in srgb, var(--c-000) 12%, transparent); }
+.is-ready.me-ready .yt-cnt, .is-synced .yt-cnt { background: var(--yt-a20); }
+.yt-join.yt-done { opacity: .5; background: color-mix(in srgb, var(--c-000) 45%, transparent); color: var(--c-fff); border-color: var(--yt-a35); box-shadow: none; animation: none !important; cursor: default; }
 
 .can-join:not(.is-synced) .yt-join { animation: ytJoinPulse 1.6s ease-in-out infinite; }
 .is-synced .yt-join, .is-ready.me-ready .yt-join { background: color-mix(in srgb, var(--c-000) 45%, transparent); color: var(--c-fff); border-color: var(--yt-a35); box-shadow: none; }
@@ -4071,6 +4074,7 @@ function bindYtTap(el, fn) {
 /* ===== Şarkı bilgisi (ad / sanatçı), sözler, yüzen oynatıcı ===== */
 const YT_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
 const YT_PAUSE = '<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+const YT_READY_MS = 30000; // Katıl ve Dinle: karşı taraf katılmazsa zaman aşımı
 const YT_HEAD = '<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-9 9v7a2 2 0 0 0 2 2h2v-8H5v-1a7 7 0 0 1 14 0v1h-2v8h2a2 2 0 0 0 2-2v-7a9 9 0 0 0-9-9z"/></svg>';
 
 let ytMetaCache = {};
@@ -4868,7 +4872,7 @@ function buildYtCard(id, url) {
   let seeking = false, seekFrac = 0, seekDur = 0;
   let sync = false, role = null, pending = null, muteUntil = 0, expTimer = null;
   // "hazır" sistemi: ikisi de hazır olmadan şarkı çalmaz
-  let myReady = false, peerReady = false, starting = false, goTimer = null, startTok = 0, readyNote = '', readyTimer = null;
+  let myReady = false, peerReady = false, starting = false, goTimer = null, startTok = 0, readyNote = '', readyTimer = null, myReadyAt = 0, peerReadyAt = 0, cdTimer = null;
   // katı senkron: saat ofseti, oturum zamanlayıcısı, karşı taraf canlılık takibi
   let clockOff = 0, clockSamples = [], clockSent = {}, clockSeq = 0, pollTimer = null, guestOk = null;
   let sessTimer = null, sessStart = 0, tickN = 0, lastFix = 0, localActAt = 0, seekLag = 0.6, fixAt = 0, fixBuf = false;
@@ -4904,11 +4908,23 @@ function buildYtCard(id, url) {
     card.classList.toggle('is-ready', idle);
     card.classList.toggle('me-ready', idle && myReady);
     card.classList.toggle('peer-ready', idle && peerReady);
-    let label;
+    let label, cnt = '';
+    const to = !sync && !starting && readyNote.indexOf('Zaman aşımı') === 0;
     if (sync) label = 'Birlikte • Ayrıl';
     else if (starting) label = 'Başlıyor...';
-    else label = readyNote || ('Birlikte • Katıl · ' + n + '/2');
-    joinBtn.innerHTML = YT_HEAD + '<span>' + label + '</span>';
+    else if (readyNote) label = readyNote;
+    else {
+      label = 'Katıl ve Dinle';
+      cnt = n + '/2';
+      const t0 = myReady ? myReadyAt : peerReady ? peerReadyAt : 0;
+      if (n === 1 && t0) cnt += ' \u00b7 ' + Math.max(0, Math.ceil((t0 + YT_READY_MS - Date.now()) / 1000)) + 's';
+    }
+    joinBtn.classList.toggle('yt-done', to);
+    joinBtn.innerHTML = (label === 'Katıl ve Dinle' || to ? '' : YT_HEAD) + '<span class="yt-lab">' + label + '</span>' + (cnt ? '<span class="yt-cnt">' + cnt + '</span>' : '');
+    // karşılıklı bekleme sürerken kapsüldeki süre her saniye yenilenir
+    const cd = !sync && !starting && !readyNote && ((myReady && !peerReady) || (peerReady && !myReady));
+    if (cd && !cdTimer) cdTimer = setInterval(() => { if (dead) { clearInterval(cdTimer); cdTimer = null; return; } refreshJoin(); }, 1000);
+    else if (!cd && cdTimer) { clearInterval(cdTimer); cdTimer = null; }
     joinBtn.setAttribute('aria-label', sync ? 'Birlikte dinlemeden ayrıl' : (myReady ? 'Katılmaktan vazgeç' : 'Katıl'));
     if (!sync && !card.classList.contains('is-playing')) {
       btn.innerHTML = YT_PLAY;
@@ -5415,17 +5431,19 @@ function buildYtCard(id, url) {
     clearTimeout(readyTimer); readyTimer = null;
     sayRaw(myReady ? 'ready' : 'unready');
     // 15 sn içinde karşı taraf da katılmazsa katılma isteği kendiliğinden geri çekilir
+    myReadyAt = myReady ? Date.now() : 0;
     if (myReady) readyTimer = setTimeout(() => {
       readyTimer = null;
       if (dead || failed || sync || starting || !myReady || peerReady) return;
       myReady = false;
       try { sayRaw('unready'); } catch (e) {}
-      flash('Karşı taraf katılmadı');
-    }, 15000);
+      flash('Zaman aşımı (' + (YT_READY_MS / 1000) + 's)');
+    }, YT_READY_MS);
     checkBoth();
   };
   const doJoin = () => {
     if (failed) return;
+    if (readyNote.indexOf('Zaman aşımı') === 0) return;
     if (sync) { ytAutoSet(false); sayRaw('leave', { u: 1 }); resetSession(true); return; }
     toggleReady();
   };
@@ -5462,8 +5480,8 @@ function buildYtCard(id, url) {
       }
       return;
     }
-    if (d.ev === 'ready') { if (sync || starting || dead) return; peerReady = true; checkBoth(); return; }
-    if (d.ev === 'unready') { if (sync || starting) return; peerReady = false; refreshJoin(); return; }
+    if (d.ev === 'ready') { if (sync || starting || dead) return; if (!peerReady) peerReadyAt = Date.now(); peerReady = true; checkBoth(); return; }
+    if (d.ev === 'unready') { if (sync || starting) return; peerReady = false; peerReadyAt = 0; refreshJoin(); return; }
     if (d.ev === 'prep') {
       if (iAmLeader() || !myReady || sync || starting) return;
       starting = true; refreshJoin();
