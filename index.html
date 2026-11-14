@@ -6723,7 +6723,7 @@ function receiveGameClose(d) {
 
 /* ===== Kuks Feva oyunu: kuşbakışı, iki kişilik. Ev sahibi (kimlik sırası küçük taraf) oyunu işletir, durumu saniyede 10 kez karşıya yollar; karşı taraf yalnızca tıklamalarını yollar ===== */
 var GM_ST = [
-  { id: 'crate', x: 5, y: 30.5, w: 12, h: 9.5, sx: 22, sy: 35.5, l: 'Biftek', c: '#b34a4a' },
+  { id: 'mkt', x: 5, y: 30.5, w: 12, h: 9.5, sx: 22, sy: 35.5, l: 'Market', c: '#6a4fb3', mk: 1 },
   { id: 'g0', x: 5, y: 41.3, w: 12, h: 9.5, sx: 22, sy: 46.3, l: 'Izgara', c: '#3b3b40' },
   { id: 'g1', x: 5, y: 52.1, w: 12, h: 9.5, sx: 22, sy: 57.1, l: 'Izgara', c: '#3b3b40' },
   { id: 'bun', x: 5, y: 62.9, w: 12, h: 9.5, sx: 22, sy: 67.9, l: 'Ekmek', c: '#c98f4a' },
@@ -6735,13 +6735,15 @@ var GM_ST = [
   { id: 'may', x: 83, y: 73.7, w: 12, h: 9.5, sx: 78, sy: 78.7, l: 'Mayonez', c: '#e8dcae', d: 1, u: 7 },
   { id: 'cola', x: 5, y: 85, w: 10, h: 10, sx: 11, sy: 80, l: 'Kola', c: '#a82424' },
   { id: 'water', x: 18, y: 85, w: 10, h: 10, sx: 23, sy: 80, l: 'Su', c: '#2f86c9' },
-  { id: 'p0', x: 40, y: 85, w: 10, h: 10, sx: 45, sy: 80, l: 'Tabak', c: '#ececec' },
-  { id: 'p1', x: 53, y: 85, w: 10, h: 10, sx: 58, sy: 80, l: 'Tabak', c: '#ececec' },
-  { id: 'p2', x: 66, y: 85, w: 10, h: 10, sx: 71, sy: 80, l: 'Tabak', c: '#ececec' },
+  { id: 'p0', x: 31, y: 85, w: 9, h: 10, sx: 35.5, sy: 80, l: 'Tabak', c: '#ececec' },
+  { id: 'p1', x: 41.5, y: 85, w: 9, h: 10, sx: 46, sy: 80, l: 'Tabak', c: '#ececec' },
+  { id: 'p2', x: 52, y: 85, w: 9, h: 10, sx: 56.5, sy: 80, l: 'Tabak', c: '#ececec' },
+  { id: 'p3', x: 62.5, y: 85, w: 9, h: 10, sx: 67, sy: 80, l: 'Tabak', c: '#ececec' },
+  { id: 'p4', x: 73, y: 85, w: 9, h: 10, sx: 77.5, sy: 80, l: 'Tabak', c: '#ececec' },
   { id: 'trash', x: 86, y: 85, w: 10, h: 11, sx: 82, sy: 81, l: 'Çöp', c: '#555a62' }
 ];
 // Seviye ayarları: her seviye 50 sn, 12 seviye = 10 dk. 4. seviyeden sonra her şey (yürüme, pişme, sabır, müşteri gelişi) eşit oranda hızlanır, artış giderek büyür
-var GM_LVSEC = 50, GM_MAXLV = 12;
+var GM_LVSEC = 80, GM_MAXLV = 12;
 var GM_UNL = { 3: 'lburger', 5: 'patsoK', 7: 'patsoM' }; // seviye -> o seviyede ilk gelen yeni sipariş
 var GM_LVMSG = {
   2: ['Müşteriler artıyor'],
@@ -6753,8 +6755,8 @@ var GM_LVMSG = {
   12: ['Son seviye: tam panik!']
 };
 function gmLevel(el) { return Math.min(GM_MAXLV, Math.floor(el / GM_LVSEC) + 1); }
-function gmSpeedOf(lv) { const k = Math.max(0, lv - 3); return 1 + .06 * k + .0106 * k * k; }
-function gmOn(S, st) { return ((S && S.lv) || 1) >= (st.u || 1); }
+function gmSpeedOf(lv) { const k = Math.max(0, lv - 3); return 1 + .05 * k + .008 * k * k; }
+function gmOn(S, st) { if (st.mk) return true; return ((S && S.lv) || 1) >= (st.u || 1); }
 var GM_WANT = { burger: ['🍔', 'Hamburger'], lburger: ['🍔', 'Marullu'], cola: ['🥤', 'Kola'], water: ['💧', 'Su'], patso: ['🥙', 'Patso'], patsoK: ['🥙', 'Ketçaplı'], patsoM: ['🥙', 'Mayonezli'], patsoKM: ['🥙', 'Karışık'] };
 var GM_MADE = ['burger', 'lburger', 'patso', 'patsoK', 'patsoM', 'patsoKM'];
 function gmWant(lv) {
@@ -6769,12 +6771,13 @@ function gmWant(lv) {
 }
 function gmPat(lv, w) { return Math.max(28, 48 - 2 * (lv - 1)) + ({ lburger: 8, patsoK: 6, patsoM: 6, patsoKM: 12 }[w] || 0); }
 var GM_WK = ['burger', 'cola', 'water', 'patso'], GM_SKIN = ['#f2c6a0', '#d9a07a', '#a86f4d', '#f5d7b8', '#8d5a3b'], GM_HAIR = ['#3a2a1c', '#c9482b', '#e6c34a', '#2c2f6b', '#555'];
-var GM_COOK = { g: [5, 14], f: [4, 12] };
+var GM_COOK = { g: [5, 21], f: [4, 18] };
+var GM_MKT = 150, GM_REV = 50, GM_SLOW = 60, GM_REGEN = 180; // market fiyatı, kalp geri alma bedeli, yavaşlatma süresi (sn), kalpsiz geçen süre (sn)
 var gm = null;
 function gmCX(i) { return 10 + i * 20; }
 function gmNew() {
   const P = (x) => ({ x: x, y: 50, h: null, tx: null, ty: 0, a: null, sq: null });
-  return { ph: 0, cc: [null, null], el: 0, lv: 1, sp: 1, bn: 0, lt: 0, nw: null, hf: null, nx: 1.5, sc: 0, ms: 0, pl: [P(40), P(60)], gr: [{ s: 0, t: 0 }, { s: 0, t: 0 }], fr: [{ s: 0, t: 0 }, { s: 0, t: 0 }], bun: 0, brd: 0, pt: [null, null, null], cu: [null, null, null, null, null] };
+  return { ph: 0, cc: [null, null], el: 0, lv: 1, sp: 1, bn: 0, lt: 0, nw: null, hf: null, nx: 1.5, sc: 0, ms: 0, pl: [P(40), P(60)], gr: [{ s: 0, t: 0 }, { s: 0, t: 0 }], fr: [{ s: 0, t: 0 }, { s: 0, t: 0 }], hp: 3, nh: 0, co: 0, sl: 0, mkon: 0, hm: null, bun: 0, brd: 0, pt: [null, null, null, null, null], cu: [null, null, null, null, null] };
 }
 function gmInit(stage, id) {
   gmStop(true);
@@ -6811,7 +6814,7 @@ function gmStop(keep) {
   if (!keep) { try { gmAuClose(); } catch (e) {} }
 }
 function gmClick(e) {
-  if (!gm || !gm.S || gm.S.ph === 0) return;
+  if (!gm || !gm.S || gm.S.ph === 0 || gm.S.ph === 2) return;
   e.preventDefault();
   const r = gm.cv.getBoundingClientRect();
   const x = (e.clientX - r.left - gm.ox) / gm.k, y = (e.clientY - r.top - gm.oy) / gm.k;
@@ -6825,7 +6828,7 @@ function gmClick(e) {
   else { try { if (isConnected()) conn.send({ type: 'game-act', msgId: gm.id, tx: tx, ty: ty, a: a }); } catch (er) {} }
 }
 function gmAction(S, i, tx, ty, a) {
-  if (S.ph === 0) return;
+  if (S.ph === 0 || S.ph === 2) return;
   tx = Math.max(6, Math.min(94, +tx || 0)); ty = Math.max(30, Math.min(95, +ty || 0));
   if (a !== null && !(typeof a === 'string' && (/^c[0-4]$/.test(a) || a === 'h5' || GM_ST.some((st) => st.id === a && gmOn(S, st))))) a = null;
   const p = S.pl[i]; if (!p) return;
@@ -6892,10 +6895,9 @@ function receiveGameAct(d) {
 }
 function gmDo(S, p, a) {
   const h = p.h; let m;
-  if (a === 'crate') { if (!h) p.h = 'raw'; }
-  else if ((m = /^([gf])([01])$/.exec(a))) {
+  if ((m = /^([gf])([01])$/.exec(a))) {
     const g = (m[1] === 'g' ? S.gr : S.fr)[+m[2]];
-    if (m[1] === 'g' && h === 'raw' && g.s === 0) { g.s = 1; g.t = 0; p.h = null; }
+    if (m[1] === 'g' && !h && g.s === 0) { g.s = 1; g.t = 0; }
     else if (m[1] === 'f' && !h && g.s === 0) { g.s = 1; g.t = 0; }
     else if (!h && g.s >= 2) { p.h = g.s === 2 ? (m[1] === 'g' ? 'cooked' : 'fries') : 'burnt'; g.s = 0; g.t = 0; }
   }
@@ -6905,7 +6907,8 @@ function gmDo(S, p, a) {
     else if (!h && S.bun) { p.h = S.lt ? 'lburger' : 'burger'; S.bun = 0; S.lt = 0; }
     else if (!h && S.lt) { p.h = 'lettuce'; S.lt = 0; }
   }
-  else if (a === 'lettuce') { if (!h) p.h = 'lettuce'; }
+  else if (a === 'lettuce') { if (!h) p.h = 'lettuce'; else if (h === 'burger') p.h = 'lburger'; }
+  else if (a === 'mkt') { if ((S.co || 0) >= GM_MKT && !(S.sl > 0)) { S.co -= GM_MKT; S.sl = GM_SLOW; } }
   else if (a === 'ket' || a === 'may') {
     const o = /^patso(K?)(M?)$/.exec(h || '');
     if (o) {
@@ -6915,25 +6918,41 @@ function gmDo(S, p, a) {
   }
   else if (a === 'brd') { if (h === 'fries' && !S.brd) { S.brd = 1; p.h = null; } else if (!h && S.brd) { p.h = 'patso'; S.brd = 0; } }
   else if (a === 'cola' || a === 'water') { if (!h) p.h = a; }
-  else if ((m = /^p([0-2])$/.exec(a))) {
+  else if ((m = /^p([0-4])$/.exec(a))) {
     const i = +m[1], pt = S.pt[i];
     if (GM_MADE.indexOf(h) >= 0 && !pt) { S.pt[i] = h; p.h = null; } else if (!h && pt) { p.h = pt; S.pt[i] = null; }
   }
   else if (a === 'trash') { p.h = null; }
   else if ((m = /^c([0-4])$/.exec(a))) {
     const c = S.cu[+m[1]];
-    if (c && h === c.w) { S.cu[+m[1]] = null; S.sc++; p.h = null; }
+    if (c && h === c.w) { S.cu[+m[1]] = null; S.sc++; S.co = (S.co || 0) + 1; p.h = null; }
+  }
+}
+function gmLoseHeart(S) {
+  S.hp = (S.hp === undefined ? 3 : S.hp) - 1; S.nh = 0;
+  if (S.hp <= 0) {
+    if ((S.co || 0) >= GM_REV) { S.co -= GM_REV; S.hp = 2; S.hm = { t: 'Tüm kalpler bitti. ' + GM_REV + ' para kullanılarak 2 kalp geri getirildi.', tm: 5 }; }
+    else { S.hp = 0; S.ph = 2; }
   }
 }
 function gmStep(S, dt) {
-  if (S.ph === 0) return; // renkler seçilene kadar oyun başlamaz
+  if (S.ph === 0 || S.ph === 2) return; // renkler seçilene kadar oyun başlamaz; kalpler bitince oyun durur
+  const rdt = dt; // gerçek süre (yavaşlatmadan etkilenmeyen sayaçlar için)
+  if (S.sl > 0) { S.sl = Math.max(0, S.sl - rdt); dt *= .5; } // market: oyun 2x yavaş
+  if ((S.co || 0) >= GM_MKT) S.mkon = 1;
+  if (S.hm) { S.hm.tm -= rdt; if (S.hm.tm <= 0) S.hm = null; }
+  S.nh = (S.nh || 0) + rdt;
+  if (S.nh >= GM_REGEN) { S.nh = 0; if (S.hp < 3) { S.hp++; S.hm = { t: '3 dakikadır kalp kaybedilmedi, 1 kalp geri geldi.', tm: 5 }; } }
   S.el += dt;
   const nl = gmLevel(S.el);
   if (!(S.lv >= 1)) S.lv = 1;
   if (nl > S.lv) { S.lv = nl; S.bn = 0; if (GM_UNL[nl]) S.nw = GM_UNL[nl]; S.nx = Math.min(S.nx, 2.5); }
   S.bn = (S.bn || 0) + dt;
   const lv = S.lv;
-  S.sp = (S.sp || 1) + (gmSpeedOf(lv) - (S.sp || 1)) * Math.min(1, dt * 1.2);
+  if (S.el >= 1320 && !S.t8) { S.t8 = 1; S.hm = { t: '22 dakika geçti: oyun 8x hızda!', tm: 5 }; }
+  else if (S.el >= 1200 && !S.t4) { S.t4 = 1; S.hm = { t: '20 dakika geçti: oyun 4x hızda!', tm: 5 }; }
+  const tsp = S.el >= 1320 ? 8 : S.el >= 1200 ? 4 : gmSpeedOf(lv);
+  S.sp = (S.sp || 1) + (tsp - (S.sp || 1)) * Math.min(1, dt * 1.2);
   dt *= S.sp; // bundan sonrası oyun zamanı: yürüme, pişme, sabır, müşteri gelişi hep birlikte hızlanır
   if (S.hf) { S.hf.t += dt; if (S.hf.t >= .9) S.hf = null; }
   S.pl.forEach((p, i) => {
@@ -6945,7 +6964,7 @@ function gmStep(S, dt) {
       p.tx = o.x; p.ty = o.y; // diğer oyuncunun peşinden gider
     }
     if (p.tx === null) return;
-    const dx = p.tx - p.x, dy = p.ty - p.y, d = Math.hypot(dx, dy), st = 38 * dt;
+    const dx = p.tx - p.x, dy = p.ty - p.y, d = Math.hypot(dx, dy), st = 76 * dt;
     if (d <= st) { p.x = p.tx; p.y = p.ty; p.tx = null; if (p.a) { const a = p.a; p.a = null; gmDo(S, p, a); } }
     else { p.x += dx / d * st; p.y += dy / d * st; }
   });
@@ -6955,11 +6974,12 @@ function gmStep(S, dt) {
     if (g.s === 1 && g.t >= GM_COOK[q[0]][0]) g.s = 2;
     if (g.s === 2 && g.t >= GM_COOK[q[0]][1]) g.s = 3;
   }));
-  let n = 0;
+  let n = 0, nc = 0;
+  for (let i = 0; i < 5; i++) if (S.cu[i]) nc++;
   for (let i = 0; i < 5; i++) {
     const c = S.cu[i]; if (!c) continue;
-    n++; c.t -= dt;
-    if (c.t <= 0) { S.cu[i] = null; S.ms++; n--; }
+    n++; c.t -= dt * c.m / (c.m + 4 * (nc - 1)); // kalabalıkta sabır uzar: her ek müşteri için +4 sn
+    if (c.t <= 0) { S.cu[i] = null; S.ms++; n--; gmLoseHeart(S); if (S.ph === 2) return; }
   }
   S.nx -= dt;
   if (S.nx <= 0) {
@@ -7063,7 +7083,14 @@ function gmDraw(me) {
     c.strokeText(st.l, st.x + st.w / 2, st.y + 2); c.fillStyle = (st.l === 'Tabak' || st.d) ? '#333' : '#fff'; c.fillText(st.l, st.x + st.w / 2, st.y + 2); c.restore();
     const cx = st.x + st.w / 2, cy = st.y + st.h / 2 + 1, id = st.id; let m;
     if (st.u && st.u === lv && (S.bn || 0) < 10) { c.save(); c.strokeStyle = 'rgba(255,255,255,' + (.55 + .45 * Math.sin((S.bn || 0) * 8)) + ')'; c.lineWidth = .8; gmRR(c, st.x - .6, st.y - .6, st.w + 1.2, st.h + 1.2, 2); c.stroke(); c.restore(); }
-    if (id === 'crate') gmItem(c, 'raw', cx, cy, 7);
+    if (id === 'mkt') {
+      const can = (S.co || 0) >= GM_MKT && !(S.sl > 0);
+      if (can) { c.save(); c.strokeStyle = 'rgba(255,255,255,' + (.55 + .45 * Math.sin(Date.now() / 120)) + ')'; c.lineWidth = .8; gmRR(c, st.x - .6, st.y - .6, st.w + 1.2, st.h + 1.2, 2); c.stroke(); c.restore(); }
+      const bx = st.x + 1.2, by = st.y + 3.4, bw = st.w - 2.4, bh = 5;
+      c.save(); c.fillStyle = can ? '#ffd23f' : 'rgba(255,255,255,.22)'; gmRR(c, bx, by, bw, bh, 1.2); c.fill(); c.restore();
+      if (S.sl > 0) gmTxt(c, '❄ ' + Math.ceil(S.sl) + ' sn', cx, by + bh / 2, 2.4, '#9fd0ff', true);
+      else { gmTxt(c, '🛒 2x Yavaş', cx, by + 1.7, 2.1, can ? '#2a1b00' : 'rgba(255,255,255,.55)', true); gmTxt(c, GM_MKT + ' altın', cx, by + 3.6, 2, can ? '#2a1b00' : 'rgba(255,255,255,.55)', true); }
+    }
     else if (id === 'bun') {
       if (S.bun) gmItem(c, S.lt ? 'lburger' : 'burger', cx, cy, 7);
       else { gmItem(c, 'bun', cx, cy, 7); if (S.lt) gmItem(c, 'lettuce', cx + 3.4, cy - 2.4, 4.2); }
@@ -7072,7 +7099,7 @@ function gmDraw(me) {
     else if (id === 'ket' || id === 'may') gmItem(c, id, cx, cy, 7);
     else if (id === 'brd') gmItem(c, S.brd ? 'patso' : 'bread', cx, cy, 7);
     else if (id === 'cola' || id === 'water' || id === 'trash') gmItem(c, id, cx, cy, 6.5);
-    else if ((m = /^p([0-2])$/.exec(id))) { c.fillStyle = '#fff'; c.beginPath(); c.arc(cx, cy, 4, 0, 7); c.fill(); c.strokeStyle = '#bbb'; c.lineWidth = .4; c.stroke(); if (S.pt[+m[1]]) gmItem(c, S.pt[+m[1]], cx, cy, 6); }
+    else if ((m = /^p([0-4])$/.exec(id))) { c.fillStyle = '#fff'; c.beginPath(); c.arc(cx, cy, 3.8, 0, 7); c.fill(); c.strokeStyle = '#bbb'; c.lineWidth = .4; c.stroke(); if (S.pt[+m[1]]) gmItem(c, S.pt[+m[1]], cx, cy, 6); }
     else if ((m = /^([gf])([01])$/.exec(id))) {
       const q = (m[1] === 'g' ? S.gr : S.fr)[+m[2]], ck = GM_COOK[m[1]];
       if (q.s === 1) { c.globalAlpha = m[1] === 'f' ? .45 : 1; gmItem(c, m[1] === 'g' ? 'raw' : 'fries', cx, cy, 7); c.globalAlpha = 1; gmBar(c, st.x + 1.5, st.y + st.h - 2.2, st.w - 3, q.t / ck[0], '#ffd23f'); }
@@ -7126,7 +7153,9 @@ function gmDraw(me) {
       c.restore();
     }
   }
-  gmTxt(c, 'Skor: ' + S.sc, 14, 2.8, 3.2, '#fff', true);
+  if (S.sl > 0) { c.fillStyle = 'rgba(70,140,255,.2)'; c.fillRect(0, 0, 100, 100); }
+  gmTxt(c, 'Altın: ' + (S.co || 0), 12, 2.8, 3.2, '#fff', true);
+  if (S.sl > 0) gmTxt(c, '❄ ' + Math.ceil(S.sl) + 'sn', 31, 2.8, 2.8, '#9fd0ff', true);
   gmTxt(c, 'Seviye: ' + lv + (sp > 1.03 ? ' · ×' + sp.toFixed(1) : ''), 50, 2.8, 3.2, '#ffd23f', true);
   if (lv > 1 && (S.bn || 0) < 3.6) {
     const bt = S.bn || 0, al = Math.max(0, Math.min(1, bt / .25, (3.6 - bt) / .6)), ms = GM_LVMSG[lv] || ['Daha da hızlı!'];
@@ -7136,7 +7165,17 @@ function gmDraw(me) {
     ms.forEach((t, i) => gmTxt(c, t, 50, 57 + i * 4.6, i === 0 && ms.length > 1 ? 3.8 : 3.2, i === 0 && ms.length > 1 ? '#7dff7d' : '#fff', i === 0));
     c.restore();
   }
-  gmTxt(c, 'Kaçan: ' + S.ms, 86, 2.8, 3.2, '#ff7a6b', true);
+  { const hp = S.hp === undefined ? 3 : S.hp; for (let i = 0; i < 3; i++) gmTxt(c, i < hp ? '❤️' : '🖤', 78 + i * 6, 3, 4, '#000', false); }
+  if (S.hm && S.hm.tm > 0) {
+    c.save(); c.globalAlpha = Math.min(1, S.hm.tm / .5); c.fillStyle = 'rgba(27,20,16,.92)'; gmRR(c, 4, 24.6, 92, 5, 2); c.fill();
+    gmTxt(c, S.hm.t, 50, 27.2, 2.3, '#fff', true); c.restore();
+  }
+  if (S.ph === 2) {
+    c.fillStyle = 'rgba(0,0,0,.68)'; c.fillRect(0, 0, 100, 100);
+    gmTxt(c, 'OYUN BİTTİ', 50, 44, 8, '#ff7a6b', true);
+    gmTxt(c, 'Tüm kalpler bitti', 50, 53, 3.4, '#fff', false);
+    gmTxt(c, 'Skor: ' + S.sc + ' · Seviye: ' + lv, 50, 60, 3.6, '#ffd23f', true);
+  }
 }
 
 /* ===== Kuks Feva sesleri: dosya yok, hepsi Web Audio ile üretilir. Müzik + pişme / hamburger efektleri; sağ üstteki hoparlör tuşuyla açılıp kapanır ===== */
