@@ -1669,6 +1669,26 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 .gm-x:active { transform: scale(.9); }
 .gm-x svg { width: 15px; height: 15px; display: block; pointer-events: none; }
 .gm-stage { flex: 1 1 auto; min-height: 0; background: #000; }
+.gm-acts { display: flex; align-items: center; gap: 8px; }
+.gm-snd { position: relative; isolation: isolate; overflow: hidden; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #fff; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; border: 1px solid var(--yt-a28); background: radial-gradient(120% 110% at 28% 8%, var(--yt-a42) 0%, transparent 58%), linear-gradient(160deg, var(--yt-a35) 0%, var(--yt-a16) 100%); box-shadow: inset 0 1.5px 1px var(--yt-a60), inset 0 -2px 3px var(--yt-a20), 0 3px 8px rgba(0,0,0,.34); transition: transform .12s, opacity .15s; }
+.gm-snd:active { transform: scale(.9); }
+.gm-snd svg { width: 17px; height: 17px; display: block; pointer-events: none; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.gm-snd .sl { display: none; }
+.gm-snd.off { opacity: .75; }
+.gm-snd.off .sl { display: block; }
+.gm-snd.off .w { display: none; }
+body.gm-on #leap-hud { display: none !important; }
+.gm-pick { position: absolute; inset: 0; z-index: 5; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 20px; text-align: center; background: rgba(0,0,0,.74); font-family: 'Lexend', sans-serif; color: #fff; }
+.gm-pick-t { font: 700 19px/1.2 'Lexend', sans-serif; }
+.gm-pick-s { min-height: 16px; font: 400 12px/1.35 'Lexend', sans-serif; opacity: .72; }
+.gm-pick-row { display: flex; gap: 16px; }
+.gm-col { box-sizing: border-box; width: 112px; padding: 16px 0 14px; display: flex; flex-direction: column; align-items: center; gap: 12px; border-radius: var(--r-xl); border: 2px solid rgba(255,255,255,.22); background: rgba(255,255,255,.07); color: #fff; font: 700 13px/1 'Lexend', sans-serif; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform .12s, opacity .2s, border-color .2s, background .2s; }
+.gm-col:active { transform: scale(.94); }
+.gm-col i { position: relative; display: block; width: 52px; height: 52px; margin-top: 8px; border-radius: 50%; background: var(--cc); box-shadow: inset 0 -5px 8px rgba(0,0,0,.25), inset 0 3px 5px rgba(255,255,255,.35), 0 4px 12px rgba(0,0,0,.45); }
+.gm-col i::before { content: ''; position: absolute; left: 50%; top: -9px; width: 26px; height: 13px; margin-left: -13px; border-radius: 6px 6px 3px 3px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.25); }
+.gm-col.sel { border-color: #fff; background: rgba(255,255,255,.18); }
+.gm-col.tk { opacity: .3; pointer-events: none; }
+.gm-col:focus { outline: none; }
 @media (prefers-reduced-motion: reduce) { #gm-over, .gm-join { animation: none !important; } }
 
 </style>
@@ -3253,6 +3273,8 @@ function setupConnection(c) {
     if (data.type === 'game-close') { receiveGameClose(data); return; }
     if (data.type === 'game-st') { receiveGameSt(data); return; }
     if (data.type === 'game-act') { receiveGameAct(data); return; }
+    if (data.type === 'game-col') { receiveGameCol(data); return; }
+    if (data.type === 'game-timeout') { receiveGameTimeout(data); return; }
     if (data.type === 'dial-cancel') { receiveDialCancel(data); return; }
     if (data.type === 'cmp') { receiveCmp(data); return; }
     if (data.type === 'cmp-stop') { cmpPeerClear(); return; }
@@ -5709,7 +5731,7 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
     } else if (gameParse(text) !== null) {
       msgDiv.dataset.call = '1';
       textDiv.classList.add('call-body');
-      textDiv.appendChild(gameBuildCard(msgDiv, messageId, gameParse(text), !!isOwnMessage));
+      textDiv.appendChild(gameBuildCard(msgDiv, messageId, gameParse(text), !!isOwnMessage, persist !== false));
     } else setBodyContent(textDiv, text);
 
     msgDiv._doReply = () => {
@@ -6237,6 +6259,7 @@ function vcBuildPill(cls, id) {
     if (gb) {
       gb.addEventListener('click', (e) => { e.stopPropagation(); if (Date.now() - menuOpenedAt < 600) return; gameSendInvite(); });
       gb.addEventListener('pointerdown', (e) => e.stopPropagation());
+      gb.addEventListener('mousedown', (e) => e.preventDefault()); // mesaj kutusunun odağı gitmesin
     }
   } el._r = el.querySelector('.vc-r');
   el._n = el.querySelector('.vc-n'); el._t = el.querySelector('.vc-t');
@@ -6433,6 +6456,18 @@ var GAME_KEY = 'gameStates', GAME_PLAY_KEY = 'gamePlay', GAME_PLAY_MAX = 6 * 360
 var GAME_PAD_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="11" x2="10" y2="11"/><line x1="8" y1="9" x2="8" y2="13"/><line x1="15" y1="12" x2="15.01" y2="12"/><line x1="18" y1="10" x2="18.01" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></svg>';
 var GAME_BURGER_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="35" width="34" height="5" rx="2.5" fill="#7A3E1D"/><path d="M8 32h32v3H30l-3 4-3-4H8z" fill="#FFC83D"/><rect x="8" y="28" width="32" height="4" rx="2" fill="#E5432F"/><path d="M6 24q3-3 6 0t6 0t6 0t6 0t6 0t6 0v4H6z" fill="#6CC04A"/><path d="M8 23C8 11 16 6 24 6s16 5 16 17z" fill="#E8913A"/><g fill="#FFF1CF"><ellipse cx="17" cy="13" rx="1.7" ry="1"/><ellipse cx="24" cy="10" rx="1.7" ry="1"/><ellipse cx="31" cy="13" rx="1.7" ry="1"/><ellipse cx="21" cy="17" rx="1.7" ry="1"/><ellipse cx="28" cy="17" rx="1.7" ry="1"/></g><rect x="8" y="40" width="32" height="5" rx="2.5" fill="#E8913A"/></svg>';
 var gameCards = {}, gameMine = {}, gamePeer = {}, gameActive = null, gameOver = null, gameInerted = [], gameInvAt = 0;
+var GAME_WAIT_MS = 30000, gameTimers = {}, gameToAt = {}, gameOwn = {}, gameTickI = 0, gameFocusBack = false, gameMediaGuard = 0;
+// Çalan ses/video öğelerini hatırla: oyun açılınca hepsi durdurulabilsin
+var gmMedia = new Set();
+(function () {
+  try {
+    const op = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () {
+      try { if (!this._gm && !gmMedia.has(this)) { gmMedia.add(this); const me = this; this.addEventListener('ended', () => { gmMedia.delete(me); }, { once: true }); } } catch (e) {}
+      return op.apply(this, arguments);
+    };
+  } catch (e) {}
+})();
 function gameParse(text) { return (typeof text === 'string' && text.indexOf(GAME_PREFIX) === 0) ? text.slice(GAME_PREFIX.length) : null; }
 function gameClean(n) { return String(n || '').replace(/[\u0000-\u001f\u2063]/g, '').trim().slice(0, 40); }
 function gameReadStates() { try { const o = JSON.parse(lsGet(GAME_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; } catch (e) { return {}; } }
@@ -6441,6 +6476,7 @@ function gameWriteStates(o) {
   try { lsSet(GAME_KEY, JSON.stringify(o)); } catch (e) {}
 }
 function gameIsClosed(id) { return gameReadStates()[id] === 'closed'; }
+function gameIsTimeout(id) { return gameReadStates()[id] === 'timeout'; }
 function gameReadPlay() { try { const o = JSON.parse(lsGet(GAME_PLAY_KEY) || 'null'); return (o && typeof o.id === 'string') ? o : null; } catch (e) { return null; } }
 function gameRefreshAll() {
   Object.keys(gameCards).forEach((id) => {
@@ -6459,15 +6495,20 @@ function gameBuildCard(msgDiv, id, name, own, fresh) {
   ti.appendChild(b); ti.appendChild(document.createTextNode(' seninle Kuks Feva oynamak istiyor!'));
   const btn = el.querySelector('.gm-join'), lab = el.querySelector('.gm-lab'), cnt = el.querySelector('.gm-cnt');
   el._id = id;
+  el._ts = fresh ? Date.now() : (msgTsOfId(id) || Date.now());
   el._refresh = () => {
-    const closed = gameIsClosed(id), playing = gameActive === id;
+    const closed = gameIsClosed(id), to = !closed && gameIsTimeout(id), playing = gameActive === id;
     const n = playing ? 2 : ((gameMine[id] ? 1 : 0) + (gamePeer[id] ? 1 : 0));
-    cnt.textContent = n + '/2';
-    lab.textContent = closed ? 'Oyun bitti' : 'Katıl ve Oyna';
-    btn.classList.toggle('gm-done', closed);
-    btn.classList.toggle('me-in', !closed && (!!gameMine[id] || playing));
-    btn.disabled = closed || !!gameMine[id] || playing;
+    let c = n + '/2';
+    if (!closed && !to && !playing && n < 2 && gameTimers[id]) c += ' \u00b7 ' + Math.max(0, Math.ceil((el._ts + GAME_WAIT_MS - Date.now()) / 1000)) + 's';
+    if (cnt.textContent !== c) cnt.textContent = c;
+    const lt = closed ? 'Oyun bitti' : to ? 'Zaman aşımı (30s)' : 'Katıl ve Oyna';
+    if (lab.textContent !== lt) lab.textContent = lt;
+    btn.classList.toggle('gm-done', closed || to);
+    btn.classList.toggle('me-in', !closed && !to && (!!gameMine[id] || playing));
+    btn.disabled = closed || to || !!gameMine[id] || playing;
   };
+  btn.addEventListener('mousedown', (e) => e.preventDefault()); // mesaj kutusunun odağı (klavye) gitmesin
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
     if (Date.now() - menuOpenedAt < 600) return;
@@ -6478,16 +6519,60 @@ function gameBuildCard(msgDiv, id, name, own, fresh) {
   // Sayfa yenilendiyse süren oyun kaldığı yerden (tam ekran) geri açılır
   const gp = gameReadPlay();
   if (gp && gp.id === id && gameActive !== id && !gameIsClosed(id) && Date.now() - (gp.t || 0) < GAME_PLAY_MAX) setTimeout(() => { try { if (!gameActive && !gameIsClosed(id)) gameStart(id, true); } catch (e) {} }, 0);
+  else {
+    // 30 sn içinde ikinci kişi katılmazsa davet zaman aşımına uğrar (iki tarafta da tuş basılamaz olur)
+    setTimeout(() => { try { gameArmTimeout(id, el._ts); } catch (e) {} }, 0);
+    // Daveti gönderen kişi katıla kendisi basmış sayılır
+    if (own && !gameIsClosed(id) && !gameIsTimeout(id) && Date.now() - el._ts < GAME_WAIT_MS) setTimeout(() => { try { gameOwn[id] = true; gameJoin(id); } catch (e) {} }, 0);
+  }
   return el;
+}
+function gameArmTimeout(id, ts) {
+  if (gameTimers[id] || gameIsClosed(id) || gameIsTimeout(id) || gameActive === id) return;
+  const gp = gameReadPlay(); if (gp && gp.id === id) return;
+  const left = ts + GAME_WAIT_MS - Date.now();
+  if (left <= 0) { if (!(gameMine[id] && gamePeer[id])) gameSetTimeout(id, false); return; }
+  gameTimers[id] = setTimeout(() => {
+    delete gameTimers[id];
+    if (gameActive === id || (gameMine[id] && gamePeer[id])) return;
+    gameSetTimeout(id, true);
+  }, left);
+  if (!gameTickI) gameTickI = setInterval(() => { gameRefreshAll(); if (!Object.keys(gameTimers).length) { clearInterval(gameTickI); gameTickI = 0; } }, 1000);
+  gameRefreshAll();
+}
+function gameSetTimeout(id, send) {
+  if (gameActive === id || gameIsClosed(id) || gameIsTimeout(id)) return;
+  const o = gameReadStates(); o[id] = 'timeout'; gameWriteStates(o);
+  if (gameTimers[id]) { clearTimeout(gameTimers[id]); delete gameTimers[id]; }
+  delete gameMine[id]; delete gamePeer[id];
+  gameToAt[id] = Date.now();
+  if (send) { try { if (isConnected()) conn.send({ type: 'game-timeout', msgId: id }); } catch (e) {} }
+  if (!gameActive) { try { gmAuClose(); } catch (e) {} }
+  gameRefreshAll();
+}
+function receiveGameTimeout(d) {
+  if (!d || typeof d.msgId !== 'string') return;
+  gameSetTimeout(d.msgId.slice(0, 80), false);
+}
+// Süre dolduktan hemen sonra (ağ gecikmesiyle) gelen katılım: davet edenin oyunu canlanır
+function gameRevive(id) {
+  const at = gameToAt[id];
+  if (!gameOwn[id] || !at || Date.now() - at > 6000 || gameActive) return false;
+  const o = gameReadStates(); if (o[id] !== 'timeout') return false;
+  delete o[id]; gameWriteStates(o); delete gameToAt[id];
+  gameMine[id] = true;
+  return true;
 }
 function gameSendInvite() {
   if (Date.now() - gameInvAt < 1500) return;
   if (!isConnected()) { flashStatus('Bağlantı yok, oyun daveti gönderilemedi'); return; }
   gameInvAt = Date.now();
+  try { gmAuUnlock(); } catch (e) {} // dokunuş anında ses motorunu aç (oyun sesi sonradan çalabilsin)
   sendTextNow(GAME_PREFIX + (gameClean(fullNick()) || 'Biri'));
 }
 function gameJoin(id) {
-  if (gameIsClosed(id) || gameMine[id] || gameActive) return;
+  if (gameIsClosed(id) || gameIsTimeout(id) || gameMine[id] || gameActive) return;
+  try { gmAuUnlock(); } catch (e) {}
   if (!isConnected()) { flashStatus('Bağlantı yok, oyuna katılınamadı'); return; }
   gameMine[id] = true;
   try { conn.send({ type: 'game-join', msgId: id }); } catch (e) {}
@@ -6498,6 +6583,7 @@ function receiveGameJoin(d) {
   if (!d || typeof d.msgId !== 'string') return;
   const id = d.msgId.slice(0, 80);
   if (gameIsClosed(id)) { try { if (isConnected()) conn.send({ type: 'game-close', msgId: id }); } catch (e) {} return; } // bu oyun bizde bitti
+  if (gameIsTimeout(id) && !gameRevive(id)) { try { if (isConnected()) conn.send({ type: 'game-timeout', msgId: id }); } catch (e) {} return; } // bu davet bizde zaman aşımına uğradı
   gamePeer[id] = true;
   gameRefreshAll();
   gameCheck(id);
@@ -6508,8 +6594,49 @@ function gameCheck(id) {
 function gameResend() {
   if (!isConnected()) return;
   const o = gameReadStates();
-  Object.keys(o).forEach((id) => { if (o[id] === 'closed') { try { conn.send({ type: 'game-close', msgId: id }); } catch (e) {} } });
+  Object.keys(o).forEach((id) => {
+    if (o[id] === 'closed') { try { conn.send({ type: 'game-close', msgId: id }); } catch (e) {} }
+    else if (o[id] === 'timeout') { try { conn.send({ type: 'game-timeout', msgId: id }); } catch (e) {} }
+  });
   Object.keys(gameMine).forEach((id) => { if (gameMine[id] && !gameIsClosed(id)) { try { conn.send({ type: 'game-join', msgId: id }); } catch (e) {} } });
+}
+// Oyun açılınca: şarkı şeridi X'e basılmış gibi kapanır (birlikte dinleme biter, şarkı durur), sesli mesajlar / videolar durur
+function gameStopMedia() {
+  try {
+    const dc = ytDockCard;
+    if (dc) {
+      ytDockDismissed = dc; ytDockDismissedAt = Date.now(); ytDockCard = null;
+      try { if (dc._stopAll) dc._stopAll(); } catch (e) {}
+      try { if (dc._pause) dc._pause(); } catch (e) {}
+    }
+    document.querySelectorAll('.yt-card').forEach((c) => {
+      try { if (c._getState && c._getState().playing && c._pause) c._pause(); } catch (e) {}
+    });
+    const gh = ytsGhost;
+    if (gh && gh._ghost) {
+      try { if (gh._stopAll) gh._stopAll(); } catch (e) {}
+      try { if (gh._pause) gh._pause(); } catch (e) {}
+      ytsGhost = null; try { gh.remove(); } catch (e) {}
+    }
+    if (ytPl) { try { ytPlStop(); } catch (e) {} }
+    try { localStorage.removeItem(YTPL_KEY); sessionStorage.removeItem('soloSong'); } catch (e) {}
+    try { ytDockHideNow(); } catch (e) {}
+  } catch (e) {}
+  gameStopMediaTick();
+  try { ytMsSync(); } catch (e) {}
+}
+function gameStopMediaTick() {
+  try { gmMedia.forEach((a) => { try { if (!a.paused) a.pause(); } catch (e) {} }); } catch (e) {}
+  try { document.querySelectorAll('audio,video').forEach((a) => { try { if (!a._gm && !a.paused) a.pause(); } catch (e) {} }); } catch (e) {}
+}
+function gameMediaGuardTick() {
+  if (!gameActive) return;
+  gameStopMediaTick();
+  try {
+    document.querySelectorAll('.yt-card').forEach((c) => {
+      try { if (c._getState && c._getState().playing && c._pause) c._pause(); } catch (e) {}
+    });
+  } catch (e) {}
 }
 function gameKeyBlock(e) {
   if (!gameOver) return;
@@ -6519,16 +6646,26 @@ function gameKeyBlock(e) {
 function gameStart(id, restored) {
   if (gameActive) return;
   gameActive = id;
+  if (gameTimers[id]) { clearTimeout(gameTimers[id]); delete gameTimers[id]; }
   if (!restored) { try { lsSet(GAME_PLAY_KEY, JSON.stringify({ id: id, t: Date.now() })); } catch (e) {} }
-  try { const ae = document.activeElement; if (ae && ae.blur) ae.blur(); } catch (e) {}
+  try { const ae = document.activeElement; gameFocusBack = !!(ae && ae === messageInput); if (ae && ae.blur) ae.blur(); } catch (e) {}
+  document.body.classList.add('gm-on'); // Leap baloncuğu gizlenir
+  try { gameStopMedia(); } catch (e) {}
+  if (gameMediaGuard) clearInterval(gameMediaGuard);
+  gameMediaGuard = setInterval(gameMediaGuardTick, 1000);
   const ov = document.createElement('div');
   ov.id = 'gm-over';
   ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Kuks Feva');
-  ov.innerHTML = '<div class="gm-bar"><span class="gm-bar-t">Kuks Feva</span><button type="button" class="gm-x" aria-label="Oyunu kapat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="gm-stage"></div>';
+  ov.innerHTML = '<div class="gm-bar"><span class="gm-bar-t">Kuks Feva</span><div class="gm-acts"><button type="button" class="gm-snd" aria-label="Sesi kapat"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path class="w" d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13"/><path class="sl" d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button><button type="button" class="gm-x" aria-label="Oyunu kapat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div><div class="gm-stage"></div>';
   // Altındaki hiçbir şeye dokunulamaz, odaklanılamaz, olay sızmaz
   ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click', 'dblclick', 'touchstart', 'touchend', 'wheel'].forEach((t) => ov.addEventListener(t, (e) => e.stopPropagation()));
   ov.addEventListener('contextmenu', (e) => e.preventDefault());
   ov.querySelector('.gm-x').addEventListener('click', () => gameClose(id, false));
+  const sndB = ov.querySelector('.gm-snd');
+  const sndPaint = () => { const on = gmSndOn(); sndB.classList.toggle('off', !on); sndB.setAttribute('aria-label', on ? 'Sesi kapat' : 'Sesi aç'); };
+  sndPaint();
+  sndB.addEventListener('click', () => { try { gmAuUnlock(); } catch (e) {} gmSndSet(!gmSndOn()); sndPaint(); });
+  ov.addEventListener('pointerdown', () => { try { gmAuUnlock(); } catch (e) {} }); // ses motoru ilk dokunuşta açılır
   gameInerted = [];
   Array.from(document.body.children).forEach((ch) => { if (!ch.inert) { try { ch.inert = true; ch.setAttribute('aria-hidden', 'true'); gameInerted.push(ch); } catch (e) {} } });
   document.body.appendChild(ov);
@@ -6552,6 +6689,10 @@ function gameClose(id, fromPeer) {
     if (gameOver) { gameOver.remove(); gameOver = null; }
     gameInerted.forEach((ch) => { try { ch.inert = false; ch.removeAttribute('aria-hidden'); } catch (e) {} });
     gameInerted = [];
+    document.body.classList.remove('gm-on');
+    if (gameMediaGuard) { clearInterval(gameMediaGuard); gameMediaGuard = 0; }
+    // Oyundan önce mesaj kutusu seçiliyse (klavye açıksa) odak geri ona döner
+    if (gameFocusBack) { gameFocusBack = false; try { if (!messageInput.disabled) messageInput.focus({ preventScroll: true }); } catch (e) {} }
   }
   gameRefreshAll();
 }
@@ -6585,10 +6726,10 @@ var gm = null;
 function gmCX(i) { return 10 + i * 20; }
 function gmNew() {
   const P = (x) => ({ x: x, y: 50, h: null, tx: null, ty: 0, a: null });
-  return { el: 0, nx: 1.5, sc: 0, ms: 0, pl: [P(40), P(60)], gr: [{ s: 0, t: 0 }, { s: 0, t: 0 }], fr: [{ s: 0, t: 0 }, { s: 0, t: 0 }], bun: 0, brd: 0, pt: [null, null, null], cu: [null, null, null, null, null] };
+  return { ph: 0, cc: [null, null], el: 0, nx: 1.5, sc: 0, ms: 0, pl: [P(40), P(60)], gr: [{ s: 0, t: 0 }, { s: 0, t: 0 }], fr: [{ s: 0, t: 0 }, { s: 0, t: 0 }], bun: 0, brd: 0, pt: [null, null, null], cu: [null, null, null, null, null] };
 }
 function gmInit(stage, id) {
-  gmStop();
+  gmStop(true);
   const cv = document.createElement('canvas');
   cv.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;display:block;touch-action:none';
   stage.style.position = 'relative'; stage.appendChild(cv);
@@ -6602,11 +6743,27 @@ function gmInit(stage, id) {
   if (window.ResizeObserver) { gm.ro = new ResizeObserver(fit); gm.ro.observe(stage); }
   fit();
   cv.addEventListener('pointerdown', gmClick);
+  gm.stage = stage; gm.pv = null; gm.my = null; gm.pk = null; gm.pkKey = '';
+  try { const A = gmAuInit(); if (A && A.ctx.state !== 'running') A.ctx.resume(); } catch (e) {}
+  gm.ti = setInterval(gmAuTick, 30);
+  gm.vh = () => { const A = gmAu; if (!A) return; try { if (document.hidden) A.ctx.suspend(); else A.ctx.resume(); } catch (e) {} };
+  document.addEventListener('visibilitychange', gm.vh);
   gm.raf = requestAnimationFrame(gmLoop);
 }
-function gmStop() { if (!gm) return; cancelAnimationFrame(gm.raf); if (gm.ro) gm.ro.disconnect(); gm = null; }
+function gmStop(keep) {
+  const g = gm;
+  if (g) {
+    cancelAnimationFrame(g.raf);
+    if (g.ro) g.ro.disconnect();
+    if (g.ti) clearInterval(g.ti);
+    if (g.vh) document.removeEventListener('visibilitychange', g.vh);
+    if (g.pk) { try { g.pk.remove(); } catch (e) {} }
+    gm = null;
+  }
+  if (!keep) { try { gmAuClose(); } catch (e) {} }
+}
 function gmClick(e) {
-  if (!gm || !gm.S) return;
+  if (!gm || !gm.S || gm.S.ph === 0) return;
   e.preventDefault();
   const r = gm.cv.getBoundingClientRect();
   const x = (e.clientX - r.left - gm.ox) / gm.k, y = (e.clientY - r.top - gm.oy) / gm.k;
@@ -6614,19 +6771,71 @@ function gmClick(e) {
   let a = null, tx = x, ty = y;
   for (let i = 0; i < 5; i++) if (Math.abs(x - gmCX(i)) < 9 && y > 5 && y < 27) { a = 'c' + i; tx = gmCX(i); ty = 31; }
   if (!a) for (const st of GM_ST) if (x >= st.x - 1.5 && x <= st.x + st.w + 1.5 && y >= st.y - 1.5 && y <= st.y + st.h + 1.5) { a = st.id; tx = st.sx; ty = st.sy; break; }
+  gmSfxPlay('tap');
   if (vcIAmLeader()) gmAction(gm.S, 0, tx, ty, a);
   else { try { if (isConnected()) conn.send({ type: 'game-act', msgId: gm.id, tx: tx, ty: ty, a: a }); } catch (er) {} }
 }
 function gmAction(S, i, tx, ty, a) {
+  if (S.ph === 0) return;
   tx = Math.max(6, Math.min(94, +tx || 0)); ty = Math.max(30, Math.min(95, +ty || 0));
   if (a !== null && !(typeof a === 'string' && (/^c[0-4]$/.test(a) || GM_ST.some((st) => st.id === a)))) a = null;
   const p = S.pl[i]; if (!p) return;
   p.tx = tx; p.ty = ty; p.a = a;
 }
 function receiveGameSt(d) {
-  if (!gm || !d || d.msgId !== gm.id || vcIAmLeader() || !d.s || !Array.isArray(d.s.pl)) return;
+  if (!gm || !d || d.msgId !== gm.id || vcIAmLeader() || !d.s || !Array.isArray(d.s.pl) || !Array.isArray(d.s.gr) || !Array.isArray(d.s.fr) || !Array.isArray(d.s.pt) || !Array.isArray(d.s.cu)) return;
   gm.S = d.s;
   if (!gm.got) { gm.got = true; gm.vis = d.s.pl.map((p) => ({ x: p.x, y: p.y })); }
+}
+// Renk seçimi: karşı taraf seçimini ev sahibine yollar; ev sahibi onaylar (aynı renk iki kişiye verilmez)
+function gmPick(S, i, c) {
+  if (S.ph !== 0 || (c !== 'b' && c !== 'p')) return;
+  if (!Array.isArray(S.cc)) S.cc = [null, null];
+  if (S.cc[1 - i] === c) return;
+  S.cc[i] = c;
+  if (S.cc[0] && S.cc[1]) { S.ph = 1; S.nx = 1.5; }
+}
+function receiveGameCol(d) {
+  if (!gm || !d || d.msgId !== gm.id || !vcIAmLeader() || !gm.S) return;
+  gmPick(gm.S, 1, d.c);
+}
+function gmChoose(c) {
+  const g = gm; if (!g || !g.S || g.S.ph !== 0) return;
+  try { gmAuUnlock(); } catch (e) {}
+  gmSfxPlay('pick');
+  g.my = c; g.pkKey = '';
+  if (vcIAmLeader()) gmPick(g.S, 0, c);
+  else { try { if (isConnected()) conn.send({ type: 'game-col', msgId: g.id, c: c }); } catch (e) {} }
+}
+function gmPickUI() {
+  const g = gm; if (!g || !g.S || !g.stage) return;
+  const S = g.S, me = vcIAmLeader() ? 0 : 1;
+  if (S.ph !== 0) { if (g.pk) { try { g.pk.remove(); } catch (e) {} g.pk = null; } return; }
+  if (!g.pk) {
+    const pk = document.createElement('div');
+    pk.className = 'gm-pick';
+    pk.innerHTML = '<div class="gm-pick-t">Rengini seç</div><div class="gm-pick-row">' +
+      '<button type="button" class="gm-col" data-c="b" style="--cc:#4aa3ff"><i></i><span>Mavi</span></button>' +
+      '<button type="button" class="gm-col" data-c="p" style="--cc:#ff6b81"><i></i><span>Pembe</span></button></div><div class="gm-pick-s"></div>';
+    pk.addEventListener('pointerdown', (e) => e.stopPropagation());
+    pk.querySelectorAll('.gm-col').forEach((b) => b.addEventListener('click', () => gmChoose(b.dataset.c)));
+    g.stage.appendChild(pk); g.pk = pk; g.pkKey = '';
+  }
+  const taken = S.cc && S.cc[1 - me] || null;
+  const mine = (S.cc && S.cc[me]) || (g.my && g.my !== taken ? g.my : null);
+  const key = (taken || '-') + (mine || '-');
+  if (g.pkKey === key) return;
+  g.pkKey = key;
+  g.pk.querySelectorAll('.gm-col').forEach((b) => {
+    b.classList.toggle('sel', b.dataset.c === mine);
+    b.classList.toggle('tk', b.dataset.c === taken);
+  });
+  const nm = { b: 'mavi', p: 'pembe' };
+  g.pk.querySelector('.gm-pick-s').textContent = mine && !taken ? 'Diğer oyuncu seçiyor...' : taken && !mine ? 'Diğer oyuncu ' + nm[taken] + ' seçti, sen diğerini seç' : 'İki oyuncu farklı renk seçer';
+}
+function gmCol(S, i) {
+  const c = S.cc && S.cc[i];
+  return c === 'p' ? '#ff6b81' : c === 'b' ? '#4aa3ff' : (S.ph === 0 ? '#9aa0a6' : (i === 0 ? '#4aa3ff' : '#ff6b81'));
 }
 function receiveGameAct(d) {
   if (!gm || !d || d.msgId !== gm.id || !vcIAmLeader() || !gm.S) return;
@@ -6655,6 +6864,7 @@ function gmDo(S, p, a) {
   }
 }
 function gmStep(S, dt) {
+  if (S.ph === 0) return; // renkler seçilene kadar oyun başlamaz
   S.el += dt;
   const lvl = Math.floor(S.el / 60);
   S.pl.forEach((p) => {
@@ -6696,6 +6906,7 @@ function gmLoop(ts) {
     if (ts - gm.sent > 100) { gm.sent = ts; try { if (isConnected()) conn.send({ type: 'game-st', msgId: gm.id, s: gm.S }); } catch (e) {} }
   }
   if (gm.S) gm.S.pl.forEach((p, i) => { const v = gm.vis[i], f = host ? 1 : Math.min(1, dt * 14); v.x += (p.x - v.x) * f; v.y += (p.y - v.y) * f; });
+  if (gm.S) { try { gmSfx(gm.S); } catch (e) {} try { gmPickUI(); } catch (e) {} }
   try { gmDraw(host ? 0 : 1); } catch (e) {}
   gm.raf = requestAnimationFrame(gmLoop);
 }
@@ -6756,7 +6967,7 @@ function gmDraw(me) {
   }
   // oyuncular
   [1 - me, me].forEach((i) => {
-    const p = S.pl[i], v = g.vis[i], col = i === 0 ? '#4aa3ff' : '#ff6b81';
+    const p = S.pl[i], v = g.vis[i], col = gmCol(S, i);
     if (i === me && p.tx !== null) { c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = .5; c.beginPath(); c.arc(p.tx, p.ty, 1.6, 0, 7); c.stroke(); }
     c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(v.x + .4, v.y + 2.6, 3.2, 1.4, 0, 0, 7); c.fill();
     c.fillStyle = col; c.beginPath(); c.arc(v.x, v.y, 3.2, 0, 7); c.fill(); c.strokeStyle = 'rgba(0,0,0,.5)'; c.lineWidth = .4; c.stroke();
@@ -6768,6 +6979,142 @@ function gmDraw(me) {
   gmTxt(c, 'Skor: ' + S.sc, 14, 2.8, 3.2, '#fff', true);
   gmTxt(c, 'Seviye: ' + (Math.floor(S.el / 60) + 1), 50, 2.8, 3.2, '#ffd23f', true);
   gmTxt(c, 'Kaçan: ' + S.ms, 86, 2.8, 3.2, '#ff7a6b', true);
+}
+
+/* ===== Kuks Feva sesleri: dosya yok, hepsi Web Audio ile üretilir. Müzik + pişme / hamburger efektleri; sağ üstteki hoparlör tuşuyla açılıp kapanır ===== */
+var gmAu = null;
+function gmSndOn() { return lsGet('gmSnd') !== '0'; }
+function gmAuInit() {
+  if (gmAu) return gmAu;
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+  let ctx; try { ctx = new AC(); } catch (e) { return null; }
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {} // iPhone'da sessiz tuşunu yok say, diğer sesleri keser
+  const on = gmSndOn();
+  const master = ctx.createGain(), mus = ctx.createGain(), sfx = ctx.createGain();
+  master.gain.value = on ? 1 : 0; mus.gain.value = .17; sfx.gain.value = .75;
+  mus.connect(master); sfx.connect(master); master.connect(ctx.destination);
+  const nb = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate), nd = nb.getChannelData(0);
+  for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  // cızırtı: sürekli gürültü -> yüksek geçiren -> kazanç (ızgara / patates pişerken seviyesi artar)
+  const sz = ctx.createBufferSource(); sz.buffer = nb; sz.loop = true;
+  const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 3200;
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 9000;
+  const sg = ctx.createGain(); sg.gain.value = 0;
+  sz.connect(hp); hp.connect(lp); lp.connect(sg); sg.connect(sfx);
+  gmAu = { ctx: ctx, master: master, mus: mus, sfx: sfx, nb: nb, sz: sz, sg: sg, szOn: false, lvl: 0, cr: 0, nt: 0, step: 0, on: on };
+  return gmAu;
+}
+function gmAuUnlock() {
+  const A = gmAuInit(); if (!A) return;
+  try { if (A.ctx.state !== 'running') A.ctx.resume(); } catch (e) {}
+  try { const b = A.ctx.createBuffer(1, 1, 22050), s = A.ctx.createBufferSource(); s.buffer = b; s.connect(A.ctx.destination); s.start(0); } catch (e) {}
+}
+function gmAuClose() {
+  const A = gmAu; gmAu = null; if (!A) return;
+  try { A.master.gain.value = 0; } catch (e) {}
+  try { A.ctx.close(); } catch (e) {}
+}
+function gmSndSet(on) {
+  lsSet('gmSnd', on ? '1' : '0');
+  const A = gmAu;
+  if (A) { A.on = on; A.nt = 0; try { A.master.gain.setTargetAtTime(on ? 1 : 0, A.ctx.currentTime, .03); } catch (e) {} }
+}
+function gmTone(t, f, d, type, v, f2, dest) {
+  const A = gmAu; if (!A) return;
+  const o = A.ctx.createOscillator(), g = A.ctx.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+  g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(v, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(g); g.connect(dest || A.sfx); o.start(t); o.stop(t + d + .03);
+}
+function gmNoise(t, d, v, type, f, dest, q) {
+  const A = gmAu; if (!A) return;
+  const s = A.ctx.createBufferSource(), fl = A.ctx.createBiquadFilter(), g = A.ctx.createGain();
+  s.buffer = A.nb; fl.type = type; fl.frequency.value = f; if (q) fl.Q.value = q;
+  g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(v, t + .006); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  s.connect(fl); fl.connect(g); g.connect(dest || A.sfx); s.start(t, Math.random() * 1.4, d + .03);
+}
+function gmSfxPlay(k) {
+  const A = gmAu; if (!A || !A.on || A.ctx.state !== 'running') return;
+  const t = A.ctx.currentTime + .005;
+  switch (k) {
+    case 'pick': gmTone(t, 620, .09, 'triangle', .5, 880); break;
+    case 'put': gmTone(t, 500, .09, 'triangle', .45, 330); break;
+    case 'tap': gmTone(t, 420, .04, 'sine', .2); break;
+    case 'sear': gmNoise(t, .6, .55, 'highpass', 2500); gmTone(t, 180, .14, 'sine', .35, 90); break;
+    case 'fry': gmNoise(t, .8, .45, 'bandpass', 2800, null, .8); gmTone(t, 140, .12, 'sine', .3, 70); break;
+    case 'ding': gmTone(t, 1319, .45, 'sine', .45); gmTone(t + .1, 1760, .5, 'sine', .4); break;
+    case 'burn': gmTone(t, 150, .5, 'sawtooth', .35, 70); gmNoise(t, .5, .3, 'lowpass', 900); break;
+    case 'serve': gmTone(t, 988, .12, 'square', .2); gmTone(t + .09, 1319, .22, 'square', .2); gmTone(t + .09, 2637, .3, 'sine', .15); break;
+    case 'miss': gmTone(t, 330, .35, 'sawtooth', .26, 140); break;
+    case 'bell': gmTone(t, 1568, .35, 'sine', .22); gmTone(t, 2352, .25, 'sine', .08); break;
+    case 'make': gmNoise(t, .12, .4, 'lowpass', 700); gmTone(t, 260, .14, 'sine', .45, 130); gmTone(t + .1, 520, .1, 'triangle', .3, 780); break;
+    case 'pour': for (let i = 0; i < 4; i++) { const f = 500 + Math.random() * 600; gmTone(t + i * .06, f, .07, 'sine', .3, f * 1.5); } break;
+    case 'trash': gmNoise(t, .3, .5, 'bandpass', 1200, null, 1.2); gmTone(t, 200, .2, 'triangle', .25, 80); break;
+    case 'start': [523, 659, 784, 1047].forEach((f, i) => gmTone(t + i * .09, f, .22, 'square', .2)); break;
+  }
+}
+// Neşeli döngü: C - Am - F - G, bas + arp + vurmalı; 4 ölçü, 8'lik adımlar
+var GM_CH = [[48, [60, 64, 67]], [45, [57, 60, 64]], [41, [57, 60, 65]], [43, [55, 59, 62]]];
+var GM_ARP = [0, 1, 2, 1, 2, 1, 0, 2];
+function gmMf(n) { return 440 * Math.pow(2, (n - 69) / 12); }
+function gmMusicStep(A, s, t) {
+  const ch = GM_CH[(s >> 3) & 3], st = s & 7, d = A.mus;
+  if (st === 0 || st === 3 || st === 6) gmTone(t, gmMf(ch[0]), .22, 'triangle', .9, null, d);
+  else if (st === 4) gmTone(t, gmMf(ch[0] + 7), .22, 'triangle', .8, null, d);
+  gmTone(t, gmMf(ch[1][GM_ARP[st]] + 12), .17, 'square', .17, null, d);
+  if (st === 7 && ((s >> 3) & 3) === 3) gmTone(t, gmMf(ch[1][2] + 24), .3, 'triangle', .25, null, d);
+  if (st === 0 || st === 4) gmTone(t, 150, .12, 'sine', .8, 50, d);
+  if (st === 2 || st === 6) gmNoise(t, .1, .3, 'bandpass', 1800, d, 1);
+  if (st & 1) gmNoise(t, .04, .18, 'highpass', 7000, d);
+}
+function gmAuTick() {
+  const A = gmAu; if (!A || !gm) return;
+  const ctx = A.ctx; if (ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  if (A.on) {
+    const spb = 60 / 112 / 2;
+    if (!A.nt || A.nt < now - .3) A.nt = now + .06;
+    while (A.nt < now + .22) { gmMusicStep(A, A.step, A.nt); A.nt += spb; A.step = (A.step + 1) & 31; }
+  }
+  if (A.lvl > 0 && now - A.cr > .07) { A.cr = now; try { A.sg.gain.setTargetAtTime(A.lvl * (.45 + Math.random() * .75), now, .015); } catch (e) {} }
+}
+function gmAuSiz(lvl) {
+  const A = gmAu; if (!A || A.lvl === lvl) return;
+  A.lvl = lvl;
+  if (lvl > 0 && !A.szOn) { try { A.sz.start(); A.szOn = true; } catch (e) {} }
+  if (lvl === 0) { try { A.sg.gain.setTargetAtTime(0, A.ctx.currentTime, .05); } catch (e) {} }
+}
+// Her iki tarafta da durum farkından ses üretilir (ev sahibi de karşı taraf da aynı sesleri duyar)
+function gmSfx(S) {
+  const g = gm; if (!g) return;
+  const cur = { sc: S.sc, ms: S.ms, ph: S.ph, gr: S.gr.map((q) => q.s), fr: S.fr.map((q) => q.s), bun: S.bun, brd: S.brd, pt: S.pt.slice(), h: S.pl.map((p) => p.h), cu: S.cu.map((c) => (c ? 1 : 0)) };
+  const P = g.pv; g.pv = cur;
+  let n = 0; cur.gr.concat(cur.fr).forEach((x) => { if (x === 1 || x === 2) n++; });
+  gmAuSiz(gmAu && gmAu.on ? Math.min(.5, n * .22) : 0);
+  if (!P) return;
+  if (P.ph === 0 && cur.ph === 1) gmSfxPlay('start');
+  if (cur.sc > P.sc) gmSfxPlay('serve');
+  if (cur.ms > P.ms) gmSfxPlay('miss');
+  for (let i = 0; i < cur.cu.length; i++) if (!P.cu[i] && cur.cu[i]) { gmSfxPlay('bell'); break; }
+  let st = cur.bun !== P.bun || cur.brd !== P.brd;
+  for (let i = 0; i < 3; i++) if (cur.pt[i] !== P.pt[i]) st = true;
+  [['gr', 'sear'], ['fr', 'fry']].forEach((q) => {
+    cur[q[0]].forEach((x, i) => {
+      const o = P[q[0]][i];
+      if (x === o) return;
+      st = true;
+      if (o === 0 && x === 1) gmSfxPlay(q[1]);
+      else if (x === 2 && o === 1) gmSfxPlay('ding');
+      else if (x === 3) gmSfxPlay('burn');
+    });
+  });
+  for (let i = 0; i < cur.h.length; i++) {
+    const a = P.h[i], b = cur.h[i];
+    if (a === b) continue;
+    if (!a && b) gmSfxPlay(b === 'cola' || b === 'water' ? 'pour' : (b === 'burger' || b === 'patso') ? 'make' : 'pick');
+    else if (a && !b) { if (cur.sc === P.sc) gmSfxPlay(st ? 'put' : 'trash'); }
+  }
 }
 
 /* ===== ".ara İsim" komutu: komutu girene "Bir saniye..." kartı, karşıya seçenekli kart gider ===== */
