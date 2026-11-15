@@ -1646,6 +1646,12 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
   box-shadow: inset 0 1px 0 var(--yt-a42), inset 0 -2px 3px var(--yt-a12), 0 2px 6px rgba(0,0,0,.25); transition: transform .12s, background .15s; }
 .dial-opt:active { transform: scale(.97); background: radial-gradient(120% 110% at 28% 0%, var(--yt-a50) 0%, transparent 60%), linear-gradient(160deg, var(--yt-a35) 0%, var(--yt-a16) 55%, var(--yt-a25) 100%); }
 .dial-opt.dial-cancel { color: var(--dng); border-color: color-mix(in srgb, var(--bad) 40%, var(--yt-a20)); background: radial-gradient(120% 110% at 28% 0%, color-mix(in srgb, var(--bad) 40%, transparent) 0%, transparent 60%), linear-gradient(160deg, color-mix(in srgb, var(--bad) 26%, transparent) 0%, color-mix(in srgb, var(--bad) 8%, transparent) 55%, color-mix(in srgb, var(--bad) 16%, transparent) 100%); }
+.dial-card.opts { gap: 4px; width: min(188px, 100%); min-width: 0; padding: 9px 10px; border-radius: 18px; }
+.dial-card.opts .dial-name { font-size: 14px; margin-bottom: 1px; }
+.dial-card.opts .dial-opt { padding: 5px 8px; font-size: 12px; border-radius: 11px; line-height: 1.25; }
+.dial-card.opts .dial-opt.dial-back { opacity: .8; }
+.dial-sub { font-size: 10.5px; opacity: .65; text-align: center; margin: -1px 0 1px; }
+.dial-reason { font-size: 11px; font-weight: 400; opacity: .7; }
 .call-btn { position: relative; isolation: isolate; overflow: hidden; border: 1px solid var(--yt-a28); box-shadow: inset 0 1.5px 1px var(--yt-a60), inset 0 -2px 3px var(--yt-a20), 0 3px 8px rgba(0,0,0,.34); }
 .call-acc { background: radial-gradient(120% 110% at 28% 8%, color-mix(in srgb, var(--ok) 70%, #fff) 0%, transparent 58%), linear-gradient(160deg, color-mix(in srgb, var(--ok) 78%, transparent) 0%, color-mix(in srgb, var(--ok) 45%, transparent) 100%); }
 .call-rej { background: radial-gradient(120% 110% at 28% 8%, color-mix(in srgb, var(--bad) 70%, #fff) 0%, transparent 58%), linear-gradient(160deg, color-mix(in srgb, var(--bad) 78%, transparent) 0%, color-mix(in srgb, var(--bad) 45%, transparent) 100%); }
@@ -2333,6 +2339,8 @@ const DIAL_KEY = 'dialStates';
 const DIAL_ORANGE = '#ff9f1a';
 const dialTimers = {};
 const DIAL_OPTS = [['call_open', 'Arama Açılsın'], ['call_busy', 'Meşgul Çıksın'], ['call_timeout', 'Zamanı Aşsın'], ['notfound', 'Bulunamasın'], ['offline', 'Çevrimdışı Olsun']];
+const DIAL_REASON_KEY = 'dialReasons';
+const DIAL_REASONS = { motor: 'Motorda', call: 'Başkasıyla aramada', rej: 'Aramayı reddetti' };
 const DIAL_RANK = { wait: 0, call_open: 1, call_busy: 1, call_timeout: 1, notfound: 2, started: 2, busy: 2, timeout: 2, offline: 2 };
 const CALL_TIMEOUT_MS = 30000;
 const CHIP_SVG = {
@@ -7635,6 +7643,15 @@ function dialWriteStates(o) {
   while (keys.length > 100) delete o[keys.shift()];
   try { lsSet(DIAL_KEY, JSON.stringify(o)); } catch (e) {}
 }
+function dialReadReasons() {
+  try { const o = JSON.parse(lsGet(DIAL_REASON_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; } catch (e) { return {}; }
+}
+function dialWriteReasons(o) {
+  const keys = Object.keys(o);
+  while (keys.length > 100) delete o[keys.shift()];
+  try { lsSet(DIAL_REASON_KEY, JSON.stringify(o)); } catch (e) {}
+}
+function dialValidReason(r) { return typeof r === 'string' && Object.prototype.hasOwnProperty.call(DIAL_REASONS, r); }
 function buildDialCard(name, own) {
   const el = document.createElement('div');
   el._name = name;
@@ -7645,6 +7662,7 @@ function buildDialCard(name, own) {
     el.innerHTML = '';
     el.className = 'dial-card';
     el.dataset.tone = '';
+    if (st !== 'wait') el._sub = false;
     const nm = el._name;
     if (st === 'wait' && !own) {
       el.classList.add('opts');
@@ -7652,13 +7670,35 @@ function buildDialCard(name, own) {
       t.className = 'dial-name';
       t.textContent = nm;
       el.appendChild(t);
-      DIAL_OPTS.forEach((o) => {
+      // Düğme üretici: mesaj kutusunun odağı gitmesin / işlem sonrası geri dönsün
+      const mk = (label, cls, fn) => {
         const b = document.createElement('button');
         b.type = 'button';
-        b.className = 'dial-opt';
-        b.textContent = o[1];
-        b.addEventListener('click', (e) => { e.stopPropagation(); if (el._pick) el._pick(o[0]); });
+        b.className = 'dial-opt' + (cls ? ' ' + cls : '');
+        b.textContent = label;
+        let wf = false;
+        ['pointerdown', 'mousedown'].forEach((ev) => b.addEventListener(ev, (e) => { if (ev === 'pointerdown') wf = document.activeElement === messageInput; e.preventDefault(); }));
+        b.addEventListener('click', (e) => {
+          e.stopPropagation();
+          fn();
+          if (wf) { wf = false; try { focusInputForReply(); } catch (e2) {} }
+        });
         el.appendChild(b);
+        return b;
+      };
+      if (el._sub) {
+        const sl = document.createElement('div');
+        sl.className = 'dial-sub';
+        sl.textContent = 'Meşgul sebebi (isteğe bağlı)';
+        el.appendChild(sl);
+        Object.keys(DIAL_REASONS).forEach((k) => mk(DIAL_REASONS[k], '', () => { if (el._pick) el._pick('call_busy', k); }));
+        mk('Sebep belirtme', '', () => { if (el._pick) el._pick('call_busy'); });
+        mk('Geri', 'dial-back', () => { el._sub = false; el._set('wait'); });
+        return;
+      }
+      DIAL_OPTS.forEach((o) => {
+        if (o[0] === 'call_busy') mk(o[1] + ' ›', '', () => { if (Date.now() - menuOpenedAt < 600) return; el._sub = true; el._set('wait'); });
+        else mk(o[1], '', () => { if (el._pick) el._pick(o[0]); });
       });
       const cb = document.createElement('button');
       cb.type = 'button';
@@ -7685,6 +7725,12 @@ function buildDialCard(name, own) {
     u.textContent = txt;
     el.appendChild(t);
     el.appendChild(u);
+    if (st === 'busy' && dialValidReason(el._reason)) {
+      const rr = document.createElement('div');
+      rr.className = 'dial-reason';
+      rr.textContent = DIAL_REASONS[el._reason];
+      el.appendChild(rr);
+    }
   };
   el._set('wait');
   return el;
@@ -7692,6 +7738,7 @@ function buildDialCard(name, own) {
 function dialApply(id, st) {
   const m = document.getElementById(id);
   if (m && m._dialCard) {
+    m._dialCard._reason = dialReadReasons()[id] || null;
     m._dialCard._set(st);
     if (stickToBottom) setTimeout(() => { chatArea.scrollTop = chatArea.scrollHeight; }, 30);
   }
@@ -7703,16 +7750,21 @@ function dialSchedule(id, st) {
   const fin = st === 'call_open' ? 'started' : st === 'call_busy' ? 'busy' : 'timeout';
   dialTimers[id] = setTimeout(() => { delete dialTimers[id]; dialSetState(id, fin, true); }, ms);
 }
-function dialSetState(id, st, send, live) {
+function dialSetState(id, st, send, live, reason) {
   if (!(st in DIAL_RANK)) return false;
   const o = dialReadStates();
   const cur = o[id] || 'wait';
   if (DIAL_RANK[st] <= DIAL_RANK[cur]) return false; // durum yalnızca ileri gider (yeniden gönderimler geri almasın)
   o[id] = st;
   dialWriteStates(o);
+  if (st === 'call_busy' || st === 'busy') {
+    const rs = dialReadReasons();
+    if (dialValidReason(reason)) { rs[id] = reason; dialWriteReasons(rs); }
+    reason = dialValidReason(rs[id]) ? rs[id] : null;
+  } else { reason = null; }
   dialApply(id, st);
   if (st === 'started' && (send || live)) { try { const dm = document.getElementById(id); vcStart(id, dm && dm._dialCard ? dm._dialCard._name : ''); } catch (e) {} } // "Arama başladı" yazısına dönüştüğü an üstte süre baloncuğu başlar
-  if (send && isConnected()) { try { conn.send({ type: 'dial-state', msgId: id, state: st, vc: st === 'started' ? 1 : 0 }); } catch (e) {} }
+  if (send && isConnected()) { try { const pk = { type: 'dial-state', msgId: id, state: st, vc: st === 'started' ? 1 : 0 }; if (reason) pk.reason = reason; conn.send(pk); } catch (e) {} }
   if (st.indexOf('call_') === 0) {
     const m = document.getElementById(id);
     if (m && m.classList.contains('own-msg')) dialSchedule(id, st);
@@ -7728,6 +7780,7 @@ function dialCancel(id, send) {
   if (dialTimers[id]) { clearTimeout(dialTimers[id]); delete dialTimers[id]; }
   const o = dialReadStates();
   if (id in o) { delete o[id]; dialWriteStates(o); }
+  { const rs = dialReadReasons(); if (id in rs) { delete rs[id]; dialWriteReasons(rs); } }
   outboxRemove(id);
   removeMessageFromUI(id);
   return true;
@@ -7738,20 +7791,21 @@ function receiveDialCancel(d) {
 }
 function receiveDialState(d) {
   if (!d || typeof d.msgId !== 'string' || typeof d.state !== 'string') return;
-  dialSetState(d.msgId.slice(0, 80), d.state, false, !!d.vc);
+  dialSetState(d.msgId.slice(0, 80), d.state, false, !!d.vc, d.reason);
 }
 function dialResendStates() {
   if (!isConnected()) return;
   const o = dialReadStates();
-  Object.keys(o).forEach((id) => { try { conn.send({ type: 'dial-state', msgId: id, state: o[id] }); } catch (e) {} });
+  const rs = dialReadReasons();
+  Object.keys(o).forEach((id) => { try { const pk = { type: 'dial-state', msgId: id, state: o[id] }; if ((o[id] === 'busy' || o[id] === 'call_busy') && dialValidReason(rs[id])) pk.reason = rs[id]; conn.send(pk); } catch (e) {} });
 }
 function buildDialMsgCard(msgDiv, id, name, own) {
   const card = buildDialCard(name, own);
   msgDiv._dialCard = card;
-  card._pick = (code) => {
+  card._pick = (code, reason) => {
     if (own || card._state !== 'wait') return;
     if (Date.now() - menuOpenedAt < 600) return;
-    dialSetState(id, code, true);
+    dialSetState(id, code, true, false, reason);
   };
   card._cancel = () => {
     if (own || card._state !== 'wait') return;
@@ -7760,6 +7814,7 @@ function buildDialMsgCard(msgDiv, id, name, own) {
   };
   const saved = dialReadStates()[id];
   if (saved && saved in DIAL_RANK) {
+    card._reason = dialReadReasons()[id] || null;
     card._set(saved);
     const dts = msgTsOfId(id);
     if (own && saved.indexOf('call_') === 0 && dts && Date.now() - dts < 120000) dialSchedule(id, saved); // eski takılı kart kendi kendine aramayı başlatmasın
