@@ -1143,9 +1143,7 @@ body:not(.pf-editing) #pf-uid { cursor: pointer; }
 #leap-bar .leap-name { font-size: inherit; font-weight: 400; color: var(--c-cc); }
 #leap-bar .leap-num { font-size: inherit; font-weight: 700; opacity: 1; color: var(--c-fff); cursor: default; }
 #leap-bar .leap-in { width: 15ch; height: 20px; line-height: 20px; font-size: 16px; text-align: left; color: var(--warn); }
-body.pf-editing #leap-bar { border-color: var(--accent); }
-body.pf-editing #leap-bar .leap-num { cursor: pointer; }
-body.lv-admin:not(.pf-editing) #leap-bar .leap-num { cursor: default; }
+body.lv-admin #leap-bar .leap-num { cursor: pointer; }
 #pf-hero .leap-ext { position: relative; z-index: 1; max-width: 220px; margin: 0 auto; }
 #pf-hero .leap-ext.open { margin-bottom: 2px; }
 #pf-hero .leap-ext-row { padding: 8px 0 0; }
@@ -1156,6 +1154,14 @@ body.lv-admin:not(.pf-editing) #leap-bar .leap-num { cursor: default; }
 .pf-tagchip .pf-in:not(:read-only):focus { background: transparent; box-shadow: none; }
 body.pf-editing .pf-tagchip { border-color: var(--accent); }
 body.pf-editing .pf-tagchip .pf-in { font-size: 16px; }
+@keyframes pfGlowA { 0%, 100% { transform: translate(-50%, 0) scale(1); opacity: 1; } 25% { transform: translate(calc(-50% + 16px), 7px) scale(1.09); opacity: .82; } 50% { transform: translate(calc(-50% + 4px), -9px) scale(.95); opacity: 1; } 75% { transform: translate(calc(-50% - 16px), 5px) scale(1.07); opacity: .88; } }
+@keyframes pfGlowB { 0%, 100% { transform: translate(-50%, 0) scale(1); opacity: .7; } 33% { transform: translate(calc(-50% - 22px), -6px) scale(1.12); opacity: 1; } 66% { transform: translate(calc(-50% + 20px), 8px) scale(.92); opacity: .6; } }
+#pf-hero::before { animation: pfGlowA 9s ease-in-out infinite; will-change: transform, opacity; }
+#pf-hero::after { content: ""; position: absolute; left: 50%; top: 18px; width: 210px; height: 150px; transform: translateX(-50%); background: radial-gradient(closest-side, color-mix(in srgb, var(--c-fff) 11%, transparent), transparent); pointer-events: none; animation: pfGlowB 13s ease-in-out infinite; will-change: transform, opacity; }
+@media (prefers-reduced-motion: reduce) { #pf-hero::before, #pf-hero::after { animation: none; } }
+.pf-v > .pf-in + .pf-ib { margin-left: 2px; }
+.pf-v > .pf-in:has(+ .pf-ib) { margin-right: 0; }
+.pf-in:not(:focus) { text-overflow: clip; }
 .pf-pre { color: var(--c-dd); font-size: 16px; font-weight: 400; line-height: 1.3; }
 .pf-vu { gap: 1px; }
 .pf-vu .pf-in { flex: 0 0 auto; width: 60px; max-width: calc(100% - 14px); text-align: left; padding-left: 0; }
@@ -1906,7 +1912,7 @@ body.gm-on #leap-hud { display: none !important; }
       <div id="pf-av"><span id="pf-av-t">?</span></div>
       <div id="pf-hname">—</div>
       <div id="pf-huser"></div>
-      <div id="pf-chips"><span class="pf-chip pf-tagchip" id="pf-tagchip"><input class="pf-in" id="pf-tag" type="text" maxlength="24" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-tag" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span><span class="pf-chip pf-leap" id="leap-bar"><i></i><span class="leap-name">Leap</span><span class="leap-num" id="leap-num">0</span></span></div>
+      <div id="pf-chips"><span class="pf-chip pf-tagchip" id="pf-tagchip"><input class="pf-in" id="pf-tag" type="text" maxlength="24" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-tag" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span><span class="pf-chip pf-leap" id="leap-bar"><span class="leap-name">Leap</span><span class="leap-num" id="leap-num">0</span></span></div>
       <div class="leap-ext" id="leap-ext" inert><div class="leap-ext-clip"><div class="leap-ext-row">
         <input class="leap-delta" id="leap-delta" type="text" autocomplete="off" spellcheck="false" name="leap-d" autocorrect="off" autocapitalize="off" enterkeyhint="done" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
       </div></div></div>
@@ -1949,7 +1955,7 @@ body.gm-on #leap-hud { display: none !important; }
       <div class="pf-card">
         <label class="pf-row"><span class="pf-l">Tepsi</span><span class="pf-v"><input class="pf-in" id="pf-tray" type="text" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-tray" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
         <label class="pf-row"><span class="pf-l">Hesap Açılışı<small id="pf-since"></small></span><span class="pf-v"><input class="pf-in" id="pf-created" type="date" min="2000-01-01" name="pf-created" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
-        <label class="pf-row" id="pf-uid-row"><span class="pf-l">Hesap Maskesi</span><span class="pf-v"><input class="pf-in mono" id="pf-uid" type="text" maxlength="20" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-uid" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
+        <label class="pf-row" id="pf-uid-row"><span class="pf-l">Maske</span><span class="pf-v"><input class="pf-in mono" id="pf-uid" type="text" maxlength="20" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-uid" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
       </div>
       <div class="pf-hint" id="pf-foot"></div>
     </div>
@@ -11700,6 +11706,61 @@ function pfRender() {
   pfRender();
   setInterval(() => { if (!document.hidden && bpPage === 1) pfRender(); }, 5000);
 })();
+/* Uzun değerler (şifre, isim vb.) kutuya sığmıyorsa, odakta değilken yavaşça kayıp sonunu gösterir, sonra başa döner */
+(function initPfMarquee() {
+  const st = new WeakMap();
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (document.hidden || typeof bpPage === 'undefined' || bpPage !== 1) return;
+    const box = document.getElementById('pf-scroll');
+    if (!box) return;
+    box.querySelectorAll('.pf-sec input.pf-in[type="text"]').forEach((el) => {
+      if (el.offsetParent === null) return;
+      const max = el.scrollWidth - el.clientWidth;
+      if (document.activeElement === el || max <= 1 || reducedMotion()) { if (st.has(el)) { st.delete(el); if (document.activeElement !== el) el.scrollLeft = 0; } return; }
+      let m = st.get(el);
+      if (!m || m.max !== max) { m = { t0: now, max: max }; st.set(el, m); }
+      const mv = max / PH_SPEED * 1000, cyc = PH_HOLD * 2 + mv * 2;
+      const t = (now - m.t0) % cyc;
+      let x;
+      if (t < PH_HOLD) x = 0;
+      else if (t < PH_HOLD + mv) x = (t - PH_HOLD) / mv * max;
+      else if (t < PH_HOLD * 2 + mv) x = max;
+      else x = max - (t - PH_HOLD * 2 - mv) / mv * max;
+      el.scrollLeft = x;
+    });
+  }
+  requestAnimationFrame(frame);
+})();
+/* Masaüstü: ayarlar kendi alanına dikeyde sığar; tüm gruplar ortak oranda küçülür */
+(function initSettingsFit() {
+  const sc = document.getElementById('settings-scroll');
+  if (!sc) return;
+  const mq = window.matchMedia('(min-width: 769px)');
+  let busy = false;
+  function fit() {
+    if (busy) return; busy = true;
+    const blocks = Array.from(sc.querySelectorAll(':scope > .set-block'));
+    blocks.forEach((b) => { b.style.zoom = ''; });
+    if (mq.matches && sc.clientHeight > 0) {
+      let h = 0;
+      blocks.forEach((b) => { h += b.offsetHeight; });
+      const cs = getComputedStyle(sc);
+      const avail = sc.clientHeight - (parseFloat(cs.paddingBottom) || 0) - (parseFloat(cs.paddingTop) || 0) - 2;
+      if (h > avail && h > 0) {
+        const z = Math.max(0.45, avail / h);
+        blocks.forEach((b) => { b.style.zoom = String(z); });
+      }
+    }
+    busy = false;
+  }
+  window.addEventListener('resize', fit);
+  if (mq.addEventListener) mq.addEventListener('change', fit);
+  if (window.ResizeObserver) new ResizeObserver(fit).observe(sc);
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit); } catch (e) {}
+  window.addEventListener('pin-level', fit);
+  fit(); setTimeout(fit, 400); setTimeout(fit, 1500);
+})();
 (function initLeap() {
   const el = document.getElementById('leap-num');
   if (!el) return;
@@ -11789,7 +11850,7 @@ function pfRender() {
   }
 
   el.addEventListener('click', () => {
-    if (!notifCanSend() || !pfEditing) return;   // yalnızca 6687 ve yalnızca düzenleme modunda
+    if (!notifCanSend()) return;   // yalnızca 6687 (düzenleme moduna geçmeden)
     open();
   });
   // Dokunmatikte boşluğa basınca kutu kapanmayabilir: dışarı dokununca uygula
