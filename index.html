@@ -1043,6 +1043,14 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 body.np-open #app > #bp-tabs { display: none !important; }
 #np-back:active { background: var(--c-33); color: var(--c-fff); }
 #np-back svg { display: block; flex: 0 0 auto; }
+/* Notlar açıkken sohbete yeni mesaj gelirse Geri Dön şeridi sarı yanıp söner (basılabilir kalır; yalnızca renk animasyonu) */
+@keyframes np-back-blink {
+  0%, 100% { background: var(--c-1a); color: var(--c-cc); }
+  50% { background: color-mix(in srgb, var(--warn) 32%, var(--c-1a)); color: var(--warn); }
+}
+#np-back.alert { animation: np-back-blink 1s ease-in-out infinite; }
+#np-back.alert:active { animation: none; background: var(--c-33); color: var(--c-fff); }
+@media (prefers-reduced-motion: reduce) { #np-back.alert { animation: none; background: color-mix(in srgb, var(--warn) 32%, var(--c-1a)); color: var(--warn); } }
 /* Bildirim paneli sağ panelin tamamını kaplar: masaüstünde her zaman açık, mobilde çana basınca sağ panel açılır */
 #bell-pop { position: relative; top: auto; right: auto; bottom: auto; left: auto; width: auto; height: auto; flex: 1 1 0; min-height: 0; z-index: auto; }
 /* Karşı taraf gönderi/yanıt yazarken sohbet alanının sağ kenarında çıkan minik "yazıyor" baloncuğu (çandan fırlar gibi açılır) */
@@ -11700,6 +11708,25 @@ function goPanel(idx) {
   notesBtn.addEventListener('contextmenu', (e) => e.preventDefault());
   // En üstteki ince "Geri Dön" şeridi: not penceresini kapatır
   const npBack = document.getElementById('np-back');
+  // Notlar açıkken karşı tarafın yeni mesajı gelirse Geri Dön şeridi sarı yanıp söner; panel açılıp kapanınca söner
+  if (npBack && window.MutationObserver) {
+    try {
+      new MutationObserver((muts) => {
+        if (!notesPop.classList.contains('show')) return;
+        for (const m of muts) {
+          for (const n of m.addedNodes) {
+            if (n.nodeType === 1 && n.classList && n.classList.contains('msg') &&
+                !n.classList.contains('own-msg') && !n.classList.contains('typing-msg')) { npBack.classList.add('alert'); return; }
+          }
+        }
+      }).observe(chatArea, { childList: true });
+      let npWasShown = notesPop.classList.contains('show');
+      new MutationObserver(() => {
+        const now = notesPop.classList.contains('show');
+        if (now !== npWasShown) { npWasShown = now; npBack.classList.remove('alert'); }
+      }).observe(notesPop, { attributes: true, attributeFilter: ['class'] });
+    } catch (e) {}
+  }
   if (npBack) {
     // Masaüstü yedek yol: imleç şeridin üstündeyse hangi öğe hedef olursa olsun (yakalama aşamasında) kapat
     const inBack = (e) => { const r = npBack.getBoundingClientRect(); return r.width > 0 && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; };
