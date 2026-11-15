@@ -1065,12 +1065,8 @@ body.np-open #app > #bp-tabs { display: none !important; }
 #pf-huser { position: relative; margin-top: 2px; font-size: 13px; font-weight: 300; color: var(--c-88); overflow-wrap: anywhere; }
 #pf-chips { position: relative; display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .pf-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: var(--r-pill); font-size: 11.5px; font-weight: 400; line-height: 1.3; color: var(--c-cc); background: var(--c-1a); border: 1px solid var(--c-33); }
-.pf-chip.adm { color: var(--on-accent); background: var(--accent); border-color: var(--accent); font-weight: 700; }
 .pf-chip svg { display: block; width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .pf-chip i { display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--c-55); }
-.pf-chip.on i { background: var(--ok); box-shadow: 0 0 6px color-mix(in srgb, var(--ok) 70%, transparent); }
-#pf-hbio { position: relative; margin: 13px auto 0; max-width: 330px; font-size: 13.5px; font-weight: 300; line-height: 1.42; color: var(--c-cc); white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
-#pf-hbio:empty { display: none; }
 .pf-sec { margin-top: 20px; }
 .pf-st { display: flex; align-items: center; gap: 10px; margin: 0 2px 8px; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--c-77); user-select: none; -webkit-user-select: none; }
 .pf-st::before, .pf-st::after { content: ""; flex: 1 1 0; height: 1px; background: var(--c-22); }
@@ -1087,15 +1083,9 @@ body.np-open #app > #bp-tabs { display: none !important; }
 .pf-in:read-only { color: var(--c-dd); }
 .pf-in:not(:read-only):focus { background: var(--c-1a); box-shadow: 0 0 0 1px var(--accent); }
 .pf-in.bad { box-shadow: 0 0 0 1px var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--c-1a)); }
-.pf-in.ro-date { pointer-events: none; }
-#pf-user { flex: 0 0 auto; width: calc(var(--n, 6) * 1ch + 22px); max-width: calc(100% - 14px); }
 .pf-in[type="date"] { min-height: 30px; }
 .pf-in[type="date"]::-webkit-calendar-picker-indicator { opacity: .6; cursor: pointer; }
 .pf-in.mono { font-variant-numeric: tabular-nums; letter-spacing: .04em; }
-.pf-row.pf-bio { display: block; padding-bottom: 10px; }
-.pf-row.pf-bio .pf-l { width: auto; margin-bottom: 4px; }
-.pf-ta { display: block; width: 100%; margin: 0; padding: 7px 9px; min-height: 66px; resize: none; text-align: left; font-weight: 300; line-height: 1.4; background: var(--c-000); border: 1px solid var(--c-22); }
-.pf-ta:not(:read-only):focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .pf-ib { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--c-88); cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .pf-ib:active { background: var(--c-22); color: var(--c-fff); }
 .pf-ib.ok { color: var(--ok); }
@@ -1121,28 +1111,51 @@ body.np-open #app > #bp-tabs { display: none !important; }
 .pf-seg button { flex: 1 1 0; min-width: 0; padding: 7px 4px; border: 0; background: transparent; color: var(--c-88); font-family: 'Lexend', sans-serif; font-size: 12.5px; font-weight: 400; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .pf-seg button + button { border-left: 1px solid var(--c-33); }
 .pf-seg button.active { background: var(--c-1a); color: var(--c-fff); box-shadow: inset 0 0 0 2px var(--accent); }
-.pf-seg.ro { pointer-events: none; }
 .pf-dev { display: flex; align-items: center; gap: 11px; padding: 11px 13px; }
 .pf-dev + .pf-dev { border-top: 1px solid var(--c-22); }
 .pf-di { flex: 0 0 auto; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: var(--r-md); background: var(--c-1a); border: 1px solid var(--c-33); color: var(--c-cc); }
-.pf-dev.me .pf-di { color: var(--on-accent); background: var(--accent); border-color: var(--accent); }
 .pf-di svg { display: block; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 .pf-dm { flex: 1 1 auto; min-width: 0; }
 .pf-dn { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 14px; font-weight: 700; line-height: 1.25; color: var(--c-fff); }
-.pf-dn small { padding: 1px 8px; border-radius: var(--r-pill); font-size: 10.5px; font-weight: 400; color: var(--c-fff); background: color-mix(in srgb, var(--accent) 22%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); }
 .pf-dt { display: flex; align-items: center; gap: 6px; margin-top: 2px; font-size: 12px; font-weight: 300; line-height: 1.3; color: var(--c-88); }
-.pf-dt i { flex: 0 0 auto; display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px color-mix(in srgb, var(--ok) 70%, transparent); }
-.pf-dd { margin-top: 1px; font-size: 11px; font-weight: 300; color: var(--c-66); }
 .pf-dx { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 34px; height: 34px; padding: 0 8px; border: 0; border-radius: var(--r-md); background: transparent; color: var(--c-77); font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .pf-dx svg { display: block; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .pf-dx:active { background: var(--c-22); }
-.pf-dx.arm { color: #fff; background: var(--dng-bg); }
-.pf-dx.arm:active { background: var(--dng-bg-a); }
-#pf-out-all { display: none; width: 100%; padding: 11px 13px; border: 0; border-top: 1px solid var(--c-22); background: transparent; color: var(--dng); font-family: 'Lexend', sans-serif; font-size: 13px; font-weight: 700; text-align: center; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-#pf-out-all.arm { color: #fff; background: var(--dng-bg); }
 .pf-hint { margin: 7px 4px 0; text-align: center; font-size: 11.5px; font-weight: 300; line-height: 1.4; color: var(--c-77); }
 .pf-hint:empty { display: none; }
 @media (prefers-reduced-motion: reduce) { .pf-sw, .pf-sw::after, .pf-in, .pf-bars i { transition: none; } }
+/* ---- Profil: düzenleme tuşu, Leap rozeti, @ ön eki, cihaz listesi ---- */
+.pf-in.ro-date { pointer-events: none; }
+#pf-edit { position: absolute; z-index: 2; top: 10px; right: 2px; width: 36px; height: 36px; background: var(--c-111); border: 1px solid var(--c-33); color: var(--c-cc); }
+#pf-edit:not(.shown):not(.can) { display: none; }
+#pf-edit.shown { color: var(--on-accent); background: var(--accent); border-color: var(--accent); }
+#pf-edit svg { width: 17px; height: 17px; }
+#pf-chips { z-index: 1; }
+.pf-chip.pf-leap { max-width: 100%; min-width: 0; color: var(--c-fff); }
+.pf-chip.pf-leap i { background: var(--warn); box-shadow: 0 0 6px color-mix(in srgb, var(--warn) 70%, transparent); }
+#leap-bar .leap-name { font-size: inherit; font-weight: 400; color: var(--c-cc); }
+#leap-bar .leap-num { font-size: inherit; font-weight: 700; opacity: 1; color: var(--c-fff); cursor: default; }
+#leap-bar .leap-in { width: 15ch; height: 20px; line-height: 20px; font-size: 16px; text-align: left; color: var(--warn); }
+body.pf-editing #leap-bar { border-color: var(--accent); }
+body.pf-editing #leap-bar .leap-num { cursor: pointer; }
+body.lv-admin:not(.pf-editing) #leap-bar .leap-num { cursor: default; }
+#pf-hero .leap-ext { position: relative; z-index: 1; max-width: 220px; margin: 0 auto; }
+#pf-hero .leap-ext.open { margin-bottom: 2px; }
+#pf-hero .leap-ext-row { padding: 8px 0 0; }
+#pf-hero .leap-delta { height: 36px; border-radius: 10px; text-align: center; }
+.pf-pre { color: var(--c-dd); font-size: 16px; font-weight: 400; line-height: 1.3; }
+.pf-vu { gap: 1px; }
+.pf-vu .pf-in { flex: 0 0 auto; width: 60px; max-width: calc(100% - 14px); text-align: left; padding-left: 0; }
+.pf-dx { color: var(--dng); }
+.pf-seg button { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.pf-seg button svg { display: block; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#pf-dev-add { display: none; flex-direction: column; gap: 8px; padding: 11px 13px 13px; border-top: 1px solid var(--c-22); background: var(--c-000); }
+#pf-dev-add.show { display: flex; }
+#pf-devs:empty + #pf-dev-add.show { border-top: 0; }
+.pf-in.pf-dinp { flex: 0 0 auto; width: 100%; margin: 0; padding: 9px 11px; text-align: left; background: var(--c-111); border: 1px solid var(--c-22); border-radius: var(--r-md); }
+.pf-in.pf-dinp:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+#pf-dadd { width: 100%; padding: 10px 13px; border: 0; border-radius: var(--r-md); background: var(--accent); color: var(--on-accent); font-family: 'Lexend', sans-serif; font-size: 13.5px; font-weight: 700; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+#pf-dadd:active { opacity: .85; }
 @keyframes cdTagShine { 0% { background-position: 130% 0; } 55%, 100% { background-position: -30% 0; } }
 #bp-list { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 8px 8px 64px; }
 .bp-card { touch-action: pan-y; position: relative; width: 100%; margin: 0 0 8px; padding: 8px 11px; background: var(--c-1a); border: 1px solid var(--c-33); border-radius: var(--r-md); }
@@ -1348,18 +1361,8 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 /* ===== Modern ayarlar ===== */
 #bp-page-set #settings-scroll { padding: 0 0 28px; scrollbar-width: none; -ms-overflow-style: none; }
 #bp-page-set #settings-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
-#settings-scroll .leap-bar { justify-content: flex-start; gap: 8px; min-height: 46px; padding: 6px 14px; margin: 12px 12px 14px; border-radius: 14px; border-width: 1px; box-shadow: 0 0 8px color-mix(in srgb, var(--warn) 22%, transparent), inset 0 1px 0 rgba(255,255,255,0.12); }
-#settings-scroll .leap-bar.open { margin-bottom: 6px; }
-#settings-scroll .leap-name { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; letter-spacing: .2px; }
-#settings-scroll .leap-name::before { content: ""; width: 22px; height: 22px; flex: 0 0 auto; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23fff0a8%22/%3E%3Cstop offset=%221%22 stop-color=%22%23f2b200%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210.5%22 fill=%22url(%23g)%22 stroke=%22%23b78300%22 stroke-width=%221.2%22/%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%227.6%22 fill=%22none%22 stroke=%22%23b78300%22 stroke-opacity=%22.55%22/%3E%3Ctext x=%2212%22 y=%2216.1%22 text-anchor=%22middle%22 font-size=%2210.5%22 font-weight=%22800%22 fill=%22%238a5d00%22 font-family=%22Arial,sans-serif%22%3EL%3C/text%3E%3C/svg%3E") center / contain no-repeat; filter: drop-shadow(0 1px 3px rgba(0,0,0,.45)); }
-#settings-scroll .leap-num { flex: 1 1 auto; font-size: 15px; font-weight: 700; opacity: .95; }
-#settings-scroll .leap-num.editing { opacity: 1; }
 .leap-num:not(.editing) { overflow: hidden; }
 .leap-num-t { display: inline-block; white-space: nowrap; will-change: transform; }
-#settings-scroll .leap-in { height: 20px; line-height: 20px; font-size: 16px; }
-#settings-scroll .leap-ext.open { margin-bottom: 14px; }
-#settings-scroll .leap-ext-row { padding: 2px 12px 0; }
-#settings-scroll .leap-delta { height: 36px; border-radius: 10px; padding: 0 12px; }
 
 #settings-scroll .set-block { background: var(--c-1a); border: 0; border-top: 1px solid var(--c-33); border-radius: 0; overflow: hidden; }
 #settings-scroll .set-block:last-child { border-bottom: 1px solid var(--c-33); }
@@ -1885,29 +1888,23 @@ body.gm-on #leap-hud { display: none !important; }
   <div id="pf-scroll">
   <div id="pf-wrap">
     <div id="pf-hero">
+      <button type="button" class="pf-ib" id="pf-edit" aria-label="Düzenle" title="Düzenle"><svg class="e1" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><svg class="e2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
       <div id="pf-av"><span id="pf-av-t">?</span></div>
       <div id="pf-hname">—</div>
       <div id="pf-huser"></div>
-      <div id="pf-chips"><span class="pf-chip" id="pf-role"></span><span class="pf-chip" id="pf-sync"></span></div>
-      <div id="pf-hbio"></div>
+      <div id="pf-chips"><span class="pf-chip pf-leap" id="leap-bar"><i></i><span class="leap-name">Leap</span><span class="leap-num" id="leap-num">0</span></span></div>
+      <div class="leap-ext" id="leap-ext" inert><div class="leap-ext-clip"><div class="leap-ext-row">
+        <input class="leap-delta" id="leap-delta" type="text" autocomplete="off" spellcheck="false" name="leap-d" autocorrect="off" autocapitalize="off" enterkeyhint="done" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
+      </div></div></div>
     </div>
 
     <div class="pf-sec">
       <div class="pf-st">Hesap</div>
       <div class="pf-card">
-        <label class="pf-row"><span class="pf-l">Kullanıcı adı</span><span class="pf-v"><span class="pf-pre">@</span><input class="pf-in" id="pf-user" type="text" maxlength="24" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-handle" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
+        <label class="pf-row"><span class="pf-l">Kullanıcı adı</span><span class="pf-v pf-vu"><span class="pf-pre">@</span><input class="pf-in" id="pf-user" type="text" maxlength="24" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-handle" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
         <label class="pf-row"><span class="pf-l">Görünen isim</span><span class="pf-v"><input class="pf-in" id="pf-disp" type="text" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-display" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
         <label class="pf-row"><span class="pf-l">Gerçek isim</span><span class="pf-v"><input class="pf-in" id="pf-real" type="text" maxlength="60" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-legal" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
-        <label class="pf-row pf-bio"><span class="pf-l">Hakkımda</span><textarea class="pf-in pf-ta" id="pf-bio" rows="3" maxlength="240" autocomplete="off" spellcheck="false" name="pf-about" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></textarea></label>
-      </div>
-    </div>
-
-    <div class="pf-sec">
-      <div class="pf-st">Kişisel</div>
-      <div class="pf-card">
         <label class="pf-row"><span class="pf-l">Doğum tarihi<small id="pf-age"></small></span><span class="pf-v"><input class="pf-in" id="pf-birth" type="date" min="1900-01-01" name="pf-birth" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
-        <label class="pf-row"><span class="pf-l">E-posta</span><span class="pf-v"><input class="pf-in" id="pf-mail" type="text" inputmode="email" maxlength="80" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-mail" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
-        <label class="pf-row"><span class="pf-l">Telefon</span><span class="pf-v"><input class="pf-in" id="pf-phone" type="text" inputmode="tel" maxlength="24" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-phone" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
       </div>
     </div>
 
@@ -1916,14 +1913,21 @@ body.gm-on #leap-hud { display: none !important; }
       <div class="pf-card">
         <label class="pf-row"><span class="pf-l">Şifre<small id="pf-pass-at"></small></span><span class="pf-v"><input class="pf-in" id="pf-pass" type="password" maxlength="64" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-secret" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><button type="button" class="pf-ib" id="pf-eye" aria-label="Şifreyi göster"><svg class="e1" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="e2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-6.4 0-10-7-10-7a18.4 18.4 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/></svg></button></span></label>
         <div class="pf-sub" id="pf-str-row"><div class="pf-bars" id="pf-bars"><i></i><i></i><i></i><i></i></div><span class="pf-sl" id="pf-str-l"></span></div>
-        <div class="pf-row"><span class="pf-l">İki aşamalı doğrulama<small id="pf-tfa-s"></small></span><span class="pf-v"><button type="button" class="pf-sw" id="pf-tfa" role="switch" aria-checked="false" aria-label="İki aşamalı doğrulama"></button></span></div>
-        <div class="pf-row" id="pf-tfam-row"><span class="pf-l">Yöntem</span><span class="pf-v"><span class="pf-seg" id="pf-tfam"><button type="button" data-v="0">Uygulama</button><button type="button" data-v="1">SMS</button><button type="button" data-v="2">E-posta</button></span></span></div>
+        <div class="pf-row"><span class="pf-l">İki aşamalı doğrulama</span><span class="pf-v"><button type="button" class="pf-sw" id="pf-tfa" role="switch" aria-checked="false" aria-label="İki aşamalı doğrulama"></button></span></div>
       </div>
     </div>
 
     <div class="pf-sec">
       <div class="pf-st">Giriş yapılan cihazlar</div>
-      <div class="pf-card"><div id="pf-devs"></div><button type="button" id="pf-out-all">Diğer tüm cihazlardan çıkış yap</button></div>
+      <div class="pf-card">
+        <div id="pf-devs"></div>
+        <div id="pf-dev-add">
+          <div class="pf-seg" id="pf-dk"><button type="button" data-v="phone" class="active"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><line x1="11" y1="18" x2="13" y2="18"/></svg>Telefon</button><button type="button" data-v="desktop"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Bilgisayar</button></div>
+          <input class="pf-in pf-dinp" id="pf-dn" type="text" maxlength="30" placeholder="Cihaz adı" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-dev-name" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
+          <input class="pf-in pf-dinp" id="pf-dl" type="text" maxlength="40" placeholder="Giriş konumu" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-dev-loc" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
+          <button type="button" id="pf-dadd">Cihaz ekle</button>
+        </div>
+      </div>
       <div class="pf-hint" id="pf-dev-hint"></div>
     </div>
 
@@ -1940,10 +1944,6 @@ body.gm-on #leap-hud { display: none !important; }
   </div>
   <div id="bp-page-set" class="bp-page">
 <div id="settings-scroll">
-  <div class="leap-bar" id="leap-bar"><span class="leap-name">Leap</span><span class="leap-num" id="leap-num">0</span></div>
-  <div class="leap-ext" id="leap-ext" inert><div class="leap-ext-clip"><div class="leap-ext-row">
-    <input class="leap-delta" id="leap-delta" type="text" autocomplete="off" spellcheck="false" name="leap-d" autocorrect="off" autocapitalize="off" enterkeyhint="done" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
-  </div></div></div>
   <div class="set-block" id="blk-live" style="display:none">
     <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Mesajlar</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
@@ -10475,6 +10475,7 @@ function bpSetPage(p, instant) {
   if (instant) { void bellPop.offsetWidth; bellPop.classList.remove('no-anim'); }
   document.querySelectorAll('.bp-tab').forEach((b, k) => b.classList.toggle('on', k === p));
   bpUnread[p] = false;
+  if (p !== 1) { try { pfSetEdit(false); } catch (e) {} }
   if (p === 1) { try { pfRender(); } catch (e) {} }
   bpDots();
   try { lsSet('bpPage', String(p)); } catch (e) {}
@@ -11400,139 +11401,74 @@ function receiveLeap(d) {
   leapVal = d.v; leapRev = d.rev; leapBy = by;
   leapPersist(); renderLeap();
 }
-/* ---- Profil (Bildirim | Profil | Ayarlar): hesap bilgileri. Yalnızca 6687 düzenler ve cihaz oturumlarını yönetir, 3828 yalnızca görüntüler.
-   Veri belgesi Leap gibi eşitlenir: en son düzenlenen (rev, eşitlikte by) iki tarafta da geçerli olur. Cihaz listesi cihaz başına birleştirilir. ---- */
-const PF_MAXDEV = 8;
+/* ---- Profil (Bildirim | Profil | Ayarlar): hesap bilgileri. Yalnızca 6687 kalem tuşuyla düzenleme moduna geçip düzenler; 3828 (ve düzenleme kapalıyken 6687) yalnızca görüntüler.
+   Veri belgesi Leap gibi eşitlenir: en son düzenlenen (rev, eşitlikte by) iki tarafta da geçerli olur. Cihaz listesi yapaydır ve belgenin içindedir. ---- */
 const PF_ID_RE = /^[a-z0-9]{6,20}$/;
+const PF_MAXDEV = 8;
 let pfRev = parseInt(lsGet('pfRev') || '0', 10) || 0;
 let pfBy = lsGet('pfBy') || '';
-let pfPeerDev = '';
-let pfDevs = {};
-const pfBootAt = Date.now();
 const pfDevId = (() => {
   let v = lsGet('pfDevId');
   if (!v || !PF_ID_RE.test(v)) { v = 'd' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4); lsSet('pfDevId', v); }
   return v;
 })();
 if (!pfBy) pfBy = pfDevId;
+let pfEditing = false;   // yalnızca 6687: kalem tuşuyla açılır; kapalıyken 3828 ile aynı görünür
+['pfDevs', 'pfKickT'].forEach((k) => { lsRemove(k); });
+function pfCan() { return pfEditing && notifCanSend(); }
 function pfPad(n) { return String(n).padStart(2, '0'); }
 function pfToday() { const d = new Date(); return d.getFullYear() + '-' + pfPad(d.getMonth() + 1) + '-' + pfPad(d.getDate()); }
 function pfNewId() { let s = String(1 + Math.floor(Math.random() * 9)); for (let i = 0; i < 8; i++) s += Math.floor(Math.random() * 10); return s; }
+function pfNewDevId() { return 'v' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
 function pfStr(v, n) { return (typeof v === 'string' ? v : '').slice(0, n); }
 function pfDate(v) {
   if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return '';
   const t = Date.parse(v);
   return (isNaN(t) || v < '1900-01-01' || v > '2100-12-31') ? '' : v;
 }
+// Cihaz listesi yapaydır: telefon/bilgisayar simgesi + ad + giriş konumu. Tamamen 6687 belirler
+function pfCleanDevs(a) {
+  const out = [], seen = {};
+  (Array.isArray(a) ? a : []).slice(0, 24).forEach((r) => {
+    if (!r || typeof r !== 'object' || out.length >= PF_MAXDEV) return;
+    const id = (typeof r.id === 'string' && PF_ID_RE.test(r.id)) ? r.id : null;
+    const n = pfStr(r.n, 30).trim();
+    if (!id || seen[id] || !n) return;
+    seen[id] = 1;
+    out.push({ id: id, k: r.k === 'phone' ? 'phone' : 'desktop', n: n, l: pfStr(r.l, 40).trim() });
+  });
+  return out;
+}
 function pfClean(o) {
   o = (o && typeof o === 'object') ? o : {};
-  const tm = Number(o.tfaMethod);
   const pa = Number(o.passAt);
   return {
     user: pfStr(o.user, 24).toLowerCase().replace(/[^a-z0-9._]/g, ''),
-    disp: pfStr(o.disp, 40), real: pfStr(o.real, 60), bio: pfStr(o.bio, 240),
-    birth: pfDate(o.birth), mail: pfStr(o.mail, 80), phone: pfStr(o.phone, 24).replace(/[^0-9+()\s-]/g, ''),
+    disp: pfStr(o.disp, 40), real: pfStr(o.real, 60),
+    birth: pfDate(o.birth),
     pass: pfStr(o.pass, 64), passAt: (isFinite(pa) && pa > 0) ? Math.floor(pa) : 0,
-    tfa: o.tfa ? 1 : 0, tfaMethod: (tm === 1 || tm === 2) ? tm : 0,
-    created: pfDate(o.created) || pfToday(), uid: pfStr(o.uid, 12).replace(/\D/g, '') || pfNewId()
+    tfa: o.tfa ? 1 : 0,
+    created: pfDate(o.created) || pfToday(), uid: pfStr(o.uid, 12).replace(/\D/g, '') || pfNewId(),
+    dv: pfCleanDevs(o.dv)
   };
 }
 let pfData = (() => { try { return pfClean(JSON.parse(lsGet('pfData') || '{}')); } catch (e) { return pfClean({}); } })();
 function pfSave() { lsSet('pfData', JSON.stringify(pfData)); lsSet('pfRev', String(pfRev)); lsSet('pfBy', pfBy); }
-function pfSaveDevs() { lsSet('pfDevs', JSON.stringify(pfDevs)); }
-function pfCleanDev(r) {
-  if (!r || typeof r !== 'object' || typeof r.id !== 'string' || !PF_ID_RE.test(r.id)) return null;
-  const t = Number(r.t), c = Number(r.c);
-  if (!isFinite(t) || t <= 0) return null;
-  return { id: r.id, n: pfStr(r.n, 30), b: pfStr(r.b, 24), k: (r.k === 'phone' || r.k === 'tablet') ? r.k : 'desktop', c: (isFinite(c) && c > 0) ? Math.floor(c) : Math.floor(t), t: Math.floor(t), x: r.x ? 1 : 0 };
-}
-function pfPrune() {
-  const all = Object.keys(pfDevs).map((k) => pfDevs[k]).sort((a, b) => b.t - a.t);
-  let live = 0, dead = 0;
-  const keep = {};
-  all.forEach((r) => {
-    if (r.id === pfDevId) { keep[r.id] = r; if (!r.x) live++; return; }
-    if (r.x) { if (dead < PF_MAXDEV) { keep[r.id] = r; dead++; } }
-    else if (live < PF_MAXDEV) { keep[r.id] = r; live++; }
-  });
-  pfDevs = keep;
-}
-try {
-  const a = JSON.parse(lsGet('pfDevs') || '{}');
-  if (a && typeof a === 'object') Object.keys(a).forEach((k) => { const r = pfCleanDev(a[k]); if (r) pfDevs[r.id] = r; });
-} catch (e) {}
-function pfDevInfo() {
-  const ua = navigator.userAgent || '';
-  let n = 'Bilinmeyen cihaz', k = 'desktop';
-  if (/iPad/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1)) { n = 'iPad'; k = 'tablet'; }
-  else if (/iPhone|iPod/.test(ua)) { n = 'iPhone'; k = 'phone'; }
-  else if (/Android/.test(ua)) { n = 'Android'; k = /Mobile/.test(ua) ? 'phone' : 'tablet'; }
-  else if (/Windows/.test(ua)) n = 'Windows';
-  else if (/Macintosh|Mac OS X/.test(ua)) n = 'Mac';
-  else if (/CrOS/.test(ua)) n = 'Chromebook';
-  else if (/Linux/.test(ua)) n = 'Linux';
-  let b = 'Tarayıcı';
-  if (/EdgA?\/|Edg\//.test(ua)) b = 'Edge';
-  else if (/OPR\/|Opera/.test(ua)) b = 'Opera';
-  else if (/SamsungBrowser/.test(ua)) b = 'Samsung Internet';
-  else if (/FxiOS|Firefox/.test(ua)) b = 'Firefox';
-  else if (/CriOS|Chrome/.test(ua)) b = 'Chrome';
-  else if (/Safari/.test(ua)) b = 'Safari';
-  return { n: n, b: b, k: k };
-}
-// Bu cihazın kaydı: her açılışta ve her bağlantıda tazelenir. Uzaktan çıkış yapıldıysa kayıt zamanı o çıkıştan sonrasına atılır (döngü olmaz)
-function pfTouchSelf() {
-  const me = pfDevInfo(), cur = pfDevs[pfDevId];
-  const kick = parseInt(lsGet('pfKickT') || '0', 10) || 0;
-  const now = Math.max(Date.now(), kick + 1, cur ? cur.t : 0);
-  pfDevs[pfDevId] = { id: pfDevId, n: me.n, b: me.b, k: me.k, c: cur ? cur.c : now, t: now, x: 0 };
-  pfPrune(); pfSaveDevs();
-}
-function pfDevList() { return Object.keys(pfDevs).map((k) => pfDevs[k]); }
 function pfSend(type) {
   if (!isConnected()) return;
-  try { conn.send({ type: type, p: pfData, rev: pfRev, by: pfBy, dev: pfDevId, devs: pfDevList() }); } catch (e) {}
+  try { conn.send({ type: type, p: pfData, rev: pfRev, by: pfBy, dev: pfDevId }); } catch (e) {}
 }
-function pfHello() { pfTouchSelf(); pfSend('prof-hello'); try { pfRender(); } catch (e) {} }
-function pfMergeDevs(arr) {
-  let ch = false;
-  arr.slice(0, 24).forEach((r0) => {
-    const r = pfCleanDev(r0);
-    if (!r) return;
-    const cur = pfDevs[r.id];
-    if (!cur || r.t > cur.t) { if (cur) r.c = Math.min(cur.c, r.c); pfDevs[r.id] = r; ch = true; }
-  });
-  if (ch) { pfPrune(); pfSaveDevs(); }
-  return ch;
-}
-// Başka cihazdan "çıkış yap" gelirse bu cihaz PIN kilidine döner (yenilenince PIN sorulur)
-function pfKickCheck() {
-  const me = pfDevs[pfDevId];
-  if (!me || !me.x) return;
-  try {
-    const last = parseInt(sessionStorage.getItem('pfKickAt') || '0', 10) || 0;
-    if (Date.now() - last < 15000) return;
-    sessionStorage.setItem('pfKickAt', String(Date.now()));
-    lsSet('pfKickT', String(me.t));
-    sessionStorage.removeItem('pinOk'); sessionStorage.removeItem('pinLive');
-  } catch (e) { return; }
-  location.reload();
-}
+function pfHello() { pfSend('prof-hello'); try { pfRender(); } catch (e) {} }
 function receiveProfile(d) {
   if (!d || typeof d !== 'object') return;
-  if (typeof d.dev === 'string' && PF_ID_RE.test(d.dev)) pfPeerDev = d.dev;
-  let ch = false;
-  if (Array.isArray(d.devs) && pfMergeDevs(d.devs)) ch = true;
   if (d.p && typeof d.p === 'object' && typeof d.rev === 'number' && isFinite(d.rev) && d.rev >= 0) {
     const by = (typeof d.by === 'string') ? d.by.slice(0, 24) : '';
     const newer = d.rev > pfRev || (d.rev === pfRev && by > pfBy);
-    if (newer) { pfData = pfClean(d.p); pfRev = d.rev; pfBy = by; pfSave(); ch = true; } // en son güncellenen kazanır
+    if (newer) { pfData = pfClean(d.p); pfRev = d.rev; pfBy = by; pfSave(); pfRender(); } // en son güncellenen kazanır
   }
-  pfKickCheck();
-  if (ch) pfRender();
 }
 function pfCommit(patch) {
-  if (!notifCanSend()) return false;
+  if (!pfCan()) return false;
   pfData = pfClean(Object.assign({}, pfData, patch));
   pfRev = Math.max(pfRev + 1, Date.now());
   pfBy = pfDevId;
@@ -11541,26 +11477,17 @@ function pfCommit(patch) {
   pfRender();
   return true;
 }
-function pfRemoveDev(id) {
-  const r = pfDevs[id];
-  if (!notifCanSend() || !r || id === pfDevId) return;
-  pfDevs[id] = Object.assign({}, r, { x: 1, t: Math.max(Date.now(), r.t + 1) });
-  pfPrune(); pfSaveDevs();
-  pfSend('prof');
-  pfRender();
-}
-function pfRemoveOthers() {
-  if (!notifCanSend()) return;
-  Object.keys(pfDevs).forEach((id) => {
-    const r = pfDevs[id];
-    if (id !== pfDevId && !r.x) pfDevs[id] = Object.assign({}, r, { x: 1, t: Math.max(Date.now(), r.t + 1) });
-  });
-  pfPrune(); pfSaveDevs();
-  pfSend('prof');
+function pfSetEdit(v) {
+  v = !!v && notifCanSend();
+  if (v === pfEditing) return;
+  pfEditing = v;
+  if (!v) {
+    try { const a = document.activeElement; if (a && a.closest && a.closest('#pf-scroll')) a.blur(); } catch (e) {}
+    const p = pfEl('pf-pass'); if (p) { p.type = 'password'; const e = pfEl('pf-eye'); if (e) e.classList.remove('shown'); }
+  }
   pfRender();
 }
 function pfEl(id) { return document.getElementById(id); }
-function pfFmtDate(s) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? m[3] + '.' + m[2] + '.' + m[1] : ''; }
 function pfFmtTs(t) { const d = new Date(t); return pfPad(d.getDate()) + '.' + pfPad(d.getMonth() + 1) + '.' + d.getFullYear(); }
 function pfDateObj(s) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
 function pfAge(s) {
@@ -11579,14 +11506,6 @@ function pfSince(s) {
   if (days < 730) return Math.floor(days / 30) + ' ay önce';
   return Math.floor(days / 365) + ' yıl önce';
 }
-function pfAgo(t) {
-  const s = Math.max(0, (Date.now() - t) / 1000);
-  if (s < 60) return 'Az önce';
-  if (s < 3600) return Math.floor(s / 60) + ' dk önce';
-  if (s < 86400) return Math.floor(s / 3600) + ' sa önce';
-  if (s < 86400 * 30) return Math.floor(s / 86400) + ' gün önce';
-  return pfFmtTs(t);
-}
 function pfStrength(p) {
   if (!p) return 0;
   let s = 0;
@@ -11598,53 +11517,56 @@ function pfStrength(p) {
 }
 const PF_IC = {
   phone: '<rect x="7" y="2" width="10" height="20" rx="2.5"/><line x1="11" y1="18" x2="13" y2="18"/>',
-  tablet: '<rect x="4" y="2" width="16" height="20" rx="2.5"/><line x1="11" y1="18" x2="13" y2="18"/>',
   desktop: '<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
-  out: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
-  lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
-  shield: '<path d="M12 3l8 3v6c0 5-3.4 8.2-8 9-4.6-.8-8-4-8-9V6z"/><polyline points="9 12 11 14 15 10"/>'
+  trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>'
 };
 function pfSvg(k) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + PF_IC[k] + '</svg>'; }
+// Kullanıcı adı kutusu yazının genişliğine kadar daralır: "@" her zaman yazının hemen solunda durur
+let pfMeasureCtx = null;
+function pfFitUser() {
+  const el = pfEl('pf-user');
+  if (!el) return;
+  try {
+    if (!pfMeasureCtx) pfMeasureCtx = document.createElement('canvas').getContext('2d');
+    const cs = getComputedStyle(el);
+    pfMeasureCtx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    const w = pfMeasureCtx.measureText(el.value || el.placeholder || '').width;
+    el.style.width = (Math.ceil(w) + 12) + 'px';
+  } catch (e) {}
+}
 function pfRenderDevs(can) {
   const box = pfEl('pf-devs');
   if (!box) return;
-  const list = Object.keys(pfDevs).map((k) => pfDevs[k]).filter((r) => !r.x)
-    .sort((a, b) => (a.id === pfDevId ? -1 : b.id === pfDevId ? 1 : b.t - a.t));
-  const others = list.some((r) => r.id !== pfDevId);
-  const all = pfEl('pf-out-all');
-  if (all) { all.style.display = (can && others) ? 'block' : 'none'; if (!can || !others) { all.classList.remove('arm'); all.textContent = 'Diğer tüm cihazlardan çıkış yap'; } }
-  if (box.querySelector('.pf-dx.arm')) return; // onay beklerken liste yeniden çizilmez
+  const list = pfData.dv;
   box.innerHTML = list.map((r) => {
-    const me = r.id === pfDevId;
-    const on = me || (isConnected() && r.id === pfPeerDev);
-    const nm = escapeHtml(r.n || 'Cihaz') + (r.b ? ' · ' + escapeHtml(r.b) : '');
-    return '<div class="pf-dev' + (me ? ' me' : '') + '" data-id="' + r.id + '">' +
+    return '<div class="pf-dev" data-id="' + r.id + '">' +
       '<div class="pf-di">' + pfSvg(r.k) + '</div>' +
-      '<div class="pf-dm"><div class="pf-dn"><span>' + nm + '</span>' + (me ? '<small>Bu cihaz</small>' : '') + '</div>' +
-      '<div class="pf-dt">' + (on ? '<i></i>Çevrimiçi' : 'Son aktif ' + pfAgo(r.t)) + '</div>' +
-      '<div class="pf-dd">İlk giriş ' + pfFmtTs(r.c) + '</div></div>' +
-      ((can && !me) ? '<button type="button" class="pf-dx" aria-label="Oturumu kapat" title="Oturumu kapat">' + pfSvg('out') + '</button>' : '') +
+      '<div class="pf-dm"><div class="pf-dn"><span>' + escapeHtml(r.n) + '</span></div>' +
+      (r.l ? '<div class="pf-dt">' + escapeHtml(r.l) + '</div>' : '') + '</div>' +
+      (can ? '<button type="button" class="pf-dx" aria-label="Cihazı kaldır" title="Cihazı kaldır">' + pfSvg('trash') + '</button>' : '') +
       '</div>';
-  }).join('') || '<div class="pf-hint">Cihaz yok</div>';
+  }).join('') || (can ? '' : '<div class="pf-hint" style="margin:14px 4px">Cihaz yok</div>');
+  const full = list.length >= PF_MAXDEV;
+  const add = pfEl('pf-dev-add');
+  if (add) add.classList.toggle('show', can && !full);
   const hint = pfEl('pf-dev-hint');
-  if (hint) hint.textContent = can ? (others ? 'Oturumu kapatılan cihaz bağlanınca PIN kilidine döner.' : '') : '';
+  if (hint) hint.textContent = (can && full) ? 'En fazla ' + PF_MAXDEV + ' cihaz eklenebilir.' : '';
 }
 function pfRender() {
   if (!pfEl('pf-scroll')) return;
-  const can = notifCanSend();
+  const adm = notifCanSend();
+  if (!adm && pfEditing) pfEditing = false;
+  const can = pfCan();
   const d = pfData;
+  document.body.classList.toggle('pf-editing', can);
   const nm = d.disp || d.real || d.user || 'Adsız';
   pfEl('pf-av-t').textContent = (Array.from(nm.trim())[0] || '?').toUpperCase();
   pfEl('pf-hname').textContent = nm;
   pfEl('pf-huser').textContent = d.user ? '@' + d.user : '';
-  pfEl('pf-hbio').textContent = d.bio;
-  const role = pfEl('pf-role');
-  role.className = 'pf-chip' + (can ? ' adm' : '');
-  role.innerHTML = pfSvg(can ? 'shield' : 'lock') + (can ? 'Yönetici' : 'Salt okunur');
-  const sy = pfEl('pf-sync'), con = isConnected();
-  sy.className = 'pf-chip' + (con ? ' on' : '');
-  sy.innerHTML = '<i></i>' + (con ? 'Eşitlendi' : 'Bağlantı yok');
-  ['user', 'disp', 'real', 'bio', 'birth', 'mail', 'phone', 'pass', 'created', 'uid'].forEach((k) => {
+  const eb = pfEl('pf-edit');
+  eb.classList.toggle('can', adm); eb.classList.toggle('shown', can);
+  eb.setAttribute('aria-label', can ? 'Düzenlemeyi bitir' : 'Düzenle'); eb.title = can ? 'Düzenlemeyi bitir' : 'Düzenle';
+  ['user', 'disp', 'real', 'birth', 'pass', 'created', 'uid'].forEach((k) => {
     const el = pfEl('pf-' + k);
     if (!el) return;
     el.readOnly = !can;
@@ -11652,7 +11574,7 @@ function pfRender() {
     el.placeholder = can ? 'Ekle' : '—';
     if (document.activeElement !== el && el.value !== d[k]) el.value = d[k];
   });
-  pfEl('pf-user').style.setProperty('--n', String(Math.max(6, pfEl('pf-user').value.length)));
+  pfFitUser();
   pfEl('pf-age').textContent = pfAge(d.birth);
   pfEl('pf-since').textContent = pfSince(d.created);
   pfEl('pf-pass-at').textContent = (d.pass && d.passAt) ? 'Değişti: ' + pfFmtTs(d.passAt) : '';
@@ -11663,11 +11585,6 @@ function pfRender() {
   const sw = pfEl('pf-tfa');
   sw.classList.toggle('on', !!d.tfa); sw.classList.toggle('ro', !can);
   sw.setAttribute('aria-checked', d.tfa ? 'true' : 'false');
-  pfEl('pf-tfa-s').textContent = d.tfa ? 'Etkin' : 'Kapalı';
-  pfEl('pf-tfam-row').style.display = d.tfa ? '' : 'none';
-  const sg = pfEl('pf-tfam');
-  sg.classList.toggle('ro', !can);
-  sg.querySelectorAll('button').forEach((b) => b.classList.toggle('active', parseInt(b.dataset.v, 10) === d.tfaMethod));
   pfEl('pf-foot').textContent = can ? '' : 'Bu bilgiler yalnızca görüntülenebilir.';
   pfRenderDevs(can);
 }
@@ -11677,10 +11594,7 @@ function pfRender() {
     user: (v) => { v = v.trim().toLowerCase().replace(/^@+/, ''); return (v === '' || /^[a-z0-9._]{3,24}$/.test(v)) ? v : null; },
     disp: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 40),
     real: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 60),
-    bio: (v) => v.trim().slice(0, 240),
     birth: (v) => { if (v === '') return ''; const x = pfDate(v); return (x && x <= pfToday() && x >= '1900-01-01') ? x : null; },
-    mail: (v) => { v = v.trim().toLowerCase(); return (v === '' || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) ? v.slice(0, 80) : null; },
-    phone: (v) => { v = v.trim().replace(/\s+/g, ' '); return (v === '' || (/^[0-9+()\s-]{7,24}$/.test(v) && v.replace(/\D/g, '').length >= 7)) ? v : null; },
     pass: (v) => v.slice(0, 64),
     created: (v) => pfDate(v) || null,
     uid: (v) => { v = v.replace(/\s/g, ''); return /^\d{6,12}$/.test(v) ? v : null; }
@@ -11690,9 +11604,9 @@ function pfRender() {
     const el = pfEl('pf-' + k);
     if (!el) return;
     el.addEventListener('change', () => {
-      if (!notifCanSend()) { el.value = pfData[k]; return; }
+      if (!pfCan()) { el.value = pfData[k]; return; }
       const nv = RULES[k](el.value);
-      if (nv === null) { flash(el); el.value = pfData[k]; return; }
+      if (nv === null) { flash(el); el.value = pfData[k]; pfFitUser(); return; }
       if (nv === pfData[k]) { el.value = nv; return; }
       const patch = {}; patch[k] = nv;
       if (k === 'pass') patch.passAt = nv ? Date.now() : 0;
@@ -11700,11 +11614,12 @@ function pfRender() {
     });
     if (el.tagName === 'INPUT') el.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
-      else if (e.key === 'Escape') { el.value = pfData[k]; el.blur(); }
+      else if (e.key === 'Escape') { el.value = pfData[k]; el.blur(); pfFitUser(); }
     });
   });
-  pfEl('pf-user').addEventListener('input', (e) => { const el = e.target, v = el.value.toLowerCase().replace(/[^a-z0-9._@]/g, ''); if (v !== el.value) el.value = v; el.style.setProperty('--n', String(Math.max(6, v.length))); });
+  pfEl('pf-user').addEventListener('input', (e) => { const el = e.target, v = el.value.toLowerCase().replace(/[^a-z0-9._@]/g, ''); if (v !== el.value) el.value = v; pfFitUser(); });
   pfEl('pf-uid').addEventListener('input', (e) => { const el = e.target, v = el.value.replace(/[^\d\s]/g, ''); if (v !== el.value) el.value = v; });
+  pfEl('pf-edit').addEventListener('click', () => { if (notifCanSend()) pfSetEdit(!pfEditing); });
   pfEl('pf-eye').addEventListener('click', () => {
     const p = pfEl('pf-pass'), show = p.type === 'password';
     p.type = show ? 'text' : 'password';
@@ -11722,30 +11637,36 @@ function pfRender() {
       document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done();
     } catch (e) {}
   });
-  pfEl('pf-tfa').addEventListener('click', () => { if (notifCanSend()) pfCommit({ tfa: pfData.tfa ? 0 : 1 }); });
-  pfEl('pf-tfam').addEventListener('click', (e) => {
+  pfEl('pf-tfa').addEventListener('click', () => { if (pfCan()) pfCommit({ tfa: pfData.tfa ? 0 : 1 }); });
+  // Cihaz ekle / çıkar (yalnızca düzenleme modunda)
+  let dKind = 'phone';
+  pfEl('pf-dk').addEventListener('click', (e) => {
     const b = e.target.closest && e.target.closest('button');
-    if (b && notifCanSend()) pfCommit({ tfaMethod: parseInt(b.dataset.v, 10) || 0 });
+    if (!b) return;
+    dKind = b.dataset.v === 'desktop' ? 'desktop' : 'phone';
+    pfEl('pf-dk').querySelectorAll('button').forEach((x) => x.classList.toggle('active', x === b));
   });
-  // Oturumu kapatma iki dokunuşlu: ilk dokunuş onay ister, 3 sn içinde ikinci dokunuş uygular
-  const arm = (btn, idle, ask, run) => {
-    if (btn.classList.contains('arm')) { clearTimeout(btn._t); btn.classList.remove('arm'); run(); return; }
-    btn.classList.add('arm'); btn.textContent = ask;
-    btn._t = setTimeout(() => { btn.classList.remove('arm'); if (btn.id) btn.textContent = idle; else btn.innerHTML = pfSvg('out'); }, 3000);
+  const addDev = () => {
+    if (!pfCan() || pfData.dv.length >= PF_MAXDEV) return;
+    const nEl = pfEl('pf-dn'), lEl = pfEl('pf-dl');
+    const n = nEl.value.trim().replace(/\s+/g, ' ').slice(0, 30), l = lEl.value.trim().replace(/\s+/g, ' ').slice(0, 40);
+    if (!n) { flash(nEl); nEl.focus(); return; }
+    if (pfCommit({ dv: pfData.dv.concat([{ id: pfNewDevId(), k: dKind, n: n, l: l }]) })) { nEl.value = ''; lEl.value = ''; try { nEl.blur(); lEl.blur(); } catch (e) {} }
   };
+  pfEl('pf-dadd').addEventListener('click', addDev);
+  pfEl('pf-dn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); pfEl('pf-dl').focus(); } });
+  pfEl('pf-dl').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addDev(); } });
   pfEl('pf-devs').addEventListener('click', (e) => {
     const b = e.target.closest && e.target.closest('.pf-dx');
-    if (!b || !notifCanSend()) return;
+    if (!b || !pfCan()) return;
     const id = b.closest('.pf-dev').dataset.id;
-    arm(b, '', 'Çıkış yap?', () => pfRemoveDev(id));
-  });
-  pfEl('pf-out-all').addEventListener('click', (e) => {
-    if (!notifCanSend()) return;
-    arm(e.currentTarget, 'Diğer tüm cihazlardan çıkış yap', 'Emin misin? Tekrar dokun', pfRemoveOthers);
+    pfCommit({ dv: pfData.dv.filter((r) => r.id !== id) });
   });
   window.addEventListener('pin-level', pfRender);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { pfTouchSelf(); pfRender(); } });
-  pfTouchSelf(); pfSave();
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) pfRender(); });
+  window.addEventListener('resize', pfFitUser);
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(pfFitUser); } catch (e) {}
+  pfSave();
   pfRender();
   setInterval(() => { if (!document.hidden && bpPage === 1) pfRender(); }, 5000);
 })();
@@ -11838,7 +11759,7 @@ function pfRender() {
   }
 
   el.addEventListener('click', () => {
-    if (!notifCanSend()) return;   // yalnızca 6687
+    if (!notifCanSend() || !pfEditing) return;   // yalnızca 6687 ve yalnızca düzenleme modunda
     open();
   });
   // Dokunmatikte boşluğa basınca kutu kapanmayabilir: dışarı dokununca uygula
