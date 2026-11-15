@@ -1228,6 +1228,8 @@ button.pf-di:active { background: var(--c-22); }
 .pf-mtot .pf-v { flex: 0 0 auto; gap: 10px; }
 #pf-mem-total { font-size: 15px; font-weight: 700; color: var(--c-fff); font-variant-numeric: tabular-nums; }
 .pf-badge { display: inline-block; padding: 3px 11px; border-radius: var(--r-pill); font-size: 11.5px; font-weight: 700; line-height: 1.35; color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); border: 1px solid color-mix(in srgb, var(--ok) 50%, transparent); }
+.pf-badge.sel { cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.pf-badge.sel:active { opacity: .7; }
 .pf-badge.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 15%, transparent); border-color: color-mix(in srgb, var(--bad) 50%, transparent); }
 /* Operatör fotoğrafı büyütme ekranı: 1:1, indirme yok */
 #viewer.op-view #viewer-img { width: min(92vw, 82vh); height: min(92vw, 82vh); max-width: none; max-height: none; object-fit: cover; }
@@ -11508,7 +11510,7 @@ function receiveLeap(d) {
    Veri belgesi Leap gibi eşitlenir: en son düzenlenen (rev, eşitlikte by) iki tarafta da geçerli olur. Cihaz listesi yapaydır ve belgenin içindedir. ---- */
 const PF_ID_RE = /^[a-z0-9]{6,20}$/;
 const PF_MAXDEV = 8;
-const PF_MAXMEM = 8, PF_RAM_OK = 16;   // bellek cihaz sayısı sınırı; toplam RAM bu değerin (GB) altındaysa "Yetersiz"
+const PF_MAXMEM = 8;   // bellek cihaz sayısı sınırı
 let pfRev = parseInt(lsGet('pfRev') || '0', 10) || 0;
 let pfBy = lsGet('pfBy') || '';
 const pfDevId = (() => {
@@ -11572,7 +11574,8 @@ function pfClean(o) {
     created: pfDate(o.created) || pfToday(), uid: pfStr(o.uid, 20).replace(/[^A-Za-z0-9]/g, '') || pfNewId(),
     dv: pfCleanDevs(o.dv),
     op: pfStr(o.op, 40),
-    mv: pfCleanMem(o.mv)
+    mv: pfCleanMem(o.mv),
+    ms: o.ms ? 1 : 0
   };
 }
 let pfData = (() => { try { return pfClean(JSON.parse(lsGet('pfData') || '{}')); } catch (e) { return pfClean({}); } })();
@@ -11766,9 +11769,11 @@ function pfRenderMems(can) {
   list.forEach((r) => { total += r.r; });
   total = Math.round(total * 10) / 10;
   pfEl('pf-mem-total').textContent = pfFmtGb(total);
-  const ok = total >= PF_RAM_OK, bd = pfEl('pf-mem-badge');
+  const ok = !!pfData.ms, bd = pfEl('pf-mem-badge');
   bd.textContent = ok ? 'Yeterli' : 'Yetersiz';
   bd.classList.toggle('bad', !ok);
+  bd.classList.toggle('sel', can);
+  bd.setAttribute('role', can ? 'button' : 'status');
   const html = list.map((r) => {
     return '<div class="pf-dev" data-id="' + r.id + '">' +
       (can ? '<button type="button" class="pf-di pf-mkind" aria-label="Türü değiştir" title="Türü değiştir">' + pfSvg(r.k) + '</button>' : '<div class="pf-di">' + pfSvg(r.k) + '</div>') +
@@ -12068,6 +12073,7 @@ function pfRender() {
   pfEl('pf-mnn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); pfEl('pf-mrn').focus(); } });
   pfEl('pf-mrn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addMem(); } });
   pfEl('pf-mrn').addEventListener('input', (e) => { const el = e.target, v = el.value.replace(/[^0-9.,]/g, ''); if (v !== el.value) el.value = v; });
+  pfEl('pf-mem-badge').addEventListener('click', () => { if (pfCan()) pfCommit({ ms: pfData.ms ? 0 : 1 }); });
   const memBox = pfEl('pf-mems');
   memBox.addEventListener('input', (e) => { const el = e.target; if (el.classList && el.classList.contains('pf-mr')) { const v = el.value.replace(/[^0-9.,]/g, ''); if (v !== el.value) el.value = v; } });
   memBox.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); } });
