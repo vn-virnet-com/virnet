@@ -2291,6 +2291,7 @@ let restartTimer = null;
 let retryInterval = null;
 let pingInterval = null;
 let missedPings = 0;
+let lastRxAt = 0; // karşıdan son veri zamanı: veri akıyorsa ayrıca ping atılmaz
 const PING_MAX_MISS = 4; // 4 sn aralıkla ~20 sn cevap gelmezse bağlantı ölü sayılır
 let stickToBottom = true;
 let downSince = Date.now();
@@ -3286,10 +3287,11 @@ function setupConnection(c) {
     pingInterval = setInterval(() => {
       if (!isConnected()) return;
       if (Date.now() < busyUntil) return;
-      conn.send({ type: 'ping' });
+      const idle = Date.now() - lastRxAt >= 3500; // son 3,5 sn'de veri geldiyse bağlantı zaten canlı: ping gerekmez
+      if (idle) conn.send({ type: 'ping' });
       flushOutbox(false);
-      missedPings++;
-      if (missedPings > PING_MAX_MISS) {
+      if (idle) missedPings++;
+      if (idle && missedPings > PING_MAX_MISS) {
         const dead = conn;
         handleDisconnect();
         try { dead.close(); } catch (e) {}
@@ -3304,7 +3306,7 @@ function setupConnection(c) {
   });
   function onPeerData(data) {
     if (c !== conn) return;
-    missedPings = 0; // karşıdan herhangi bir veri geliyorsa bağlantı canlıdır
+    missedPings = 0; lastRxAt = Date.now(); // karşıdan herhangi bir veri geliyorsa bağlantı canlıdır
     data = mapStringsDeep(data, emojiDecode);
     if (data.type === 'ping')        { missedPings = 0; c.send({ type: 'pong' }); return; }
     if (data.type === 'pong')        { missedPings = 0; return; }
@@ -7032,7 +7034,7 @@ function pntStop() {
   try { P.wrap.remove(); } catch (e) {}
 }
 
-/* ===== Kuks Feva oyunu: kuşbakışı, iki kişilik. Ev sahibi (kimlik sırası küçük taraf) oyunu işletir, durumu saniyede 10 kez karşıya yollar; karşı taraf yalnızca tıklamalarını yollar ===== */
+/* ===== Kuks Feva oyunu: kuşbakışı, iki kişilik. Ev sahibi (kimlik sırası küçük taraf) oyunu işletir, durumu saniyede 5 kez karşıya yollar (karşı tarafın tıklaması gelince hemen ayrıca yollar); karşı taraf yalnızca tıklamalarını yollar ===== */
 var GM_ST = [
   { id: 'mkt', x: 5, y: 30.5, w: 12, h: 9.5, sx: 22, sy: 35.5, l: 'Market', c: '#6a4fb3', mk: 1 },
   { id: 'g0', x: 5, y: 41.3, w: 12, h: 9.5, sx: 22, sy: 46.3, l: 'Izgara', c: '#3b3b40' },
@@ -7161,6 +7163,7 @@ function gmPick(S, i, c) {
 function receiveGameCol(d) {
   if (!gm || !d || d.msgId !== gm.id || !vcIAmLeader() || !gm.S) return;
   gmPick(gm.S, 1, d.c);
+  gm.sent = 0;
 }
 function gmChoose(c) {
   const g = gm; if (!g || !g.S || g.S.ph !== 0) return;
@@ -7203,6 +7206,7 @@ function gmCol(S, i) {
 function receiveGameAct(d) {
   if (!gm || !d || d.msgId !== gm.id || !vcIAmLeader() || !gm.S) return;
   gmAction(gm.S, 1, d.tx, d.ty, d.a);
+  gm.sent = 0; // tıklamanın sonucu bir sonraki karede hemen karşıya gitsin (5 Hz'de gecikme olmasın)
 }
 function gmDo(S, p, a) {
   const h = p.h; let m;
@@ -7310,9 +7314,9 @@ function gmLoop(ts) {
   if (host) {
     if (!gm.S) gm.S = gmNew();
     gmStep(gm.S, dt);
-    if (ts - gm.sent > 100) { gm.sent = ts; try { if (isConnected()) conn.send({ type: 'game-st', msgId: gm.id, s: gm.S }); } catch (e) {} }
+    if (ts - gm.sent > 200) { gm.sent = ts; try { if (isConnected()) conn.send({ type: 'game-st', msgId: gm.id, s: gm.S }); } catch (e) {} }
   }
-  if (gm.S) gm.S.pl.forEach((p, i) => { const v = gm.vis[i], f = host ? 1 : Math.min(1, dt * 14); v.x += (p.x - v.x) * f; v.y += (p.y - v.y) * f; });
+  if (gm.S) gm.S.pl.forEach((p, i) => { const v = gm.vis[i], f = host ? 1 : Math.min(1, dt * 9); v.x += (p.x - v.x) * f; v.y += (p.y - v.y) * f; });
   if (gm.S) { try { gmSfx(gm.S); } catch (e) {} try { gmPickUI(); } catch (e) {} }
   try { gmDraw(host ? 0 : 1); } catch (e) {}
   gm.raf = requestAnimationFrame(gmLoop);
