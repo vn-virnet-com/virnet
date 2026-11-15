@@ -1169,7 +1169,9 @@ body.pf-editing .pf-tagchip .pf-in { font-size: 16px; }
 #pf-av { cursor: pointer; background-size: cover; background-position: center; background-repeat: no-repeat; -webkit-tap-highlight-color: transparent; }
 #pf-av.has-photo #pf-av-t { display: none; }
 #pf-av-x { display: none; position: absolute; right: -3px; bottom: -3px; width: 26px; height: 26px; padding: 0; border: 2px solid var(--c-000); border-radius: 50%; background: var(--c-33); color: var(--c-fff); align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-#pf-av.has-photo #pf-av-x { display: flex; }
+#pf-av.has-photo #pf-av-x { display: flex; opacity: 0; transform: scale(.6); pointer-events: none; transition: opacity .2s ease, transform .2s ease; }
+#pf-av.has-photo.x-on #pf-av-x { opacity: 1; transform: none; pointer-events: auto; }
+@media (hover: hover) { #pf-av.has-photo:hover #pf-av-x, #pf-av.has-photo:focus-within #pf-av-x { opacity: 1; transform: none; pointer-events: auto; } }
 #pf-av-x svg { display: block; width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
 #pf-crop { position: fixed; inset: 0; z-index: 45000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px; box-sizing: border-box; background: rgba(0,0,0,.88); font-family: 'Lexend', sans-serif; color: var(--c-fff); user-select: none; -webkit-user-select: none; touch-action: none; }
 #pf-crop.show { display: flex; }
@@ -11743,9 +11745,19 @@ function pfRender() {
   pfEl('pf-tag').addEventListener('input', pfFitUser);
   // Fotoğraf seç + yuvarlak kırpma
   const fileIn = pfEl('pf-file');
-  pfEl('pf-av').addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#pf-av-x')) return; fileIn.value = ''; fileIn.click(); });
+  let pfXTimer = 0;
+  const pfXHide = () => { clearTimeout(pfXTimer); pfXTimer = 0; pfEl('pf-av').classList.remove('x-on'); };
+  pfEl('pf-av').addEventListener('click', (e) => {
+    if (e.target.closest && e.target.closest('#pf-av-x')) return;
+    const av = pfEl('pf-av');
+    // Dokunmatikte fotoğraf varken ilk dokunuş çarpıyı 5 sn gösterir; çarpı açıkken dokunmak fotoğrafı değiştirir. Masaüstünde çarpı üzerine gelince görünür.
+    if (av.classList.contains('has-photo') && !av.classList.contains('x-on') && !(window.matchMedia && matchMedia('(hover: hover)').matches)) {
+      av.classList.add('x-on'); clearTimeout(pfXTimer); pfXTimer = setTimeout(pfXHide, 5000); return;
+    }
+    pfXHide(); fileIn.value = ''; fileIn.click();
+  });
   pfEl('pf-av').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileIn.value = ''; fileIn.click(); } });
-  pfEl('pf-av-x').addEventListener('click', (e) => { e.stopPropagation(); pfPhotoSet(''); });
+  pfEl('pf-av-x').addEventListener('click', (e) => { e.stopPropagation(); pfXHide(); pfPhotoSet(''); });
   fileIn.addEventListener('change', () => {
     const f = fileIn.files && fileIn.files[0];
     if (!f || !/^image\//.test(f.type)) return;
