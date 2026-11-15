@@ -362,19 +362,25 @@ body.no-time .time-tag { display: none !important; }
   display: flex; align-items: center; justify-content: center; font-weight: bold;
 }
 #send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-#send-btn { position: relative; }
-.sp-wrap { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
-.sp { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; display: block; pointer-events: none; color: inherit; }
-.sp-b { opacity: 0; }
-/* Gönder animasyonu: uçak ucu sağ kenara değdiği anda (%55) yenisi arkada belirir, eskisi kadrajdan çıkar */
-@keyframes sp-out {
-  0%   { transform: translateX(0); }
-  55%  { transform: translateX(calc(var(--sp-half, 20px) - 10px)); animation-timing-function: linear; }
-  100% { transform: translateX(calc(var(--sp-half, 20px) + 11px)); }
+/* 3D küp görünümlü gönder tuşu: basınca hafifçe göçer, bırakınca geri gelir */
+#send-btn {
+  background-image: linear-gradient(rgba(255,255,255,.16), rgba(0,0,0,.14));
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.38), inset 2px 0 0 rgba(255,255,255,.14),
+              inset 0 -4px 0 rgba(0,0,0,.34), inset -2px 0 0 rgba(0,0,0,.16);
+  transition: box-shadow .09s ease-out, filter .09s ease-out, background-image .09s;
 }
-@keyframes sp-in { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: scale(1); } }
-.sp-go .sp-a { animation: sp-out .38s ease-in forwards; }
-.sp-go .sp-b { animation: sp-in .24s .209s ease-out both; }
+#send-btn .sp-ico {
+  width: 22px; height: 22px; display: block; pointer-events: none; fill: none; stroke: currentColor;
+  stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 1.5px 0 rgba(0,0,0,.28));
+  transition: transform .09s ease-out, filter .09s ease-out;
+}
+#send-btn.pressed {
+  background-image: linear-gradient(rgba(0,0,0,.16), rgba(0,0,0,.04));
+  box-shadow: inset 0 3px 5px rgba(0,0,0,.45), inset 2px 0 3px rgba(0,0,0,.18), inset -1px 0 2px rgba(0,0,0,.12);
+  filter: brightness(.93);
+}
+#send-btn.pressed .sp-ico { transform: translateY(2px) scale(.94); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
 #nick-input:focus, #message-input:focus {
   border: 2px solid var(--accent) !important; box-shadow: 0 0 10px var(--glow); z-index: 2;
 }
@@ -1969,12 +1975,11 @@ body.gm-on #leap-hud { display: none !important; }
   <span id="reply-bar-text">Yanıtlanıyor...</span>
   <span id="cancel-reply-btn">✕</span>
 </div>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><g id="sp-shape" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" fill="none"><path d="M22 12 L7.5 12 L3 19.5 Z" fill="currentColor" fill-opacity=".35"/><path d="M22 12 L3 4.5 L7.5 12"/><path d="M3 19.5 L22 12"/></g></defs></svg>
 <div id="input-area">
   <div id="input-wrapper">
     <input type="text" id="nick-input" name="chat-label" placeholder="İsim" tabindex="1" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
     <div id="msg-wrap"><textarea id="message-input" placeholder="Bağlanıyor..." tabindex="2"></textarea><div id="ph-overlay" aria-hidden="true"><span id="ph-text">Bağlanıyor...</span></div><div id="rec-ph" aria-hidden="true"><span>Ses kaydediliyor...</span></div></div>
-    <button id="send-btn" disabled><span class="sp-wrap"><svg class="sp sp-a" viewBox="0 0 24 24" aria-hidden="true"><use href="#sp-shape"/></svg><svg class="sp sp-b" viewBox="0 0 24 24" aria-hidden="true"><use href="#sp-shape"/></svg></span></button>
+    <button id="send-btn" disabled><svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19.5V5.5"/><path d="M5.5 11.5L12 5l6.5 6.5"/></svg></button>
   </div>
 </div>
 </div>
@@ -6096,7 +6101,6 @@ function sendMessage() {
   if (textToSend === '') return;
   if (linkBlocked(textToSend)) { blockLinkSend(); return; }
   if (!isConnected()) { setStatus('Bağlı değil, mesaj gönderilmedi', false); return; }
-  playSendAnim();
 
   if (myTypingTimeout) clearTimeout(myTypingTimeout);
   if (isTypingSent && isConnected()) conn.send({ type: 'typing-stop' });
@@ -8438,18 +8442,7 @@ window.addEventListener('keydown', (e) => {
 const MAX_IMAGE_BYTES = 30 * 1024 * 1024;
 const LONG_PRESS_MS = 500;
 const DRAG_UP_PX = 14;
-const SEND_ICON = '<span class="sp-wrap"><svg class="sp sp-a" viewBox="0 0 24 24" aria-hidden="true"><use href="#sp-shape"/></svg><svg class="sp sp-b" viewBox="0 0 24 24" aria-hidden="true"><use href="#sp-shape"/></svg></span>';
-let spTimer = null;
-function playSendAnim() {
-  const w = sendBtn.querySelector('.sp-wrap');
-  if (!w || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
-  clearTimeout(spTimer);
-  w.classList.remove('sp-go');
-  w.style.setProperty('--sp-half', (w.clientWidth / 2) + 'px');
-  void w.offsetWidth;
-  w.classList.add('sp-go');
-  spTimer = setTimeout(() => w.classList.remove('sp-go'), 470);
-}
+const SEND_ICON = '<svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19.5V5.5"/><path d="M5.5 11.5L12 5l6.5 6.5"/></svg>';
 let pressTimer = null;
 let pressActive = false;
 let pressId = null;
@@ -8463,7 +8456,7 @@ function clearPress() {
   if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
   longReady = false;
   sendBtn.classList.remove('longpress');
-  if (!sendBtn.querySelector('.sp-wrap')) sendBtn.innerHTML = SEND_ICON;
+  if (!sendBtn.querySelector('.sp-ico')) sendBtn.innerHTML = SEND_ICON;
 }
 function endChipDrag() {
   chipDrag = false;
@@ -8474,6 +8467,7 @@ function endChipDrag() {
 sendBtn.addEventListener('pointerdown', (event) => {
   if (event.pointerType === 'mouse' && event.button !== 0) return;
   event.preventDefault();
+  sendBtn.classList.add('pressed');
   if (recLocked && recMR) { recLockTapId = event.pointerId; return; }
   clearPress();
   endChipDrag();
@@ -8519,6 +8513,7 @@ sendBtn.addEventListener('pointermove', (event) => {
 });
 
 sendBtn.addEventListener('pointerup', (event) => {
+  sendBtn.classList.remove('pressed');
   if (recLockTapId !== null && event.pointerId === recLockTapId) {
     recLockTapId = null;
     lastPointerAction = Date.now();
@@ -8561,10 +8556,12 @@ sendBtn.addEventListener('pointerup', (event) => {
 });
 
 sendBtn.addEventListener('pointercancel', (event) => {
+  sendBtn.classList.remove('pressed');
   if (recLockTapId !== null && event.pointerId === recLockTapId) { recLockTapId = null; return; }
   if (recLocked && recMR) return;
   stopRec(false); pressActive = false; endChipDrag(); clearPress();
 });
+sendBtn.addEventListener('lostpointercapture', () => sendBtn.classList.remove('pressed'));
 sendBtn.addEventListener('contextmenu', (e) => e.preventDefault());
 
 sendBtn.addEventListener('click', () => {
