@@ -1201,6 +1201,36 @@ body.pf-editing .pf-tagchip .pf-in { font-size: 16px; }
 .pf-in.pf-dinp:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 #pf-dadd { width: 100%; padding: 10px 13px; border: 0; border-radius: var(--r-md); background: var(--accent); color: var(--on-accent); font-family: 'Lexend', sans-serif; font-size: 13.5px; font-weight: 700; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 #pf-dadd:active { opacity: .85; }
+
+/* ---- Operatör ve Bellek ---- */
+#pf-av { -webkit-touch-callout: none; }
+.pf-vo { gap: 8px; }
+.pf-vo .pf-in { flex: 0 1 auto; width: 60px; max-width: calc(100% - 40px); margin: 0; padding-left: 4px; padding-right: 0; text-align: left; }
+.pf-oav { position: relative; flex: 0 0 auto; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Lexend', sans-serif; font-size: 13px; font-weight: 700; line-height: 1; color: var(--on-accent); background: linear-gradient(150deg, var(--accent), color-mix(in srgb, var(--accent) 58%, var(--c-000))); background-size: cover; background-position: center; background-repeat: no-repeat; box-shadow: 0 0 0 2px var(--c-111), 0 0 0 3px color-mix(in srgb, var(--accent) 50%, transparent); cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.pf-oav.has-photo .pf-oav-t { display: none; }
+.pf-oav.inert { cursor: default; pointer-events: none; }
+.pf-mh { padding: 10px 13px 2px; border-top: 1px solid var(--c-22); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-66); user-select: none; -webkit-user-select: none; }
+#pf-mems:empty + #pf-mem-add.show { border-top: 0; }
+#pf-mem-add { display: none; flex-direction: column; gap: 8px; padding: 11px 13px 13px; border-top: 1px solid var(--c-22); background: var(--c-000); }
+#pf-mem-add.show { display: flex; }
+.pf-mnone { padding: 12px 13px; font-size: 12.5px; font-weight: 300; color: var(--c-66); text-align: center; }
+#pf-madd { width: 100%; padding: 10px 13px; border: 0; border-radius: var(--r-md); background: var(--accent); color: var(--on-accent); font-family: 'Lexend', sans-serif; font-size: 13.5px; font-weight: 700; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+#pf-madd:active { opacity: .85; }
+button.pf-di { padding: 0; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+button.pf-di:active { background: var(--c-22); }
+.pf-dev .pf-in.pf-medit { display: block; width: 100%; margin: 0; padding: 4px 8px; text-align: left; font-size: 14px; font-weight: 700; background: var(--c-1a); border: 1px solid var(--c-22); border-radius: var(--r-sm); }
+.pf-dev .pf-in.pf-medit:focus { border-color: var(--accent); }
+.pf-dev .pf-mr { flex: 0 0 auto; width: 70px; margin: 0; padding: 3px 8px; text-align: left; font-size: 12.5px; font-weight: 400; background: var(--c-1a); border: 1px solid var(--c-22); border-radius: var(--r-sm); }
+.pf-dev .pf-mr:focus { border-color: var(--accent); }
+.pf-dev .pf-dt .pf-mgb { flex: 0 0 auto; }
+.pf-dev .pf-dt { margin-top: 5px; }
+.pf-mtot .pf-l { width: auto; flex: 1 1 auto; font-weight: 400; color: var(--c-cc); }
+.pf-mtot .pf-v { flex: 0 0 auto; gap: 10px; }
+#pf-mem-total { font-size: 15px; font-weight: 700; color: var(--c-fff); font-variant-numeric: tabular-nums; }
+.pf-badge { display: inline-block; padding: 3px 11px; border-radius: var(--r-pill); font-size: 11.5px; font-weight: 700; line-height: 1.35; color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); border: 1px solid color-mix(in srgb, var(--ok) 50%, transparent); }
+.pf-badge.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 15%, transparent); border-color: color-mix(in srgb, var(--bad) 50%, transparent); }
+/* Operatör fotoğrafı büyütme ekranı: 1:1, indirme yok */
+#viewer.op-view #viewer-img { width: min(92vw, 82vh); height: min(92vw, 82vh); max-width: none; max-height: none; object-fit: cover; }
 @keyframes cdTagShine { 0% { background-position: 130% 0; } 55%, 100% { background-position: -30% 0; } }
 #bp-list { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 8px 8px 64px; }
 .bp-card { touch-action: pan-y; position: relative; width: 100%; margin: 0 0 8px; padding: 8px 11px; background: var(--c-1a); border: 1px solid var(--c-33); border-radius: var(--r-md); }
@@ -1938,6 +1968,7 @@ body.gm-on #leap-hud { display: none !important; }
       <button type="button" class="pf-ib" id="pf-edit" aria-label="Düzenle" title="Düzenle"><svg class="e1" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><svg class="e2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
       <div id="pf-av" role="button" tabindex="0" aria-label="Fotoğraf ekle"><span id="pf-av-t">?</span><button type="button" id="pf-av-x" aria-label="Fotoğrafı kaldır" title="Fotoğrafı kaldır"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
       <input type="file" id="pf-file" accept="image/*" hidden>
+      <input type="file" id="pf-opfile" accept="image/*" hidden>
       <div id="pf-hname">—</div>
       <div id="pf-huser"></div>
       <div id="pf-chips"><span class="pf-chip pf-tagchip" id="pf-tagchip"><input class="pf-in" id="pf-tag" type="text" maxlength="24" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-tag" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span><span class="pf-chip pf-leap" id="leap-bar"><span class="leap-name">Leap</span><span class="leap-num" id="leap-num">0</span></span></div>
@@ -1954,6 +1985,23 @@ body.gm-on #leap-hud { display: none !important; }
         <label class="pf-row"><span class="pf-l">Gerçek İsim</span><span class="pf-v"><input class="pf-in" id="pf-real" type="text" maxlength="60" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-legal" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
         <label class="pf-row"><span class="pf-l">Doğum Tarihi<small id="pf-age"></small></span><span class="pf-v"><input class="pf-in" id="pf-birth" type="date" min="1900-01-01" name="pf-birth" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
       </div>
+    </div>
+
+    <div class="pf-sec">
+      <div class="pf-st">Operatör ve Bellek</div>
+      <div class="pf-card">
+        <label class="pf-row"><span class="pf-l">Operatör</span><span class="pf-v pf-vo"><button type="button" class="pf-oav inert" id="pf-opav" aria-label="Operatör"><span class="pf-oav-t" id="pf-opav-t">?</span></button><input class="pf-in" id="pf-op" type="text" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-op" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
+        <div class="pf-mh">Cihazlar</div>
+        <div id="pf-mems"></div>
+        <div id="pf-mem-add">
+          <div class="pf-seg" id="pf-mk"><button type="button" data-v="phone" class="active"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><line x1="11" y1="18" x2="13" y2="18"/></svg>Telefon</button><button type="button" data-v="desktop"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Bilgisayar</button></div>
+          <input class="pf-in pf-dinp" id="pf-mnn" type="text" maxlength="30" placeholder="Cihaz adı" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-mem-name" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
+          <input class="pf-in pf-dinp" id="pf-mrn" type="text" inputmode="decimal" maxlength="7" placeholder="RAM (GB)" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-mem-ram" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
+          <button type="button" id="pf-madd">Cihaz ekle</button>
+        </div>
+        <div class="pf-row pf-mtot"><span class="pf-l">Toplam RAM</span><span class="pf-v"><span id="pf-mem-total">0 GB</span><span class="pf-badge bad" id="pf-mem-badge">Yetersiz</span></span></div>
+      </div>
+      <div class="pf-hint" id="pf-mem-hint"></div>
     </div>
 
     <div class="pf-sec">
@@ -3275,6 +3323,9 @@ function setupConnection(c) {
     if (data.type === 'prof-photo') { receivePhoto(data); return; }
     if (data.type === 'prof-photo-meta') { receivePhotoMeta(data); return; }
     if (data.type === 'prof-photo-req') { receivePhotoReq(data); return; }
+    if (data.type === 'prof-op-photo') { receiveOpPhoto(data); return; }
+    if (data.type === 'prof-op-photo-meta') { receiveOpPhotoMeta(data); return; }
+    if (data.type === 'prof-op-photo-req') { receiveOpPhotoReq(data); return; }
     if (data.type === 'notif') { receiveNotif(data); return; }
     if (data.type === 'notif-del') { receiveNotifDel(data); return; }
     if (data.type === 'notif-ack') { receiveNotifAck(data); return; }
@@ -9157,6 +9208,7 @@ function closeViewer(fromPop) {
   if (viewerReply && replyingTo && replyingTo.targetId === viewerReply.targetId) closeReplyBar();
   viewerReply = null;
   viewer.classList.remove('show');
+  viewer.classList.remove('op-view');
   stopOnceLayout();
   viewerImg.removeAttribute('src');
   viewerImg.classList.remove('once');
@@ -9214,7 +9266,7 @@ function vzClamp() {
   viewerImg.addEventListener('pointerup', end);
   viewerImg.addEventListener('pointercancel', end);
 })();
-viewerImg.addEventListener('contextmenu', (e) => { if (viewerOnceEl) e.preventDefault(); });
+viewerImg.addEventListener('contextmenu', (e) => { if (viewerOnceEl || viewer.classList.contains('op-view')) e.preventDefault(); });
 viewerImg.addEventListener('dragstart', (e) => e.preventDefault());
 viewerClose.addEventListener('click', () => closeViewer());
 document.addEventListener('keydown', (event) => {
@@ -11456,6 +11508,7 @@ function receiveLeap(d) {
    Veri belgesi Leap gibi eşitlenir: en son düzenlenen (rev, eşitlikte by) iki tarafta da geçerli olur. Cihaz listesi yapaydır ve belgenin içindedir. ---- */
 const PF_ID_RE = /^[a-z0-9]{6,20}$/;
 const PF_MAXDEV = 8;
+const PF_MAXMEM = 8, PF_RAM_OK = 16;   // bellek cihaz sayısı sınırı; toplam RAM bu değerin (GB) altındaysa "Yetersiz"
 let pfRev = parseInt(lsGet('pfRev') || '0', 10) || 0;
 let pfBy = lsGet('pfBy') || '';
 const pfDevId = (() => {
@@ -11490,6 +11543,24 @@ function pfCleanDevs(a) {
   });
   return out;
 }
+function pfRam(v) {
+  const x = (typeof v === 'number') ? v : parseFloat(String(v == null ? '' : v).replace(',', '.'));
+  return (isFinite(x) && x > 0 && x <= 99999) ? Math.round(x * 10) / 10 : 0;
+}
+function pfFmtGb(x) { return (Number.isInteger(x) ? String(x) : String(x).replace('.', ',')) + ' GB'; }
+// Bellek cihazları: simge + ad + RAM (GB). Tamamen 6687 belirler
+function pfCleanMem(a) {
+  const out = [], seen = {};
+  (Array.isArray(a) ? a : []).slice(0, 24).forEach((r) => {
+    if (!r || typeof r !== 'object' || out.length >= PF_MAXMEM) return;
+    const id = (typeof r.id === 'string' && PF_ID_RE.test(r.id)) ? r.id : null;
+    const n = pfStr(r.n, 30).trim(), g = pfRam(r.r);
+    if (!id || seen[id] || !n || !g) return;
+    seen[id] = 1;
+    out.push({ id: id, k: r.k === 'phone' ? 'phone' : 'desktop', n: n, r: g });
+  });
+  return out;
+}
 function pfClean(o) {
   o = (o && typeof o === 'object') ? o : {};
   return {
@@ -11499,7 +11570,9 @@ function pfClean(o) {
     pass: pfStr(o.pass, 64),
     tfa: o.tfa ? 1 : 0,
     created: pfDate(o.created) || pfToday(), uid: pfStr(o.uid, 20).replace(/[^A-Za-z0-9]/g, '') || pfNewId(),
-    dv: pfCleanDevs(o.dv)
+    dv: pfCleanDevs(o.dv),
+    op: pfStr(o.op, 40),
+    mv: pfCleanMem(o.mv)
   };
 }
 let pfData = (() => { try { return pfClean(JSON.parse(lsGet('pfData') || '{}')); } catch (e) { return pfClean({}); } })();
@@ -11508,7 +11581,7 @@ function pfSend(type) {
   if (!isConnected()) return;
   try { conn.send({ type: type, p: pfData, rev: pfRev, by: pfBy, dev: pfDevId }); } catch (e) {}
 }
-function pfHello() { pfSend('prof-hello'); pfPhotoHello(); try { pfRender(); } catch (e) {} }
+function pfHello() { pfSend('prof-hello'); pfPhotoHello(); pfOpPhotoHello(); try { pfRender(); } catch (e) {} }
 /* ---- Profil fotoğrafı: iki taraf da koyabilir/kaldırabilir; en son konulan geçerli olur ---- */
 const PF_PHOTO_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/;
 let pfPhoto = (() => { try { const o = JSON.parse(lsGet('pfPhoto') || '{}'); return { d: (typeof o.d === 'string' && o.d.length < 150000 && PF_PHOTO_RE.test(o.d)) ? o.d : '', rev: Number(o.rev) || 0, by: pfStr(o.by, 24) }; } catch (e) { return { d: '', rev: 0, by: '' }; } })();
@@ -11545,6 +11618,60 @@ function receivePhoto(d) {
 function pfPhotoSet(dataUrl) {
   pfPhoto = { d: dataUrl || '', rev: Math.max(Date.now(), pfPhoto.rev + 1), by: pfDevId };
   pfPhotoSave(); pfPhotoSend(); pfRender();
+}
+/* ---- Operatör fotoğrafı: ana profil fotoğrafıyla aynı eşitleme (en son konulan geçerli; bağlanınca yalnızca zaman damgası gider) ---- */
+let pfOp = (() => { try { const o = JSON.parse(lsGet('pfOpPhoto') || '{}'); return { d: (typeof o.d === 'string' && o.d.length < 150000 && PF_PHOTO_RE.test(o.d)) ? o.d : '', rev: Number(o.rev) || 0, by: pfStr(o.by, 24) }; } catch (e) { return { d: '', rev: 0, by: '' }; } })();
+function pfOpPhotoSave() { try { lsSet('pfOpPhoto', JSON.stringify(pfOp)); } catch (e) {} }
+function pfOpPhotoSend() {
+  if (!isConnected() || !pfOp.rev) return;
+  try { conn.send({ type: 'prof-op-photo', d: pfOp.d, rev: pfOp.rev, by: pfOp.by }); } catch (e) {}
+}
+function pfOpPhotoHello() {
+  if (!isConnected() || !pfOp.rev) return;
+  try { conn.send({ type: 'prof-op-photo-meta', rev: pfOp.rev, by: pfOp.by }); } catch (e) {}
+}
+function receiveOpPhotoMeta(d) {
+  if (!d || typeof d !== 'object' || typeof d.rev !== 'number' || !isFinite(d.rev)) return;
+  const by = (typeof d.by === 'string') ? d.by.slice(0, 24) : '';
+  const newer = d.rev > pfOp.rev || (d.rev === pfOp.rev && by > pfOp.by);
+  if (!newer || !isConnected()) return;
+  try { conn.send({ type: 'prof-op-photo-req', rev: d.rev }); } catch (e) {}
+}
+function receiveOpPhotoReq(d) {
+  if (!d || typeof d !== 'object' || typeof d.rev !== 'number' || !isFinite(d.rev)) return;
+  if (pfOp.rev >= d.rev) pfOpPhotoSend();
+}
+function receiveOpPhoto(d) {
+  if (!d || typeof d !== 'object' || typeof d.rev !== 'number' || !isFinite(d.rev)) return;
+  const img = (typeof d.d === 'string' && d.d.length < 150000 && PF_PHOTO_RE.test(d.d)) ? d.d : '';
+  const by = (typeof d.by === 'string') ? d.by.slice(0, 24) : '';
+  const newer = d.rev > pfOp.rev || (d.rev === pfOp.rev && by > pfOp.by);
+  if (!newer) return;
+  pfOp = { d: img, rev: d.rev, by: by };
+  pfOpPhotoSave(); pfRender();
+}
+function pfOpPhotoSet(dataUrl) {
+  pfOp = { d: dataUrl || '', rev: Math.max(Date.now(), pfOp.rev + 1), by: pfDevId };
+  pfOpPhotoSave(); pfOpPhotoSend(); pfRender();
+}
+/* Fotoğrafı galeriye indirir (iOS: paylaşım menüsü → "Görüntüyü Kaydet"; diğerleri doğrudan indirir) */
+async function pfSaveImage(dataUrl, base) {
+  try {
+    const blob = await (await fetch(dataUrl)).blob();
+    const mime = blob.type || 'image/jpeg';
+    const name = base + '-' + Date.now() + '.' + (mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg');
+    if (isIOSDevice() && navigator.canShare && navigator.share) {
+      const file = new File([blob], name, { type: mime });
+      if (navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file] }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { try { URL.revokeObjectURL(a.href); } catch (e) {} if (a.parentNode) a.parentNode.removeChild(a); }, 4000);
+    flashStatus('Fotoğraf indirildi');
+  } catch (e) { flashStatus('Fotoğraf indirilemedi'); }
 }
 function receiveProfile(d) {
   if (!d || typeof d !== 'object') return;
@@ -11613,6 +11740,7 @@ let pfMeasureCtx = null;
 function pfFitUser() {
   pfFitEl(pfEl('pf-tag'), 2);
   pfFitEl(pfEl('pf-user'), 12);
+  pfFitEl(pfEl('pf-op'), 12);
 }
 function pfFitEl(el, extra) {
   if (!el) return;
@@ -11623,6 +11751,42 @@ function pfFitEl(el, extra) {
     const w = pfMeasureCtx.measureText(el.value || el.placeholder || '').width;
     el.style.width = (Math.ceil(w) + extra) + 'px';
   } catch (e) {}
+}
+function pfAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function pfRenderMems(can) {
+  const box = pfEl('pf-mems');
+  if (!box) return;
+  const list = pfData.mv;
+  const full = list.length >= PF_MAXMEM;
+  const add = pfEl('pf-mem-add');
+  if (add) add.classList.toggle('show', can && !full);
+  const hint = pfEl('pf-mem-hint');
+  if (hint) hint.textContent = (can && full) ? 'En fazla ' + PF_MAXMEM + ' cihaz eklenebilir.' : '';
+  let total = 0;
+  list.forEach((r) => { total += r.r; });
+  total = Math.round(total * 10) / 10;
+  pfEl('pf-mem-total').textContent = pfFmtGb(total);
+  const ok = total >= PF_RAM_OK, bd = pfEl('pf-mem-badge');
+  bd.textContent = ok ? 'Yeterli' : 'Yetersiz';
+  bd.classList.toggle('bad', !ok);
+  const html = list.map((r) => {
+    return '<div class="pf-dev" data-id="' + r.id + '">' +
+      (can ? '<button type="button" class="pf-di pf-mkind" aria-label="Türü değiştir" title="Türü değiştir">' + pfSvg(r.k) + '</button>' : '<div class="pf-di">' + pfSvg(r.k) + '</div>') +
+      '<div class="pf-dm">' +
+      (can
+        ? '<input class="pf-in pf-medit pf-mn" type="text" maxlength="30" value="' + pfAttr(r.n) + '" aria-label="Cihaz adı" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-mem-n" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">' +
+          '<div class="pf-dt"><input class="pf-in pf-mr" type="text" inputmode="decimal" maxlength="7" value="' + pfAttr(String(r.r).replace('.', ',')) + '" aria-label="RAM (GB)" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-mem-r" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><span class="pf-mgb">GB RAM</span></div>'
+        : '<div class="pf-dn"><span>' + escapeHtml(r.n) + '</span></div><div class="pf-dt">' + pfFmtGb(r.r) + ' RAM</div>') +
+      '</div>' +
+      (can ? '<button type="button" class="pf-dx" aria-label="Cihazı kaldır" title="Cihazı kaldır">' + pfSvg('trash') + '</button>' : '') +
+      '</div>';
+  }).join('') || (can ? '' : '<div class="pf-mnone">Cihaz yok</div>');
+  const sig = (can ? '1' : '0') + html;
+  if (box.dataset.sig === sig) return;
+  // Bir kutuya yazılırken liste yeniden çizilmesin (odak kaybolmasın)
+  try { const a = document.activeElement; if (a && box.contains(a) && a.tagName === 'INPUT') return; } catch (e) {}
+  box.dataset.sig = sig;
+  box.innerHTML = html;
 }
 function pfRenderDevs(can) {
   const box = pfEl('pf-devs');
@@ -11706,7 +11870,7 @@ function pfRender() {
   const eb = pfEl('pf-edit');
   eb.classList.toggle('can', adm); eb.classList.toggle('shown', can);
   eb.setAttribute('aria-label', can ? 'Düzenlemeyi bitir' : 'Düzenle'); eb.title = can ? 'Düzenlemeyi bitir' : 'Düzenle';
-  ['user', 'disp', 'real', 'birth', 'pass', 'tray', 'tag', 'created', 'uid'].forEach((k) => {
+  ['user', 'disp', 'real', 'birth', 'pass', 'tray', 'tag', 'created', 'uid', 'op'].forEach((k) => {
     const el = pfEl('pf-' + k);
     if (!el) return;
     el.readOnly = !can;
@@ -11729,6 +11893,16 @@ function pfRender() {
   sw.setAttribute('aria-checked', d.tfa ? 'true' : 'false');
   pfEl('pf-foot').textContent = '';
   pfRenderDevs(can);
+  // Operatör: küçük yuvarlak fotoğraf (yoksa isim baş harfi); yalnızca 6687 değiştirir, 3828 yalnızca büyütüp görür
+  const oav = pfEl('pf-opav');
+  if (oav) {
+    pfEl('pf-opav-t').textContent = (Array.from((d.op || '').trim())[0] || '?').toUpperCase();
+    oav.classList.toggle('has-photo', !!pfOp.d);
+    oav.style.backgroundImage = pfOp.d ? 'url(' + pfOp.d + ')' : '';
+    oav.classList.toggle('inert', !adm && !pfOp.d);
+    oav.setAttribute('aria-label', adm ? 'Operatör fotoğrafını değiştir' : (pfOp.d ? 'Operatör fotoğrafını büyüt' : 'Operatör'));
+  }
+  pfRenderMems(can);
 }
 (function initProfile() {
   if (!pfEl('pf-scroll')) return;
@@ -11738,6 +11912,7 @@ function pfRender() {
     real: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 60),
     tag: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 24),
     tray: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 40),
+    op: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 40),
     birth: (v) => { if (v === '') return ''; const x = pfDate(v); return (x && x <= pfToday() && x >= '1900-01-01') ? x : null; },
     pass: (v) => v.slice(0, 64),
     created: (v) => pfDate(v) || null,
@@ -11761,12 +11936,14 @@ function pfRender() {
     });
   });
   pfEl('pf-tag').addEventListener('input', pfFitUser);
+  pfEl('pf-op').addEventListener('input', pfFitUser);
   // Fotoğraf seç + yuvarlak kırpma
   const fileIn = pfEl('pf-file');
-  let pfXTimer = 0;
+  let pfXTimer = 0, pfLpT = 0, pfLpAt = 0, pfLpX = 0, pfLpY = 0;
   const pfXHide = () => { clearTimeout(pfXTimer); pfXTimer = 0; pfEl('pf-av').classList.remove('x-on'); };
   pfEl('pf-av').addEventListener('click', (e) => {
     if (e.target.closest && e.target.closest('#pf-av-x')) return;
+    if (Date.now() - pfLpAt < 900) return;   // basılı tutup indirdikten sonraki sahte tıklama
     const av = pfEl('pf-av');
     // Dokunmatikte fotoğraf varken ilk dokunuş çarpıyı 5 sn gösterir; çarpı açıkken dokunmak fotoğrafı değiştirir. Masaüstünde çarpı üzerine gelince görünür.
     if (av.classList.contains('has-photo') && !av.classList.contains('x-on') && !(window.matchMedia && matchMedia('(hover: hover)').matches)) {
@@ -11776,6 +11953,26 @@ function pfRender() {
   });
   pfEl('pf-av').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileIn.value = ''; fileIn.click(); } });
   pfEl('pf-av-x').addEventListener('click', (e) => { e.stopPropagation(); pfXHide(); pfPhotoSet(''); });
+  // Profil fotoğrafı varken üzerine basılı tutunca fotoğraf galeriye iner
+  (function () {
+    const av = pfEl('pf-av');
+    const cancel = () => { if (pfLpT) { clearTimeout(pfLpT); pfLpT = 0; } };
+    av.addEventListener('pointerdown', (e) => {
+      cancel();
+      if (!pfPhoto.d || !av.classList.contains('has-photo')) return;
+      if (e.target.closest && e.target.closest('#pf-av-x')) return;
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      pfLpX = e.clientX; pfLpY = e.clientY;
+      pfLpT = setTimeout(() => {
+        pfLpT = 0; pfLpAt = Date.now();
+        if (navigator.vibrate) { try { navigator.vibrate(12); } catch (x) {} }
+        pfSaveImage(pfPhoto.d, 'profil');
+      }, 550);
+    });
+    av.addEventListener('pointermove', (e) => { if (pfLpT && (Math.abs(e.clientX - pfLpX) > 10 || Math.abs(e.clientY - pfLpY) > 10)) cancel(); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => av.addEventListener(t, cancel));
+    av.addEventListener('contextmenu', (e) => { if (pfLpT || Date.now() - pfLpAt < 1500) e.preventDefault(); });
+  })();
   fileIn.addEventListener('change', () => {
     const f = fileIn.files && fileIn.files[0];
     if (!f || !/^image\//.test(f.type)) return;
@@ -11785,21 +11982,23 @@ function pfRender() {
     im.onerror = () => { URL.revokeObjectURL(url); };
     im.src = url;
   });
-  function pfCropOut(im, sx, sy, sw) {
-    const c = document.createElement('canvas'); c.width = c.height = 256;
-    const x = c.getContext('2d'); x.fillStyle = '#111'; x.fillRect(0, 0, 256, 256);
-    x.imageSmoothingQuality = 'high'; x.drawImage(im, sx, sy, sw, sw, 0, 0, 256, 256);
+  function pfCropOut(im, sx, sy, sw, px) {
+    px = px || 256;
+    const c = document.createElement('canvas'); c.width = c.height = px;
+    const x = c.getContext('2d'); x.fillStyle = '#111'; x.fillRect(0, 0, px, px);
+    x.imageSmoothingQuality = 'high'; x.drawImage(im, sx, sy, sw, sw, 0, 0, px, px);
     let q = 0.86, out = c.toDataURL('image/jpeg', q);
     while (out.length > 100000 && q > 0.4) { q -= 0.1; out = c.toDataURL('image/jpeg', q); }
     return out;
   }
-  function pfCropOpen(im, url) {
+  function pfCropOpen(im, url, cb, px) {
+    cb = cb || pfPhotoSet;
     const W = im.naturalWidth, H = im.naturalHeight;
     if (!W || !H) { URL.revokeObjectURL(url); return; }
     if (Math.abs(W - H) / Math.max(W, H) < 0.01) {   // zaten 1:1: kırpma gerekmez
       const sw = Math.min(W, H);
-      const out = pfCropOut(im, (W - sw) / 2, (H - sw) / 2, sw);
-      URL.revokeObjectURL(url); pfPhotoSet(out); return;
+      const out = pfCropOut(im, (W - sw) / 2, (H - sw) / 2, sw, px);
+      URL.revokeObjectURL(url); cb(out); return;
     }
     const maxW = Math.min(window.innerWidth - 32, 420), maxH = Math.min(window.innerHeight - 220, 420);
     const k = Math.min(maxW / W, maxH / H, 1);
@@ -11827,10 +12026,77 @@ function pfRender() {
     document.addEventListener('keydown', onKey, true);
     ov.querySelector('.no').addEventListener('click', close);
     ov.querySelector('.ok').addEventListener('click', () => {
-      const out = pfCropOut(im, fx / k, fy / k, size / k);
-      close(); pfPhotoSet(out);
+      const out = pfCropOut(im, fx / k, fy / k, size / k, px);
+      close(); cb(out);
     });
   }
+  // Operatör fotoğrafı: 6687 her tıkladığında yenisini koyar (aynı kırpma ekranı); 3828 değiştiremez, tıklayınca 1:1 büyütür (indirme yok)
+  const opFile = pfEl('pf-opfile');
+  pfEl('pf-opav').addEventListener('click', () => {
+    if (notifCanSend()) { opFile.value = ''; opFile.click(); return; }
+    if (!pfOp.d) return;
+    openViewer(pfOp.d);
+    viewer.classList.remove('dl-on'); viewerDlUrl = null; viewerDlBlob = null;
+    viewer.classList.add('op-view'); viewerImg.classList.add('once');
+  });
+  opFile.addEventListener('change', () => {
+    const f = opFile.files && opFile.files[0];
+    if (!f || !/^image\//.test(f.type) || !notifCanSend()) return;
+    const url = URL.createObjectURL(f);
+    const im = new Image();
+    im.onload = () => { try { pfCropOpen(im, url, pfOpPhotoSet, 512); } catch (e) { URL.revokeObjectURL(url); } };
+    im.onerror = () => { URL.revokeObjectURL(url); };
+    im.src = url;
+  });
+  // Bellek cihazları: 6687 (düzenleme modunda) ekler, adını / RAM'ini / türünü değiştirir, siler; 3828 yalnızca görür
+  let mKind = 'phone';
+  pfEl('pf-mk').addEventListener('click', (e) => {
+    const b = e.target.closest && e.target.closest('button');
+    if (!b) return;
+    mKind = b.dataset.v === 'desktop' ? 'desktop' : 'phone';
+    pfEl('pf-mk').querySelectorAll('button').forEach((x) => x.classList.toggle('active', x === b));
+  });
+  const addMem = () => {
+    if (!pfCan() || pfData.mv.length >= PF_MAXMEM) return;
+    const nEl = pfEl('pf-mnn'), rEl = pfEl('pf-mrn');
+    const n = nEl.value.trim().replace(/\s+/g, ' ').slice(0, 30), g = pfRam(rEl.value);
+    if (!n) { flash(nEl); nEl.focus(); return; }
+    if (!g) { flash(rEl); rEl.focus(); return; }
+    if (pfCommit({ mv: pfData.mv.concat([{ id: pfNewDevId(), k: mKind, n: n, r: g }]) })) { nEl.value = ''; rEl.value = ''; try { nEl.blur(); rEl.blur(); } catch (e) {} }
+  };
+  pfEl('pf-madd').addEventListener('click', addMem);
+  pfEl('pf-mnn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); pfEl('pf-mrn').focus(); } });
+  pfEl('pf-mrn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addMem(); } });
+  pfEl('pf-mrn').addEventListener('input', (e) => { const el = e.target, v = el.value.replace(/[^0-9.,]/g, ''); if (v !== el.value) el.value = v; });
+  const memBox = pfEl('pf-mems');
+  memBox.addEventListener('input', (e) => { const el = e.target; if (el.classList && el.classList.contains('pf-mr')) { const v = el.value.replace(/[^0-9.,]/g, ''); if (v !== el.value) el.value = v; } });
+  memBox.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); } });
+  memBox.addEventListener('change', (e) => {
+    const el = e.target, row = el.closest && el.closest('.pf-dev');
+    if (!row || !pfCan()) return;
+    const id = row.dataset.id, cur = pfData.mv.find((r) => r.id === id);
+    if (!cur) return;
+    let patch = null;
+    if (el.classList.contains('pf-mn')) {
+      const n = el.value.trim().replace(/\s+/g, ' ').slice(0, 30);
+      if (!n) { flash(el); el.value = cur.n; return; }
+      if (n !== cur.n) patch = { n: n };
+    } else if (el.classList.contains('pf-mr')) {
+      const g = pfRam(el.value);
+      if (!g) { flash(el); el.value = String(cur.r).replace('.', ','); return; }
+      if (g !== cur.r) patch = { r: g };
+    }
+    if (patch) pfCommit({ mv: pfData.mv.map((r) => r.id === id ? Object.assign({}, r, patch) : r) });
+    else pfRender();
+  });
+  memBox.addEventListener('click', (e) => {
+    if (!pfCan()) return;
+    const row = e.target.closest && e.target.closest('.pf-dev');
+    if (!row) return;
+    const id = row.dataset.id;
+    if (e.target.closest('.pf-dx')) { pfCommit({ mv: pfData.mv.filter((r) => r.id !== id) }); return; }
+    if (e.target.closest('.pf-mkind')) pfCommit({ mv: pfData.mv.map((r) => r.id === id ? Object.assign({}, r, { k: r.k === 'phone' ? 'desktop' : 'phone' }) : r) });
+  });
   pfEl('pf-user').addEventListener('input', (e) => { const el = e.target, v = el.value.toLowerCase().replace(/[^a-z0-9._@]/g, ''); if (v !== el.value) el.value = v; pfFitUser(); });
   pfEl('pf-uid').addEventListener('input', (e) => { const el = e.target, v = el.value.replace(/[^A-Za-z0-9]/g, ''); if (v !== el.value) el.value = v; });
   pfEl('pf-edit').addEventListener('click', () => { if (notifCanSend()) pfSetEdit(!pfEditing); });
