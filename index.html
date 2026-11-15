@@ -362,25 +362,10 @@ body.no-time .time-tag { display: none !important; }
   display: flex; align-items: center; justify-content: center; font-weight: bold;
 }
 #send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-/* 3D küp görünümlü gönder tuşu: basınca hafifçe göçer, bırakınca geri gelir */
-#send-btn {
-  background-image: linear-gradient(rgba(255,255,255,.16), rgba(0,0,0,.14));
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.38), inset 2px 0 0 rgba(255,255,255,.14),
-              inset 0 -4px 0 rgba(0,0,0,.34), inset -2px 0 0 rgba(0,0,0,.16);
-  transition: box-shadow .09s ease-out, filter .09s ease-out, background-image .09s;
-}
-#send-btn .sp-ico {
-  width: 22px; height: 22px; display: block; pointer-events: none; fill: none; stroke: currentColor;
-  stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round;
-  filter: drop-shadow(0 1.5px 0 rgba(0,0,0,.28));
-  transition: transform .09s ease-out, filter .09s ease-out;
-}
-#send-btn.pressed {
-  background-image: linear-gradient(rgba(0,0,0,.16), rgba(0,0,0,.04));
-  box-shadow: inset 0 3px 5px rgba(0,0,0,.45), inset 2px 0 3px rgba(0,0,0,.18), inset -1px 0 2px rgba(0,0,0,.12);
-  filter: brightness(.93);
-}
-#send-btn.pressed .sp-ico { transform: translateY(2px) scale(.94); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+/* Gönder tuşu: düz renk, basınca arka plan bir tık koyulaşır */
+#send-btn { background: var(--accent); color: var(--c-000); transition: background-color .12s ease; }
+#send-btn.pressed { background: color-mix(in srgb, var(--accent) 84%, #000); }
+#send-btn .sp-ico { width: 22px; height: 22px; display: block; pointer-events: none; fill: currentColor; stroke: currentColor; stroke-width: .8; stroke-linejoin: round; }
 #nick-input:focus, #message-input:focus {
   border: 2px solid var(--accent) !important; box-shadow: 0 0 10px var(--glow); z-index: 2;
 }
@@ -1979,7 +1964,7 @@ body.gm-on #leap-hud { display: none !important; }
   <div id="input-wrapper">
     <input type="text" id="nick-input" name="chat-label" placeholder="İsim" tabindex="1" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
     <div id="msg-wrap"><textarea id="message-input" placeholder="Bağlanıyor..." tabindex="2"></textarea><div id="ph-overlay" aria-hidden="true"><span id="ph-text">Bağlanıyor...</span></div><div id="rec-ph" aria-hidden="true"><span>Ses kaydediliyor...</span></div></div>
-    <button id="send-btn" disabled><svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19.5V5.5"/><path d="M5.5 11.5L12 5l6.5 6.5"/></svg></button>
+    <button id="send-btn" disabled><svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2L20.7 17.3L12 13.8L3.3 17.3Z"/><path d="M10.7 15.7H13.3L12 21.8Z"/></svg></button>
   </div>
 </div>
 </div>
@@ -8442,7 +8427,7 @@ window.addEventListener('keydown', (e) => {
 const MAX_IMAGE_BYTES = 30 * 1024 * 1024;
 const LONG_PRESS_MS = 500;
 const DRAG_UP_PX = 14;
-const SEND_ICON = '<svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19.5V5.5"/><path d="M5.5 11.5L12 5l6.5 6.5"/></svg>';
+const SEND_ICON = '<svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2L20.7 17.3L12 13.8L3.3 17.3Z"/><path d="M10.7 15.7H13.3L12 21.8Z"/></svg>';
 let pressTimer = null;
 let pressActive = false;
 let pressId = null;
