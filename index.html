@@ -3273,6 +3273,8 @@ function setupConnection(c) {
     if (data.type === 'leap' || data.type === 'leap-hello') { receiveLeap(data); return; }
     if (data.type === 'prof' || data.type === 'prof-hello') { receiveProfile(data); return; }
     if (data.type === 'prof-photo') { receivePhoto(data); return; }
+    if (data.type === 'prof-photo-meta') { receivePhotoMeta(data); return; }
+    if (data.type === 'prof-photo-req') { receivePhotoReq(data); return; }
     if (data.type === 'notif') { receiveNotif(data); return; }
     if (data.type === 'notif-del') { receiveNotifDel(data); return; }
     if (data.type === 'notif-ack') { receiveNotifAck(data); return; }
@@ -11506,7 +11508,7 @@ function pfSend(type) {
   if (!isConnected()) return;
   try { conn.send({ type: type, p: pfData, rev: pfRev, by: pfBy, dev: pfDevId }); } catch (e) {}
 }
-function pfHello() { pfSend('prof-hello'); pfPhotoSend(); try { pfRender(); } catch (e) {} }
+function pfHello() { pfSend('prof-hello'); pfPhotoHello(); try { pfRender(); } catch (e) {} }
 /* ---- Profil fotoğrafı: iki taraf da koyabilir/kaldırabilir; en son konulan geçerli olur ---- */
 const PF_PHOTO_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/;
 let pfPhoto = (() => { try { const o = JSON.parse(lsGet('pfPhoto') || '{}'); return { d: (typeof o.d === 'string' && o.d.length < 150000 && PF_PHOTO_RE.test(o.d)) ? o.d : '', rev: Number(o.rev) || 0, by: pfStr(o.by, 24) }; } catch (e) { return { d: '', rev: 0, by: '' }; } })();
@@ -11514,6 +11516,22 @@ function pfPhotoSave() { try { lsSet('pfPhoto', JSON.stringify(pfPhoto)); } catc
 function pfPhotoSend() {
   if (!isConnected() || !pfPhoto.rev) return;
   try { conn.send({ type: 'prof-photo', d: pfPhoto.d, rev: pfPhoto.rev, by: pfPhoto.by }); } catch (e) {}
+}
+/* Bağlanınca fotoğrafın kendisi değil yalnızca son güncellenme zamanı gider (kota harcamasın); karşıdaki daha yeniyse fotoğraf o zaman istenir */
+function pfPhotoHello() {
+  if (!isConnected() || !pfPhoto.rev) return;
+  try { conn.send({ type: 'prof-photo-meta', rev: pfPhoto.rev, by: pfPhoto.by }); } catch (e) {}
+}
+function receivePhotoMeta(d) {
+  if (!d || typeof d !== 'object' || typeof d.rev !== 'number' || !isFinite(d.rev)) return;
+  const by = (typeof d.by === 'string') ? d.by.slice(0, 24) : '';
+  const newer = d.rev > pfPhoto.rev || (d.rev === pfPhoto.rev && by > pfPhoto.by);
+  if (!newer || !isConnected()) return;
+  try { conn.send({ type: 'prof-photo-req', rev: d.rev }); } catch (e) {}
+}
+function receivePhotoReq(d) {
+  if (!d || typeof d !== 'object' || typeof d.rev !== 'number' || !isFinite(d.rev)) return;
+  if (pfPhoto.rev >= d.rev) pfPhotoSend();
 }
 function receivePhoto(d) {
   if (!d || typeof d !== 'object' || typeof d.rev !== 'number' || !isFinite(d.rev)) return;
