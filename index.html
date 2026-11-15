@@ -1126,6 +1126,13 @@ body.np-open #app > #bp-tabs { display: none !important; }
 @media (prefers-reduced-motion: reduce) { .pf-sw, .pf-sw::after, .pf-in, .pf-bars i { transition: none; } }
 /* ---- Profil: düzenleme tuşu, Leap rozeti, @ ön eki, cihaz listesi ---- */
 .pf-in.ro-date { pointer-events: none; }
+.pf-in[type="date"]::-webkit-calendar-picker-indicator { display: none; }
+.pf-in[type="date"]::-webkit-datetime-edit { padding: 0; }
+.pf-in[type="date"] { text-align: right; }
+.pf-in.pf-mask { -webkit-text-security: disc; text-security: disc; }
+.pf-in.pf-mask.pf-show { -webkit-text-security: none; text-security: none; }
+body:not(.pf-editing) #pf-uid-row { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+body:not(.pf-editing) #pf-uid { cursor: pointer; }
 #pf-edit { position: absolute; z-index: 2; top: 10px; right: 2px; width: 36px; height: 36px; background: var(--c-111); border: 1px solid var(--c-33); color: var(--c-cc); }
 #pf-edit:not(.shown):not(.can) { display: none; }
 #pf-edit.shown { color: var(--on-accent); background: var(--accent); border-color: var(--accent); }
@@ -1911,8 +1918,7 @@ body.gm-on #leap-hud { display: none !important; }
     <div class="pf-sec">
       <div class="pf-st">Güvenlik</div>
       <div class="pf-card">
-        <label class="pf-row"><span class="pf-l">Şifre<small id="pf-pass-at"></small></span><span class="pf-v"><input class="pf-in" id="pf-pass" type="password" maxlength="64" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-secret" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><button type="button" class="pf-ib" id="pf-eye" aria-label="Şifreyi göster"><svg class="e1" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="e2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-6.4 0-10-7-10-7a18.4 18.4 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/></svg></button></span></label>
-        <div class="pf-sub" id="pf-str-row"><div class="pf-bars" id="pf-bars"><i></i><i></i><i></i><i></i></div><span class="pf-sl" id="pf-str-l"></span></div>
+        <label class="pf-row"><span class="pf-l">Şifre</span><span class="pf-v"><input class="pf-in pf-mask" id="pf-pass" type="text" maxlength="64" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-note-a" inputmode="text" enterkeyhint="done" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><button type="button" class="pf-ib" id="pf-eye" aria-label="Şifreyi göster"><svg class="e1" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="e2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-6.4 0-10-7-10-7a18.4 18.4 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/></svg></button></span></label>
         <div class="pf-row"><span class="pf-l">İki aşamalı doğrulama</span><span class="pf-v"><button type="button" class="pf-sw" id="pf-tfa" role="switch" aria-checked="false" aria-label="İki aşamalı doğrulama"></button></span></div>
       </div>
     </div>
@@ -1935,7 +1941,7 @@ body.gm-on #leap-hud { display: none !important; }
       <div class="pf-st">Kayıt</div>
       <div class="pf-card">
         <label class="pf-row"><span class="pf-l">Hesap açılışı<small id="pf-since"></small></span><span class="pf-v"><input class="pf-in" id="pf-created" type="date" min="2000-01-01" name="pf-created" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
-        <label class="pf-row"><span class="pf-l">Hesap ID</span><span class="pf-v"><input class="pf-in mono" id="pf-uid" type="text" inputmode="numeric" maxlength="12" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-uid" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><button type="button" class="pf-ib" id="pf-copy" aria-label="ID'yi kopyala"><svg class="e1" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span></label>
+        <label class="pf-row" id="pf-uid-row"><span class="pf-l">Hesap ID</span><span class="pf-v"><input class="pf-in mono" id="pf-uid" type="text" maxlength="20" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-uid" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
       </div>
       <div class="pf-hint" id="pf-foot"></div>
     </div>
@@ -11413,7 +11419,7 @@ const pfDevId = (() => {
   return v;
 })();
 if (!pfBy) pfBy = pfDevId;
-let pfEditing = false;   // yalnızca 6687: kalem tuşuyla açılır; kapalıyken 3828 ile aynı görünür
+let pfEditing = false, pfCopying = false;   // yalnızca 6687: kalem tuşuyla açılır; kapalıyken 3828 ile aynı görünür
 ['pfDevs', 'pfKickT'].forEach((k) => { lsRemove(k); });
 function pfCan() { return pfEditing && notifCanSend(); }
 function pfPad(n) { return String(n).padStart(2, '0'); }
@@ -11441,14 +11447,13 @@ function pfCleanDevs(a) {
 }
 function pfClean(o) {
   o = (o && typeof o === 'object') ? o : {};
-  const pa = Number(o.passAt);
   return {
     user: pfStr(o.user, 24).toLowerCase().replace(/[^a-z0-9._]/g, ''),
     disp: pfStr(o.disp, 40), real: pfStr(o.real, 60),
     birth: pfDate(o.birth),
-    pass: pfStr(o.pass, 64), passAt: (isFinite(pa) && pa > 0) ? Math.floor(pa) : 0,
+    pass: pfStr(o.pass, 64),
     tfa: o.tfa ? 1 : 0,
-    created: pfDate(o.created) || pfToday(), uid: pfStr(o.uid, 12).replace(/\D/g, '') || pfNewId(),
+    created: pfDate(o.created) || pfToday(), uid: pfStr(o.uid, 20).replace(/[^A-Za-z0-9]/g, '') || pfNewId(),
     dv: pfCleanDevs(o.dv)
   };
 }
@@ -11483,7 +11488,7 @@ function pfSetEdit(v) {
   pfEditing = v;
   if (!v) {
     try { const a = document.activeElement; if (a && a.closest && a.closest('#pf-scroll')) a.blur(); } catch (e) {}
-    const p = pfEl('pf-pass'); if (p) { p.type = 'password'; const e = pfEl('pf-eye'); if (e) e.classList.remove('shown'); }
+    const p = pfEl('pf-pass'); if (p) { p.classList.remove('pf-show'); const e = pfEl('pf-eye'); if (e) e.classList.remove('shown'); }
   }
   pfRender();
 }
@@ -11572,16 +11577,11 @@ function pfRender() {
     el.readOnly = !can;
     el.classList.toggle('ro-date', !can && el.type === 'date');
     el.placeholder = can ? 'Ekle' : '—';
-    if (document.activeElement !== el && el.value !== d[k]) el.value = d[k];
+    if (document.activeElement !== el && el.value !== d[k] && !(k === 'uid' && pfCopying)) el.value = d[k];
   });
   pfFitUser();
   pfEl('pf-age').textContent = pfAge(d.birth);
   pfEl('pf-since').textContent = pfSince(d.created);
-  pfEl('pf-pass-at').textContent = (d.pass && d.passAt) ? 'Değişti: ' + pfFmtTs(d.passAt) : '';
-  const sc = pfStrength(d.pass);
-  pfEl('pf-str-row').classList.toggle('show', sc > 0);
-  pfEl('pf-bars').className = 'pf-bars' + (sc ? ' s' + sc : '');
-  pfEl('pf-str-l').textContent = ['', 'Zayıf', 'Orta', 'İyi', 'Güçlü'][sc] || '';
   const sw = pfEl('pf-tfa');
   sw.classList.toggle('on', !!d.tfa); sw.classList.toggle('ro', !can);
   sw.setAttribute('aria-checked', d.tfa ? 'true' : 'false');
@@ -11597,7 +11597,7 @@ function pfRender() {
     birth: (v) => { if (v === '') return ''; const x = pfDate(v); return (x && x <= pfToday() && x >= '1900-01-01') ? x : null; },
     pass: (v) => v.slice(0, 64),
     created: (v) => pfDate(v) || null,
-    uid: (v) => { v = v.replace(/\s/g, ''); return /^\d{6,12}$/.test(v) ? v : null; }
+    uid: (v) => { v = v.replace(/\s/g, ''); return /^[A-Za-z0-9]{1,20}$/.test(v) ? v : null; }
   };
   const flash = (el) => { el.classList.add('bad'); setTimeout(() => el.classList.remove('bad'), 800); };
   Object.keys(RULES).forEach((k) => {
@@ -11609,7 +11609,6 @@ function pfRender() {
       if (nv === null) { flash(el); el.value = pfData[k]; pfFitUser(); return; }
       if (nv === pfData[k]) { el.value = nv; return; }
       const patch = {}; patch[k] = nv;
-      if (k === 'pass') patch.passAt = nv ? Date.now() : 0;
       pfCommit(patch);
     });
     if (el.tagName === 'INPUT') el.addEventListener('keydown', (e) => {
@@ -11618,25 +11617,35 @@ function pfRender() {
     });
   });
   pfEl('pf-user').addEventListener('input', (e) => { const el = e.target, v = el.value.toLowerCase().replace(/[^a-z0-9._@]/g, ''); if (v !== el.value) el.value = v; pfFitUser(); });
-  pfEl('pf-uid').addEventListener('input', (e) => { const el = e.target, v = el.value.replace(/[^\d\s]/g, ''); if (v !== el.value) el.value = v; });
+  pfEl('pf-uid').addEventListener('input', (e) => { const el = e.target, v = el.value.replace(/[^A-Za-z0-9]/g, ''); if (v !== el.value) el.value = v; });
   pfEl('pf-edit').addEventListener('click', () => { if (notifCanSend()) pfSetEdit(!pfEditing); });
   pfEl('pf-eye').addEventListener('click', () => {
-    const p = pfEl('pf-pass'), show = p.type === 'password';
-    p.type = show ? 'text' : 'password';
+    const p = pfEl('pf-pass'), show = !p.classList.contains('pf-show');
+    p.classList.toggle('pf-show', show);
     pfEl('pf-eye').classList.toggle('shown', show);
   });
-  pfEl('pf-copy').addEventListener('click', () => {
-    const b = pfEl('pf-copy'), txt = pfData.uid;
-    const done = () => { b.classList.add('ok'); setTimeout(() => b.classList.remove('ok'), 1200); };
+  // Hesap ID: düzenleme kapalıyken alanın neresine basılırsa kopyalanır
+  pfEl('pf-uid-row').addEventListener('click', (e) => {
+    if (pfCan()) return;
+    e.preventDefault();
+    const el = pfEl('pf-uid'), txt = pfData.uid;
+    if (pfCopying) return;
+    const done = () => {
+      pfCopying = true; el.value = 'Kopyalandı';
+      try { el.blur(); } catch (x) {}
+      setTimeout(() => { pfCopying = false; el.value = pfData.uid; }, 1200);
+    };
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(txt).then(done, () => {}); return; }
-    } catch (e) {}
+    } catch (x) {}
     try {
       const ta = document.createElement('textarea');
       ta.value = txt; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
       document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done();
-    } catch (e) {}
+    } catch (x) {}
   });
+  // Tarih kutusu: sağdaki takvim simgesi gizli; düzenlemede kutuya basınca takvim açılır
+  ['birth', 'created'].forEach((k) => { const el = pfEl('pf-' + k); el.addEventListener('click', () => { if (pfCan()) { try { el.showPicker(); } catch (x) {} } }); });
   pfEl('pf-tfa').addEventListener('click', () => { if (pfCan()) pfCommit({ tfa: pfData.tfa ? 0 : 1 }); });
   // Cihaz ekle / çıkar (yalnızca düzenleme modunda)
   let dKind = 'phone';
