@@ -926,7 +926,7 @@ body.fs-large { --msg-fs:17px; --nick-fs:14.5px; --time-fs:14.5px; --reply-fs:13
 .seg-btn.danger { background: var(--dng-bg); color: #fff; }
 .seg-btn.danger:active { background: var(--dng-bg-a); }
 /* ---- Ayar grupları: açılır/kapanır ---- */
-.set-title { display: flex; align-items: center; justify-content: space-between; text-align: left; background: var(--c-22); padding: 8px 10px; border-radius: var(--r-lg); margin-bottom: 6px; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.set-title { cursor: default; display: flex; align-items: center; justify-content: space-between; text-align: left; background: var(--c-22); padding: 8px 10px; border-radius: var(--r-lg); margin-bottom: 6px; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .set-arrow { display: inline-block; font-size: 22px; line-height: 1; font-weight: 400; transform: rotate(90deg); transition: transform .25s ease; margin-left: 8px; }
 .set-block.collapsed .set-arrow { transform: rotate(0deg); }
 .set-collapse { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .25s ease, visibility 0s linear 0s; }
@@ -1150,6 +1150,12 @@ body.lv-admin:not(.pf-editing) #leap-bar .leap-num { cursor: default; }
 #pf-hero .leap-ext.open { margin-bottom: 2px; }
 #pf-hero .leap-ext-row { padding: 8px 0 0; }
 #pf-hero .leap-delta { height: 36px; border-radius: 10px; text-align: center; }
+.pf-chip.pf-tagchip { min-width: 0; max-width: 100%; color: var(--c-fff); }
+.pf-chip.pf-tagchip.empty { display: none; }
+.pf-tagchip .pf-in { flex: 0 0 auto; width: 40px; max-width: 100%; margin: 0; padding: 2px 0 0; background: transparent; box-shadow: none; text-align: center; font-size: inherit; font-weight: 400; line-height: 1.3; color: var(--c-fff); }
+.pf-tagchip .pf-in:not(:read-only):focus { background: transparent; box-shadow: none; }
+body.pf-editing .pf-tagchip { border-color: var(--accent); }
+body.pf-editing .pf-tagchip .pf-in { font-size: 16px; }
 .pf-pre { color: var(--c-dd); font-size: 16px; font-weight: 400; line-height: 1.3; }
 .pf-vu { gap: 1px; }
 .pf-vu .pf-in { flex: 0 0 auto; width: 60px; max-width: calc(100% - 14px); text-align: left; padding-left: 0; }
@@ -1378,6 +1384,7 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 #settings-scroll .set-title::before { content: ""; flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; background-color: var(--c-44); background-repeat: no-repeat; background-position: center; background-size: 14px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
 #settings-scroll .set-title:active { background: var(--c-22); }
 #settings-scroll .set-title:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+#settings-scroll .set-title { cursor: default; }
 #settings-scroll .set-val { flex: 1 1 auto; text-align: right; font-size: 12.5px; font-weight: 300; color: var(--c-cc); opacity: .8; }
 #settings-scroll .set-arrow { margin-left: 0; font-size: 20px; opacity: .5; }
 #settings-scroll .set-body { background: transparent; border-radius: 0; padding: 0 14px 12px; }
@@ -1899,7 +1906,7 @@ body.gm-on #leap-hud { display: none !important; }
       <div id="pf-av"><span id="pf-av-t">?</span></div>
       <div id="pf-hname">—</div>
       <div id="pf-huser"></div>
-      <div id="pf-chips"><span class="pf-chip pf-leap" id="leap-bar"><i></i><span class="leap-name">Leap</span><span class="leap-num" id="leap-num">0</span></span></div>
+      <div id="pf-chips"><span class="pf-chip pf-tagchip" id="pf-tagchip"><input class="pf-in" id="pf-tag" type="text" maxlength="24" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-tag" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span><span class="pf-chip pf-leap" id="leap-bar"><i></i><span class="leap-name">Leap</span><span class="leap-num" id="leap-num">0</span></span></div>
       <div class="leap-ext" id="leap-ext" inert><div class="leap-ext-clip"><div class="leap-ext-row">
         <input class="leap-delta" id="leap-delta" type="text" autocomplete="off" spellcheck="false" name="leap-d" autocorrect="off" autocapitalize="off" enterkeyhint="done" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
       </div></div></div>
@@ -1908,10 +1915,10 @@ body.gm-on #leap-hud { display: none !important; }
     <div class="pf-sec">
       <div class="pf-st">Hesap</div>
       <div class="pf-card">
-        <label class="pf-row"><span class="pf-l">Kullanıcı adı</span><span class="pf-v pf-vu"><span class="pf-pre">@</span><input class="pf-in" id="pf-user" type="text" maxlength="24" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-handle" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
-        <label class="pf-row"><span class="pf-l">Görünen isim</span><span class="pf-v"><input class="pf-in" id="pf-disp" type="text" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-display" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
-        <label class="pf-row"><span class="pf-l">Gerçek isim</span><span class="pf-v"><input class="pf-in" id="pf-real" type="text" maxlength="60" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-legal" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
-        <label class="pf-row"><span class="pf-l">Doğum tarihi<small id="pf-age"></small></span><span class="pf-v"><input class="pf-in" id="pf-birth" type="date" min="1900-01-01" name="pf-birth" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
+        <label class="pf-row"><span class="pf-l">Kullanıcı Adı</span><span class="pf-v pf-vu"><span class="pf-pre">@</span><input class="pf-in" id="pf-user" type="text" maxlength="24" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-handle" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
+        <label class="pf-row"><span class="pf-l">Görünen İsim</span><span class="pf-v"><input class="pf-in" id="pf-disp" type="text" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-display" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
+        <label class="pf-row"><span class="pf-l">Gerçek İsim</span><span class="pf-v"><input class="pf-in" id="pf-real" type="text" maxlength="60" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-legal" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
+        <label class="pf-row"><span class="pf-l">Doğum Tarihi<small id="pf-age"></small></span><span class="pf-v"><input class="pf-in" id="pf-birth" type="date" min="1900-01-01" name="pf-birth" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
       </div>
     </div>
 
@@ -1919,7 +1926,7 @@ body.gm-on #leap-hud { display: none !important; }
       <div class="pf-st">Güvenlik</div>
       <div class="pf-card">
         <label class="pf-row"><span class="pf-l">Şifre</span><span class="pf-v"><input class="pf-in pf-mask" id="pf-pass" type="text" maxlength="64" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-note-a" inputmode="text" enterkeyhint="done" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><button type="button" class="pf-ib" id="pf-eye" aria-label="Şifreyi göster"><svg class="e1" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="e2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-6.4 0-10-7-10-7a18.4 18.4 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/></svg></button></span></label>
-        <div class="pf-row"><span class="pf-l">İki aşamalı doğrulama</span><span class="pf-v"><button type="button" class="pf-sw" id="pf-tfa" role="switch" aria-checked="false" aria-label="İki aşamalı doğrulama"></button></span></div>
+        <div class="pf-row"><span class="pf-l">İki Aşamalı Doğrulama</span><span class="pf-v"><button type="button" class="pf-sw" id="pf-tfa" role="switch" aria-checked="false" aria-label="İki Aşamalı Doğrulama"></button></span></div>
       </div>
     </div>
 
@@ -1940,8 +1947,9 @@ body.gm-on #leap-hud { display: none !important; }
     <div class="pf-sec">
       <div class="pf-st">Kayıt</div>
       <div class="pf-card">
-        <label class="pf-row"><span class="pf-l">Hesap açılışı<small id="pf-since"></small></span><span class="pf-v"><input class="pf-in" id="pf-created" type="date" min="2000-01-01" name="pf-created" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
-        <label class="pf-row" id="pf-uid-row"><span class="pf-l">Hesap ID</span><span class="pf-v"><input class="pf-in mono" id="pf-uid" type="text" maxlength="20" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-uid" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
+        <label class="pf-row"><span class="pf-l">Tepsi</span><span class="pf-v"><input class="pf-in" id="pf-tray" type="text" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-tray" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
+        <label class="pf-row"><span class="pf-l">Hesap Açılışı<small id="pf-since"></small></span><span class="pf-v"><input class="pf-in" id="pf-created" type="date" min="2000-01-01" name="pf-created" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
+        <label class="pf-row" id="pf-uid-row"><span class="pf-l">Hesap Maskesi</span><span class="pf-v"><input class="pf-in mono" id="pf-uid" type="text" maxlength="20" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="pf-uid" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
       </div>
       <div class="pf-hint" id="pf-foot"></div>
     </div>
@@ -1951,7 +1959,7 @@ body.gm-on #leap-hud { display: none !important; }
   <div id="bp-page-set" class="bp-page">
 <div id="settings-scroll">
   <div class="set-block" id="blk-live" style="display:none">
-    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Mesajlar</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
+    <div class="set-title"><span>Mesajlar</span><span class="set-val"></span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
     <div class="seg" id="seg-live">
       <button type="button" class="seg-btn active" data-val="static" aria-pressed="true">Statik</button>
@@ -1959,7 +1967,7 @@ body.gm-on #leap-hud { display: none !important; }
     </div></div></div></div>
   </div>
   <div class="set-block sb-theme">
-    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Tema</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
+    <div class="set-title"><span>Tema</span><span class="set-val"></span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
     <div class="seg" id="seg-theme">
       <button type="button" class="seg-btn active" data-val="black" aria-pressed="true">Siyah</button>
@@ -1969,7 +1977,7 @@ body.gm-on #leap-hud { display: none !important; }
     </div></div></div></div>
   </div>
   <div class="set-block sb-size">
-    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Boyut</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
+    <div class="set-title"><span>Boyut</span><span class="set-val"></span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
     <div class="seg" id="seg-fs">
       <button type="button" class="seg-btn" data-val="small" aria-pressed="false">Küçük</button>
@@ -1978,7 +1986,7 @@ body.gm-on #leap-hud { display: none !important; }
     </div></div></div></div>
   </div>
   <div class="set-block sb-time">
-    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Saat</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
+    <div class="set-title"><span>Saat</span><span class="set-val"></span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
     <div class="seg" id="seg-time">
       <button type="button" class="seg-btn active" data-val="show" aria-pressed="true">Göster</button>
@@ -1987,7 +1995,7 @@ body.gm-on #leap-hud { display: none !important; }
     </div></div></div>
   </div>
   <div class="set-block sb-fab">
-    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Menü</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
+    <div class="set-title"><span>Menü</span><span class="set-val"></span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
     <div class="seg" id="seg-fab">
       <button type="button" class="seg-btn active" data-val="float" aria-pressed="true">Yüzen</button>
@@ -1996,7 +2004,7 @@ body.gm-on #leap-hud { display: none !important; }
     </div></div></div>
   </div>
   <div class="set-block sb-nick">
-    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>İsimler</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
+    <div class="set-title"><span>İsimler</span><span class="set-val"></span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
     <div class="seg" id="seg-nick">
       <button type="button" class="seg-btn active" data-val="show" aria-pressed="true">Göster</button>
@@ -2005,7 +2013,7 @@ body.gm-on #leap-hud { display: none !important; }
     </div></div></div>
   </div>
   <div class="set-block" id="blk-haptic">
-    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Titreşim</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
+    <div class="set-title"><span>Titreşim</span><span class="set-val"></span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
     <div class="seg" id="seg-haptic">
       <button type="button" class="seg-btn active" data-val="on" aria-pressed="true">Açık</button>
@@ -2013,7 +2021,7 @@ body.gm-on #leap-hud { display: none !important; }
     </div></div></div></div>
   </div>
   <div class="set-block" id="blk-setup">
-    <div class="set-title" role="button" tabindex="0" aria-expanded="true"><span>Kurulum</span><span class="set-val"></span><span class="set-arrow" aria-hidden="true">›</span></div>
+    <div class="set-title"><span>Kurulum</span><span class="set-val"></span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
     <div class="seg" id="seg-setup">
       <button type="button" class="seg-btn" id="setup-show-btn">Göster</button>
@@ -11449,7 +11457,7 @@ function pfClean(o) {
   o = (o && typeof o === 'object') ? o : {};
   return {
     user: pfStr(o.user, 24).toLowerCase().replace(/[^a-z0-9._]/g, ''),
-    disp: pfStr(o.disp, 40), real: pfStr(o.real, 60),
+    disp: pfStr(o.disp, 40), real: pfStr(o.real, 60), tag: pfStr(o.tag, 24), tray: pfStr(o.tray, 40),
     birth: pfDate(o.birth),
     pass: pfStr(o.pass, 64),
     tfa: o.tfa ? 1 : 0,
@@ -11529,14 +11537,17 @@ function pfSvg(k) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + PF_I
 // Kullanıcı adı kutusu yazının genişliğine kadar daralır: "@" her zaman yazının hemen solunda durur
 let pfMeasureCtx = null;
 function pfFitUser() {
-  const el = pfEl('pf-user');
+  pfFitEl(pfEl('pf-tag'), 2);
+  pfFitEl(pfEl('pf-user'), 12);
+}
+function pfFitEl(el, extra) {
   if (!el) return;
   try {
     if (!pfMeasureCtx) pfMeasureCtx = document.createElement('canvas').getContext('2d');
     const cs = getComputedStyle(el);
     pfMeasureCtx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
     const w = pfMeasureCtx.measureText(el.value || el.placeholder || '').width;
-    el.style.width = (Math.ceil(w) + 12) + 'px';
+    el.style.width = (Math.ceil(w) + extra) + 'px';
   } catch (e) {}
 }
 function pfRenderDevs(can) {
@@ -11571,7 +11582,7 @@ function pfRender() {
   const eb = pfEl('pf-edit');
   eb.classList.toggle('can', adm); eb.classList.toggle('shown', can);
   eb.setAttribute('aria-label', can ? 'Düzenlemeyi bitir' : 'Düzenle'); eb.title = can ? 'Düzenlemeyi bitir' : 'Düzenle';
-  ['user', 'disp', 'real', 'birth', 'pass', 'created', 'uid'].forEach((k) => {
+  ['user', 'disp', 'real', 'birth', 'pass', 'tray', 'tag', 'created', 'uid'].forEach((k) => {
     const el = pfEl('pf-' + k);
     if (!el) return;
     el.readOnly = !can;
@@ -11579,13 +11590,20 @@ function pfRender() {
     el.placeholder = can ? 'Ekle' : '—';
     if (document.activeElement !== el && el.value !== d[k] && !(k === 'uid' && pfCopying)) el.value = d[k];
   });
+  pfEl('pf-tagchip').classList.toggle('empty', !can && !d.tag);
   pfFitUser();
   pfEl('pf-age').textContent = pfAge(d.birth);
   pfEl('pf-since').textContent = pfSince(d.created);
+  const pw = pfEl('pf-pass'), noPw = !!d.tfa;
+  pw.classList.toggle('pf-mask', !noPw);
+  if (noPw) { pw.readOnly = true; pw.value = 'Yok'; pw.classList.remove('pf-show'); }
+  else if (pw.value === 'Yok' && d.pass !== 'Yok') pw.value = d.pass;
+  pfEl('pf-eye').style.display = noPw ? 'none' : '';
+  if (noPw) pfEl('pf-eye').classList.remove('shown');
   const sw = pfEl('pf-tfa');
   sw.classList.toggle('on', !!d.tfa); sw.classList.toggle('ro', !can);
   sw.setAttribute('aria-checked', d.tfa ? 'true' : 'false');
-  pfEl('pf-foot').textContent = can ? '' : 'Bu bilgiler yalnızca görüntülenebilir.';
+  pfEl('pf-foot').textContent = '';
   pfRenderDevs(can);
 }
 (function initProfile() {
@@ -11594,6 +11612,8 @@ function pfRender() {
     user: (v) => { v = v.trim().toLowerCase().replace(/^@+/, ''); return (v === '' || /^[a-z0-9._]{3,24}$/.test(v)) ? v : null; },
     disp: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 40),
     real: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 60),
+    tag: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 24),
+    tray: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 40),
     birth: (v) => { if (v === '') return ''; const x = pfDate(v); return (x && x <= pfToday() && x >= '1900-01-01') ? x : null; },
     pass: (v) => v.slice(0, 64),
     created: (v) => pfDate(v) || null,
@@ -11616,6 +11636,7 @@ function pfRender() {
       else if (e.key === 'Escape') { el.value = pfData[k]; el.blur(); pfFitUser(); }
     });
   });
+  pfEl('pf-tag').addEventListener('input', pfFitUser);
   pfEl('pf-user').addEventListener('input', (e) => { const el = e.target, v = el.value.toLowerCase().replace(/[^a-z0-9._@]/g, ''); if (v !== el.value) el.value = v; pfFitUser(); });
   pfEl('pf-uid').addEventListener('input', (e) => { const el = e.target, v = el.value.replace(/[^A-Za-z0-9]/g, ''); if (v !== el.value) el.value = v; });
   pfEl('pf-edit').addEventListener('click', () => { if (notifCanSend()) pfSetEdit(!pfEditing); });
@@ -11789,36 +11810,11 @@ function pfRender() {
   sync();
   ['membersData', 'membersRev', 'membersBy'].forEach((k) => { lsRemove(k); });
 })();
-/* ---- Ayar gruplarını aç/kapat (localStorage'da saklanır) ---- */
+/* ---- Ayar grupları hep açık ---- */
 (function () {
-  const KEY = 'settingsCollapsed';
-  let closed = [];
-  const blocks = Array.from(document.querySelectorAll('#settings-scroll .set-block'));
-  const idOf = (b, i) => b.id || ('blk-' + i);
-  // Durum yalnızca uygulama içi yenile tuşuyla yenilemede korunur; diğer tüm açılışlarda hepsi kapalı.
-  let keep = false, saved = null;
-  try {
-    keep = sessionStorage.getItem('keepSettingsState') === '1';
-    sessionStorage.removeItem('keepSettingsState');
-    saved = sessionStorage.getItem(KEY);
-    localStorage.removeItem(KEY);
-  } catch (e) {}
-  if (keep && saved !== null) { try { closed = JSON.parse(saved) || []; } catch (e) { closed = blocks.map(idOf); } }
-  else closed = blocks.map(idOf);
-  document.body.classList.add('no-anim');
-  blocks.forEach((b, i) => {
-    const t = b.querySelector('.set-title');
-    if (closed.indexOf(idOf(b, i)) !== -1) { b.classList.add('collapsed'); t.setAttribute('aria-expanded', 'false'); }
-    const toggle = () => {
-      const c = b.classList.toggle('collapsed');
-      t.setAttribute('aria-expanded', c ? 'false' : 'true');
-      const list = blocks.filter(x => x.classList.contains('collapsed')).map((x) => idOf(x, blocks.indexOf(x)));
-      try { sessionStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {}
-    };
-    t.addEventListener('click', toggle);
-    t.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
-  });
-  requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove('no-anim')));
+  // Ayar grupları artık hep açık; kapatılamaz
+  try { sessionStorage.removeItem('keepSettingsState'); sessionStorage.removeItem('settingsCollapsed'); localStorage.removeItem('settingsCollapsed'); } catch (e) {}
+  document.querySelectorAll('#settings-scroll .set-block').forEach((b) => b.classList.remove('collapsed'));
 })();
 /* ---- Grup başlığında seçili ayarın kısa adı ---- */
 (function () {
