@@ -1151,6 +1151,9 @@ body.np-open #app > #bp-tabs { display: none !important; }
 .pf-in[type="date"]::-webkit-calendar-picker-indicator { display: none; }
 .pf-in[type="date"]::-webkit-datetime-edit { padding: 0; }
 .pf-in[type="date"] { text-align: right; }
+/* Android WebView: tarih degeri varsayilan olarak ortalanir, saga yasla */
+.pf-in[type="date"]::-webkit-date-and-time-value { text-align: right; }
+.pf-in[type="date"]::-webkit-datetime-edit { text-align: right; }
 .pf-in.pf-mask { -webkit-text-security: disc; text-security: disc; }
 .pf-in.pf-mask.pf-show { -webkit-text-security: none; text-security: none; }
 body:not(.pf-editing) #pf-uid-row { cursor: pointer; -webkit-tap-highlight-color: transparent; }
