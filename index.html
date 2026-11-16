@@ -7087,14 +7087,15 @@ var GM_ST = [
   { id: 'brd', x: 83, y: 52.1, w: 12, h: 9.5, sx: 78, sy: 57.1, l: 'Patso', c: '#c98f4a' },
   { id: 'ket', x: 83, y: 62.9, w: 12, h: 9.5, sx: 78, sy: 67.9, l: 'Ketçap', c: '#8f2a2a', u: 5 },
   { id: 'may', x: 83, y: 73.7, w: 12, h: 9.5, sx: 78, sy: 78.7, l: 'Mayonez', c: '#e8dcae', d: 1, u: 7 },
-  { id: 'cola', x: 5, y: 85, w: 10, h: 10, sx: 11, sy: 80, l: 'Kola', c: '#a82424' },
-  { id: 'water', x: 18, y: 85, w: 10, h: 10, sx: 23, sy: 80, l: 'Su', c: '#2f86c9' },
-  { id: 'p0', x: 31, y: 85, w: 9, h: 10, sx: 35.5, sy: 80, l: 'Tabak', c: '#ececec' },
-  { id: 'p1', x: 41.5, y: 85, w: 9, h: 10, sx: 46, sy: 80, l: 'Tabak', c: '#ececec' },
-  { id: 'p2', x: 52, y: 85, w: 9, h: 10, sx: 56.5, sy: 80, l: 'Tabak', c: '#ececec' },
-  { id: 'p3', x: 62.5, y: 85, w: 9, h: 10, sx: 67, sy: 80, l: 'Tabak', c: '#ececec' },
-  { id: 'p4', x: 73, y: 85, w: 9, h: 10, sx: 77.5, sy: 80, l: 'Tabak', c: '#ececec' },
-  { id: 'trash', x: 86, y: 85, w: 10, h: 11, sx: 82, sy: 81, l: 'Çöp', c: '#555a62' }
+  { id: 'trash2', x: 5, y: 85, w: 9, h: 11, sx: 9.5, sy: 81, l: 'Çöp', c: '#555a62' },
+  { id: 'cola', x: 15.5, y: 85, w: 9, h: 10, sx: 20, sy: 80, l: 'Kola', c: '#a82424' },
+  { id: 'water', x: 26, y: 85, w: 9, h: 10, sx: 30.5, sy: 80, l: 'Su', c: '#2f86c9' },
+  { id: 'p0', x: 36.5, y: 85, w: 8.5, h: 10, sx: 40.75, sy: 80, l: 'Tabak', c: '#ececec' },
+  { id: 'p1', x: 46.5, y: 85, w: 8.5, h: 10, sx: 50.75, sy: 80, l: 'Tabak', c: '#ececec' },
+  { id: 'p2', x: 56.5, y: 85, w: 8.5, h: 10, sx: 60.75, sy: 80, l: 'Tabak', c: '#ececec' },
+  { id: 'p3', x: 66.5, y: 85, w: 8.5, h: 10, sx: 70.75, sy: 80, l: 'Tabak', c: '#ececec' },
+  { id: 'p4', x: 76.5, y: 85, w: 8.5, h: 10, sx: 80.75, sy: 80, l: 'Tabak', c: '#ececec' },
+  { id: 'trash', x: 87, y: 85, w: 9, h: 11, sx: 83, sy: 81, l: 'Çöp', c: '#555a62' }
 ];
 // Seviye ayarları: her seviye 50 sn, 12 seviye = 10 dk. 4. seviyeden sonra her şey (yürüme, pişme, sabır, müşteri gelişi) eşit oranda hızlanır, artış giderek büyür
 var GM_LVSEC = 80, GM_MAXLV = 12;
@@ -7127,9 +7128,10 @@ function gmPat(lv, w) { return Math.max(28 - 1.5 * Math.max(0, lv - 12), 48 - 2 
 var GM_WK = ['burger', 'cola', 'water', 'patso'], GM_SKIN = ['#f2c6a0', '#d9a07a', '#a86f4d', '#f5d7b8', '#8d5a3b'], GM_HAIR = ['#3a2a1c', '#c9482b', '#e6c34a', '#2c2f6b', '#555'];
 var GM_COOK = { g: [5, 21], f: [4, 18] };
 var GM_MKT = 100, GM_MKT2 = 200, GM_REV = 50, GM_SLOW = 60, GM_REGEN = 180; // market fiyatı (20. dk'ya kadar / sonrası), kalp geri alma bedeli, yavaşlatma süresi (sn), kalpsiz geçen süre (sn)
-// Geç evre: 20. dk (1200 sn) kalp yenilenmez + çoklu sipariş + kalabalık sabır bonusu +2 sn + hız 3x (her 30 sn'de +0.08x, en çok 4x); 26. dk (1560 sn) rush hour; 28. dk (1680 sn) kazanma ekranı
-var GM_LATE = 1200, GM_RUSH = 1560, GM_WIN = 1680, GM_SPMAX = 4;
-function gmLateSp(el) { return Math.min(GM_SPMAX, 3 + .08 * Math.floor((el - GM_LATE) / 30)); } // 20. dk'da 3x, her 30 sn +0.08x, en çok 4x
+// Geç evre: 20. dk (1200 sn) kalp yenilenmez + çoklu sipariş + kalabalık sabır bonusu +2 sn + hız 3x (sabit, artmaz); 26. dk (1560 sn) rush hour; 28. dk (1680 sn) kazanma ekranı
+var GM_LATE = 1200, GM_RUSH = 1560, GM_WIN = 1680, GM_SPMAX = 3;
+function gmLateSp(el) { return GM_SPMAX; } // 20. dk'da 3x, sonra sabit 3x kalır
+var GM_LATEPAT = 1.1; // 20. dk'dan sonra müşteri sabrı bu oranda daha hızlı azalır (~%9 daha az bekler)
 var GM_DAMP = 0.25; // hız 2.2x'i aşınca, aşan kısmın yalnızca bu oranı pişme ve müşteri sabrına yansır (yürüme en çok 3x). Hız göstergesi gerçek hızı gösterir
 function gmEff(sp) { return sp <= 2.2 ? sp : 2.2 + (sp - 2.2) * GM_DAMP; }
 var GM_REV2 = 200, GM_REVINC = 150; // kalp geri alma: 20. dk'dan sonra ilk bedel, her kullanımda eklenen
@@ -7145,6 +7147,7 @@ function gmWantMulti(lv, rush) {
 function gmSt(S) { return S.st || (S.st = { cm: 0, sv: [0, 0], it: {}, n: 0 }); }
 function gmCount(S, i, k) { const t = gmSt(S); if (i === 0 || i === 1) t.sv[i]++; t.it[k] = (t.it[k] || 0) + 1; t.n = (t.n || 0) + 1; }
 var gm = null;
+var GM_CSLOT = [1, 2, 3]; // müşteri kareleri: en sol (0) ve en sağ (4) kare kullanılmaz
 function gmCX(i) { return 10 + i * 20; }
 function gmNew() {
   const P = (x) => ({ x: x, y: 50, h: null, tx: null, ty: 0, a: null, sq: null });
@@ -7203,7 +7206,7 @@ function gmClick(e) {
   if (x < 0 || y < 0 || x > 100 || y > 100) return;
   let a = null, tx = x, ty = y;
   { const ov = gm.vis[vcIAmLeader() ? 1 : 0]; if (ov && Math.hypot(x - ov.x, y - (ov.y - 2)) < 6.5) { a = 'h5'; tx = ov.x; ty = ov.y; } }
-  for (let i = 0; i < 5; i++) if (Math.abs(x - gmCX(i)) < 9 && y > 5 && y < 27) { a = 'c' + i; tx = gmCX(i); ty = 31; }
+  GM_CSLOT.forEach((i) => { if (Math.abs(x - gmCX(i)) < 9 && y > 5 && y < 27) { a = 'c' + i; tx = gmCX(i); ty = 31; } });
   if (!a) for (const st of GM_ST) if (gmOn(gm.S, st) && x >= st.x - 1.5 && x <= st.x + st.w + 1.5 && y >= st.y - 1.5 && y <= st.y + st.h + 1.5) { a = st.id; tx = st.sx; ty = st.sy; break; }
   gmSfxPlay('tap');
   if (vcIAmLeader()) gmAction(gm.S, 0, tx, ty, a);
@@ -7306,7 +7309,7 @@ function gmDo(S, p, a) {
     const i = +m[1], pt = S.pt[i];
     if (GM_MADE.indexOf(h) >= 0 && !pt) { S.pt[i] = h; p.h = null; } else if (!h && pt) { p.h = pt; S.pt[i] = null; }
   }
-  else if (a === 'trash') { p.h = null; }
+  else if (a === 'trash' || a === 'trash2') { p.h = null; }
   else if ((m = /^c([0-4])$/.exec(a))) {
     const c = S.cu[+m[1]];
     if (c && h) {
@@ -7351,7 +7354,7 @@ function gmStep(S, dt) {
   else if (late && !S.tl) { S.tl = 1; S.ev = { k: 'late', tm: 4, d: 4 }; }
   const lvx = Math.floor(S.el / GM_LVSEC) + 1; // seviye 12'den sonra da (80 sn'de bir) hız artışı sürer: 20. dk'da tam 3x
   if (!late && lvx > GM_MAXLV && lvx > (S.xl || 0)) { S.xl = lvx; S.hm = { t: 'Seviye ' + Math.min(16, lvx) + ' · hız ×' + gmSpeedOf(lvx).toFixed(1) + ', müşteriler sıklaşıyor', tm: 4 }; }
-  const tsp = late ? gmLateSp(S.el) : gmSpeedOf(Math.max(lv, lvx)); // 20. dk: 3x, sonra yavaşça artar, en çok 4x
+  const tsp = late ? gmLateSp(S.el) : gmSpeedOf(Math.max(lv, lvx)); // 20. dk: 3x, sonra sabit
   S.sp = (S.sp || 1) + (tsp - (S.sp || 1)) * Math.min(1, dt * 1.2);
   const bdt = dt, wdt = bdt * Math.min(S.sp, 3), edt = bdt * gmEff(S.sp); // yürüme en çok 3x; pişme ve sabır yumuşatılmış hızla işler
   dt *= S.sp; // müşteri gelişi tam hızla işler
@@ -7379,13 +7382,13 @@ function gmStep(S, dt) {
   for (let i = 0; i < 5; i++) if (S.cu[i]) nc++;
   for (let i = 0; i < 5; i++) {
     const c = S.cu[i]; if (!c) continue;
-    n++; c.t -= edt * c.m / (c.m + (late ? 2 : 4) * (nc - 1)); // kalabalıkta sabır uzar: her ek müşteri için +4 sn (20. dk'dan sonra +2 sn)
+    n++; c.t -= edt * (late ? GM_LATEPAT : 1) * c.m / (c.m + (late ? 2 : 4) * (nc - 1)); // kalabalıkta sabır uzar: her ek müşteri için +4 sn (20. dk'dan sonra +2 sn)
     if (c.t <= 0) { S.cu[i] = null; S.ms++; n--; gmLoseHeart(S); if (S.ph === 2) return; }
   }
   S.nx -= dt;
   if (S.nx <= 0) {
-    const lq = Math.min(16, Math.max(lv, Math.floor(S.el / GM_LVSEC) + 1)), maxC = Math.min(5, 2 + Math.floor(lv / 2.5)), free = []; // lq: seviye 12'den sonra da süren zorluk artışı (müşteri sıklığı, sabır)
-    for (let i = 0; i < 5; i++) if (!S.cu[i]) free.push(i);
+    const lq = Math.min(16, Math.max(lv, Math.floor(S.el / GM_LVSEC) + 1)), maxC = Math.min(GM_CSLOT.length, 2 + Math.floor(lv / 2.5)), free = []; // lq: seviye 12'den sonra da süren zorluk artışı (müşteri sıklığı, sabır)
+    GM_CSLOT.forEach((i) => { if (!S.cu[i]) free.push(i); });
     if (n < maxC && free.length) {
       let w, ws = null, m;
       if (late && !S.nw && Math.random() < (rush ? GM_MULTI_PR : GM_MULTI_P)) { ws = gmWantMulti(lv, rush); if (ws.length < 2) ws = null; } // 20. dk'dan sonra çoklu sipariş (rush hour'da daha sık)
@@ -7405,7 +7408,7 @@ function gmLoop(ts) {
   if (host) {
     if (!gm.S) gm.S = gmNew();
     gmStep(gm.S, dt);
-    // veri tasarrufu: hız 1x iken saniyede 5 güncelleme, hız arttıkça artar (3x: ~15, 4x: 20)
+    // veri tasarrufu: hız 1x iken saniyede 5 güncelleme, hız arttıkça artar (3x: ~15)
     if (ts - gm.sent > Math.max(50, 200 / Math.max(1, gm.S.sp || 1))) { gm.sent = ts; try { if (isConnected()) conn.send({ type: 'game-st', msgId: gm.id, s: gm.S }); } catch (e) {} }
   }
   if (gm.S) gm.S.pl.forEach((p, i) => { const v = gm.vis[i], f = host ? 1 : Math.min(1, dt * Math.min(22, 10 + 3 * (gm.S.sp || 1))); v.x += (p.x - v.x) * f; v.y += (p.y - v.y) * f; });
@@ -7469,8 +7472,8 @@ function gmEvCard(c, ev) {
   const late = ev.k === 'late';
   const ttl = late ? '20. DAKİKA' : 'RUSH HOUR!';
   const lines = late
-    ? ['Kalp yenilenmesi bitti', 'Çoklu siparişler başladı', 'Kalabalık sabır bonusu +2 sn', 'Market 200 altın', 'Kalp geri alma 200 altın (+150/kez), 1 kalp', 'Hız ×3, yavaşça ×4\'e çıkar']
-    : ['Hız ×4', 'Son 2 dakika, dayanın!', 'Çoklu siparişler daha sık'];
+    ? ['Kalp yenilenmesi bitti', 'Çoklu siparişler başladı', 'Kalabalık sabır bonusu +2 sn', 'Market 200 altın', 'Kalp geri alma 200 altın (+150/kez), 1 kalp', 'Hız ×3, sabit kalır']
+    : ['Hız ×3 (sabit)', 'Son 2 dakika, dayanın!', 'Çoklu siparişler daha sık'];
   const d = ev.d || 8, al = Math.max(0, Math.min(1, (d - ev.tm) / .25, ev.tm / .6));
   const y0 = late ? 30 : 34; // kısa süreli, küçük ve yarı saydam: oyun alanını kapatmasın
   c.save(); c.globalAlpha = al * .68; c.fillStyle = '#1b1410'; gmRR(c, 20, y0, 60, 9.5 + lines.length * 3.7, 3); c.fill(); c.restore();
@@ -7545,7 +7548,7 @@ function gmDraw(me) {
     else if (id === 'lettuce') gmItem(c, 'lettuce', cx, cy, 7);
     else if (id === 'ket' || id === 'may') gmItem(c, id, cx, cy, 7);
     else if (id === 'brd') gmItem(c, S.brd ? 'patso' : 'bread', cx, cy, 7);
-    else if (id === 'cola' || id === 'water' || id === 'trash') gmItem(c, id, cx, cy, 6.5);
+    else if (id === 'cola' || id === 'water' || id === 'trash' || id === 'trash2') gmItem(c, id === 'trash2' ? 'trash' : id, cx, cy, 6.5);
     else if ((m = /^p([0-4])$/.exec(id))) { c.fillStyle = '#fff'; c.beginPath(); c.arc(cx, cy, 3.8, 0, 7); c.fill(); c.strokeStyle = '#bbb'; c.lineWidth = .4; c.stroke(); if (S.pt[+m[1]]) gmItem(c, S.pt[+m[1]], cx, cy, 6); }
     else if ((m = /^([gf])([01])$/.exec(id))) {
       const q = (m[1] === 'g' ? S.gr : S.fr)[+m[2]], ck = GM_COOK[m[1]];
@@ -7577,8 +7580,7 @@ function gmDraw(me) {
     if (i === me && p.tx !== null) { c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = .5; c.beginPath(); c.arc(p.tx, p.ty, 1.6, 0, 7); c.stroke(); }
     c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(v.x + .4, v.y + 2.6, 3.2, 1.4, 0, 0, 7); c.fill();
     c.fillStyle = col; c.beginPath(); c.arc(v.x, v.y, 3.2, 0, 7); c.fill(); c.strokeStyle = 'rgba(0,0,0,.5)'; c.lineWidth = .4; c.stroke();
-    c.fillStyle = '#fff'; gmRR(c, v.x - 2.2, v.y - 5.2, 4.4, 2.6, 1); c.fill(); c.beginPath(); c.arc(v.x, v.y - 5.4, 2.1, 0, 7); c.fill();
-    c.fillStyle = '#222'; c.beginPath(); c.arc(v.x - 1.1, v.y + .2, .5, 0, 7); c.arc(v.x + 1.1, v.y + .2, .5, 0, 7); c.fill();
+        c.fillStyle = '#222'; c.beginPath(); c.arc(v.x - 1.1, v.y + .2, .5, 0, 7); c.arc(v.x + 1.1, v.y + .2, .5, 0, 7); c.fill();
     if (i === me) { c.strokeStyle = '#fff'; c.lineWidth = .5; c.setLineDash([1, 1]); c.beginPath(); c.arc(v.x, v.y, 4.3, 0, 7); c.stroke(); c.setLineDash([]); }
     if (p.h) { c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.arc(v.x, v.y - 9.2, 3.3, 0, 7); c.fill(); gmItem(c, p.h, v.x, v.y - 9.2, 5); }
     if (p.sq && typeof p.sq.t === 'number') {
