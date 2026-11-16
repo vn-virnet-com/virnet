@@ -11494,6 +11494,7 @@ function goPanel(idx) {
     if (val === 'black') document.documentElement.removeAttribute('data-theme');
     else document.documentElement.setAttribute('data-theme', val);
     if (meta) meta.setAttribute('content', THEMES[val]);
+    try { if (window.VNApp && typeof window.VNApp.setBarColor === 'function') window.VNApp.setBarColor(THEMES[val]); } catch (e) {}
     try { const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]'); if (sb) sb.setAttribute('content', 'black-translucent'); } catch (e) {}
     btns.forEach((b) => {
       const on = b.dataset.val === val;
