@@ -8544,6 +8544,65 @@ window.addEventListener('keydown', (e) => {
   ytMsSkip();
 });
 
+// ===== APK: bildirim paneli medya köprüsü (VNApp.media) + indirme (VNApp.saveFile) =====
+function ytPlPrev() {
+  if (!ytPl) return;
+  ytPl.pos--;
+  if (ytPl.pos < 0) ytPl.pos = ytPl.order.length - 1;
+  ytPl.t = 0; ytPl.playing = true; ytPl.at = Date.now();
+  ytPlPersist();
+  ytPlPlayCurrent(0, false);
+}
+function vnMediaCard() {
+  try {
+    if (ytDockCard && ytDockCard.isConnected && ytDockCard._getState) return ytDockCard;
+    if (ytsGhost && ytsGhost.isConnected && ytsGhost._getState) return ytsGhost;
+  } catch (e) {}
+  return null;
+}
+let vnMediaLast = '';
+function vnMediaPush() {
+  try {
+    if (!window.VNApp || typeof window.VNApp.media !== 'function') return;
+    const c = vnMediaCard();
+    if (!c || c._ended || ytDockDismissed === c) {
+      if (vnMediaLast !== 'none') { vnMediaLast = 'none'; window.VNApp.media('', '', '', 0, 0, false, false, false); }
+      return;
+    }
+    const s = c._getState(), m = c._meta || {};
+    const pl = !!ytPl && !!c._ghost;
+    vnMediaLast = 'on';
+    window.VNApp.media(m.title || 'Şarkı', m.artist || '', c._cover || '', s.cur || 0, s.dur || 0, !!s.playing, pl, pl);
+  } catch (e) {}
+}
+setInterval(vnMediaPush, 1000);
+window.vnMedia = function (a, v) {
+  try {
+    const c = vnMediaCard();
+    if (!c) return;
+    const s = c._getState();
+    if (a === 'play') { if (!s.playing) c._toggle(); }
+    else if (a === 'pause') { if (s.playing) c._toggle(); }
+    else if (a === 'next') { if (ytPl) ytPlNext(); }
+    else if (a === 'prev') { if (ytPl) ytPlPrev(); }
+    else if (a === 'seek') { if (c._seekSec) c._seekSec(Math.max(0, v)); }
+    setTimeout(vnMediaPush, 500);
+  } catch (e) {}
+};
+// APK içinde dosyayı doğrudan galeriye (Pictures/VN) kaydeder; WebView'da <a download> çalışmaz
+function vnSaveBlob(blob, name, mime) {
+  return new Promise((resolve) => {
+    try {
+      const fr = new FileReader();
+      fr.onload = () => {
+        try { resolve(!!window.VNApp.saveFile(name, mime, String(fr.result).split(',')[1] || '')); } catch (e) { resolve(false); }
+      };
+      fr.onerror = () => resolve(false);
+      fr.readAsDataURL(blob);
+    } catch (e) { resolve(false); }
+  });
+}
+
 // Sayfa yenilenince / açılınca: karışık oturum kaldığı şarkı ve saniyeden devam eder
 (function ytPlRestore() {
   const s = ytPlLoad();
@@ -9292,6 +9351,11 @@ async function downloadViewerImage() {
         try { await navigator.share({ files: [file] }); } catch (e) { /* kullanıcı iptal etti */ }
         return;
       }
+    }
+    if (window.VNApp && typeof window.VNApp.saveFile === 'function') {
+      const ok = await vnSaveBlob(blob, name, mime);
+      flashStatus(ok ? 'Fotoğraf indirildi' : 'Fotoğraf indirilemedi');
+      return;
     }
     // Android / masaüstü: doğrudan indir (galeriye düşer)
     const a = document.createElement('a');
@@ -11898,6 +11962,11 @@ async function pfSaveImage(dataUrl, base) {
       if (navigator.canShare({ files: [file] })) {
         try { await navigator.share({ files: [file] }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
       }
+    }
+    if (window.VNApp && typeof window.VNApp.saveFile === 'function') {
+      const ok = await vnSaveBlob(blob, name, mime);
+      flashStatus(ok ? 'Fotoğraf indirildi' : 'Fotoğraf indirilemedi');
+      return;
     }
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = name;
