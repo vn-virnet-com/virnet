@@ -12898,5 +12898,21 @@ function pfRender() {
   }, 400);
 })();
 </script>
+<script>
+/* APK içinde (VNApp köprüsü varsa): ekran görüntüsü / ekran kaydı yalnızca canlı PIN (6687) ile girenlere açık, diğer herkeste kapalı */
+(function () {
+  function guard() {
+    try {
+      if (window.VNApp && typeof window.VNApp.setSecure === 'function') {
+        window.VNApp.setSecure(sessionStorage.getItem('pinLive') !== '1');
+      }
+    } catch (e) {}
+  }
+  window.addEventListener('pin-level', guard);
+  window.addEventListener('pageshow', guard);
+  document.addEventListener('visibilitychange', guard);
+  guard();
+})();
+</script>
 </body>
 </html>
