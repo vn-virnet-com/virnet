@@ -3,19 +3,18 @@
 <head>
 <script>try{if(window.VNApp)document.documentElement.classList.add("vnapp");}catch(e){}</script>
 <script>
-/* Windows cihazlarda siteyi kapat (APK / Android / iOS / Mac etkilenmez) */
+/* Site yalnızca APK içinde çalışır: APK, VNApp köprüsü + kullanıcı aracısı (VNApp/) ile "uygulamadayım" bilgisi yollar */
 (function () {
   try {
-    if (window.VNApp) return;
-    var ud = navigator.userAgentData;
-    var win = (ud && ud.platform === 'Windows') || /Windows NT|Win64|Win32|WOW64/i.test(navigator.userAgent || '');
-    if (!win) return;
+    var ok = false;
+    try { ok = !!(window.VNApp && typeof window.VNApp.isApp === 'function' && window.VNApp.isApp() === true && /VNApp\//.test(navigator.userAgent || '')); } catch (e) {}
+    if (ok) return;
     document.write('<!DOCTYPE html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VN</title>'
       + '<style>html,body{height:100%;margin:0;background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif}'
       + 'body{display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;box-sizing:border-box}'
       + '.c{max-width:340px}.i{width:64px;height:64px;border-radius:50%;background:#fff;color:#000;font-size:30px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}'
-      + 'h1{font-size:20px;margin:0 0 8px}p{margin:0;color:#9b9b9b;font-size:14px;line-height:1.5}</style>'
-      + '<div class="c"><div class="i">!</div><h1>Bu cihazda kullan\u0131lam\u0131yor</h1><p>VN, Windows bilgisayarlarda a\u00e7\u0131lmaz. Telefonundaki uygulamay\u0131 kullan.</p></div>');
+      + 'h1{font-size:20px;margin:0}</style>'
+      + '<div class="c"><div class="i">!</div><h1>L\u00fctfen siteyi uygulamadan a\u00e7\u0131n.</h1></div>');
     window.__vnBlocked = true;
     window.stop();
   } catch (e) {}
