@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+<script>try{if(window.VNApp)document.documentElement.classList.add("vnapp");}catch(e){}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1154,6 +1155,9 @@ body.np-open #app > #bp-tabs { display: none !important; }
 /* Android WebView: tarih degeri varsayilan olarak ortalanir, saga yasla */
 .pf-in[type="date"]::-webkit-date-and-time-value { text-align: right; }
 .pf-in[type="date"]::-webkit-datetime-edit { text-align: right; }
+html.vnapp .pf-in[type="date"] { display: flex !important; justify-content: flex-end !important; text-align: right !important; text-align-last: right !important; }
+html.vnapp .pf-in[type="date"]::-webkit-datetime-edit { flex: 0 0 auto !important; width: auto !important; margin-left: auto !important; padding: 0 !important; text-align: right !important; }
+html.vnapp .pf-in[type="date"]::-webkit-date-and-time-value { width: auto !important; min-height: 0 !important; margin: 0 0 0 auto !important; text-align: right !important; text-align-last: right !important; }
 .pf-in.pf-mask { -webkit-text-security: disc; text-security: disc; }
 .pf-in.pf-mask.pf-show { -webkit-text-security: none; text-security: none; }
 body:not(.pf-editing) #pf-uid-row { cursor: pointer; -webkit-tap-highlight-color: transparent; }
