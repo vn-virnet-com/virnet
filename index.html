@@ -1251,6 +1251,16 @@ button.pf-di:active { background: var(--c-22); }
 .pf-mtot .pf-v { flex: 0 0 auto; gap: 10px; }
 #pf-mem-total { font-size: 15px; font-weight: 700; color: var(--c-fff); font-variant-numeric: tabular-nums; }
 .pf-badge { display: inline-block; padding: 3px 11px; border-radius: var(--r-pill); font-size: 11.5px; font-weight: 700; line-height: 1.35; color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); border: 1px solid color-mix(in srgb, var(--ok) 50%, transparent); }
+.pf-mh:first-child { border-top: 0; }
+.pf-mh .pf-mof { margin-left: 8px; letter-spacing: 0; text-transform: none; color: var(--accent); }
+.pf-badge.gon { color: #ff9f1a; background: color-mix(in srgb, #ff9f1a 15%, transparent); border-color: color-mix(in srgb, #ff9f1a 50%, transparent); }
+.pf-dev > .pf-badge { flex: 0 0 auto; }
+.pf-dev > .pf-oav { width: 38px; height: 38px; font-size: 15px; }
+#pf-ops:empty + #pf-op-add.show { border-top: 0; }
+#pf-op-add { display: none; flex-direction: column; gap: 8px; padding: 11px 13px 13px; border-top: 1px solid var(--c-22); background: var(--c-000); }
+#pf-op-add.show { display: flex; }
+#pf-opadd { width: 100%; padding: 10px 13px; border: 0; border-radius: var(--r-md); background: var(--accent); color: var(--on-accent); font-family: 'Lexend', sans-serif; font-size: 13.5px; font-weight: 700; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+#pf-opadd:active { opacity: .85; }
 .pf-badge.sel { cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .pf-badge.sel:active { opacity: .7; }
 .pf-badge.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 15%, transparent); border-color: color-mix(in srgb, var(--bad) 50%, transparent); }
@@ -2014,9 +2024,17 @@ body.gm-on #leap-hud { display: none !important; }
 
     <div class="pf-sec">
       <div class="pf-st">Operatör ve Bellek</div>
-      <div class="pf-card">
-        <label class="pf-row"><span class="pf-l">Operatör</span><span class="pf-v pf-vo"><button type="button" class="pf-oav inert" id="pf-opav" aria-label="Operatör"><span class="pf-oav-t" id="pf-opav-t">?</span></button><input class="pf-in" id="pf-op" type="text" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-op" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></span></label>
-        <div class="pf-mh">Cihazlar</div>
+      <div class="pf-card" id="pf-ops-card">
+        <div class="pf-mh">Operatör</div>
+        <div id="pf-ops"></div>
+        <div id="pf-op-add">
+          <input class="pf-in pf-dinp" id="pf-opn" type="text" maxlength="40" placeholder="Operatör adı" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-op-name" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
+          <button type="button" id="pf-opadd">Operatör ekle</button>
+        </div>
+      </div>
+      <div class="pf-hint" id="pf-op-hint"></div>
+      <div class="pf-card" id="pf-mem-card" style="margin-top:12px">
+        <div class="pf-mh">Cihazlar<span class="pf-mof" id="pf-mem-of"></span></div>
         <div id="pf-mems"></div>
         <div id="pf-mem-add">
           <div class="pf-seg" id="pf-mk"><button type="button" data-v="phone" class="active"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><line x1="11" y1="18" x2="13" y2="18"/></svg>Telefon</button><button type="button" data-v="desktop"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Bilgisayar</button></div>
@@ -2024,7 +2042,7 @@ body.gm-on #leap-hud { display: none !important; }
           <input class="pf-in pf-dinp" id="pf-mrn" type="text" inputmode="decimal" maxlength="7" placeholder="RAM (GB)" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-mem-ram" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
           <button type="button" id="pf-madd">Cihaz ekle</button>
         </div>
-        <div class="pf-row pf-mtot"><span class="pf-l">Toplam RAM</span><span class="pf-v"><span id="pf-mem-total">0 GB</span><span class="pf-badge bad" id="pf-mem-badge">Yetersiz</span></span></div>
+        <div class="pf-row pf-mtot" id="pf-mtot-row"><span class="pf-l">Toplam RAM</span><span class="pf-v"><span id="pf-mem-total">0 GB</span><span class="pf-badge bad" id="pf-mem-badge">Yetersiz</span></span></div>
       </div>
       <div class="pf-hint" id="pf-mem-hint"></div>
     </div>
@@ -11667,6 +11685,7 @@ function receiveLeap(d) {
 const PF_ID_RE = /^[a-z0-9]{6,20}$/;
 const PF_MAXDEV = 8;
 const PF_MAXMEM = 8;   // bellek cihaz sayısı sınırı
+const PF_MAXOP = 6;    // operatör sayısı sınırı
 let pfRev = parseInt(lsGet('pfRev') || '0', 10) || 0;
 let pfBy = lsGet('pfBy') || '';
 const pfDevId = (() => {
@@ -11681,6 +11700,7 @@ function pfCan() { return pfEditing && notifCanSend(); }
 function pfPad(n) { return String(n).padStart(2, '0'); }
 function pfToday() { const d = new Date(); return d.getFullYear() + '-' + pfPad(d.getMonth() + 1) + '-' + pfPad(d.getDate()); }
 function pfNewId() { let s = String(1 + Math.floor(Math.random() * 9)); for (let i = 0; i < 8; i++) s += Math.floor(Math.random() * 10); return s; }
+function pfNewOpId() { return 'o' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
 function pfNewDevId() { return 'v' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
 function pfStr(v, n) { return (typeof v === 'string' ? v : '').slice(0, n); }
 function pfDate(v) {
@@ -11719,8 +11739,29 @@ function pfCleanMem(a) {
   });
   return out;
 }
+// Operatörler: her birinin kendi bellek cihazları ve Yeterli/Yetersiz durumu var. Seçili (aktif) olan yalnızca biri
+function pfCleanOps(a) {
+  const out = [], seen = {};
+  (Array.isArray(a) ? a : []).slice(0, 24).forEach((r) => {
+    if (!r || typeof r !== 'object' || out.length >= PF_MAXOP) return;
+    const id = (typeof r.id === 'string' && PF_ID_RE.test(r.id)) ? r.id : null;
+    const n = pfStr(r.n, 40).trim();
+    if (!id || seen[id] || !n) return;
+    seen[id] = 1;
+    out.push({ id: id, n: n, mv: pfCleanMem(r.mv), ms: r.ms ? 1 : 0 });
+  });
+  return out;
+}
+function pfSelOp() { return pfData.ops.find((r) => r.id === pfData.sel) || null; }
+function pfSelPatch(fn) { const id = pfData.sel; return pfCommit({ ops: pfData.ops.map((r) => r.id === id ? Object.assign({}, r, fn(r)) : r) }); }
 function pfClean(o) {
   o = (o && typeof o === 'object') ? o : {};
+  let ops = pfCleanOps(o.ops);
+  // Eski tek operatörlü veriden geçiş
+  if (!Array.isArray(o.ops) && (pfStr(o.op, 40).trim() || (Array.isArray(o.mv) && o.mv.length))) {
+    ops = pfCleanOps([{ id: 'operator1', n: pfStr(o.op, 40).trim() || 'Operatör', mv: o.mv, ms: o.ms }]);
+  }
+  const sel = ops.some((r) => r.id === o.sel) ? o.sel : (ops[0] ? ops[0].id : '');
   return {
     user: pfStr(o.user, 24).toLowerCase().replace(/[^a-z0-9._]/g, ''),
     disp: pfStr(o.disp, 40), real: pfStr(o.real, 60), tag: pfStr(o.tag, 24), tray: pfStr(o.tray, 40),
@@ -11729,9 +11770,8 @@ function pfClean(o) {
     tfa: o.tfa ? 1 : 0,
     created: pfDate(o.created) || pfToday(), uid: pfStr(o.uid, 20).replace(/[^A-Za-z0-9]/g, '') || pfNewId(),
     dv: pfCleanDevs(o.dv),
-    op: pfStr(o.op, 40),
-    mv: pfCleanMem(o.mv),
-    ms: o.ms ? 1 : 0
+    ops: ops,
+    sel: sel
   };
 }
 let pfData = (() => { try { return pfClean(JSON.parse(lsGet('pfData') || '{}')); } catch (e) { return pfClean({}); } })();
@@ -11779,39 +11819,65 @@ function pfPhotoSet(dataUrl) {
   pfPhotoSave(); pfPhotoSend(); pfRender();
 }
 /* ---- Operatör fotoğrafı: ana profil fotoğrafıyla aynı eşitleme (en son konulan geçerli; bağlanınca yalnızca zaman damgası gider) ---- */
-let pfOp = (() => { try { const o = JSON.parse(lsGet('pfOpPhoto') || '{}'); return { d: (typeof o.d === 'string' && o.d.length < 150000 && PF_PHOTO_RE.test(o.d)) ? o.d : '', rev: Number(o.rev) || 0, by: pfStr(o.by, 24) }; } catch (e) { return { d: '', rev: 0, by: '' }; } })();
-function pfOpPhotoSave() { try { lsSet('pfOpPhoto', JSON.stringify(pfOp)); } catch (e) {} }
-function pfOpPhotoSend() {
-  if (!isConnected() || !pfOp.rev) return;
-  try { conn.send({ type: 'prof-op-photo', d: pfOp.d, rev: pfOp.rev, by: pfOp.by }); } catch (e) {}
+function pfOpPhClean(o) {
+  const r = {};
+  if (o && typeof o === 'object') Object.keys(o).slice(0, 24).forEach((id) => {
+    const v = o[id];
+    if (!PF_ID_RE.test(id) || !v || typeof v !== 'object') return;
+    r[id] = { d: (typeof v.d === 'string' && v.d.length < 150000 && PF_PHOTO_RE.test(v.d)) ? v.d : '', rev: Number(v.rev) || 0, by: pfStr(v.by, 24) };
+  });
+  return r;
+}
+let pfOpPh = (() => {
+  try {
+    const n = JSON.parse(lsGet('pfOpPhotos') || 'null');
+    if (n && typeof n === 'object') return pfOpPhClean(n);
+    const c = pfOpPhClean({ operator1: JSON.parse(lsGet('pfOpPhoto') || '{}') });   // eski tek operatör fotoğrafı
+    return (c.operator1 && (c.operator1.d || c.operator1.rev)) ? c : {};
+  } catch (e) { return {}; }
+})();
+function pfOpPhOf(id) { return pfOpPh[id] || { d: '', rev: 0, by: '' }; }
+function pfOpPhotoSave() { try { lsSet('pfOpPhotos', JSON.stringify(pfOpPh)); } catch (e) {} }
+function pfOpMsgId(d) { return (typeof d.id === 'string' && PF_ID_RE.test(d.id)) ? d.id : 'operator1'; }
+function pfOpPhotoSend(id) {
+  const p = pfOpPhOf(id);
+  if (!isConnected() || !p.rev) return;
+  try { conn.send({ type: 'prof-op-photo', id: id, d: p.d, rev: p.rev, by: p.by }); } catch (e) {}
 }
 function pfOpPhotoHello() {
-  if (!isConnected() || !pfOp.rev) return;
-  try { conn.send({ type: 'prof-op-photo-meta', rev: pfOp.rev, by: pfOp.by }); } catch (e) {}
+  if (!isConnected()) return;
+  pfData.ops.forEach((r) => {
+    const p = pfOpPhOf(r.id);
+    if (!p.rev) return;
+    try { conn.send({ type: 'prof-op-photo-meta', id: r.id, rev: p.rev, by: p.by }); } catch (e) {}
+  });
 }
 function receiveOpPhotoMeta(d) {
   if (!d || typeof d !== 'object' || typeof d.rev !== 'number' || !isFinite(d.rev)) return;
+  const id = pfOpMsgId(d), p = pfOpPhOf(id);
   const by = (typeof d.by === 'string') ? d.by.slice(0, 24) : '';
-  const newer = d.rev > pfOp.rev || (d.rev === pfOp.rev && by > pfOp.by);
+  const newer = d.rev > p.rev || (d.rev === p.rev && by > p.by);
   if (!newer || !isConnected()) return;
-  try { conn.send({ type: 'prof-op-photo-req', rev: d.rev }); } catch (e) {}
+  try { conn.send({ type: 'prof-op-photo-req', id: id, rev: d.rev }); } catch (e) {}
 }
 function receiveOpPhotoReq(d) {
   if (!d || typeof d !== 'object' || typeof d.rev !== 'number' || !isFinite(d.rev)) return;
-  if (pfOp.rev >= d.rev) pfOpPhotoSend();
+  const id = pfOpMsgId(d);
+  if (pfOpPhOf(id).rev >= d.rev) pfOpPhotoSend(id);
 }
 function receiveOpPhoto(d) {
   if (!d || typeof d !== 'object' || typeof d.rev !== 'number' || !isFinite(d.rev)) return;
+  const id = pfOpMsgId(d), p = pfOpPhOf(id);
   const img = (typeof d.d === 'string' && d.d.length < 150000 && PF_PHOTO_RE.test(d.d)) ? d.d : '';
   const by = (typeof d.by === 'string') ? d.by.slice(0, 24) : '';
-  const newer = d.rev > pfOp.rev || (d.rev === pfOp.rev && by > pfOp.by);
+  const newer = d.rev > p.rev || (d.rev === p.rev && by > p.by);
   if (!newer) return;
-  pfOp = { d: img, rev: d.rev, by: by };
+  pfOpPh[id] = { d: img, rev: d.rev, by: by };
   pfOpPhotoSave(); pfRender();
 }
-function pfOpPhotoSet(dataUrl) {
-  pfOp = { d: dataUrl || '', rev: Math.max(Date.now(), pfOp.rev + 1), by: pfDevId };
-  pfOpPhotoSave(); pfOpPhotoSend(); pfRender();
+function pfOpPhotoSet(id, dataUrl) {
+  pfOpPh[id] = { d: dataUrl || '', rev: Math.max(Date.now(), pfOpPhOf(id).rev + 1), by: pfDevId };
+  pfOpPhotoSave(); pfOpPhotoSend(id); pfRender();
 }
 /* Fotoğrafı galeriye indirir (iOS: paylaşım menüsü → "Görüntüyü Kaydet"; diğerleri doğrudan indirir) */
 async function pfSaveImage(dataUrl, base) {
@@ -11899,7 +11965,6 @@ let pfMeasureCtx = null;
 function pfFitUser() {
   pfFitEl(pfEl('pf-tag'), 2);
   pfFitEl(pfEl('pf-user'), 12);
-  pfFitEl(pfEl('pf-op'), 12);
 }
 function pfFitEl(el, extra) {
   if (!el) return;
@@ -11912,20 +11977,50 @@ function pfFitEl(el, extra) {
   } catch (e) {}
 }
 function pfAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function pfRenderOps(can) {
+  const box = pfEl('pf-ops');
+  if (!box) return;
+  const adm = notifCanSend(), list = pfData.ops, full = list.length >= PF_MAXOP;
+  const add = pfEl('pf-op-add');
+  if (add) add.classList.toggle('show', can && !full);
+  const hint = pfEl('pf-op-hint');
+  if (hint) hint.textContent = !can ? '' : (full ? 'En fazla ' + PF_MAXOP + ' operatör eklenebilir.' : (list.length > 1 ? 'Aktif yapmak istediğin operatörün "Gönüllü" etiketine dokun. Yalnızca biri aktif olur.' : ''));
+  const html = list.map((r) => {
+    const ph = pfOpPhOf(r.id).d, act = r.id === pfData.sel, inert = !adm && !ph;
+    const lbl = adm ? 'Operatör fotoğrafını değiştir' : (ph ? 'Operatör fotoğrafını büyüt' : 'Operatör');
+    return '<div class="pf-dev" data-id="' + r.id + '">' +
+      '<button type="button" class="pf-oav' + (ph ? ' has-photo' : '') + (inert ? ' inert' : '') + '" aria-label="' + lbl + '"' + (ph ? ' style="background-image:url(' + ph + ')"' : '') + '><span class="pf-oav-t">' + escapeHtml((Array.from(r.n.trim())[0] || '?').toUpperCase()) + '</span></button>' +
+      '<div class="pf-dm">' +
+      (can
+        ? '<input class="pf-in pf-medit pf-opn" type="text" maxlength="40" value="' + pfAttr(r.n) + '" aria-label="Operatör adı" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-op-n" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">'
+        : '<div class="pf-dn"><span>' + escapeHtml(r.n) + '</span></div>') +
+      '</div>' +
+      '<span class="pf-badge' + (act ? '' : ' gon') + (can && !act ? ' sel' : '') + '" role="' + (can && !act ? 'button' : 'status') + '">' + (act ? 'Aktif' : 'Gönüllü') + '</span>' +
+      (can ? '<button type="button" class="pf-dx" aria-label="Operatörü kaldır" title="Operatörü kaldır">' + pfSvg('trash') + '</button>' : '') +
+      '</div>';
+  }).join('') || '<div class="pf-mnone">Operatör yok</div>';
+  const sig = (can ? '1' : '0') + (adm ? '1' : '0') + html;
+  if (box.dataset.sig === sig) return;
+  try { const a = document.activeElement; if (a && box.contains(a) && a.tagName === 'INPUT') return; } catch (e) {}
+  box.dataset.sig = sig;
+  box.innerHTML = html;
+}
 function pfRenderMems(can) {
   const box = pfEl('pf-mems');
   if (!box) return;
-  const list = pfData.mv;
+  const op = pfSelOp(), list = op ? op.mv : [];
   const full = list.length >= PF_MAXMEM;
   const add = pfEl('pf-mem-add');
-  if (add) add.classList.toggle('show', can && !full);
+  if (add) add.classList.toggle('show', can && !!op && !full);
   const hint = pfEl('pf-mem-hint');
-  if (hint) hint.textContent = (can && full) ? 'En fazla ' + PF_MAXMEM + ' cihaz eklenebilir.' : '';
+  if (hint) hint.textContent = (can && op && full) ? 'En fazla ' + PF_MAXMEM + ' cihaz eklenebilir.' : '';
+  const tr = pfEl('pf-mtot-row'); if (tr) tr.style.display = op ? '' : 'none';
+  const of = pfEl('pf-mem-of'); if (of) of.textContent = op ? '· ' + op.n : '';
   let total = 0;
   list.forEach((r) => { total += r.r; });
   total = Math.round(total * 10) / 10;
   pfEl('pf-mem-total').textContent = pfFmtGb(total);
-  const ok = !!pfData.ms, bd = pfEl('pf-mem-badge');
+  const ok = !!(op && op.ms), bd = pfEl('pf-mem-badge');
   bd.textContent = ok ? 'Yeterli' : 'Yetersiz';
   bd.classList.toggle('bad', !ok);
   bd.classList.toggle('sel', can);
@@ -11941,8 +12036,8 @@ function pfRenderMems(can) {
       '</div>' +
       (can ? '<button type="button" class="pf-dx" aria-label="Cihazı kaldır" title="Cihazı kaldır">' + pfSvg('trash') + '</button>' : '') +
       '</div>';
-  }).join('') || (can ? '' : '<div class="pf-mnone">Cihaz yok</div>');
-  const sig = (can ? '1' : '0') + html;
+  }).join('') || (op ? (can ? '' : '<div class="pf-mnone">Cihaz yok</div>') : '<div class="pf-mnone">' + (can ? 'Önce bir operatör ekle' : 'Operatör yok') + '</div>');
+  const sig = (can ? '1' : '0') + (op ? op.id : '-') + html;
   if (box.dataset.sig === sig) return;
   // Bir kutuya yazılırken liste yeniden çizilmesin (odak kaybolmasın)
   try { const a = document.activeElement; if (a && box.contains(a) && a.tagName === 'INPUT') return; } catch (e) {}
@@ -12031,7 +12126,7 @@ function pfRender() {
   const eb = pfEl('pf-edit');
   eb.classList.toggle('can', adm); eb.classList.toggle('shown', can);
   eb.setAttribute('aria-label', can ? 'Düzenlemeyi bitir' : 'Düzenle'); eb.title = can ? 'Düzenlemeyi bitir' : 'Düzenle';
-  ['user', 'disp', 'real', 'birth', 'pass', 'tray', 'tag', 'created', 'uid', 'op'].forEach((k) => {
+  ['user', 'disp', 'real', 'birth', 'pass', 'tray', 'tag', 'created', 'uid'].forEach((k) => {
     const el = pfEl('pf-' + k);
     if (!el) return;
     el.readOnly = !can;
@@ -12054,15 +12149,7 @@ function pfRender() {
   sw.setAttribute('aria-checked', d.tfa ? 'true' : 'false');
   pfEl('pf-foot').textContent = '';
   pfRenderDevs(can);
-  // Operatör: küçük yuvarlak fotoğraf (yoksa isim baş harfi); yalnızca 6687 değiştirir, 3828 yalnızca büyütüp görür
-  const oav = pfEl('pf-opav');
-  if (oav) {
-    pfEl('pf-opav-t').textContent = (Array.from((d.op || '').trim())[0] || '?').toUpperCase();
-    oav.classList.toggle('has-photo', !!pfOp.d);
-    oav.style.backgroundImage = pfOp.d ? 'url(' + pfOp.d + ')' : '';
-    oav.classList.toggle('inert', !adm && !pfOp.d);
-    oav.setAttribute('aria-label', adm ? 'Operatör fotoğrafını değiştir' : (pfOp.d ? 'Operatör fotoğrafını büyüt' : 'Operatör'));
-  }
+  pfRenderOps(can);
   pfRenderMems(can);
 }
 (function initProfile() {
@@ -12073,7 +12160,6 @@ function pfRender() {
     real: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 60),
     tag: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 24),
     tray: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 40),
-    op: (v) => v.trim().replace(/\s+/g, ' ').slice(0, 40),
     birth: (v) => { if (v === '') return ''; const x = pfDate(v); return (x && x <= pfToday() && x >= '1900-01-01') ? x : null; },
     pass: (v) => v.slice(0, 64),
     created: (v) => pfDate(v) || null,
@@ -12097,7 +12183,6 @@ function pfRender() {
     });
   });
   pfEl('pf-tag').addEventListener('input', pfFitUser);
-  pfEl('pf-op').addEventListener('input', pfFitUser);
   // Fotoğraf seç + yuvarlak kırpma
   const fileIn = pfEl('pf-file');
   let pfXTimer = 0, pfLpT = 0, pfLpAt = 0, pfLpX = 0, pfLpY = 0;
@@ -12193,19 +12278,60 @@ function pfRender() {
   }
   // Operatör fotoğrafı: 6687 her tıkladığında yenisini koyar (aynı kırpma ekranı); 3828 değiştiremez, tıklayınca 1:1 büyütür (indirme yok)
   const opFile = pfEl('pf-opfile');
-  pfEl('pf-opav').addEventListener('click', () => {
-    if (notifCanSend()) { opFile.value = ''; opFile.click(); return; }
-    if (!pfOp.d) return;
-    openViewer(pfOp.d);
-    viewer.classList.remove('dl-on'); viewerDlUrl = null; viewerDlBlob = null;
-    viewer.classList.add('op-view'); viewerImg.classList.add('once');
+  let opPickId = '';
+  const opBox = pfEl('pf-ops');
+  const addOp = () => {
+    if (!pfCan() || pfData.ops.length >= PF_MAXOP) return;
+    const nEl = pfEl('pf-opn');
+    const n = nEl.value.trim().replace(/\s+/g, ' ').slice(0, 40);
+    if (!n) { flash(nEl); nEl.focus(); return; }
+    const id = pfNewOpId(), patch = { ops: pfData.ops.concat([{ id: id, n: n, mv: [], ms: 0 }]) };
+    if (!pfData.sel) patch.sel = id;
+    if (pfCommit(patch)) { nEl.value = ''; try { nEl.blur(); } catch (e) {} }
+  };
+  pfEl('pf-opadd').addEventListener('click', addOp);
+  pfEl('pf-opn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addOp(); } });
+  opBox.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); } });
+  opBox.addEventListener('change', (e) => {
+    const el = e.target, row = el.closest && el.closest('.pf-dev');
+    if (!row || !el.classList.contains('pf-opn') || !pfCan()) return;
+    const id = row.dataset.id, cur = pfData.ops.find((r) => r.id === id);
+    if (!cur) return;
+    const n = el.value.trim().replace(/\s+/g, ' ').slice(0, 40);
+    if (!n) { flash(el); el.value = cur.n; return; }
+    if (n !== cur.n) pfCommit({ ops: pfData.ops.map((r) => r.id === id ? Object.assign({}, r, { n: n }) : r) });
+    else pfRender();
+  });
+  opBox.addEventListener('click', (e) => {
+    const row = e.target.closest && e.target.closest('.pf-dev');
+    if (!row) return;
+    const id = row.dataset.id;
+    if (e.target.closest('.pf-oav')) {
+      // 6687 her tıkladığında o operatörün fotoğrafını yenisiyle değiştirir; 3828 yalnızca 1:1 büyütüp görür (indirme yok)
+      if (notifCanSend()) { opPickId = id; opFile.value = ''; opFile.click(); return; }
+      const ph = pfOpPhOf(id).d;
+      if (!ph) return;
+      openViewer(ph);
+      viewer.classList.remove('dl-on'); viewerDlUrl = null; viewerDlBlob = null;
+      viewer.classList.add('op-view'); viewerImg.classList.add('once');
+      return;
+    }
+    if (!pfCan()) return;
+    if (e.target.closest('.pf-dx')) {
+      const del = pfData.ops.find((r) => r.id === id);
+      if (!del) return;
+      if (pfOpPh[id]) { delete pfOpPh[id]; pfOpPhotoSave(); }
+      pfCommit({ ops: pfData.ops.filter((r) => r.id !== id), sel: pfData.sel === id ? '' : pfData.sel });
+      return;
+    }
+    if (e.target.closest('.pf-badge.sel') && pfData.sel !== id) pfCommit({ sel: id });   // yalnızca biri aktif
   });
   opFile.addEventListener('change', () => {
-    const f = opFile.files && opFile.files[0];
-    if (!f || !/^image\//.test(f.type) || !notifCanSend()) return;
+    const f = opFile.files && opFile.files[0], id = opPickId;
+    if (!f || !id || !/^image\//.test(f.type) || !notifCanSend()) return;
     const url = URL.createObjectURL(f);
     const im = new Image();
-    im.onload = () => { try { pfCropOpen(im, url, pfOpPhotoSet, 512); } catch (e) { URL.revokeObjectURL(url); } };
+    im.onload = () => { try { pfCropOpen(im, url, (out) => pfOpPhotoSet(id, out), 512); } catch (e) { URL.revokeObjectURL(url); } };
     im.onerror = () => { URL.revokeObjectURL(url); };
     im.src = url;
   });
@@ -12218,25 +12344,27 @@ function pfRender() {
     pfEl('pf-mk').querySelectorAll('button').forEach((x) => x.classList.toggle('active', x === b));
   });
   const addMem = () => {
-    if (!pfCan() || pfData.mv.length >= PF_MAXMEM) return;
+    const op = pfSelOp();
+    if (!pfCan() || !op || op.mv.length >= PF_MAXMEM) return;
     const nEl = pfEl('pf-mnn'), rEl = pfEl('pf-mrn');
     const n = nEl.value.trim().replace(/\s+/g, ' ').slice(0, 30), g = pfRam(rEl.value);
     if (!n) { flash(nEl); nEl.focus(); return; }
     if (!g) { flash(rEl); rEl.focus(); return; }
-    if (pfCommit({ mv: pfData.mv.concat([{ id: pfNewDevId(), k: mKind, n: n, r: g }]) })) { nEl.value = ''; rEl.value = ''; try { nEl.blur(); rEl.blur(); } catch (e) {} }
+    if (pfSelPatch((o) => ({ mv: o.mv.concat([{ id: pfNewDevId(), k: mKind, n: n, r: g }]) }))) { nEl.value = ''; rEl.value = ''; try { nEl.blur(); rEl.blur(); } catch (e) {} }
   };
   pfEl('pf-madd').addEventListener('click', addMem);
   pfEl('pf-mnn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); pfEl('pf-mrn').focus(); } });
   pfEl('pf-mrn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addMem(); } });
   pfEl('pf-mrn').addEventListener('input', (e) => { const el = e.target, v = el.value.replace(/[^0-9.,]/g, ''); if (v !== el.value) el.value = v; });
-  pfEl('pf-mem-badge').addEventListener('click', () => { if (pfCan()) pfCommit({ ms: pfData.ms ? 0 : 1 }); });
+  pfEl('pf-mem-badge').addEventListener('click', () => { if (pfCan() && pfSelOp()) pfSelPatch((o) => ({ ms: o.ms ? 0 : 1 })); });
   const memBox = pfEl('pf-mems');
   memBox.addEventListener('input', (e) => { const el = e.target; if (el.classList && el.classList.contains('pf-mr')) { const v = el.value.replace(/[^0-9.,]/g, ''); if (v !== el.value) el.value = v; } });
   memBox.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); } });
   memBox.addEventListener('change', (e) => {
     const el = e.target, row = el.closest && el.closest('.pf-dev');
-    if (!row || !pfCan()) return;
-    const id = row.dataset.id, cur = pfData.mv.find((r) => r.id === id);
+    const op = pfSelOp();
+    if (!row || !pfCan() || !op) return;
+    const id = row.dataset.id, cur = op.mv.find((r) => r.id === id);
     if (!cur) return;
     let patch = null;
     if (el.classList.contains('pf-mn')) {
@@ -12248,7 +12376,7 @@ function pfRender() {
       if (!g) { flash(el); el.value = String(cur.r).replace('.', ','); return; }
       if (g !== cur.r) patch = { r: g };
     }
-    if (patch) pfCommit({ mv: pfData.mv.map((r) => r.id === id ? Object.assign({}, r, patch) : r) });
+    if (patch) pfSelPatch((o) => ({ mv: o.mv.map((r) => r.id === id ? Object.assign({}, r, patch) : r) }));
     else pfRender();
   });
   memBox.addEventListener('click', (e) => {
@@ -12256,8 +12384,8 @@ function pfRender() {
     const row = e.target.closest && e.target.closest('.pf-dev');
     if (!row) return;
     const id = row.dataset.id;
-    if (e.target.closest('.pf-dx')) { pfCommit({ mv: pfData.mv.filter((r) => r.id !== id) }); return; }
-    if (e.target.closest('.pf-mkind')) pfCommit({ mv: pfData.mv.map((r) => r.id === id ? Object.assign({}, r, { k: r.k === 'phone' ? 'desktop' : 'phone' }) : r) });
+    if (e.target.closest('.pf-dx')) { pfSelPatch((o) => ({ mv: o.mv.filter((r) => r.id !== id) })); return; }
+    if (e.target.closest('.pf-mkind')) pfSelPatch((o) => ({ mv: o.mv.map((r) => r.id === id ? Object.assign({}, r, { k: r.k === 'phone' ? 'desktop' : 'phone' }) : r) }));
   });
   pfEl('pf-user').addEventListener('input', (e) => { const el = e.target, v = el.value.toLowerCase().replace(/[^a-z0-9._@]/g, ''); if (v !== el.value) el.value = v; pfFitUser(); });
   pfEl('pf-uid').addEventListener('input', (e) => { const el = e.target, v = el.value.replace(/[^A-Za-z0-9]/g, ''); if (v !== el.value) el.value = v; });
