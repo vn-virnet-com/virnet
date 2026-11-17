@@ -98,13 +98,16 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 #app { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--c-000); }
 html { --vn-top: max(env(safe-area-inset-top, 0px), var(--vn-sb, 0px)); }
 /* APK tam ekran: sistem durum çubuğu gizli, yerine sitenin kendi üst barı (saat | ağ + pil) */
-/* APK üst şerit: tüm öğeler aynı yazı boyutunda, aynı yükseklikte, dikeyde ortalı, aralarında eşit (10px) boşluk */
+/* APK üst şerit: tüm öğeler aynı yazı boyutunda, aynı yükseklikte, dikeyde ortalı, aralarında eşit (7px) boşluk */
 #vn-sysbar { display: none; flex: 0 0 auto; box-sizing: border-box; height: var(--vn-sb, 0px); padding: 0 14px; align-items: center; justify-content: space-between; background: var(--c-000); color: color-mix(in srgb, var(--c-fff) 82%, transparent); font-size: 11.5px; font-weight: 600; line-height: 1; letter-spacing: 0; -webkit-user-select: none; user-select: none; pointer-events: none; font-variant-numeric: tabular-nums; }
 html.vn-fs #vn-sysbar { display: flex; position: relative; }
-#vn-sysbar .vs-lw { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; align-items: center; gap: 10px; padding-left: 12px; margin-right: 10px; }
-#vn-sysbar .vs-r { margin-left: auto; flex: 0 0 auto; height: 100%; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+#vn-sysbar .vs-lw { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; align-items: center; gap: 7px; padding-left: 12px; margin-right: 10px; }
+#vn-sysbar .vs-r { margin-left: auto; flex: 0 0 auto; height: 100%; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
 #vn-sysbar .vs-c, #vn-sysbar .vs-l, #vn-sysbar .vs-net, #vn-sysbar .vs-bt, #vn-sysbar .vs-bat, #vn-sysbar .vs-t { height: 100%; display: flex; align-items: center; line-height: 1; white-space: nowrap; font-size: inherit; }
 #vn-sysbar .vs-c { flex: 0 0 auto; opacity: .8; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+/* Tarih: simgelerle aynı renkte, köşeleri yumuşak dolu dikdörtgen; içinde "17 Kas" */
+#vn-sysbar .vs-lw .vs-c { height: auto; align-self: center; box-sizing: border-box; padding: 3px 6px; border-radius: 6px; background: currentColor; opacity: 1; font-weight: 700; }
+#vn-sysbar .vs-lw .vs-c > span { color: var(--c-000); }
 #vn-sysbar .vs-l { min-width: 0; max-width: 46vw; overflow: hidden; pointer-events: auto; cursor: pointer; padding: 0 6px; margin: 0 -6px; -webkit-tap-highlight-color: transparent; }
 #vn-sysbar .vs-bat { gap: 4px; }
 #vn-sysbar .vs-bat span { display: block; line-height: 1; }
@@ -12849,7 +12852,7 @@ function pfRender() {
   function setH() {
     var h = 0; try { h = V.barDp() | 0; } catch (e) {}
     if (h < 12) { if (curH) { de.classList.remove('vn-fs'); de.style.removeProperty('--vn-sb'); curH = 0; } return; }
-    h = Math.max(16, h - 1);   // şerit bir tık daha kalın
+    h = Math.max(16, h);   // şerit biraz daha kalın
     if (h !== curH) { curH = h; de.style.setProperty('--vn-sb', h + 'px'); de.classList.add('vn-fs'); try { if (typeof layoutNotesPop === 'function') layoutNotesPop(); } catch (e) {} }
   }
   function wifi(l) {
@@ -12947,7 +12950,9 @@ function pfRender() {
     menu.classList.add('show'); window.__vnMenuOpen = true;
     var l = bar.querySelector('.vs-l'), r = bar.getBoundingClientRect(), lr = l ? l.getBoundingClientRect() : r;
     menu.style.top = (Math.round(r.bottom) + 4) + 'px';
-    menu.style.left = Math.max(8, Math.min(Math.round(lr.left), window.innerWidth - menu.offsetWidth - 8)) + 'px';
+    var mw = menu.offsetWidth, vw = document.documentElement.clientWidth || window.innerWidth, edge = 6;
+    var ml = Math.round(lr.left + lr.width / 2 - mw / 2);   // menünün ortası = tepsi adının ortası
+    menu.style.left = Math.max(edge, Math.min(ml, vw - mw - edge)) + 'px';   // ekran dışına taşıyorsa içeri kay
     window.dispatchEvent(new Event('vn-menu'));
     menuArm();
   }
@@ -12958,6 +12963,9 @@ function pfRender() {
       else menuArm();
     }, true);
     menu.addEventListener('pointerdown', menuArm, true);
+    menu.addEventListener('pointerup', function (e) {   // Notlar tuşu click üretmez (pointerup ile çalışır): tuş işini yapsın diye çok kısa gecikmeyle kapan
+      if (e.target.closest && e.target.closest('#eye-btn, #notes-btn, #refresh-btn, #live-toggle')) setTimeout(menuClose, 30);
+    }, true);
     menu.addEventListener('mousedown', function (e) { e.preventDefault(); });   // odak (klavye) mesaj kutusundan kaçmasın
     menu.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   }
@@ -13066,7 +13074,7 @@ function pfRender() {
             : o.net === 'other' ? wifi(-1) : off();
     var b = (typeof o.bat === 'number' && o.bat >= 0) ? batt(o.bat, !!o.chg) : '';
     put('l', elL, tray || 'Menü');
-    put('c', elC, p2(d.getDate()) + '.' + p2(d.getMonth() + 1) + '.' + p2(d.getFullYear() % 100));
+    put('c', elC, '<span>' + d.getDate() + ' ' + ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'][d.getMonth()] + '</span>', true);
     put('bt', elBt, o.bt ? btIcon() : '', true);
     put('n', elN, net, true);
     put('b', elB, b, true);
