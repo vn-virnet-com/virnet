@@ -105,9 +105,9 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 #vn-sysbar .vs-r { margin-left: auto; flex: 0 0 auto; height: 100%; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
 #vn-sysbar .vs-c, #vn-sysbar .vs-l, #vn-sysbar .vs-net, #vn-sysbar .vs-bt, #vn-sysbar .vs-bat, #vn-sysbar .vs-t { height: 100%; display: flex; align-items: center; line-height: 1; white-space: nowrap; font-size: inherit; }
 #vn-sysbar .vs-c { flex: 0 0 auto; opacity: .8; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-/* Tarih: simgelerle aynı renkte, köşeleri yumuşak dolu dikdörtgen; içinde "17 Kas" */
-#vn-sysbar .vs-lw .vs-c { height: auto; align-self: center; box-sizing: border-box; padding: 3px 6px; border-radius: 6px; background: currentColor; opacity: 1; font-weight: 700; }
-#vn-sysbar .vs-lw .vs-c > span { color: var(--c-000); }
+/* Tarih: mesaj gönderme tuşunun arka plan rengiyle, köşeleri yumuşak ince dikdörtgen; içinde "17 Kas" */
+#vn-sysbar .vs-lw .vs-c { height: auto; align-self: center; box-sizing: border-box; padding: 1.5px 6px; border-radius: 6px; background: var(--send-bg); opacity: 1; font-weight: 700; }
+#vn-sysbar .vs-lw .vs-c > span { color: var(--send-ico); }
 #vn-sysbar .vs-l { min-width: 0; max-width: 46vw; overflow: hidden; pointer-events: auto; cursor: pointer; padding: 0 6px; margin: 0 -6px; -webkit-tap-highlight-color: transparent; }
 #vn-sysbar .vs-bat { gap: 4px; }
 #vn-sysbar .vs-bat span { display: block; line-height: 1; }
@@ -122,7 +122,10 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 #vn-sysbar .vs-bat.pct .bf { display: none; }
 /* Sağ boşluk (saatin sonu) = sol boşluk (tarihin başı): 14px + 12px = 26px */
 #vn-sysbar .vs-r { padding-right: 12px; }
-#vn-sysbar.note-unseen .vs-l::after { content: ''; flex: 0 0 6px; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: var(--warn); animation: notes-blink 1s ease-in-out infinite; }
+#vn-sysbar.note-unseen .vs-l::after { content: ''; flex: 0 0 6px; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: var(--warn); }
+/* Not güncellenince tepsi adı sarı yanıp söner (noktayla birlikte); notlar açılıp bakılınca kalkar */
+#vn-sysbar.note-unseen .vs-l { color: var(--warn); animation: notes-blink 1s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { #vn-sysbar.note-unseen .vs-l { animation: none; } }
 /* Tepsi adına basınca açılan minik menü: göz, not, yenile (+ 6687 için dinamik mesaj) */
 #vn-menu { position: fixed; z-index: 12650; top: 0; left: 8px; display: none; flex-direction: column; align-items: stretch; padding: 0; overflow: hidden; box-sizing: border-box; background: var(--c-111); border: 1px solid var(--c-33); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.55); -webkit-user-select: none; user-select: none; }
 #vn-menu.show { display: flex; animation: vnCalIn .14s ease-out; }
