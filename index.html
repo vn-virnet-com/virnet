@@ -1824,7 +1824,7 @@ body.gm-on #leap-hud { display: none !important; }
 #vk .vk-rows { display: flex; flex-direction: column; gap: 5px; height: 244px; }
 #vk .vk-row { display: flex; gap: 5px; flex: 1; min-height: 0; }
 #vk .vk-sp { flex: .5; }
-#vk .vk-key { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; justify-content: center; box-sizing: border-box; border: 1.5px solid var(--c-33); border-radius: var(--r-md); background: color-mix(in srgb, var(--c-fff) 5%, var(--c-000)); color: var(--c-fff); font: 500 27px/1 inherit; font-family: inherit; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .28s ease, color .28s ease, border-color .28s ease; }
+#vk .vk-key { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; justify-content: center; box-sizing: border-box; border: 1.5px solid var(--c-33); border-radius: var(--r-md); background: color-mix(in srgb, var(--c-fff) 5%, var(--c-000)); color: var(--c-fff); font-size: 28px; font-weight: 500; line-height: 1; font-family: inherit; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .28s ease, color .28s ease, border-color .28s ease; }
 #vk .vk-key.w15 { flex: 1.5; }
 #vk .vk-key.w2 { flex: 2; }
 #vk .vk-key.w5 { flex: 5; }
@@ -1836,6 +1836,28 @@ body.gm-on #leap-hud { display: none !important; }
 #vk .vk-key.act { border-color: var(--send-bg); }
 #vk .vk-key.lock { background: var(--send-bg); color: var(--send-ico); }
 @media (min-width: 769px) { #vk { display: none !important; } }
+#vk .vk-rows { touch-action: none; }
+#vk .vk-bar { display: flex; gap: 5px; height: 42px; margin-bottom: 5px; }
+#vk .vk-tb { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; box-sizing: border-box; border: 1.5px solid var(--c-33); border-radius: var(--r-md); background: color-mix(in srgb, var(--c-fff) 5%, var(--c-000)); color: var(--c-cc); font-size: 19px; line-height: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .28s ease, color .28s ease, border-color .28s ease; }
+#vk .vk-tb:active { background: var(--send-bg); color: var(--send-ico); border-color: var(--send-bg); transition: background-color .05s ease; }
+#vk .vk-tb.act { border-color: var(--send-bg); color: var(--c-fff); }
+#vk .vk-tb svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+#vk .vk-tb.nar { flex: 0 0 46px; }
+#vk .vk-q { flex: 0 0 auto; max-width: 38%; display: flex; align-items: center; padding: 0 8px; color: var(--c-fff); font-size: 17px; white-space: nowrap; overflow: hidden; }
+#vk .vk-q.ph { color: var(--c-77); }
+#vk .vk-strip { flex: 1; display: flex; align-items: center; gap: 2px; overflow-x: auto; touch-action: pan-x; scrollbar-width: none; }
+#vk .vk-strip::-webkit-scrollbar { display: none; }
+#vk .vk-panel { height: 244px; display: flex; flex-direction: column; gap: 5px; }
+#vk .vk-cats { display: flex; gap: 5px; height: 40px; flex: 0 0 40px; }
+#vk .vk-grid { flex: 1; min-height: 0; overflow-y: auto; touch-action: pan-y; display: grid; grid-template-columns: repeat(8, 1fr); align-content: start; gap: 2px; border: 1.5px solid var(--c-33); border-radius: var(--r-md); padding: 3px; }
+#vk .vk-em { flex: 0 0 auto; min-width: 40px; text-align: center; font-size: 26px; line-height: 1; padding: 6px 0; border-radius: 8px; -webkit-tap-highlight-color: transparent; }
+#vk .vk-em:active { background: var(--send-bg); }
+#vk .vk-box { flex: 1; min-height: 0; overflow-y: auto; touch-action: pan-y; border: 1.5px solid var(--c-33); border-radius: var(--r-md); padding: 8px 12px; color: var(--c-fff); font-size: 16px; line-height: 1.35; word-break: break-word; white-space: pre-wrap; }
+#vk .vk-box.dim { color: var(--c-88); }
+#vk .vk-clip { flex: 1; min-height: 0; display: flex; align-items: center; border: 1.5px solid var(--c-33); border-radius: var(--r-md); background: color-mix(in srgb, var(--c-fff) 5%, var(--c-000)); color: var(--c-fff); padding: 0 12px; font-size: 16px; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .28s ease; }
+#vk .vk-clip:active { background: var(--send-bg); color: var(--send-ico); transition: background-color .05s ease; }
+#vk .vk-clip span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+#vk .vk-clip.empty { color: var(--c-77); justify-content: center; cursor: default; }
 </style>
 </head>
 <body>
@@ -13197,7 +13219,7 @@ function pfRender() {
     if (page === 'abc') return ['NUM', ',', 'SPACE', '.', 'ENTER'];
     return ['ABC', ',', 'SPACE', '.', 'ENTER'];
   }
-  function build() {
+  function rowsHTML() {
     var rows = page === 'abc' ? L : page === 's1' ? S1 : S2;
     var h = '';
     rows.concat([bottomRow()]).forEach(function (r) {
@@ -13218,7 +13240,139 @@ function pfRender() {
       });
       h += '</div>';
     });
-    vk.innerHTML = '<div class="vk-rows' + (page === 'abc' ? '' : ' sym') + '">' + h + '</div>';
+    return h;
+  }
+
+  // ---- Üst bar: emoji / pano / çeviri ----
+  var mode = 'keys', searching = null, emoCat = 0, clipH = [], trSrc = 'tr', trDst = 'en', trOut = '', trBusy = false, trErr = false, trTok = 0, trRange = null, trText0 = '';
+  var LANGS = ['tr', 'en', 'de', 'fr', 'es', 'it', 'ru', 'ar'];
+  var CATS = ['😀', '👋', '🐶', '🍔', '⚽', '❤️'];
+  var EMO = [
+    '😀 gülen mutlu happy grin;😃 sevinç mutlu;😄 gülüş smile;😁 sırıtış;😆 kahkaha lol;😅 terli gülüş;😂 kahkaha ağlayarak lol joy;🤣 yerde gülme rofl;🙂 gülümseme;🙃 ters yüz;😉 göz kırpma wink;😊 mahcup blush;😇 melek angel;🥰 aşık sevgi love;😍 kalp gözlü aşık;🤩 hayran star;😘 öpücük kiss;😋 lezzetli yummy;😛 dil tongue;😜 dil göz kırpma;🤪 çılgın crazy;🤑 para money;🤗 sarılma hug;🤭 utangaç;🤫 sus shh;🤔 düşünme think;🤐 fermuar;😐 duygusuz;😑;😶 sessiz;😏 sırıtma smirk;😒 sıkılmış;🙄 göz devirme eyeroll;😬 grimace;😌 rahat relieved;😔 üzgün sad;😪 uykulu;😴 uyku sleep;😷 maske;🤒 hasta sick;🤕 yaralı;🤢 mide bulantı;🤮 kusmak;🥵 sıcak hot;🥶 soğuk cold;😵 baş dönmesi;🤯 şok mind blown;🤠 kovboy;🥳 parti party;😎 havalı cool;🤓 inek nerd;🧐 monokl;😕 şaşkın confused;😟 endişe worried;🙁 üzgün;😮 şaşırma;😲 şok;😳 utanma flushed;🥺 yalvaran pleading;😨 korku fear;😢 ağlama cry;😭 hüngür ağlama sob;😱 çığlık scream;😞 hayal kırıklığı;😩 bıkkın;😫 yorgun tired;🥱 esneme yawn;😤 öfke;😡 kızgın angry;🤬 küfür;😈 şeytan devil;💀 kafatası skull;💩 kaka poop;🤡 palyaço clown;👻 hayalet ghost;👽 uzaylı alien;🤖 robot',
+    '👍 beğen like thumbs up tamam;👎 beğenmeme dislike;👌 tamam ok;✌️ zafer peace;🤞 şans umut;🤟 aşk;🤘 rock;🤙 ara call;👈 sol işaret;👉 sağ işaret;👆 yukarı işaret;👇 aşağı işaret;☝️ bir;✋ dur stop;🖐️ el;🖖 vulkan;👋 el sallama selam wave;👏 alkış clap;🙌 yaşasın hooray;🤲 dua;🤝 el sıkışma deal;🙏 dua rica please thanks teşekkür;💪 kas güç muscle;👀 gözler eyes;👅 dil;👄 ağız dudak;🧠 beyin brain;🫶 kalp el;🫡 selam salute;👶 bebek baby;👦 oğlan;👧 kız;👨 erkek;👩 kadın;👴 dede;👵 nine;🤦 yüze vurma facepalm;🤷 omuz silkme shrug;🙋 el kaldırma;🙅 hayır;🙆 evet;🚶 yürümek;🏃 koşmak;💃 dans;🕺 dans;👫 çift;👪 aile family',
+    '🐶 köpek dog;🐱 kedi cat;🐭 fare;🐹 hamster;🐰 tavşan rabbit;🦊 tilki fox;🐻 ayı bear;🐼 panda;🐨 koala;🐯 kaplan tiger;🦁 aslan lion;🐮 inek cow;🐷 domuz pig;🐸 kurbağa frog;🐵 maymun monkey;🙈 maymun görmüyor;🙉 maymun duymuyor;🙊 maymun konuşmuyor;🐔 tavuk chicken;🐧 penguen;🐦 kuş bird;🦆 ördek duck;🦅 kartal eagle;🦉 baykuş owl;🐺 kurt wolf;🐴 at horse;🦄 tek boynuz unicorn;🐝 arı bee;🦋 kelebek butterfly;🐌 salyangoz;🐞 uğur böceği;🐢 kaplumbağa turtle;🐍 yılan snake;🐙 ahtapot;🐠 balık fish;🐬 yunus dolphin;🐳 balina whale;🦈 köpekbalığı shark;🐘 fil elephant;🦒 zürafa;🐪 deve camel;🌸 çiçek flower;🌹 gül rose;🌻 ayçiçeği;🌳 ağaç tree;🌵 kaktüs;🍀 yonca clover;🔥 ateş fire;⭐ yıldız star;🌙 ay moon;☀️ güneş sun;☁️ bulut cloud;🌈 gökkuşağı rainbow;⚡ şimşek;❄️ kar snow;🌧️ yağmur rain;🌊 dalga wave deniz',
+    '🍎 elma apple;🍐 armut;🍊 portakal;🍋 limon;🍌 muz banana;🍉 karpuz;🍇 üzüm;🍓 çilek strawberry;🍒 kiraz;🍑 şeftali;🍍 ananas;🥝 kivi;🍅 domates;🥑 avokado;🥕 havuç;🌽 mısır;🥔 patates;🍞 ekmek bread;🧀 peynir cheese;🍳 yumurta egg;🥞 pankek;🥓 pastırma;🍔 hamburger;🍟 patates kızartması fries;🍕 pizza;🌭 sosis hotdog;🥪 sandviç;🌮 taco;🌯 dürüm;🍝 makarna pasta;🍜 çorba noodle;🍣 suşi sushi;🍦 dondurma icecream;🍩 çörek donut;🍪 kurabiye cookie;🎂 doğum günü pasta cake;🍰 pasta;🍫 çikolata chocolate;🍬 şeker candy;🍿 patlamış mısır popcorn;☕ kahve coffee;🍵 çay tea;🥛 süt milk;🍺 bira beer;🍷 şarap wine;🥤 içecek;💧 su water',
+    '⚽ futbol football;🏀 basketbol;🏈 amerikan futbolu;⚾ beyzbol;🎾 tenis;🏐 voleybol;🎱 bilardo;🥊 boks;🎮 oyun game;🎯 hedef;🎲 zar;🎵 müzik music;🎤 mikrofon;🎧 kulaklık;🎸 gitar;🎬 film;🏆 kupa trophy;🥇 madalya;🎉 kutlama party;🎁 hediye gift;🎈 balon;📱 telefon phone;💻 bilgisayar laptop;⌨️ klavye;📷 kamera camera;💡 ampul fikir idea;🔋 pil;🔑 anahtar key;🔒 kilit lock;💰 para money;💳 kart;📚 kitap book;✏️ kalem pencil;📌 toplu iğne;📎 ataş;✂️ makas;🚗 araba car;🚕 taksi;🚌 otobüs bus;🚲 bisiklet bike;✈️ uçak plane;🚀 roket rocket;🚢 gemi ship;🏠 ev home;🏫 okul school;⏰ saat alarm;⌛ kum saati',
+    '❤️ kalp aşk love heart;🧡 turuncu kalp;💛 sarı kalp;💚 yeşil kalp;💙 mavi kalp;💜 mor kalp;🖤 siyah kalp;🤍 beyaz kalp;🤎 kahverengi kalp;💔 kırık kalp;💕 iki kalp;💞 dönen kalp;💓 atan kalp;💗 büyüyen kalp;💖 parlak kalp;💘 oklu kalp;💝 hediye kalp;💯 yüz 100;✅ tamam onay check;❌ çarpı hayır no;❗ ünlem;❓ soru;⚠️ uyarı warning;🚫 yasak;🔴 kırmızı daire;🟠 turuncu daire;🟡 sarı daire;🟢 yeşil daire;🔵 mavi daire;🟣 mor daire;⬆️ yukarı ok;⬇️ aşağı ok;⬅️ sol ok;➡️ sağ ok;🔁 tekrar;➕ artı;➖ eksi;✔️ onay;🇹🇷 türkiye bayrak flag;✨ parıltı sparkle;💥 patlama;💫 yıldız;💤 uyku zzz;💬 mesaj;💭 düşünce;🔔 zil;🆗 tamam ok;🆘 yardım sos'
+  ];
+  var ALL = [];
+  EMO = EMO.map(function (c) {
+    return c.split(';').map(function (x) { var i = x.indexOf(' '); var e = i < 0 ? x : x.slice(0, i); var kw = (i < 0 ? '' : x.slice(i + 1)).toLocaleLowerCase('tr'); var o = { e: e, k: kw }; ALL.push(o); return o; });
+  });
+  ICON.EMO = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1 1.5 2.2 2.2 3.5 2.2s2.5-.7 3.5-2.2"/><path d="M9 9.5v.5M15 9.5v.5"/></svg>';
+  ICON.CLIP = '<svg viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 4.5V3.5h6v1M8.5 11h7M8.5 15h5"/></svg>';
+  ICON.SEARCH = '<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg>';
+  var ta = document.createElement('textarea');
+  function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  // Pano: tarayıcılar pano geçmişini okutmaz; sitede kopyalananlar + (izin verilirse) panodaki güncel metin tutulur
+  try { clipH = JSON.parse(localStorage.getItem('vk-clip') || '[]').slice(0, 3); } catch (e) { clipH = []; }
+  function addClip(t) {
+    if (typeof t !== 'string') return; t = t.trim(); if (!t || t.length > 2000) return;
+    clipH = clipH.filter(function (x) { return x !== t; }); clipH.unshift(t); clipH = clipH.slice(0, 3);
+    try { localStorage.setItem('vk-clip', JSON.stringify(clipH)); } catch (e) {}
+  }
+  function onCopy() {
+    var t = '';
+    try { var a = document.activeElement; if (a && a.selectionStart != null && a.selectionEnd > a.selectionStart) t = a.value.slice(a.selectionStart, a.selectionEnd); } catch (e) {}
+    if (!t) { try { t = String(window.getSelection()); } catch (e) {} }
+    addClip(t);
+  }
+  document.addEventListener('copy', onCopy, true); document.addEventListener('cut', onCopy, true);
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      var ow = navigator.clipboard.writeText.bind(navigator.clipboard);
+      navigator.clipboard.writeText = function (t) { addClip(t); return ow(t); };
+    }
+  } catch (e) {}
+  function refreshClip() {
+    try { navigator.clipboard.readText().then(function (t) { addClip(t); if (mode === 'clip') build(); }).catch(function () {}); } catch (e) {}
+  }
+
+  function barHTML() {
+    if (searching !== null) return '<div class="vk-bar"><div class="vk-tb nar" data-a="sx">✕</div><div class="vk-q" id="vk-q"></div><div class="vk-strip" id="vk-strip"></div></div>';
+    function tb(a, c, on) { return '<div class="vk-tb' + (on ? ' act' : '') + '" data-a="' + a + '">' + c + '</div>'; }
+    return '<div class="vk-bar">' + tb('emoji', ICON.EMO, mode === 'emoji') + tb('clip', ICON.CLIP, mode === 'clip') + tb('tr', '<b style="font-size:17px;font-weight:600">文A</b>', mode === 'tr') + '</div>';
+  }
+  function emojiHTML() {
+    var h = '<div class="vk-panel"><div class="vk-cats"><div class="vk-tb" data-a="search">' + ICON.SEARCH + '</div>';
+    CATS.forEach(function (c, i) { h += '<div class="vk-tb' + (i === emoCat ? ' act' : '') + '" data-a="cat" data-i="' + i + '">' + c + '</div>'; });
+    h += '<div class="vk-tb" data-a="bk">' + ICON.BKSP + '</div></div><div class="vk-grid">';
+    EMO[emoCat].forEach(function (o) { h += '<div class="vk-em" data-a="em" data-e="' + o.e + '">' + o.e + '</div>'; });
+    return h + '</div></div>';
+  }
+  function clipHTML() {
+    var h = '<div class="vk-panel">';
+    if (!clipH.length) h += '<div class="vk-clip empty">Henüz kopyalanan bir şey yok</div>';
+    for (var i = 0; i < 3; i++) h += clipH[i] ? '<div class="vk-clip" data-a="clipitem" data-i="' + i + '"><span>' + esc(clipH[i]) + '</span></div>' : (clipH.length ? '<div class="vk-clip empty"></div>' : '');
+    return h + '</div>';
+  }
+  function trHTML() {
+    var src = esc(trText0 || ''), out = trBusy ? 'Çevriliyor…' : trErr ? 'Çeviri alınamadı' : esc(trOut);
+    return '<div class="vk-panel"><div class="vk-cats"><div class="vk-tb" data-a="lsrc">' + trSrc.toUpperCase() + '</div><div class="vk-tb nar" data-a="swap">⇄</div><div class="vk-tb" data-a="ldst">' + trDst.toUpperCase() + '</div></div>' +
+      '<div class="vk-box dim">' + (src || 'Mesaj kutusuna yaz ya da metin seç') + '</div><div class="vk-box">' + (out || '') + '</div>' +
+      '<div class="vk-cats"><div class="vk-tb" data-a="dotr">Çevir</div><div class="vk-tb" data-a="apply">Yerine koy</div></div></div>';
+  }
+  function build() {
+    var body = mode === 'emoji' ? emojiHTML() : mode === 'clip' ? clipHTML() : mode === 'tr' ? trHTML() : '<div class="vk-rows' + (page === 'abc' ? '' : ' sym') + '">' + rowsHTML() + '</div>';
+    vk.innerHTML = barHTML() + body;
+    if (searching !== null) updateStrip();
+  }
+  function updateStrip() {
+    var q = document.getElementById('vk-q'), st = document.getElementById('vk-strip'); if (!q || !st) return;
+    q.textContent = searching || 'Emoji ara…'; q.classList.toggle('ph', !searching);
+    var qq = searching.toLocaleLowerCase('tr').trim(), h = '', n = 0;
+    if (qq) for (var i = 0; i < ALL.length && n < 40; i++) if (ALL[i].k.indexOf(qq) > -1) { h += '<span class="vk-em" data-a="em" data-e="' + ALL[i].e + '">' + ALL[i].e + '</span>'; n++; }
+    st.innerHTML = h; st.scrollLeft = 0;
+  }
+  function trInfo() {
+    var el = cur() || msg, s = el.selectionStart, e = el.selectionEnd, has = s != null && e > s;
+    return { el: el, s: has ? s : 0, e: has ? e : el.value.length, text: has ? el.value.slice(s, e) : el.value };
+  }
+  function runTr() {
+    var o = trInfo(); trRange = { s: o.s, e: o.e }; trText0 = o.text; trOut = ''; trErr = false;
+    if (!o.text.trim()) { trBusy = false; build(); return; }
+    trBusy = true; build();
+    var tok = ++trTok;
+    fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(o.text.slice(0, 450)) + '&langpair=' + trSrc + '|' + trDst)
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (tok !== trTok) return;
+        var t = j && j.responseData && j.responseData.translatedText;
+        if (!t || (j.responseStatus && Number(j.responseStatus) !== 200)) throw 0;
+        ta.innerHTML = t; trOut = ta.value; trBusy = false; trErr = false; if (mode === 'tr') build();
+      })
+      .catch(function () { if (tok !== trTok) return; trBusy = false; trErr = true; if (mode === 'tr') build(); });
+  }
+  function cycle(cur0) { return LANGS[(LANGS.indexOf(cur0) + 1) % LANGS.length]; }
+  vk.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-a]'); if (!t) return;
+    var a = t.getAttribute('data-a'), el = cur() || msg;
+    if (a === 'emoji' || a === 'clip' || a === 'tr') {
+      searching = null; mode = mode === a ? 'keys' : a;
+      if (mode === 'clip') { build(); refreshClip(); } else if (mode === 'tr') runTr(); else build();
+    }
+    else if (a === 'search') { searching = ''; mode = 'keys'; build(); }
+    else if (a === 'sx') { searching = null; build(); }
+    else if (a === 'cat') { emoCat = +t.getAttribute('data-i'); build(); }
+    else if (a === 'em') { if (!el.disabled) insert(el, t.getAttribute('data-e')); }
+    else if (a === 'bk') back(el);
+    else if (a === 'clipitem') { if (!el.disabled) insert(el, clipH[+t.getAttribute('data-i')] || ''); }
+    else if (a === 'lsrc') { trSrc = cycle(trSrc); if (trSrc === trDst) trDst = cycle(trDst); runTr(); }
+    else if (a === 'ldst') { trDst = cycle(trDst); if (trSrc === trDst) trDst = cycle(trDst); runTr(); }
+    else if (a === 'swap') { var x = trSrc; trSrc = trDst; trDst = x; runTr(); }
+    else if (a === 'dotr') runTr();
+    else if (a === 'apply') {
+      if (!trOut || trBusy || el.disabled) return;
+      var r = trRange || { s: 0, e: el.value.length };
+      el.value = el.value.slice(0, r.s) + trOut + el.value.slice(r.e);
+      el.selectionStart = el.selectionEnd = r.s + trOut.length; fire(el);
+      mode = 'keys'; build();
+    }
+  });
+  function doBack() {
+    if (searching !== null) { searching = searching.slice(0, -1); updateStrip(); return; }
+    var el = cur(); if (el) back(el);
   }
 
   function cur() { var a = document.activeElement; return (a === nick || a === msg) ? a : null; }
@@ -13244,19 +13398,20 @@ function pfRender() {
     var el = cur() || msg;
     if (el.disabled) return;
     if (!cur()) { try { el.focus({ preventScroll: true }); } catch (e) {} }
-    if (k === 'BKSP') { back(el); return; }
+    if (k === 'BKSP') { doBack(); return; }
     if (k === 'SHIFT') { shift = shift === 0 ? 1 : shift === 1 ? 2 : 0; build(); return; }
     if (k === 'NUM' || k === 'PAGE1') { page = 's1'; build(); return; }
     if (k === 'PAGE2') { page = 's2'; build(); return; }
     if (k === 'ABC') { page = 'abc'; build(); return; }
-    if (k === 'SPACE') { insert(el, ' '); return; }
+    if (k === 'SPACE') { if (searching !== null) { searching += ' '; updateStrip(); } else insert(el, ' '); return; }
     if (k === 'ENTER') {
+      if (searching !== null) { searching = null; build(); return; }
       if (el === nick) { try { msg.focus(); } catch (e) {} } else insert(el, '\n');
       return;
     }
     var ch = k;
     if (page === 'abc' && shift) { ch = k.toLocaleUpperCase('tr'); if (shift === 1) { shift = 0; build(); } }
-    insert(el, ch);
+    if (searching !== null) { searching += ch; updateStrip(); } else insert(el, ch);
   }
 
   // Tuşlar odağı çalmaz; basınca içi dolar, hızlıca sönmez
@@ -13282,7 +13437,7 @@ function pfRender() {
     press(k);
     if (k === 'BKSP') {
       stopRep();
-      rep = setTimeout(function () { repT = setInterval(function () { var el = cur(); if (el) back(el); }, 50); }, 380);
+      rep = setTimeout(function () { repT = setInterval(function () { doBack(); }, 50); }, 380);
     }
   }
   function up(id) {
@@ -13293,20 +13448,21 @@ function pfRender() {
     setTimeout(function () { b.classList.remove('on'); }, d);
   }
   // Dokunmatik: her parmak ayrı bir basış (touchstart en hızlı yol), uygulamanın kaydırma dinleyicileri görmesin
+  function inRows(e) { return !!(e.target.closest && e.target.closest('.vk-rows')); }
   vk.addEventListener('touchstart', function (e) {
-    e.stopPropagation(); if (e.cancelable) e.preventDefault();
+    e.stopPropagation(); if (!inRows(e)) return; if (e.cancelable) e.preventDefault();
     for (var i = 0; i < e.changedTouches.length; i++) { var t = e.changedTouches[i]; down('t' + t.identifier, t.clientX, t.clientY); }
   }, { passive: false });
   function tend(e) {
-    e.stopPropagation(); if (e.cancelable) e.preventDefault();
+    e.stopPropagation(); if (!inRows(e)) return; if (e.cancelable) e.preventDefault();
     for (var i = 0; i < e.changedTouches.length; i++) up('t' + e.changedTouches[i].identifier);
   }
   vk.addEventListener('touchend', tend, { passive: false });
   vk.addEventListener('touchcancel', tend, { passive: false });
-  vk.addEventListener('touchmove', function (e) { e.stopPropagation(); if (e.cancelable) e.preventDefault(); }, { passive: false });
+  vk.addEventListener('touchmove', function (e) { e.stopPropagation(); if (inRows(e) && e.cancelable) e.preventDefault(); }, { passive: false });
   // Fare (dokunmatik ekran dışı)
   vk.addEventListener('pointerdown', function (e) {
-    if (e.pointerType === 'touch') return;
+    if (e.pointerType === 'touch' || !e.target.closest('.vk-rows')) return;
     e.preventDefault(); e.stopPropagation(); down('p' + e.pointerId, e.clientX, e.clientY);
   });
   vk.addEventListener('pointerup', function (e) { if (e.pointerType !== 'touch') up('p' + e.pointerId); });
@@ -13327,7 +13483,7 @@ function pfRender() {
   }
   function hide() {
     if (!vk.classList.contains('show')) return;
-    vk.classList.remove('show'); relayout();
+    vk.classList.remove('show'); mode = 'keys'; searching = null; relayout();
   }
   fields.forEach(function (f) {
     f.addEventListener('focus', show);
