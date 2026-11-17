@@ -114,14 +114,7 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 #vn-sysbar svg { display: block; flex: 0 0 auto; height: 9px; width: auto; transform: none !important; }
 /* Wifi simgesi diğerlerinden büyük ve alçak duruyordu: biraz küçük, bir tık yukarıda */
 #vn-sysbar .vs-bt:empty { display: none; }
-/* Pile dokununca 2 sn: dış hat aynı, içi düz renk + yüzde (% işaretsiz) */
-#vn-sysbar .vs-bat { pointer-events: auto; cursor: pointer; padding: 0 6px; margin: 0 -6px; -webkit-tap-highlight-color: transparent; }
-/* Dokununca: 0,3 sn'de büyür -> yüzde görünür -> 1,5 sn sonra yüzde kaybolur ve 0,3 sn'de eski boyuna döner */
-#vn-sysbar .vs-bat { transform-origin: center; transition: transform .3s ease; }
-#vn-sysbar .vs-bat.big { transform: scale(1.5); }
-#vn-sysbar .vs-bat .bs { display: none; }
-#vn-sysbar .vs-bat.pct .bs { display: inline; }
-#vn-sysbar .vs-bat.pct .bf { display: none; }
+#vn-sysbar .vs-bat { padding: 0 6px; margin: 0 -6px; }
 /* Sağ boşluk (saatin sonu) = sol boşluk (tarihin başı): 14px + 12px = 26px */
 #vn-sysbar .vs-r { padding-right: 12px; }
 #vn-sysbar.note-unseen .vs-l::after { content: ''; flex: 0 0 6px; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: var(--warn); }
@@ -12876,13 +12869,11 @@ function pfRender() {
   }
   function batt(p, chg) {
     var col = chg ? '#30d158' : (p <= 15 ? '#ff453a' : 'currentColor');
-    var w = Math.max(1, Math.round(18 * Math.max(0, Math.min(100, p)) / 100));
-    return '<svg width="26" height="9" viewBox="0 1.4 26 9.2"><rect x=".75" y="2.15" width="21.5" height="7.7" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".6"/>'
+    var w = Math.max(1, Math.round(17.6 * Math.max(0, Math.min(100, p)) / 100));
+    return '<svg width="26" height="9" viewBox="0 1.4 26 9.2"><rect x="1" y="2.4" width="21" height="7.2" rx="2.3" fill="none" stroke="currentColor" stroke-width="2" opacity=".6"/>'
       + '<rect x="23" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".6"/>'
-      + '<g class="bf"><rect x="2.5" y="3.65" width="' + w + '" height="4.7" rx="1.2" fill="' + col + '"/>'
-      + (chg ? '<path transform="translate(11.8 6) scale(.68) translate(-11.8 -6)" d="M11.8 1.6L7.6 6.6h3l-.9 3.8 4.4-5.2h-3z" fill="#000" opacity=".75"/>' : '') + '</g>'
-      + '<g class="bs"><rect x="1.5" y="3.15" width="20" height="5.7" rx="1.2" fill="' + col + '"/>'
-      + '<text x="11.5" y="8.4" text-anchor="middle" font-size="7.4" font-weight="800" fill="#000" style="fill:var(--c-000)" font-family="Lexend,Arial,sans-serif">' + p + '</text></g></svg>';
+      + '<rect x="2.8" y="4.1" width="' + w + '" height="3.8" rx="1" fill="' + col + '"/>'
+      + (chg ? '<path transform="translate(11.8 6) scale(.52) translate(-11.8 -6)" d="M11.8 1.6L7.6 6.6h3l-.9 3.8 4.4-5.2h-3z" fill="#000" opacity=".75"/>' : '') + '</svg>';
   }
   /* Bluetooth kulaklık: iki kablosuz kulakiçi (AirPods tarzı), wifi ile aynı boy; sol-sağ birebir simetrik */
   function btIcon() {
@@ -12977,13 +12968,11 @@ function pfRender() {
   document.addEventListener('click', function (e) {
     if (menu && menu.classList.contains('show') && !(e.target.closest && (e.target.closest('#vn-menu') || e.target.closest('.vs-l')))) menuClose();
   }, true);
-  bar.addEventListener('mousedown', function (e) { if (e.target.closest && e.target.closest('.vs-l, .vs-c, .vs-n, .vs-bat')) e.preventDefault(); }, true);   // odak mesaj kutusundan kaçmasın
+  bar.addEventListener('mousedown', function (e) { if (e.target.closest && e.target.closest('.vs-l, .vs-c, .vs-n')) e.preventDefault(); }, true);   // odak mesaj kutusundan kaçmasın
   bar.addEventListener('click', function (e) {
     var lb = e.target.closest ? e.target.closest('.vs-l') : null;
     if (lb) { e.stopPropagation(); if (menu && menu.classList.contains('show')) menuClose(); else menuOpen(); return; }
     menuClose();
-    var bb = e.target.closest ? e.target.closest('.vs-bat') : null;
-    if (bb) { e.stopPropagation(); batFlash(); return; }
     var nb = e.target.closest ? e.target.closest('.vs-n') : null;
     if (nb) { e.stopPropagation(); if (nt.classList.contains('show')) ntClose(); else ntOpen(); return; }
     var c = e.target.closest ? e.target.closest('.vs-c') : null;
@@ -13088,15 +13077,6 @@ function pfRender() {
     } catch (e) {}
   }
   try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitKey = ''; fitClock(); }); } catch (e) {}
-  var batT = [];
-  function batFlash() {
-    if (!elB) return;
-    batT.forEach(clearTimeout); batT = [];
-    var d = elB.classList.contains('big') ? 0 : 300;   // zaten büyükse büyüme beklenmez
-    elB.classList.add('big');
-    batT.push(setTimeout(function () { if (elB) elB.classList.add('pct'); }, d));
-    batT.push(setTimeout(function () { if (elB) { elB.classList.remove('pct'); elB.classList.remove('big'); } }, d + 1500));
-  }
   function put(k, el, v, isHtml) { if (c[k] === v) return; c[k] = v; if (isHtml) el.innerHTML = v; else el.textContent = v; }
   function tick() {
     setH();
