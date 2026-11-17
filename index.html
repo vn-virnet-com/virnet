@@ -111,6 +111,7 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 #vn-sysbar .vs-l { min-width: 0; max-width: 46vw; overflow: hidden; pointer-events: auto; cursor: pointer; padding: 0 6px; margin: 0 -6px; -webkit-tap-highlight-color: transparent; }
 #vn-sysbar .vs-bat { gap: 4px; }
 #vn-sysbar .vs-bat span { display: block; line-height: 1; }
+#vn-sysbar .vs-bat svg { height: 10px; }
 #vn-sysbar svg { display: block; flex: 0 0 auto; height: 12px; width: auto; transform: none !important; }
 /* Wifi simgesi diğerlerinden büyük ve alçak duruyordu: biraz küçük, bir tık yukarıda */
 #vn-sysbar .vs-net svg, #vn-sysbar .vs-bt svg { height: 10px; transform: translateY(-1px) !important; }
@@ -2048,7 +2049,7 @@ body.gm-on #leap-hud { display: none !important; }
   <div id="input-wrapper">
     <input type="text" id="nick-input" name="chat-label" placeholder="İsim" tabindex="1" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
     <div id="msg-wrap"><textarea id="message-input" placeholder="Bağlanıyor..." tabindex="2"></textarea><div id="ph-overlay" aria-hidden="true"><span id="ph-text">Bağlanıyor...</span></div><div id="rec-ph" aria-hidden="true"><span>Ses kaydediliyor...</span></div></div>
-    <button id="send-btn" disabled><svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.75L20.5 20.25L14.5 17.75L12 9.75L9.5 17.75L3.5 20.25Z"/></svg></button>
+    <button id="send-btn" disabled><svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.25 12L3.75 20.5L6.25 14.5L14.25 12L6.25 9.5L3.75 3.5Z"/></svg></button>
   </div>
 </div>
 </div>
@@ -8768,7 +8769,7 @@ function vnSaveBlob(blob, name, mime) {
 const MAX_IMAGE_BYTES = 30 * 1024 * 1024;
 const LONG_PRESS_MS = 500;
 const DRAG_UP_PX = 14;
-const SEND_ICON = '<svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.75L20.5 20.25L14.5 17.75L12 9.75L9.5 17.75L3.5 20.25Z"/></svg>';
+const SEND_ICON = '<svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.25 12L3.75 20.5L6.25 14.5L14.25 12L6.25 9.5L3.75 3.5Z"/></svg>';
 let pressTimer = null;
 let pressActive = false;
 let pressId = null;
