@@ -1824,11 +1824,11 @@ body.gm-on #leap-hud { display: none !important; }
 #vk .vk-rows { display: flex; flex-direction: column; gap: 5px; height: 244px; }
 #vk .vk-row { display: flex; gap: 5px; flex: 1; min-height: 0; }
 #vk .vk-sp { flex: .5; }
-#vk .vk-key { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; justify-content: center; box-sizing: border-box; border: 1.5px solid var(--c-33); border-radius: var(--r-md); background: color-mix(in srgb, var(--c-fff) 5%, var(--c-000)); color: var(--c-fff); font-size: 28px; font-weight: 500; line-height: 1; font-family: inherit; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .28s ease, color .28s ease, border-color .28s ease; }
+#vk .vk-key { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; justify-content: center; box-sizing: border-box; border: 1.5px solid var(--c-33); border-radius: var(--r-md); background: color-mix(in srgb, var(--c-fff) 5%, var(--c-000)); color: var(--c-fff); font-size: 22px; font-weight: 500; line-height: 1; font-family: inherit; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .28s ease, color .28s ease, border-color .28s ease; }
 #vk .vk-key.w15 { flex: 1.5; }
 #vk .vk-key.w2 { flex: 2; }
 #vk .vk-key.w5 { flex: 5; }
-#vk .vk-key.fn { color: var(--c-cc); font-size: 20px; }
+#vk .vk-key.fn { color: var(--c-cc); font-size: 17px; }
 #vk .sym .vk-key { font-size: 21px; }
 #vk .sym .vk-key.fn { font-size: 17px; }
 #vk .vk-key svg { width: 27px; height: 27px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
@@ -1852,6 +1852,9 @@ body.gm-on #leap-hud { display: none !important; }
 #vk .vk-grid { flex: 1; min-height: 0; overflow-y: auto; touch-action: pan-y; display: grid; grid-template-columns: repeat(8, 1fr); align-content: start; gap: 2px; border: 1.5px solid var(--c-33); border-radius: var(--r-md); padding: 3px; }
 #vk .vk-em { flex: 0 0 auto; min-width: 40px; text-align: center; font-size: 26px; line-height: 1; padding: 6px 0; border-radius: 8px; -webkit-tap-highlight-color: transparent; }
 #vk .vk-em:active { background: var(--send-bg); }
+#vk .vk-trbar { display: flex; gap: 5px; height: 62px; margin-bottom: 5px; }
+#vk .vk-trres { flex: 1; min-width: 0; overflow-y: auto; touch-action: pan-y; display: flex; align-items: center; box-sizing: border-box; border: 1.5px solid var(--send-bg); border-radius: var(--r-md); padding: 4px 10px; color: var(--c-fff); font-size: 15px; line-height: 1.25; word-break: break-word; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#vk .vk-trres.dim { color: var(--c-77); border-color: var(--c-33); }
 #vk .vk-box { flex: 1; min-height: 0; overflow-y: auto; touch-action: pan-y; border: 1.5px solid var(--c-33); border-radius: var(--r-md); padding: 8px 12px; color: var(--c-fff); font-size: 16px; line-height: 1.35; word-break: break-word; white-space: pre-wrap; }
 #vk .vk-box.dim { color: var(--c-88); }
 #vk .vk-clip { flex: 1; min-height: 0; display: flex; align-items: center; border: 1.5px solid var(--c-33); border-radius: var(--r-md); background: color-mix(in srgb, var(--c-fff) 5%, var(--c-000)); color: var(--c-fff); padding: 0 12px; font-size: 16px; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .28s ease; }
@@ -13244,7 +13247,7 @@ function pfRender() {
   }
 
   // ---- Üst bar: emoji / pano / çeviri ----
-  var mode = 'keys', searching = null, emoCat = 0, clipH = [], trSrc = 'tr', trDst = 'en', trOut = '', trBusy = false, trErr = false, trTok = 0, trRange = null, trText0 = '';
+  var trOn = false, trTimer = null, mode = 'keys', searching = null, emoCat = 0, clipH = [], trSrc = 'tr', trDst = 'en', trOut = '', trBusy = false, trErr = false, trTok = 0, trRange = null, trText0 = '';
   var LANGS = ['tr', 'en', 'de', 'fr', 'es', 'it', 'ru', 'ar'];
   var CATS = ['😀', '👋', '🐶', '🍔', '⚽', '❤️'];
   var EMO = [
@@ -13292,7 +13295,7 @@ function pfRender() {
   function barHTML() {
     if (searching !== null) return '<div class="vk-bar"><div class="vk-tb nar" data-a="sx">✕</div><div class="vk-q" id="vk-q"></div><div class="vk-strip" id="vk-strip"></div></div>';
     function tb(a, c, on) { return '<div class="vk-tb' + (on ? ' act' : '') + '" data-a="' + a + '">' + c + '</div>'; }
-    return '<div class="vk-bar">' + tb('emoji', ICON.EMO, mode === 'emoji') + tb('clip', ICON.CLIP, mode === 'clip') + tb('tr', '<b style="font-size:17px;font-weight:600">文A</b>', mode === 'tr') + '</div>';
+    return '<div class="vk-bar">' + tb('emoji', ICON.EMO, mode === 'emoji') + tb('clip', ICON.CLIP, mode === 'clip') + tb('tr', '<b style="font-size:17px;font-weight:600">文A</b>', trOn) + '</div>';
   }
   function emojiHTML() {
     var h = '<div class="vk-panel"><div class="vk-cats"><div class="vk-tb" data-a="search">' + ICON.SEARCH + '</div>';
@@ -13307,15 +13310,13 @@ function pfRender() {
     for (var i = 0; i < 3; i++) h += clipH[i] ? '<div class="vk-clip" data-a="clipitem" data-i="' + i + '"><span>' + esc(clipH[i]) + '</span></div>' : (clipH.length ? '<div class="vk-clip empty"></div>' : '');
     return h + '</div>';
   }
-  function trHTML() {
-    var src = esc(trText0 || ''), out = trBusy ? 'Çevriliyor…' : trErr ? 'Çeviri alınamadı' : esc(trOut);
-    return '<div class="vk-panel"><div class="vk-cats"><div class="vk-tb" data-a="lsrc">' + trSrc.toUpperCase() + '</div><div class="vk-tb nar" data-a="swap">⇄</div><div class="vk-tb" data-a="ldst">' + trDst.toUpperCase() + '</div></div>' +
-      '<div class="vk-box dim">' + (src || 'Mesaj kutusuna yaz ya da metin seç') + '</div><div class="vk-box">' + (out || '') + '</div>' +
-      '<div class="vk-cats"><div class="vk-tb" data-a="dotr">Çevir</div><div class="vk-tb" data-a="apply">Yerine koy</div></div></div>';
+  function trBarHTML() {
+    var txt = trOut ? esc(trOut) : (trErr ? 'Çeviri alınamadı' : (trBusy ? '…' : 'Yazdıkça çevrilir'));
+    return '<div class="vk-trbar"><div class="vk-tb nar" data-a="lsrc">' + trSrc.toUpperCase() + '</div><div class="vk-tb nar" data-a="swap">⇄</div><div class="vk-tb nar" data-a="ldst">' + trDst.toUpperCase() + '</div><div class="vk-trres' + (trOut ? '' : ' dim') + '" id="vk-trres" data-a="apply">' + txt + '</div></div>';
   }
   function build() {
-    var body = mode === 'emoji' ? emojiHTML() : mode === 'clip' ? clipHTML() : mode === 'tr' ? trHTML() : '<div class="vk-rows' + (page === 'abc' ? '' : ' sym') + '">' + rowsHTML() + '</div>';
-    vk.innerHTML = barHTML() + body;
+    var body = mode === 'emoji' ? emojiHTML() : mode === 'clip' ? clipHTML() : '<div class="vk-rows' + (page === 'abc' ? '' : ' sym') + '">' + rowsHTML() + '</div>';
+    vk.innerHTML = barHTML() + (trOn ? trBarHTML() : '') + body;
     if (searching !== null) updateStrip();
   }
   function updateStrip() {
@@ -13325,49 +13326,54 @@ function pfRender() {
     if (qq) for (var i = 0; i < ALL.length && n < 40; i++) if (ALL[i].k.indexOf(qq) > -1) { h += '<span class="vk-em" data-a="em" data-e="' + ALL[i].e + '">' + ALL[i].e + '</span>'; n++; }
     st.innerHTML = h; st.scrollLeft = 0;
   }
-  function trInfo() {
-    var el = cur() || msg, s = el.selectionStart, e = el.selectionEnd, has = s != null && e > s;
-    return { el: el, s: has ? s : 0, e: has ? e : el.value.length, text: has ? el.value.slice(s, e) : el.value };
+  function updateTrRes() {
+    var r = document.getElementById('vk-trres'); if (!r) return;
+    r.textContent = trOut ? trOut : (trErr ? 'Çeviri alınamadı' : (trBusy ? '…' : 'Yazdıkça çevrilir'));
+    r.classList.toggle('dim', !trOut);
   }
   function runTr() {
-    var o = trInfo(); trRange = { s: o.s, e: o.e }; trText0 = o.text; trOut = ''; trErr = false;
-    if (!o.text.trim()) { trBusy = false; build(); return; }
-    trBusy = true; build();
+    clearTimeout(trTimer);
+    var el = cur() || msg, text = el.value;
+    if (!text.trim()) { trTok++; trOut = ''; trBusy = false; trErr = false; updateTrRes(); return; }
+    trBusy = true; trErr = false; updateTrRes();
     var tok = ++trTok;
-    fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(o.text.slice(0, 450)) + '&langpair=' + trSrc + '|' + trDst)
+    fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text.slice(0, 450)) + '&langpair=' + trSrc + '|' + trDst)
       .then(function (r) { return r.json(); })
       .then(function (j) {
         if (tok !== trTok) return;
         var t = j && j.responseData && j.responseData.translatedText;
         if (!t || (j.responseStatus && Number(j.responseStatus) !== 200)) throw 0;
-        ta.innerHTML = t; trOut = ta.value; trBusy = false; trErr = false; if (mode === 'tr') build();
+        ta.innerHTML = t; trOut = ta.value; trBusy = false; trErr = false; updateTrRes();
       })
-      .catch(function () { if (tok !== trTok) return; trBusy = false; trErr = true; if (mode === 'tr') build(); });
+      .catch(function () { if (tok !== trTok) return; trBusy = false; trErr = true; trOut = ''; updateTrRes(); });
   }
+  // Yazdıkça: boşluk girince hemen, yoksa 0,5 sn yazılmazsa çevir
+  document.addEventListener('input', function (e) {
+    if (!trOn || (e.target !== nick && e.target !== msg)) return;
+    clearTimeout(trTimer);
+    if (/\s$/.test(e.target.value)) runTr(); else trTimer = setTimeout(runTr, 500);
+  }, true);
   function cycle(cur0) { return LANGS[(LANGS.indexOf(cur0) + 1) % LANGS.length]; }
   vk.addEventListener('click', function (e) {
     var t = e.target.closest('[data-a]'); if (!t) return;
     var a = t.getAttribute('data-a'), el = cur() || msg;
-    if (a === 'emoji' || a === 'clip' || a === 'tr') {
+    if (a === 'emoji' || a === 'clip') {
       searching = null; mode = mode === a ? 'keys' : a;
-      if (mode === 'clip') { build(); refreshClip(); } else if (mode === 'tr') runTr(); else build();
+      if (mode === 'clip') { build(); refreshClip(); } else build();
     }
+    else if (a === 'tr') { trOn = !trOn; build(); if (trOn) runTr(); else { clearTimeout(trTimer); trTok++; } }
     else if (a === 'search') { searching = ''; mode = 'keys'; build(); }
     else if (a === 'sx') { searching = null; build(); }
     else if (a === 'cat') { emoCat = +t.getAttribute('data-i'); build(); }
     else if (a === 'em') { if (!el.disabled) insert(el, t.getAttribute('data-e')); }
     else if (a === 'bk') back(el);
     else if (a === 'clipitem') { if (!el.disabled) insert(el, clipH[+t.getAttribute('data-i')] || ''); }
-    else if (a === 'lsrc') { trSrc = cycle(trSrc); if (trSrc === trDst) trDst = cycle(trDst); runTr(); }
-    else if (a === 'ldst') { trDst = cycle(trDst); if (trSrc === trDst) trDst = cycle(trDst); runTr(); }
-    else if (a === 'swap') { var x = trSrc; trSrc = trDst; trDst = x; runTr(); }
-    else if (a === 'dotr') runTr();
+    else if (a === 'lsrc') { trSrc = cycle(trSrc); if (trSrc === trDst) trDst = cycle(trDst); trOut = ''; build(); runTr(); }
+    else if (a === 'ldst') { trDst = cycle(trDst); if (trSrc === trDst) trDst = cycle(trDst); trOut = ''; build(); runTr(); }
+    else if (a === 'swap') { var x = trSrc; trSrc = trDst; trDst = x; trOut = ''; build(); runTr(); }
     else if (a === 'apply') {
-      if (!trOut || trBusy || el.disabled) return;
-      var r = trRange || { s: 0, e: el.value.length };
-      el.value = el.value.slice(0, r.s) + trOut + el.value.slice(r.e);
-      el.selectionStart = el.selectionEnd = r.s + trOut.length; fire(el);
-      mode = 'keys'; build();
+      if (!trOut || el.disabled) return;
+      el.value = trOut; el.selectionStart = el.selectionEnd = trOut.length; fire(el);
     }
   });
   function doBack() {
