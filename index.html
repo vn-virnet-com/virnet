@@ -104,8 +104,8 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 #vn-sysbar .vs-l { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #vn-sysbar .vs-c { flex: 0 0 auto; align-self: stretch; display: flex; align-items: center; padding: 0 6px; margin-left: -6px; font-size: 10.5px; line-height: 1; white-space: nowrap; opacity: .8; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 #vn-sysbar .vs-lw { padding-left: 12px; }
-#vn-sysbar .vs-n { position: absolute; left: 0; top: 0; width: 36px; height: 100%; z-index: 2; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-#vn-sysbar .vs-n i { position: absolute; left: 9px; top: 5px; width: 7px; height: 7px; border-radius: 50%; background: #ff3b30; display: none; }
+#vn-sysbar .vs-n { position: absolute; left: 0; top: 0; width: 38px; height: 100%; box-sizing: border-box; padding-left: 12px; z-index: 2; display: flex; align-items: center; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#vn-sysbar .vs-n i { display: none; flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; background: #ff3b30; }
 #vn-sysbar .vs-n.on i { display: block; }
 #vn-nt { position: fixed; z-index: 12650; top: calc(var(--vn-sb, 0px) + 4px); left: 8px; right: 8px; max-width: 360px; max-height: min(70vh, 460px); box-sizing: border-box; display: none; flex-direction: column; background: var(--c-111); color: var(--c-fff); border: 1px solid var(--c-33); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.55); overflow: hidden; font-size: 12.5px; font-weight: 400; letter-spacing: 0; line-height: 1.3; }
 #vn-nt.show { display: flex; animation: vnCalIn .14s ease-out; }
