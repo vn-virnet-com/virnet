@@ -1573,17 +1573,21 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 /* Masaüstü: yazma satırı (isim kutusu, metin kutusu, gönder tuşu ve sürükleyince açılan seçenekler) sağ panelin alt çubuğu gibi en alta yapışık, köşeleri düz;
    alt çubuk bir tık uzatıldı ve ikisinin üst kenarı aynı hizada (44px). Mobil bundan etkilenmez. */
 @media (min-width: 769px) {
-  :root { --dock-h: 44px; --bp-tabs-h: 44px; }
-  #input-area { padding: 0; min-height: 0; border-top: 0; }
-  #nick-input, #message-input, #send-btn, body.nick-hidden #message-input { border-radius: 0; }
-  #nick-input { height: var(--dock-h); border-left: 0; border-bottom: 0; }
-  #message-input { height: var(--dock-h); padding: 10px 15px; border-bottom: 0; }
-  #send-btn { width: var(--dock-h); min-width: var(--dock-h); height: var(--dock-h); border-right: 0; border-bottom: 0; }
-  #ph-overlay { height: var(--dock-h); line-height: var(--dock-h); }
+  /* Masaüstü de mobildeki gibi: yazma satırı ve sağ panelin alt barı alttan/kenarlardan bağımsız, yüzen yuvarlak kutular; ikisi aynı boyda */
+  :root { --dock-h: 50px; --dock-gap: 15px; --bp-tabs-h: calc(var(--dock-h) + var(--dock-gap) * 2); }
+  #input-area { padding: var(--dock-gap); min-height: 0; border-top: 0; }
+  #nick-input { width: 120px; min-width: 120px; height: var(--dock-h); padding: 9px 8px; }
+  #message-input { height: var(--dock-h); padding: 13px 18px; }
+  #send-btn { width: var(--dock-h); min-width: var(--dock-h); height: var(--dock-h); }
+  #ph-overlay { height: var(--dock-h); line-height: var(--dock-h); left: 19px; }
   #rec-ph { line-height: calc(var(--dock-h) - 2px); }
   .cm-item { height: var(--dock-h); }
-  #chip-menu { border-radius: 0; }
   #chat-area { -webkit-mask-image: none; mask-image: none; }
+  /* Sağ panel alt barı (Bildirim / Profil): yazma satırıyla aynı yükseklik ve boşluklar; panel içeriği barın altına taşmaz (içerik barın üstünde biter) */
+  #bell-pop #bp-tabs { left: var(--dock-gap); right: var(--dock-gap); bottom: var(--dock-gap); height: var(--dock-h); padding: 0; border: 0; border-radius: var(--r-lg); background: transparent; }
+  #bell-pop #bp-tabs-in { padding: 3px; background: var(--c-111); border: 1px solid var(--c-33); border-radius: var(--r-lg); }
+  #bell-pop #bp-pill { top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / 3); border-radius: var(--r-md); }
+  body.desk-set #bell-pop #bp-pill { width: calc((100% - 6px) / 2); }
 }
 
 /* Yüzen menü: 3 sn etkileşim olmazsa %75 saydam olur, yalnızca dış çerçevesi çok hafif parlar */
@@ -6047,7 +6051,7 @@ chatArea.addEventListener('click', (e) => {
 }, true);
 
 function adjustInputHeight() {
-  const baseH = isMobileLayout() ? 42 : 44; // masaüstünde yazma satırı sağ alt çubukla aynı yükseklikte (44px)
+  const baseH = isMobileLayout() ? 42 : 50; // masaüstünde yazma satırı sağ alt barla aynı yükseklikte (--dock-h = 50px)
   messageInput.style.height = baseH + 'px';
   // Kutu boşken (placeholder gösteriliyorken) yükseklik hiç büyümez; uzun placeholder satır atlayıp kutuyu şişirmesin
   if (messageInput.value !== '' && messageInput.scrollHeight > baseH) {
