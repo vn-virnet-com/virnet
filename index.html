@@ -928,6 +928,7 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 .stor-row:first-child { border-top: 0; }
 .stor-row span:first-child { min-width: 0; overflow-wrap: anywhere; font-family: 'JetBrains Mono', monospace; }
 .stor-row span:last-child { flex: 0 0 auto; color: var(--c-88); font-variant-numeric: tabular-nums; }
+#stor-via { font-size: 12px; color: var(--c-88); text-align: center; }
 #stor-close { padding: 12px; font-size: 16px; border: 1px solid var(--c-33); border-radius: var(--r-md); cursor: pointer; font-weight: 700; background: var(--accent); color: var(--on-accent); }
 #idle-modal {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 50000;
@@ -2343,6 +2344,7 @@ body.gm-on #leap-hud { display: none !important; }
     <div id="stor-sum"></div>
     <div id="stor-list"></div>
     <button id="stor-close" type="button">Kapat</button>
+    <div id="stor-via"></div>
   </div>
 </div>
 
@@ -2409,6 +2411,12 @@ let friendId = null;
 let peer = null;
 let conn = null;
 let connStart = 0;
+let dialConn = null;           // bizim başlattığımız (giden) bağlantı
+let friendUnavailableAt = 0;   // karşı taraf sunucuda yokken 'peer-unavailable' gelen an
+let iceTier = 0;               // 0: PeerJS varsayılanı, 1: ExpressTURN, 2: Metered
+let connTier = -1;             // son açılan bağlantının kurulduğu kademe
+let iceFails = 0;              // bu kademede üst üste başarısız deneme sayısı
+const ICE_FAILS_PER_TIER = 2;  // kaç başarısız denemeden sonra bir sonraki kademeye geçilsin
 let restartTimer = null;
 let retryInterval = null;
 let pingInterval = null;
@@ -3169,6 +3177,8 @@ codesModal.addEventListener('click', (e) => { if (e.target === codesModal) close
   const QUOTA = 10 * 1024 * 1024; // Chromium (Chrome/Opera Android): origin başına 10 MiB, anahtar+değer UTF-16 bayt olarak sayılır
   const fmt = (b) => b < 1024 ? b + ' B' : (b / 1024 < 1024 ? (b / 1024).toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' KB' : (b / 1048576).toLocaleString('tr-TR', { maximumFractionDigits: 2 }) + ' MB');
   function fill() {
+    const via = document.getElementById('stor-via');
+    if (via) via.textContent = 'Bağlantı: ' + (isConnected() && connTier >= 0 ? ['PeerJS', 'ExpressTURN', 'Metered'][connTier] : '—');
     const rows = []; let tot = 0;
     try {
       for (let i = 0; i < localStorage.length; i++) {
@@ -3245,6 +3255,59 @@ function scheduleRestart(delay) {
   }, delay || 3000);
 }
 
+// ICE sunucu kademeleri: bağlantı kurulamazsa sırayla bir sonrakine geçilir (0 -> 1 -> 2 -> tekrar 0).
+// Not: WebRTC listedeki sunucuları sırayla denemez, hepsini birden kullanır; bu yüzden her kademe ayrı bir liste.
+// Kendi TURN sunucun varsa: konsolda localStorage.setItem('turnCfg', JSON.stringify([{urls:['turn:HOST:3478','turns:HOST:443?transport=tcp'],username:'U',credential:'P'}])) yazıp sayfayı yenile
+function iceServersFor(tier) {
+  let extraTurn = [];
+  try { const t = JSON.parse(lsGet('turnCfg') || '[]'); if (Array.isArray(t)) extraTurn = t; } catch (e) {}
+  let list;
+  if (tier === 1) {
+    // 2. kademe: ExpressTURN
+    list = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'turn:free.expressturn.com:3478', username: '000000002110345218', credential: 'MU4IR9fIqjCGmWwyn91xmaaS4HA=' },
+      { urls: 'turn:free.expressturn.com:3478?transport=tcp', username: '000000002110345218', credential: 'MU4IR9fIqjCGmWwyn91xmaaS4HA=' }
+    ];
+  } else if (tier === 2) {
+    // 3. kademe: Metered (+ açık relay)
+    list = [
+      { urls: 'stun:stun.relay.metered.ca:80' },
+      { urls: 'turn:global.relay.metered.ca:80', username: '26c1a1a41acb0d1f87326ba8', credential: 'OuGOX/tj4vMJQbmx' },
+      { urls: 'turn:global.relay.metered.ca:80?transport=tcp', username: '26c1a1a41acb0d1f87326ba8', credential: 'OuGOX/tj4vMJQbmx' },
+      { urls: 'turn:global.relay.metered.ca:443', username: '26c1a1a41acb0d1f87326ba8', credential: 'OuGOX/tj4vMJQbmx' },
+      { urls: 'turns:global.relay.metered.ca:443?transport=tcp', username: '26c1a1a41acb0d1f87326ba8', credential: 'OuGOX/tj4vMJQbmx' },
+      { urls: 'stun:stun.cloudflare.com:3478' },
+      { urls: 'stun:global.stun.twilio.com:3478' },
+      { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' }
+    ];
+  } else {
+    // 1. kademe: düz PeerJS varsayılanı (config verince PeerJS kendi listesini kullanmaz, bu yüzden elle yazıldı)
+    list = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' }
+    ];
+  }
+  return [...extraTurn, ...list];
+}
+
+// Çalışan peer'in ayarını yerinde değiştirir; PeerJS her yeni bağlantıda bu config'i okur, peer'i yıkmaya gerek yok.
+function applyIceTier() {
+  const o = peer && (peer.options || peer._options);
+  if (!o) return;
+  o.config = Object.assign({}, o.config, { iceServers: iceServersFor(iceTier) });
+  try { console.info('[ice] kademe ' + (iceTier + 1) + ' deneniyor'); } catch (e) {}
+}
+
+function noteDialFailure(c) {
+  if (c !== dialConn || c.open) return;                 // sadece bizim açtığımız ve açılamayan bağlantı
+  if (friendUnavailableAt >= connStart) return;         // karşı taraf çevrimdışıydı, ağ/ICE sorunu değil
+  if (++iceFails < ICE_FAILS_PER_TIER) return;
+  iceFails = 0;
+  iceTier = (iceTier + 1) % 3;
+  applyIceTier();
+}
+
 function startPeer() {
   if (restartTimer) { clearTimeout(restartTimer); restartTimer = null; }
   if (peer) {
@@ -3260,29 +3323,9 @@ function startPeer() {
     else scheduleRestart();
     return;
   }
-  // Kendi TURN sunucun varsa: konsolda localStorage.setItem('turnCfg', JSON.stringify([{urls:['turn:HOST:3478','turns:HOST:443?transport=tcp'],username:'U',credential:'P'}])) yazıp sayfayı yenile
-  let extraTurn = [];
-  try { const t = JSON.parse(lsGet('turnCfg') || '[]'); if (Array.isArray(t)) extraTurn = t; } catch (e) {}
   peer = new Peer(myId, {
     config: {
-      iceServers: [
-        ...extraTurn,
-        // 1. seçenek: ExpressTURN
-        { urls: 'turn:free.expressturn.com:3478', username: '000000002110345218', credential: 'MU4IR9fIqjCGmWwyn91xmaaS4HA=' },
-        { urls: 'turn:free.expressturn.com:3478?transport=tcp', username: '000000002110345218', credential: 'MU4IR9fIqjCGmWwyn91xmaaS4HA=' },
-        // 2. seçenek: Metered TURN (kendi hesabımız): aynı ağ türündeki (wifi+wifi / mobil+mobil) cihazlar buradan bağlanır
-        { urls: 'stun:stun.relay.metered.ca:80' },
-        { urls: 'turn:global.relay.metered.ca:80', username: '26c1a1a41acb0d1f87326ba8', credential: 'OuGOX/tj4vMJQbmx' },
-        { urls: 'turn:global.relay.metered.ca:80?transport=tcp', username: '26c1a1a41acb0d1f87326ba8', credential: 'OuGOX/tj4vMJQbmx' },
-        { urls: 'turn:global.relay.metered.ca:443', username: '26c1a1a41acb0d1f87326ba8', credential: 'OuGOX/tj4vMJQbmx' },
-        { urls: 'turns:global.relay.metered.ca:443?transport=tcp', username: '26c1a1a41acb0d1f87326ba8', credential: 'OuGOX/tj4vMJQbmx' },
-        { urls: 'stun:stun.cloudflare.com:3478' },
-        { urls: 'stun:global.stun.twilio.com:3478' },
-        { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' },
-        // 3. seçenek: PeerJS varsayılanı (config verince PeerJS kendi listesini kullanmaz, bu yüzden elle eklendi)
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' }
-      ],
+      iceServers: iceServersFor(iceTier),
       iceCandidatePoolSize: 4
     }
   });
@@ -3332,7 +3375,7 @@ function startPeer() {
 
   p.on('error', (err) => {
     if (p !== peer) return;
-    if (err.type === 'peer-unavailable') return;
+    if (err.type === 'peer-unavailable') { friendUnavailableAt = Date.now(); return; }
 
     if (err.type === 'unavailable-id') {
       // Aynı kod başka bir sekmede/cihazda hâlâ açık olabilir ya da sunucu eski oturumu henüz silmedi.
@@ -3358,8 +3401,9 @@ function tryConnect() {
   if (conn && Date.now() - connStart < 8000) return;
   // Kodu küçük olan hemen arar; büyük olan önce bekler, 6 sn içinde arama gelmezse o da arar (iki taraf da aynı anda aramasın diye)
   if (myId >= friendId && Date.now() - peerOpenAt < 6000) return;
-  if (conn) { const old = conn; conn = null; try { old.close(); } catch (e) {} }
+  if (conn) { noteDialFailure(conn); const old = conn; conn = null; try { old.close(); } catch (e) {} }
   conn = peer.connect(friendId, { reliable: true });
+  dialConn = conn;
   connStart = Date.now();
   setupConnection(conn);
 }
@@ -3392,6 +3436,8 @@ function setupConnection(c) {
   }
   const onOpen = () => {
     if (c !== conn) return;
+    iceFails = 0;
+    connTier = iceTier;
     missedPings = 0;
     downSince = 0;
     busyUntil = 0;
