@@ -102,10 +102,24 @@ html { --vn-top: max(env(safe-area-inset-top, 0px), var(--vn-sb, 0px)); }
 html.vn-fs #vn-sysbar { display: flex; position: relative; }
 #vn-sysbar .vs-lw { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 8px; margin-right: 10px; }
 #vn-sysbar .vs-l { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#vn-sysbar .vs-c { flex: 0 0 auto; align-self: center; font-size: 10.5px; line-height: 1; white-space: nowrap; opacity: .8; }
+#vn-sysbar .vs-c { flex: 0 0 auto; align-self: stretch; display: flex; align-items: center; padding: 0 6px; margin-left: -6px; font-size: 10.5px; line-height: 1; white-space: nowrap; opacity: .8; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#vn-cal { position: fixed; z-index: 12650; top: calc(var(--vn-sb, 0px) + 4px); left: 8px; width: 244px; box-sizing: border-box; padding: 10px 10px 12px; display: none; background: var(--c-111); color: var(--c-fff); border: 1px solid var(--c-33); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.55); -webkit-user-select: none; user-select: none; font-size: 12.5px; }
+#vn-cal.show { display: block; animation: vnCalIn .14s ease-out; }
+@keyframes vnCalIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } to { opacity: 1; transform: none; } }
+#vn-cal .cal-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+#vn-cal .cal-h button { border: 0; background: transparent; color: var(--c-fff); font: inherit; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#vn-cal .cal-nav { width: 34px; height: 30px; border-radius: 10px; font-size: 20px; line-height: 1; }
+#vn-cal .cal-nav:active, #vn-cal .cal-t:active { background: color-mix(in srgb, var(--c-fff) 12%, transparent); }
+#vn-cal .cal-t { flex: 1; height: 30px; border-radius: 10px; font-size: 13.5px; }
+#vn-cal .cal-g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+#vn-cal .cal-w { color: var(--c-88); font-size: 10.5px; font-weight: 700; line-height: 22px; }
+#vn-cal .cal-d { line-height: 28px; border-radius: 50%; font-variant-numeric: tabular-nums; }
+#vn-cal .cal-d.wk { color: var(--c-88); }
+#vn-cal .cal-d.today { background: var(--accent); color: var(--on-accent); font-weight: 700; }
 #vn-sysbar .vs-r { margin-left: auto; flex: 0 0 auto; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
 #vn-sysbar .vs-bat { display: inline-flex; align-items: center; gap: 4px; }
-#vn-sysbar svg { display: block; }
+#vn-sysbar svg { display: block; flex: 0 0 auto; }
+#vn-sysbar .vs-net svg { transform: translateY(-.5px); }
 
 #setup-panel {
   position: relative; z-index: 10000; padding: 15px;
@@ -13033,17 +13047,17 @@ function pfRender() {
   }
   function wifi(l) {
     var on = function (n) { return (l < 0 || l >= n) ? 1 : .28; };
-    return '<svg width="17" height="13" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">'
+    return '<svg width="14" height="10.5" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">'
       + '<path d="M2 6.2a14.5 14.5 0 0 1 20 0" opacity="' + on(4) + '"/><path d="M5.6 9.9a9.5 9.5 0 0 1 12.8 0" opacity="' + on(3) + '"/>'
       + '<path d="M9 13.4a4.6 4.6 0 0 1 6 0" opacity="' + on(2) + '"/><circle cx="12" cy="16.4" r="1.2" fill="currentColor" stroke="none"/></svg>';
   }
   function cell(l) {
-    var s = '<svg width="16" height="13" viewBox="0 0 20 16" fill="currentColor">';
+    var s = '<svg width="16" height="13" viewBox="0 0 20 16" fill="currentColor" style="transform:none">';
     for (var i = 0; i < 4; i++) s += '<rect x="' + (i * 5.2) + '" y="' + (15 - (4 + i * 3.6)) + '" width="3.4" height="' + (4 + i * 3.6) + '" rx="1" opacity="' + ((l < 0 || l > i) ? 1 : .28) + '"/>';
     return s + '</svg>';
   }
   function off() {
-    return '<svg width="17" height="13" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".5"><path d="M2 6.2a14.5 14.5 0 0 1 20 0"/><path d="M5.6 9.9a9.5 9.5 0 0 1 12.8 0"/><path d="M3 16.5L21 2" /></svg>';
+    return '<svg width="14" height="10.5" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".5"><path d="M2 6.2a14.5 14.5 0 0 1 20 0"/><path d="M5.6 9.9a9.5 9.5 0 0 1 12.8 0"/><path d="M3 16.5L21 2" /></svg>';
   }
   function batt(p, chg) {
     var col = chg ? '#30d158' : (p <= 15 ? '#ff453a' : 'currentColor');
@@ -13052,6 +13066,47 @@ function pfRender() {
       + '<rect x="23" y="3.5" width="2" height="5" rx="1" fill="currentColor" opacity=".6"/><rect x="2.5" y="2.5" width="' + w + '" height="7" rx="1.6" fill="' + col + '"/>'
       + (chg ? '<path d="M11.8 1.6L7.6 6.6h3l-.9 3.8 4.4-5.2h-3z" fill="#000" opacity=".75"/>' : '') + '</svg>';
   }
+
+  /* Tarihe dokununca minik takvim: ok tuşlarıyla ay değiştirilir, başlığa dokunmak bugüne döner */
+  var cal = document.createElement('div'); cal.id = 'vn-cal'; document.body.appendChild(cal);
+  var calY = 0, calM = 0;
+  var MN = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  var DN = ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'];
+  function calRender() {
+    var start = (new Date(calY, calM, 1).getDay() + 6) % 7, days = new Date(calY, calM + 1, 0).getDate(), t = new Date(), i, d;
+    var s = '<div class="cal-h"><button type="button" class="cal-nav" data-d="-1" aria-label="Önceki ay">&#8249;</button>'
+      + '<button type="button" class="cal-t" data-d="0">' + MN[calM] + ' ' + calY + '</button>'
+      + '<button type="button" class="cal-nav" data-d="1" aria-label="Sonraki ay">&#8250;</button></div><div class="cal-g">';
+    for (i = 0; i < 7; i++) s += '<span class="cal-w">' + DN[i] + '</span>';
+    for (i = 0; i < start; i++) s += '<span></span>';
+    for (d = 1; d <= days; d++) {
+      var isT = d === t.getDate() && calM === t.getMonth() && calY === t.getFullYear();
+      s += '<span class="cal-d' + (isT ? ' today' : '') + (((start + d - 1) % 7) >= 5 ? ' wk' : '') + '">' + d + '</span>';
+    }
+    cal.innerHTML = s + '</div>';
+  }
+  function calOpen() { var n = new Date(); calY = n.getFullYear(); calM = n.getMonth(); calRender(); cal.classList.add('show'); }
+  function calClose() { cal.classList.remove('show'); }
+  window.__vnCalClose = calClose;
+  cal.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var b = e.target.closest ? e.target.closest('button[data-d]') : null;
+    if (!b) return;
+    var dd = parseInt(b.getAttribute('data-d'), 10);
+    if (dd === 0) { var n = new Date(); calY = n.getFullYear(); calM = n.getMonth(); }
+    else { calM += dd; if (calM < 0) { calM = 11; calY--; } else if (calM > 11) { calM = 0; calY++; } }
+    calRender();
+  });
+  cal.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  bar.addEventListener('click', function (e) {
+    var c = e.target.closest ? e.target.closest('.vs-c') : null;
+    if (!c) return;
+    e.stopPropagation();
+    if (cal.classList.contains('show')) calClose(); else calOpen();
+  });
+  document.addEventListener('click', function (e) {
+    if (cal.classList.contains('show') && !(e.target.closest && e.target.closest('#vn-cal'))) calClose();
+  }, true);
   var elL, elC, elN, elB, elT, c = {};
   function build() {
     bar.innerHTML = '<span class="vs-lw"><span class="vs-c"></span><span class="vs-l"></span></span><span class="vs-r"><span class="vs-net"></span><span class="vs-bat"></span><span class="vs-t"></span></span>';
@@ -13090,6 +13145,7 @@ function pfRender() {
     try {
       if (typeof thirdCanSend !== 'function' || !thirdCanSend()) return;
       bgHid = true;
+      if (window.__vnCalClose) window.__vnCalClose();
       if (document.documentElement.classList.contains('pin-locked')) return;
       var e = els();
       if (e.cover && !e.cover.classList.contains('show') && e.eye) e.eye.click();
