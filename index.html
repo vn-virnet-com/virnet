@@ -1819,18 +1819,18 @@ body.gm-on #leap-hud { display: none !important; }
 </style>
 <style id="vk-style">
 /* Özel ekran klavyesi (yalnızca sohbet alanı: isim + mesaj kutusu) */
-#vk { display: none; flex: 0 0 auto; width: 100%; box-sizing: border-box; background: var(--c-000); padding: 6px 6px 6px; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
+#vk { display: none; flex: 0 0 auto; width: 100%; box-sizing: border-box; background: var(--c-000); padding: 0 6px 10.5px; margin-top: -4.5px; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
 #vk.show { display: block; }
 #vk .vk-rows { display: flex; flex-direction: column; gap: 5px; height: 244px; }
 #vk .vk-row { display: flex; gap: 5px; flex: 1; min-height: 0; }
 #vk .vk-sp { flex: .5; }
-#vk .vk-key { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; justify-content: center; box-sizing: border-box; border: 1.5px solid var(--c-33); border-radius: var(--r-md); background: color-mix(in srgb, var(--c-fff) 5%, var(--c-000)); color: var(--c-fff); font: 500 23px/1 inherit; font-family: inherit; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .28s ease, color .28s ease, border-color .28s ease; }
+#vk .vk-key { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; justify-content: center; box-sizing: border-box; border: 1.5px solid var(--c-33); border-radius: var(--r-md); background: color-mix(in srgb, var(--c-fff) 5%, var(--c-000)); color: var(--c-fff); font: 500 27px/1 inherit; font-family: inherit; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .28s ease, color .28s ease, border-color .28s ease; }
 #vk .vk-key.w15 { flex: 1.5; }
 #vk .vk-key.w2 { flex: 2; }
 #vk .vk-key.w5 { flex: 5; }
-#vk .vk-key.fn { color: var(--c-cc); font-size: 18px; }
-#vk .sym .vk-key { font-size: 27px; }
-#vk .sym .vk-key.fn { font-size: 19px; }
+#vk .vk-key.fn { color: var(--c-cc); font-size: 20px; }
+#vk .sym .vk-key { font-size: 21px; }
+#vk .sym .vk-key.fn { font-size: 17px; }
 #vk .vk-key svg { width: 27px; height: 27px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 #vk .vk-key.on { background: var(--send-bg); color: var(--send-ico); border-color: var(--send-bg); transition: background-color .05s ease, color .05s ease, border-color .05s ease; }
 #vk .vk-key.act { border-color: var(--send-bg); }
@@ -13185,7 +13185,7 @@ function pfRender() {
   ];
   var ICON = {
     SHIFT: '<svg viewBox="0 0 24 24"><path d="M12 4l8 9h-4.5v6h-7v-6H4z"/></svg>',
-    BKSP: '<svg viewBox="0 0 24 24"><path d="M9 5h11v14H9l-6-7z"/></svg>',
+    BKSP: '<svg viewBox="0 0 24 24"><path d="M8 5h13v14H8l-5-7z"/><path d="M12 9.5l5 5M17 9.5l-5 5"/></svg>',
     ENTER: '<svg viewBox="0 0 24 24"><path d="M19 5v7H6"/><path d="M10 8l-4 4 4 4"/></svg>'
   };
 
@@ -13262,30 +13262,55 @@ function pfRender() {
   // Tuşlar odağı çalmaz; basınca içi dolar, hızlıca sönmez
   var rep = null, repT = null, downs = {};
   function stopRep() { clearTimeout(rep); clearInterval(repT); rep = repT = null; }
-  // Panel kaydırma vb. uygulama dinleyicileri klavyeye dokunuşları görmesin
-  ['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach(function (n) {
-    vk.addEventListener(n, function (e) { e.stopPropagation(); if (e.cancelable) e.preventDefault(); }, { passive: false });
-  });
-  vk.addEventListener('pointerdown', function (e) {
-    var b = e.target.closest('.vk-key'); if (!b) return;
-    e.preventDefault(); e.stopPropagation();
+  // Dokunulan noktaya en yakın tuşu bulur: tuşlar arası boşluğa ya da kenara denk gelen dokunuş da basış sayılır
+  function keyAt(x, y) {
+    var keys = vk.querySelectorAll('.vk-key'), best = null, bd = 1e9;
+    for (var i = 0; i < keys.length; i++) {
+      var r = keys[i].getBoundingClientRect();
+      var dx = x < r.left ? r.left - x : x > r.right ? x - r.right : 0;
+      var dy = y < r.top ? r.top - y : y > r.bottom ? y - r.bottom : 0;
+      var d = dx * dx + dy * dy;
+      if (d < bd) { bd = d; best = keys[i]; }
+    }
+    return bd <= 18 * 18 ? best : null;
+  }
+  function down(id, x, y) {
+    var b = keyAt(x, y); if (!b) return;
     b.classList.add('on'); b._t = Date.now();
-    downs[e.pointerId] = b;
+    downs[id] = b;
     var k = b.getAttribute('data-k');
     press(k);
     if (k === 'BKSP') {
       stopRep();
       rep = setTimeout(function () { repT = setInterval(function () { var el = cur(); if (el) back(el); }, 50); }, 380);
     }
-  });
-  function release(e) {
-    var b = downs[e.pointerId]; delete downs[e.pointerId];
+  }
+  function up(id) {
+    var b = downs[id]; delete downs[id];
     if (!b) return;
     if (b.getAttribute('data-k') === 'BKSP') stopRep();
     var d = Math.max(0, 70 - (Date.now() - (b._t || 0)));
     setTimeout(function () { b.classList.remove('on'); }, d);
   }
-  vk.addEventListener('pointerup', release); vk.addEventListener('pointercancel', release);
+  // Dokunmatik: her parmak ayrı bir basış (touchstart en hızlı yol), uygulamanın kaydırma dinleyicileri görmesin
+  vk.addEventListener('touchstart', function (e) {
+    e.stopPropagation(); if (e.cancelable) e.preventDefault();
+    for (var i = 0; i < e.changedTouches.length; i++) { var t = e.changedTouches[i]; down('t' + t.identifier, t.clientX, t.clientY); }
+  }, { passive: false });
+  function tend(e) {
+    e.stopPropagation(); if (e.cancelable) e.preventDefault();
+    for (var i = 0; i < e.changedTouches.length; i++) up('t' + e.changedTouches[i].identifier);
+  }
+  vk.addEventListener('touchend', tend, { passive: false });
+  vk.addEventListener('touchcancel', tend, { passive: false });
+  vk.addEventListener('touchmove', function (e) { e.stopPropagation(); if (e.cancelable) e.preventDefault(); }, { passive: false });
+  // Fare (dokunmatik ekran dışı)
+  vk.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'touch') return;
+    e.preventDefault(); e.stopPropagation(); down('p' + e.pointerId, e.clientX, e.clientY);
+  });
+  vk.addEventListener('pointerup', function (e) { if (e.pointerType !== 'touch') up('p' + e.pointerId); });
+  vk.addEventListener('pointercancel', function (e) { if (e.pointerType !== 'touch') up('p' + e.pointerId); });
   vk.addEventListener('mousedown', function (e) { e.preventDefault(); });
   vk.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
