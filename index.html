@@ -96,6 +96,13 @@ input, textarea, [contenteditable="true"] { -webkit-user-select: text; user-sele
 html, body { height: 100%; background: var(--c-000); color: var(--c-fff); overflow: hidden; }
 body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 #app { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--c-000); }
+html { --vn-top: max(env(safe-area-inset-top, 0px), var(--vn-sb, 0px)); }
+/* APK tam ekran: sistem durum çubuğu gizli, yerine sitenin kendi üst barı (saat | ağ + pil) */
+#vn-sysbar { display: none; flex: 0 0 auto; box-sizing: border-box; height: var(--vn-sb, 0px); padding: 0 16px; align-items: center; justify-content: space-between; background: var(--c-000); color: color-mix(in srgb, var(--c-fff) 82%, transparent); font-size: 12.5px; font-weight: 700; line-height: 1; letter-spacing: .2px; -webkit-user-select: none; user-select: none; pointer-events: none; font-variant-numeric: tabular-nums; }
+html.vn-fs #vn-sysbar { display: flex; }
+#vn-sysbar .vs-r { display: flex; align-items: center; gap: 9px; }
+#vn-sysbar .vs-bat { display: inline-flex; align-items: center; gap: 4px; }
+#vn-sysbar svg { display: block; }
 
 #setup-panel {
   position: relative; z-index: 10000; padding: 15px;
@@ -646,7 +653,7 @@ body #typing-indicator { display: none !important; }
 .ytd-ly.plain { font-weight: 400; color: var(--yt-a82); }
 .ytd-ly.msg { font-size: 12px; font-weight: 400; color: var(--yt-a60); }
 .msg.yt-only .msg-body { display: none; }
-#viewer.once-mode { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); }
+#viewer.once-mode { box-sizing: border-box; padding-top: var(--vn-top); }
 body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-viewing #reply-bar { display: none !important; }
 #viewer-img.once { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 #viewer {
@@ -658,14 +665,14 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 #viewer-img.zoomed { cursor: zoom-out; }
 #viewer-img.dragging { transition: none; }
 #viewer-close {
-  position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); right: 14px;
+  position: absolute; top: calc(var(--vn-top) + 12px); right: 14px;
   width: 44px; height: 44px; border-radius: 50%;
   background: var(--ov-65); border: 1px solid var(--c-55); color: var(--c-fff);
   display: flex; align-items: center; justify-content: center;
   font-size: 22px; cursor: pointer; user-select: none; -webkit-user-select: none; z-index: 2;
 }
 #viewer-dl {
-  position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); right: 68px;
+  position: absolute; top: calc(var(--vn-top) + 12px); right: 68px;
   width: 44px; height: 44px; border-radius: 50%;
   background: var(--ov-65); border: 1px solid var(--c-55); color: var(--c-fff);
   display: none; align-items: center; justify-content: center;
@@ -1483,7 +1490,7 @@ html.pin-locked body > *:not(#pin-lock):not(#idle-modal) { visibility: hidden !i
 #leap-hud .lh-num { color: var(--c-fff); font-weight: 600; font-variant-numeric: tabular-nums; margin-left: 2px; }
 @media (prefers-reduced-motion: reduce) { #leap-hud { transition: opacity .1s linear; } }
 /* Üstten inen bildirim kutusu (mobil + masaüstü; masaüstünde sohbet sütununun ortasında): Leap göstergesiyle aynı tasarım. Açıkken Leap hızlıca solar, kutu gidince yavaşça geri gelir */
-#vn-toast { position: absolute; left: 50%; top: max(calc(env(safe-area-inset-top, 0px) + 10px), calc(var(--strip-b, 0px) + 8px)); z-index: 12600; display: flex; align-items: center; gap: 7px; width: max-content; max-width: calc(100% - 28px); padding: 5px 14px 5px 7px; border-radius: 999px; box-sizing: border-box; white-space: nowrap; color: var(--warn); font-size: 13px; font-weight: 700; background: color-mix(in srgb, var(--c-1a) 94%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); box-shadow: 0 6px 18px rgba(var(--sh),0.55), 0 0 12px color-mix(in srgb, var(--warn) 25%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none; user-select: none; -webkit-user-select: none; opacity: 0; transform: translate(-50%, -26px) scale(.96); transition: opacity .18s ease, transform .26s cubic-bezier(.2,.9,.3,1.15), top .2s ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+#vn-toast { position: absolute; left: 50%; top: max(calc(env(safe-area-inset-top, 0px) + 10px), calc(var(--vn-sb, 0px) + 8px), calc(var(--strip-b, 0px) + 8px)); z-index: 12600; display: flex; align-items: center; gap: 7px; width: max-content; max-width: calc(100% - 28px); padding: 5px 14px 5px 7px; border-radius: 999px; box-sizing: border-box; white-space: nowrap; color: var(--warn); font-size: 13px; font-weight: 700; background: color-mix(in srgb, var(--c-1a) 94%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); box-shadow: 0 6px 18px rgba(var(--sh),0.55), 0 0 12px color-mix(in srgb, var(--warn) 25%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none; user-select: none; -webkit-user-select: none; opacity: 0; transform: translate(-50%, -26px) scale(.96); transition: opacity .18s ease, transform .26s cubic-bezier(.2,.9,.3,1.15), top .2s ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 #vn-toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); pointer-events: auto; cursor: pointer; }
 #vn-toast .vt-ic { display: block; flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%; background: color-mix(in srgb, var(--warn) 22%, transparent); padding: 3px; box-sizing: border-box; }
 #vn-toast .vt-ic svg { display: block; width: 16px; height: 16px; }
@@ -1709,7 +1716,7 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 .gm-join.gm-done .gm-cnt { display: none; }
 #gm-over { position: fixed; left: 0; top: 0; width: 100%; height: 100%; height: 100dvh; z-index: 2147483000; display: flex; flex-direction: column; background: #000; color: var(--c-fff); font-family: 'Lexend', sans-serif; touch-action: none; overscroll-behavior: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; animation: gmIn .22s ease; }
 @keyframes gmIn { from { opacity: 0; } to { opacity: 1; } }
-.gm-bar { position: relative; isolation: isolate; flex: 0 0 auto; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; height: calc(46px + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) 8px 0 16px; background: linear-gradient(160deg, color-mix(in srgb, var(--c-fff) 14%, transparent) 0%, color-mix(in srgb, var(--c-fff) 4%, transparent) 55%, color-mix(in srgb, var(--c-fff) 8%, transparent) 100%), color-mix(in srgb, var(--c-1a) 92%, #000); border-bottom: 1px solid var(--yt-a20); box-shadow: inset 0 1px 0 var(--yt-a35), 0 6px 18px rgba(0,0,0,.45); }
+.gm-bar { position: relative; isolation: isolate; flex: 0 0 auto; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; height: calc(46px + var(--vn-top)); padding: var(--vn-top) 8px 0 16px; background: linear-gradient(160deg, color-mix(in srgb, var(--c-fff) 14%, transparent) 0%, color-mix(in srgb, var(--c-fff) 4%, transparent) 55%, color-mix(in srgb, var(--c-fff) 8%, transparent) 100%), color-mix(in srgb, var(--c-1a) 92%, #000); border-bottom: 1px solid var(--yt-a20); box-shadow: inset 0 1px 0 var(--yt-a35), 0 6px 18px rgba(0,0,0,.45); }
 .gm-bar-t { font: 700 14px/1 'Lexend', sans-serif; letter-spacing: .3px; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
 .gm-x { position: relative; isolation: isolate; overflow: hidden; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #fff; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; border: 1px solid var(--yt-a28); background: radial-gradient(120% 110% at 28% 8%, color-mix(in srgb, var(--bad) 70%, #fff) 0%, transparent 58%), linear-gradient(160deg, color-mix(in srgb, var(--bad) 78%, transparent) 0%, color-mix(in srgb, var(--bad) 45%, transparent) 100%); box-shadow: inset 0 1.5px 1px var(--yt-a60), inset 0 -2px 3px var(--yt-a20), 0 3px 8px rgba(0,0,0,.34); transition: transform .12s; }
 .gm-x:active { transform: scale(.9); }
@@ -1959,6 +1966,7 @@ body.gm-on #leap-hud { display: none !important; }
 </script>
 
 <div id="app">
+<div id="vn-sysbar" aria-hidden="true"></div>
 
 <div id="setup-panel">
   <div id="setup-info">Kurulum</div>
@@ -13005,6 +13013,82 @@ function pfRender() {
   window.addEventListener('pageshow', guard);
   document.addEventListener('visibilitychange', guard);
   guard();
+})();
+</script>
+
+<script>
+/* APK tam ekran: sistem durum çubuğu gizli; sitenin kendi üst barı (saat, ağ, pil) çizilir. Eski APK'da (barDp yok) hiçbir şey yapmaz. */
+(function vnSysbar() {
+  var V = window.VNApp;
+  if (!V || typeof V.sys !== 'function' || typeof V.barDp !== 'function') return;
+  var bar = document.getElementById('vn-sysbar'); if (!bar) return;
+  var de = document.documentElement, curH = 0, last = '';
+  function setH() {
+    var h = 0; try { h = V.barDp() | 0; } catch (e) {}
+    if (h < 12) { if (curH) { de.classList.remove('vn-fs'); de.style.removeProperty('--vn-sb'); curH = 0; } return; }
+    if (h !== curH) { curH = h; de.style.setProperty('--vn-sb', h + 'px'); de.classList.add('vn-fs'); }
+  }
+  function wifi(l) {
+    var on = function (n) { return (l < 0 || l >= n) ? 1 : .28; };
+    return '<svg width="17" height="13" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">'
+      + '<path d="M2 6.2a14.5 14.5 0 0 1 20 0" opacity="' + on(4) + '"/><path d="M5.6 9.9a9.5 9.5 0 0 1 12.8 0" opacity="' + on(3) + '"/>'
+      + '<path d="M9 13.4a4.6 4.6 0 0 1 6 0" opacity="' + on(2) + '"/><circle cx="12" cy="16.4" r="1.2" fill="currentColor" stroke="none"/></svg>';
+  }
+  function cell(l) {
+    var s = '<svg width="16" height="13" viewBox="0 0 20 16" fill="currentColor">';
+    for (var i = 0; i < 4; i++) s += '<rect x="' + (i * 5.2) + '" y="' + (15 - (4 + i * 3.6)) + '" width="3.4" height="' + (4 + i * 3.6) + '" rx="1" opacity="' + ((l < 0 || l > i) ? 1 : .28) + '"/>';
+    return s + '</svg>';
+  }
+  function off() {
+    return '<svg width="17" height="13" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".5"><path d="M2 6.2a14.5 14.5 0 0 1 20 0"/><path d="M5.6 9.9a9.5 9.5 0 0 1 12.8 0"/><path d="M3 16.5L21 2" /></svg>';
+  }
+  function batt(p, chg) {
+    var col = chg ? '#30d158' : (p <= 15 ? '#ff453a' : 'currentColor');
+    var w = Math.max(1, Math.round(18 * Math.max(0, Math.min(100, p)) / 100));
+    return '<span>' + p + '</span><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".75" y=".75" width="21.5" height="10.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".6"/>'
+      + '<rect x="23" y="3.5" width="2" height="5" rx="1" fill="currentColor" opacity=".6"/><rect x="2.5" y="2.5" width="' + w + '" height="7" rx="1.6" fill="' + col + '"/>'
+      + (chg ? '<path d="M11.8 1.6L7.6 6.6h3l-.9 3.8 4.4-5.2h-3z" fill="#000" opacity=".75"/>' : '') + '</svg>';
+  }
+  function tick() {
+    setH();
+    if (!curH) return;
+    var o = {}; try { o = JSON.parse(V.sys()) || {}; } catch (e) {}
+    var d = new Date(), hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
+    var net = o.net === 'wifi' || o.net === 'eth' ? wifi(o.net === 'eth' ? -1 : (o.lvl == null ? -1 : o.lvl))
+            : o.net === 'cell' ? cell(o.lvl == null ? -1 : o.lvl)
+            : o.net === 'other' ? wifi(-1) : off();
+    var b = (typeof o.bat === 'number' && o.bat >= 0) ? batt(o.bat, !!o.chg) : '';
+    var html = '<span>' + hh + ':' + mm + '</span><span class="vs-r">' + net + '<span class="vs-bat">' + b + '</span></span>';
+    if (html !== last) { last = html; bar.innerHTML = html; }
+  }
+  tick();
+  setInterval(tick, 4000);
+  window.addEventListener('focus', tick);
+  window.addEventListener('pageshow', tick);
+})();
+
+/* APK arka plana gidince: yalnızca 3828 ile girenlerde ekran, göze basılmış gibi gizlenir; geri dönünce PIN sorulur (6687 etkilenmez) */
+(function vnBgGuard() {
+  var bgHid = false;
+  function els() { return { cover: document.getElementById('privacy-cover'), eye: document.getElementById('eye-btn'), ceye: document.getElementById('privacy-eye') }; }
+  window.__vnBg = function () {
+    try {
+      if (typeof thirdCanSend !== 'function' || !thirdCanSend()) return;
+      bgHid = true;
+      if (document.documentElement.classList.contains('pin-locked')) return;
+      var e = els();
+      if (e.cover && !e.cover.classList.contains('show') && e.eye) e.eye.click();
+    } catch (err) {}
+  };
+  window.__vnFg = function () {
+    try {
+      if (!bgHid) return;
+      bgHid = false;
+      if (document.documentElement.classList.contains('pin-locked')) return;
+      var e = els();
+      if (e.cover && e.cover.classList.contains('show') && e.ceye) e.ceye.click(); // PIN ekranını açar
+    } catch (err) {}
+  };
 })();
 </script>
 </body>
