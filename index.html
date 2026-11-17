@@ -100,8 +100,9 @@ html { --vn-top: max(env(safe-area-inset-top, 0px), var(--vn-sb, 0px)); }
 /* APK tam ekran: sistem durum çubuğu gizli, yerine sitenin kendi üst barı (saat | ağ + pil) */
 #vn-sysbar { display: none; flex: 0 0 auto; box-sizing: border-box; height: var(--vn-sb, 0px); padding: 0 16px; align-items: center; justify-content: space-between; background: var(--c-000); color: color-mix(in srgb, var(--c-fff) 82%, transparent); font-size: 12px; font-weight: 700; line-height: 1; letter-spacing: 0; -webkit-user-select: none; user-select: none; pointer-events: none; font-variant-numeric: tabular-nums; }
 html.vn-fs #vn-sysbar { display: flex; position: relative; }
-#vn-sysbar .vs-l { min-width: 0; max-width: calc(50% - 52px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#vn-sysbar .vs-c { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); white-space: nowrap; }
+#vn-sysbar .vs-lw { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 8px; margin-right: 10px; }
+#vn-sysbar .vs-l { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#vn-sysbar .vs-c { flex: 0 0 auto; align-self: center; font-size: 10.5px; line-height: 1; white-space: nowrap; opacity: .8; }
 #vn-sysbar .vs-r { margin-left: auto; flex: 0 0 auto; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
 #vn-sysbar .vs-bat { display: inline-flex; align-items: center; gap: 4px; }
 #vn-sysbar svg { display: block; }
@@ -13053,7 +13054,7 @@ function pfRender() {
   }
   var elL, elC, elN, elB, elT, c = {};
   function build() {
-    bar.innerHTML = '<span class="vs-l"></span><span class="vs-c"></span><span class="vs-r"><span class="vs-net"></span><span class="vs-bat"></span><span class="vs-t"></span></span>';
+    bar.innerHTML = '<span class="vs-lw"><span class="vs-c"></span><span class="vs-l"></span></span><span class="vs-r"><span class="vs-net"></span><span class="vs-bat"></span><span class="vs-t"></span></span>';
     elL = bar.querySelector('.vs-l'); elC = bar.querySelector('.vs-c'); elN = bar.querySelector('.vs-net'); elB = bar.querySelector('.vs-bat'); elT = bar.querySelector('.vs-t');
     c = {};
   }
