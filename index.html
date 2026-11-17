@@ -98,9 +98,11 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 #app { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--c-000); }
 html { --vn-top: max(env(safe-area-inset-top, 0px), var(--vn-sb, 0px)); }
 /* APK tam ekran: sistem durum çubuğu gizli, yerine sitenin kendi üst barı (saat | ağ + pil) */
-#vn-sysbar { display: none; flex: 0 0 auto; box-sizing: border-box; height: var(--vn-sb, 0px); padding: 0 16px; align-items: center; justify-content: space-between; background: var(--c-000); color: color-mix(in srgb, var(--c-fff) 82%, transparent); font-size: 12.5px; font-weight: 700; line-height: 1; letter-spacing: .2px; -webkit-user-select: none; user-select: none; pointer-events: none; font-variant-numeric: tabular-nums; }
-html.vn-fs #vn-sysbar { display: flex; }
-#vn-sysbar .vs-r { display: flex; align-items: center; gap: 9px; }
+#vn-sysbar { display: none; flex: 0 0 auto; box-sizing: border-box; height: var(--vn-sb, 0px); padding: 0 16px; align-items: center; justify-content: space-between; background: var(--c-000); color: color-mix(in srgb, var(--c-fff) 82%, transparent); font-size: 12px; font-weight: 700; line-height: 1; letter-spacing: 0; -webkit-user-select: none; user-select: none; pointer-events: none; font-variant-numeric: tabular-nums; }
+html.vn-fs #vn-sysbar { display: flex; position: relative; }
+#vn-sysbar .vs-l { min-width: 0; max-width: calc(50% - 52px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#vn-sysbar .vs-c { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); white-space: nowrap; }
+#vn-sysbar .vs-r { margin-left: auto; flex: 0 0 auto; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
 #vn-sysbar .vs-bat { display: inline-flex; align-items: center; gap: 4px; }
 #vn-sysbar svg { display: block; }
 
@@ -13049,17 +13051,29 @@ function pfRender() {
       + '<rect x="23" y="3.5" width="2" height="5" rx="1" fill="currentColor" opacity=".6"/><rect x="2.5" y="2.5" width="' + w + '" height="7" rx="1.6" fill="' + col + '"/>'
       + (chg ? '<path d="M11.8 1.6L7.6 6.6h3l-.9 3.8 4.4-5.2h-3z" fill="#000" opacity=".75"/>' : '') + '</svg>';
   }
+  var elL, elC, elN, elB, elT, c = {};
+  function build() {
+    bar.innerHTML = '<span class="vs-l"></span><span class="vs-c"></span><span class="vs-r"><span class="vs-net"></span><span class="vs-bat"></span><span class="vs-t"></span></span>';
+    elL = bar.querySelector('.vs-l'); elC = bar.querySelector('.vs-c'); elN = bar.querySelector('.vs-net'); elB = bar.querySelector('.vs-bat'); elT = bar.querySelector('.vs-t');
+    c = {};
+  }
+  function put(k, el, v, isHtml) { if (c[k] === v) return; c[k] = v; if (isHtml) el.innerHTML = v; else el.textContent = v; }
   function tick() {
     setH();
     if (!curH) return;
+    if (!elL || !bar.contains(elL)) build();
     var o = {}; try { o = JSON.parse(V.sys()) || {}; } catch (e) {}
-    var d = new Date(), hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
+    var d = new Date(), p2 = function (n) { return ('0' + n).slice(-2); };
+    var tray = ''; try { if (typeof pfData !== 'undefined' && pfData && pfData.tray) tray = String(pfData.tray); } catch (e) {}
     var net = o.net === 'wifi' || o.net === 'eth' ? wifi(o.net === 'eth' ? -1 : (o.lvl == null ? -1 : o.lvl))
             : o.net === 'cell' ? cell(o.lvl == null ? -1 : o.lvl)
             : o.net === 'other' ? wifi(-1) : off();
     var b = (typeof o.bat === 'number' && o.bat >= 0) ? batt(o.bat, !!o.chg) : '';
-    var html = '<span>' + hh + ':' + mm + '</span><span class="vs-r">' + net + '<span class="vs-bat">' + b + '</span></span>';
-    if (html !== last) { last = html; bar.innerHTML = html; }
+    put('l', elL, tray);
+    put('c', elC, p2(d.getDate()) + '.' + p2(d.getMonth() + 1) + '.' + p2(d.getFullYear() % 100));
+    put('n', elN, net, true);
+    put('b', elB, b, true);
+    put('t', elT, p2(d.getHours()) + ':' + p2(d.getMinutes()));
   }
   tick();
   setInterval(tick, 4000);
