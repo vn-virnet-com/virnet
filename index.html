@@ -1579,7 +1579,8 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
   #nick-input { width: 120px; min-width: 120px; height: var(--dock-h); padding: 9px 8px; }
   #message-input { height: var(--dock-h); padding: 13px 18px; }
   #send-btn { width: var(--dock-h); min-width: var(--dock-h); height: var(--dock-h); }
-  #ph-overlay { height: var(--dock-h); line-height: var(--dock-h); left: 19px; }
+  /* Placeholder, yazılan metinle birebir aynı yerden başlar: 1px çerçeve + üst boşluk (13px) + 22px'lik satır */
+  #ph-overlay { top: 1px; height: calc(var(--dock-h) - 2px); padding-top: calc((var(--dock-h) - 24px) / 2); line-height: 22px; left: 19px; }
   #rec-ph { line-height: calc(var(--dock-h) - 2px); }
   .cm-item { height: var(--dock-h); }
   #chat-area { -webkit-mask-image: none; mask-image: none; }
@@ -6051,12 +6052,15 @@ chatArea.addEventListener('click', (e) => {
 }, true);
 
 function adjustInputHeight() {
-  const baseH = isMobileLayout() ? 42 : 50; // masaüstünde yazma satırı sağ alt barla aynı yükseklikte (--dock-h = 50px)
+  const mob = isMobileLayout();
+  const baseH = mob ? 42 : 50; // masaüstünde yazma satırı sağ alt barla aynı yükseklikte (--dock-h = 50px)
   messageInput.style.height = baseH + 'px';
   // Kutu boşken (placeholder gösteriliyorken) yükseklik hiç büyümez; uzun placeholder satır atlayıp kutuyu şişirmesin
-  if (messageInput.value !== '' && messageInput.scrollHeight > baseH) {
+  // Masaüstünde birkaç px'lik ölçü farkı ilk satırda kutuyu büyütmesin: ikinci satır gelene kadar (yarım satır payıyla) sabit kalır
+  if (messageInput.value !== '' && messageInput.scrollHeight > baseH + (mob ? 0 : 8)) {
     messageInput.style.height = Math.min(150, messageInput.scrollHeight) + 'px';
   }
+  if (!mob) messageInput.style.overflowY = messageInput.scrollHeight > 150 ? 'auto' : 'hidden'; // tek/iki satırda gereksiz kaydırma çubuğu çıkmasın
 
   fitToViewport();
   if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
