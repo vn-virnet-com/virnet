@@ -111,13 +111,14 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 #vn-sysbar .vs-l { min-width: 0; max-width: 46vw; overflow: hidden; pointer-events: auto; cursor: pointer; padding: 0 6px; margin: 0 -6px; -webkit-tap-highlight-color: transparent; }
 #vn-sysbar .vs-bat { gap: 4px; }
 #vn-sysbar .vs-bat span { display: block; line-height: 1; }
-#vn-sysbar .vs-bat svg { height: 10px; }
-#vn-sysbar svg { display: block; flex: 0 0 auto; height: 12px; width: auto; transform: none !important; }
+#vn-sysbar svg { display: block; flex: 0 0 auto; height: 9px; width: auto; transform: none !important; }
 /* Wifi simgesi diğerlerinden büyük ve alçak duruyordu: biraz küçük, bir tık yukarıda */
-#vn-sysbar .vs-net svg, #vn-sysbar .vs-bt svg { height: 10px; transform: translateY(-1px) !important; }
 #vn-sysbar .vs-bt:empty { display: none; }
 /* Pile dokununca 2 sn: dış hat aynı, içi düz renk + yüzde (% işaretsiz) */
 #vn-sysbar .vs-bat { pointer-events: auto; cursor: pointer; padding: 0 6px; margin: 0 -6px; -webkit-tap-highlight-color: transparent; }
+/* Dokununca: 0,3 sn'de büyür -> yüzde görünür -> 1,5 sn sonra yüzde kaybolur ve 0,3 sn'de eski boyuna döner */
+#vn-sysbar .vs-bat { transform-origin: center; transition: transform .3s ease; }
+#vn-sysbar .vs-bat.big { transform: scale(1.5); }
 #vn-sysbar .vs-bat .bs { display: none; }
 #vn-sysbar .vs-bat.pct .bs { display: inline; }
 #vn-sysbar .vs-bat.pct .bf { display: none; }
@@ -12861,31 +12862,31 @@ function pfRender() {
   }
   function wifi(l) {
     var on = function (n) { return (l < 0 || l >= n) ? 1 : .28; };
-    return '<svg width="14" height="10.5" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">'
+    return '<svg width="13" height="9" viewBox="0 1 24 16.6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">'
       + '<path d="M2 6.2a14.5 14.5 0 0 1 20 0" opacity="' + on(4) + '"/><path d="M5.6 9.9a9.5 9.5 0 0 1 12.8 0" opacity="' + on(3) + '"/>'
       + '<path d="M9 13.4a4.6 4.6 0 0 1 6 0" opacity="' + on(2) + '"/><circle cx="12" cy="16.4" r="1.2" fill="currentColor" stroke="none"/></svg>';
   }
   function cell(l) {
-    var s = '<svg width="16" height="13" viewBox="0 0 20 16" fill="currentColor" style="transform:none">';
+    var s = '<svg width="12" height="9" viewBox="0 .2 20 14.8" fill="currentColor" style="transform:none">';
     for (var i = 0; i < 4; i++) s += '<rect x="' + (i * 5.2) + '" y="' + (15 - (4 + i * 3.6)) + '" width="3.4" height="' + (4 + i * 3.6) + '" rx="1" opacity="' + ((l < 0 || l > i) ? 1 : .28) + '"/>';
     return s + '</svg>';
   }
   function off() {
-    return '<svg width="14" height="10.5" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".5"><path d="M2 6.2a14.5 14.5 0 0 1 20 0"/><path d="M5.6 9.9a9.5 9.5 0 0 1 12.8 0"/><path d="M3 16.5L21 2" /></svg>';
+    return '<svg width="13" height="9" viewBox="0 .8 24 16.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".5"><path d="M2 6.2a14.5 14.5 0 0 1 20 0"/><path d="M5.6 9.9a9.5 9.5 0 0 1 12.8 0"/><path d="M3 16.5L21 2" /></svg>';
   }
   function batt(p, chg) {
     var col = chg ? '#30d158' : (p <= 15 ? '#ff453a' : 'currentColor');
     var w = Math.max(1, Math.round(18 * Math.max(0, Math.min(100, p)) / 100));
-    return '<svg width="26" height="12" viewBox="0 0 26 12"><rect x=".75" y=".75" width="21.5" height="10.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".6"/>'
-      + '<rect x="23" y="3.5" width="2" height="5" rx="1" fill="currentColor" opacity=".6"/>'
-      + '<g class="bf"><rect x="2.5" y="2.5" width="' + w + '" height="7" rx="1.6" fill="' + col + '"/>'
-      + (chg ? '<path d="M11.8 1.6L7.6 6.6h3l-.9 3.8 4.4-5.2h-3z" fill="#000" opacity=".75"/>' : '') + '</g>'
-      + '<g class="bs"><rect x="1.5" y="1.5" width="20" height="9" rx="1.5" fill="' + col + '"/>'
-      + '<text x="11.5" y="9.1" text-anchor="middle" font-size="8.6" font-weight="800" fill="#000" style="fill:var(--c-000)" font-family="Lexend,Arial,sans-serif">' + p + '</text></g></svg>';
+    return '<svg width="26" height="9" viewBox="0 1.4 26 9.2"><rect x=".75" y="2.15" width="21.5" height="7.7" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".6"/>'
+      + '<rect x="23" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".6"/>'
+      + '<g class="bf"><rect x="2.5" y="3.65" width="' + w + '" height="4.7" rx="1.2" fill="' + col + '"/>'
+      + (chg ? '<path transform="translate(11.8 6) scale(.68) translate(-11.8 -6)" d="M11.8 1.6L7.6 6.6h3l-.9 3.8 4.4-5.2h-3z" fill="#000" opacity=".75"/>' : '') + '</g>'
+      + '<g class="bs"><rect x="1.5" y="3.15" width="20" height="5.7" rx="1.2" fill="' + col + '"/>'
+      + '<text x="11.5" y="8.4" text-anchor="middle" font-size="7.4" font-weight="800" fill="#000" style="fill:var(--c-000)" font-family="Lexend,Arial,sans-serif">' + p + '</text></g></svg>';
   }
   /* Bluetooth kulaklık: iki kablosuz kulakiçi (AirPods tarzı), wifi ile aynı boy; sol-sağ birebir simetrik */
   function btIcon() {
-    return '<svg width="14" height="10.5" viewBox="0 0 24 18" fill="currentColor">'
+    return '<svg width="14" height="9" viewBox="0 1.2 24 15.8" fill="currentColor">'
       + '<circle cx="6" cy="5.6" r="4.4"/><rect x="6.6" y="7" width="2.8" height="10" rx="1.4"/>'
       + '<circle cx="18" cy="5.6" r="4.4"/><rect x="14.6" y="7" width="2.8" height="10" rx="1.4"/></svg>';
   }
@@ -13059,11 +13060,42 @@ function pfRender() {
     elL = bar.querySelector('.vs-l'); elC = bar.querySelector('.vs-c'); elN = bar.querySelector('.vs-net'); elBt = bar.querySelector('.vs-bt'); elB = bar.querySelector('.vs-bat'); elT = bar.querySelector('.vs-t'); ntDot();
     c = {};
   }
-  var batT = 0;
+  /* Saat: rakamların boyalı üst/alt kenarı simgelerle (9px) birebir aynı hizada olsun diye gerçek yazı tipi ölçülür */
+  var fitKey = '';
+  function fitClock() {
+    if (!elT) return;
+    try {
+      var cs = getComputedStyle(elT);
+      var key = cs.fontFamily + '|' + cs.fontWeight + '|' + (document.fonts && document.fonts.status);
+      if (key === fitKey) return;
+      var cx = document.createElement('canvas').getContext('2d');
+      cx.font = cs.fontWeight + ' 1000px ' + cs.fontFamily;
+      var m = cx.measureText('1247');   /* düz uçlu rakamlar: tam büyük-harf yüksekliği */
+      var asc = m.actualBoundingBoxAscent, desc = m.actualBoundingBoxDescent;
+      if (!(asc + desc > 0)) return;
+      var fs = 9 * 1000 / (asc + desc), k = fs / 1000;
+      elT.style.fontSize = fs.toFixed(2) + 'px';
+      /* taban çizgisinin satır içindeki gerçek yeri tarayıcıdan ölçülür (yuvarlama farkı kalmasın) */
+      var tmp = document.createElement('span');
+      tmp.style.cssText = 'position:absolute;display:block;visibility:hidden;white-space:nowrap;line-height:1';
+      tmp.innerHTML = '0<i style="display:inline-block;width:0;height:0"></i>';
+      elT.appendChild(tmp);
+      var base = tmp.querySelector('i').getBoundingClientRect().bottom - tmp.getBoundingClientRect().top;
+      elT.removeChild(tmp);
+      var dy = fs / 2 - (base - (asc - desc) * k / 2);
+      elT.style.transform = 'translateY(' + dy.toFixed(2) + 'px)';
+      fitKey = key;
+    } catch (e) {}
+  }
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitKey = ''; fitClock(); }); } catch (e) {}
+  var batT = [];
   function batFlash() {
     if (!elB) return;
-    elB.classList.add('pct'); clearTimeout(batT);
-    batT = setTimeout(function () { if (elB) elB.classList.remove('pct'); }, 2000);
+    batT.forEach(clearTimeout); batT = [];
+    var d = elB.classList.contains('big') ? 0 : 300;   // zaten büyükse büyüme beklenmez
+    elB.classList.add('big');
+    batT.push(setTimeout(function () { if (elB) elB.classList.add('pct'); }, d));
+    batT.push(setTimeout(function () { if (elB) { elB.classList.remove('pct'); elB.classList.remove('big'); } }, d + 1500));
   }
   function put(k, el, v, isHtml) { if (c[k] === v) return; c[k] = v; if (isHtml) el.innerHTML = v; else el.textContent = v; }
   function tick() {
@@ -13083,6 +13115,7 @@ function pfRender() {
     put('n', elN, net, true);
     put('b', elB, b, true);
     put('t', elT, p2(d.getHours()) + ':' + p2(d.getMinutes()));
+    fitClock();
     ntPull();
   }
   tick();
