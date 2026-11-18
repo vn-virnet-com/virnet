@@ -13155,5 +13155,226 @@ function pfRender() {
   }, { passive: true });
 })();
 </script>
+<style id="fe-css">
+/* Fluent Emoji (3D) */
+.fe { background-repeat: no-repeat; background-position: center; background-size: 1.2em 1.2em; }
+#fe-mirror { display: none; position: absolute; z-index: 2; pointer-events: none; overflow: hidden; margin: 0; border: 0; background: none;
+  color: var(--c-fff); white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; box-sizing: border-box; }
+#message-input.fe-on { color: transparent !important; caret-color: var(--c-fff); }
+</style>
+<script>
+/* Fluent Emoji (3D): metin içindeki emojileri Microsoft Fluent 3D çizimleriyle gösterir.
+   Metin (textContent) değişmez; emoji karakteri yerinde kalır, resim arka plan olarak çizilir.
+   Resim inmezse ya da bulunamazsa cihazın kendi emojisi görünmeye devam eder. Yazı tipleri (Lexend) hiç değişmez. */
+(function () {
+  'use strict';
+  if (window.__vnBlocked || window.__feInit) return;
+  window.__feInit = true;
+
+  var STYLE = '3d', EXT = 'png';
+  var BASE = 'https://cdn.jsdelivr.net/gh/shuding/fluentui-emoji-unicode/assets/';
+  var CACHE = 'fluent-emoji-' + STYLE + '-v1';
+
+  var RE, TEST;
+  var SRC = '(?:\\p{Regional_Indicator}{2})|(?:[0-9#*]\\uFE0F?\\u20E3)|(?:(?:\\p{Emoji_Presentation}|\\p{Extended_Pictographic}\\uFE0F)\\p{Emoji_Modifier}?(?:\\u200D(?:\\p{Emoji_Presentation}|\\p{Extended_Pictographic})\\p{Emoji_Modifier}?\\uFE0F?)*\\uFE0F?)';
+  try { RE = new RegExp(SRC, 'gu'); TEST = new RegExp(SRC, 'u'); } catch (e) { return; }
+
+  /* Her emoji kodu için bir CSS kuralı eklenir: resim hazır olunca metin saydam olur */
+  var sheetEl = document.createElement('style');
+  sheetEl.id = 'fe-rules';
+  (document.head || document.documentElement).appendChild(sheetEl);
+
+  var state = {}; // kod -> 1 bekliyor, 2 hazır, 3 yok
+
+  function codeOf(ch) {
+    var out = [], i = 0, cp;
+    for (var it = Array.from(ch), n = 0; n < it.length; n++) { cp = it[n].codePointAt(0); out.push(cp.toString(16)); }
+    return out;
+  }
+
+  function urlsFor(parts) {
+    var a = parts.filter(function (p) { return p !== 'fe0f'; }).join('-');
+    var b = parts.join('-');
+    var list = [a];
+    if (b !== a) list.push(b);
+    return list.map(function (n) { return BASE + n + '_' + STYLE + '.' + EXT; });
+  }
+
+  function fetchBlob(url) {
+    function plain() {
+      return fetch(url, { mode: 'cors' }).then(function (r) { if (!r.ok) throw new Error('http'); return r.blob(); });
+    }
+    if (!window.caches) return plain();
+    return caches.open(CACHE).then(function (c) {
+      return c.match(url).then(function (hit) {
+        if (hit) return hit.blob();
+        return fetch(url, { mode: 'cors' }).then(function (r) {
+          if (!r.ok) throw new Error('http');
+          try { c.put(url, r.clone()); } catch (e) {}
+          return r.blob();
+        });
+      });
+    }).catch(function (err) {
+      if (err && err.message === 'http') throw err;
+      return plain();
+    });
+  }
+
+  function ready(code, blob) {
+    var u = URL.createObjectURL(blob);
+    var im = new Image();
+    im.onload = function () {
+      try {
+        sheetEl.sheet.insertRule('.fe[data-c="' + code + '"]{background-image:url("' + u + '");color:transparent}', sheetEl.sheet.cssRules.length);
+        state[code] = 2;
+      } catch (e) { state[code] = 3; }
+    };
+    im.onerror = function () { state[code] = 3; };
+    im.src = u;
+  }
+
+  function ensure(code) {
+    if (state[code]) return;
+    state[code] = 1;
+    var urls = urlsFor(code.split('-'));
+    (function next(i) {
+      if (i >= urls.length) { state[code] = 3; return; }
+      fetchBlob(urls[i]).then(function (b) { ready(code, b); }, function () { next(i + 1); });
+    })(0);
+  }
+
+  function mk(ch) {
+    var code = codeOf(ch).join('-');
+    var s = document.createElement('span');
+    s.className = 'fe';
+    s.setAttribute('data-c', code);
+    s.textContent = ch;
+    ensure(code);
+    return s;
+  }
+
+  function split(text, into) {
+    var last = 0, m;
+    RE.lastIndex = 0;
+    while ((m = RE.exec(text))) {
+      if (m.index > last) into.appendChild(document.createTextNode(text.slice(last, m.index)));
+      into.appendChild(mk(m[0]));
+      last = m.index + m[0].length;
+      if (m[0].length === 0) RE.lastIndex++;
+    }
+    if (last < text.length) into.appendChild(document.createTextNode(text.slice(last)));
+  }
+
+  var SKIP = 'textarea,input,script,style,noscript,[contenteditable="true"],.fe,#fe-mirror';
+
+  function wrapText(tn) {
+    var p = tn.parentNode;
+    if (!p || p.nodeType !== 1) return;
+    var s = tn.nodeValue;
+    if (!s || !TEST.test(s)) return;
+    if (p.closest && p.closest(SKIP)) return;
+    var frag = document.createDocumentFragment();
+    split(s, frag);
+    p.replaceChild(frag, tn);
+  }
+
+  function scan(root) {
+    if (!root) return;
+    if (root.nodeType === 3) { wrapText(root); return; }
+    if (root.nodeType !== 1) return;
+    if (root.closest && root.closest(SKIP)) return;
+    var tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), list = [], n;
+    while ((n = tw.nextNode())) { if (n.nodeValue && n.nodeValue.length) list.push(n); }
+    for (var i = 0; i < list.length; i++) wrapText(list[i]);
+  }
+
+  var mo = new MutationObserver(function (muts) {
+    for (var i = 0; i < muts.length; i++) {
+      var m = muts[i];
+      if (m.type === 'characterData') { wrapText(m.target); continue; }
+      for (var j = 0; j < m.addedNodes.length; j++) scan(m.addedNodes[j]);
+    }
+  });
+
+  /* Yazma kutusu: textarea içine resim konamaz. Emoji varken yazı saydam olur ve üstüne aynı yazının
+     bir kopyası çizilir. Kopya aynı yazı tipi ve ölçülerle durur, emojiler resim olur. Emoji yokken hiçbir şey değişmez. */
+  var ta = document.getElementById('message-input');
+  var wrap = document.getElementById('msg-wrap');
+  var mir = null, mirActive = false, mirLast = null;
+
+  function copyStyle(cs) {
+    var props = ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'letterSpacing', 'lineHeight', 'textAlign', 'textTransform',
+      'wordSpacing', 'tabSize', 'direction', 'textIndent', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'];
+    for (var i = 0; i < props.length; i++) mir.style[props[i]] = cs[props[i]];
+  }
+
+  function syncMirror() {
+    if (!ta || !mir) return;
+    var v = ta.value;
+    if (!v || !TEST.test(v)) {
+      if (mirActive) { mirActive = false; mirLast = null; ta.classList.remove('fe-on'); mir.style.display = 'none'; mir.textContent = ''; }
+      return;
+    }
+    if (v !== mirLast) {
+      mir.textContent = '';
+      split(v, mir);
+      mir.appendChild(document.createTextNode('​'));
+      mirLast = v;
+    }
+    var cs = getComputedStyle(ta);
+    copyStyle(cs);
+    mir.style.left = (ta.offsetLeft + ta.clientLeft) + 'px';
+    mir.style.top = (ta.offsetTop + ta.clientTop) + 'px';
+    mir.style.width = ta.clientWidth + 'px';
+    mir.style.height = ta.clientHeight + 'px';
+    mir.style.opacity = ta.disabled ? '0.3' : '1';
+    mir.style.display = 'block';
+    mir.scrollTop = ta.scrollTop;
+    if (!mirActive) { mirActive = true; ta.classList.add('fe-on'); }
+  }
+
+  var raf = 0;
+  function later() { if (raf) return; raf = requestAnimationFrame(function () { raf = 0; syncMirror(); }); }
+
+  if (ta && wrap) {
+    mir = document.createElement('div');
+    mir.id = 'fe-mirror';
+    mir.setAttribute('aria-hidden', 'true');
+    wrap.appendChild(mir);
+    ta.addEventListener('input', syncMirror);
+    ta.addEventListener('keyup', later);
+    ta.addEventListener('focus', later);
+    ta.addEventListener('compositionupdate', later);
+    ta.addEventListener('scroll', function () { if (mirActive) mir.scrollTop = ta.scrollTop; });
+    window.addEventListener('resize', later);
+    try { new ResizeObserver(later).observe(ta); } catch (e) {}
+    try { new MutationObserver(later).observe(ta, { attributes: true, attributeFilter: ['disabled', 'class', 'style'] }); } catch (e) {}
+    /* Kod tarafında messageInput.value = ... ile yapılan atamalar input olayı üretmez; onları da yakala */
+    try {
+      var d = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
+      Object.defineProperty(ta, 'value', {
+        configurable: true,
+        get: function () { return d.get.call(this); },
+        set: function (x) { d.set.call(this, x); later(); }
+      });
+    } catch (e) {}
+  }
+
+  function start() {
+    scan(document.body);
+    mo.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+    syncMirror();
+    /* Uzun basma tepsisindeki 25 emojiyi önceden indir */
+    var tray = ['1f90d', '1fa76', '1fa77', '1f49c', '2764-fe0f', '1fa75', '1f499', '1f496', '1f497', '1f494', '1f62d', '1fae0', '1f633',
+      '1f60e', '1f608', '1f480', '2620-fe0f', '1f970', '1f928', '1f97a', '1f44d', '1f44e', '1faf6', '1f595', '1f44b'];
+    var idle = window.requestIdleCallback || function (f) { return setTimeout(f, 1500); };
+    idle(function () { tray.forEach(ensure); });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+
+</script>
 </body>
 </html>
