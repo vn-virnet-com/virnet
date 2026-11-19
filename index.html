@@ -13157,10 +13157,14 @@ function pfRender() {
 </script>
 <style id="fe-css">
 /* Fluent Emoji (3D) */
-.fe { background-repeat: no-repeat; background-position: center; background-size: 1.2em 1.2em; }
-#fe-mirror { display: none; position: absolute; z-index: 2; pointer-events: none; overflow: hidden; margin: 0; border: 0; background: none;
-  color: var(--c-fff); white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; box-sizing: border-box; }
-#message-input.fe-on { color: transparent !important; caret-color: var(--c-fff); }
+.fe { font-family: inherit !important; background-repeat: no-repeat; background-position: center; background-size: 1.2em 1.2em; }
+.fe-mir { display: none; position: absolute; z-index: 2; pointer-events: none; overflow: hidden; margin: 0; border: 0; background: none; box-sizing: border-box; }
+.fe-mir.on { display: block; }
+.fe-mir.ln.on { display: flex; align-items: center; }
+.fe-mir .in { padding: 0; }
+.fe-mir.ln .in { flex: none; }
+.fe-on { color: transparent !important; -webkit-text-fill-color: transparent !important; }
+.fe-ph::placeholder { color: transparent !important; -webkit-text-fill-color: transparent !important; }
 </style>
 <script>
 /* Fluent Emoji (3D): metin içindeki emojileri Microsoft Fluent 3D çizimleriyle gösterir.
@@ -13265,7 +13269,7 @@ function pfRender() {
     if (last < text.length) into.appendChild(document.createTextNode(text.slice(last)));
   }
 
-  var SKIP = 'textarea,input,script,style,noscript,[contenteditable="true"],.fe,#fe-mirror';
+  var SKIP = 'textarea,input,select,option,script,style,noscript,svg,[contenteditable="true"],.fe,.fe-mir';
 
   function wrapText(tn) {
     var p = tn.parentNode;
@@ -13292,78 +13296,151 @@ function pfRender() {
     for (var i = 0; i < muts.length; i++) {
       var m = muts[i];
       if (m.type === 'characterData') { wrapText(m.target); continue; }
-      for (var j = 0; j < m.addedNodes.length; j++) scan(m.addedNodes[j]);
+      if (m.type === 'attributes') { later(m.target); continue; }
+      for (var j = 0; j < m.addedNodes.length; j++) {
+        var nd = m.addedNodes[j];
+        scan(nd);
+        if (nd.nodeType === 1) {
+          if (fieldOK(nd)) later(nd);
+          else if (nd.querySelectorAll && !nd.classList.contains('fe-mir')) { var fs = nd.querySelectorAll('input,textarea'); for (var k = 0; k < fs.length; k++) later(fs[k]); }
+        }
+      }
     }
   });
 
-  /* Yazma kutusu: textarea içine resim konamaz. Emoji varken yazı saydam olur ve üstüne aynı yazının
-     bir kopyası çizilir. Kopya aynı yazı tipi ve ölçülerle durur, emojiler resim olur. Emoji yokken hiçbir şey değişmez. */
-  var ta = document.getElementById('message-input');
-  var wrap = document.getElementById('msg-wrap');
-  var mir = null, mirActive = false, mirLast = null;
+  /* Yazı alanları (input ve textarea): içine resim konamaz. Emoji varken alanın yazısı saydam olur ve
+     üstüne aynı yazının bir kopyası çizilir; kopyada emojiler resim olur. Boş alanda emojili placeholder için de aynısı yapılır.
+     Emoji yoksa alana hiçbir şey yapılmaz. */
+  var TYPES = { text: 1, search: 1, url: 1, tel: 1, email: 1 };
+  var mirrors = new WeakMap(), cands = new Set(), ro = null, tickOn = false;
+  try { ro = new ResizeObserver(function (es) { es.forEach(function (e) { later(e.target); }); }); } catch (e) {}
 
-  function copyStyle(cs) {
-    var props = ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'letterSpacing', 'lineHeight', 'textAlign', 'textTransform',
-      'wordSpacing', 'tabSize', 'direction', 'textIndent', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'];
-    for (var i = 0; i < props.length; i++) mir.style[props[i]] = cs[props[i]];
+  function fieldOK(el) {
+    if (!el || el.nodeType !== 1) return false;
+    if (el.tagName === 'TEXTAREA') return true;
+    if (el.tagName !== 'INPUT') return false;
+    return !!TYPES[(el.getAttribute('type') || 'text').toLowerCase()];
   }
+  function clear(c) { return !c || c === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(c); }
 
-  function syncMirror() {
-    if (!ta || !mir) return;
-    var v = ta.value;
-    if (!v || !TEST.test(v)) {
-      if (mirActive) { mirActive = false; mirLast = null; ta.classList.remove('fe-on'); mir.style.display = 'none'; mir.textContent = ''; }
-      return;
-    }
-    if (v !== mirLast) {
-      mir.textContent = '';
-      split(v, mir);
-      mir.appendChild(document.createTextNode('​'));
-      mirLast = v;
-    }
-    var cs = getComputedStyle(ta);
-    copyStyle(cs);
-    mir.style.left = (ta.offsetLeft + ta.clientLeft) + 'px';
-    mir.style.top = (ta.offsetTop + ta.clientTop) + 'px';
-    mir.style.width = ta.clientWidth + 'px';
-    mir.style.height = ta.clientHeight + 'px';
-    mir.style.opacity = ta.disabled ? '0.3' : '1';
-    mir.style.display = 'block';
-    mir.scrollTop = ta.scrollTop;
-    if (!mirActive) { mirActive = true; ta.classList.add('fe-on'); }
-  }
-
-  var raf = 0;
-  function later() { if (raf) return; raf = requestAnimationFrame(function () { raf = 0; syncMirror(); }); }
-
-  if (ta && wrap) {
-    mir = document.createElement('div');
-    mir.id = 'fe-mirror';
+  function create(el) {
+    var mir = document.createElement('div'), inn = document.createElement('div');
+    mir.className = 'fe-mir' + (el.tagName === 'INPUT' ? ' ln' : '');
     mir.setAttribute('aria-hidden', 'true');
-    wrap.appendChild(mir);
-    ta.addEventListener('input', syncMirror);
-    ta.addEventListener('keyup', later);
-    ta.addEventListener('focus', later);
-    ta.addEventListener('compositionupdate', later);
-    ta.addEventListener('scroll', function () { if (mirActive) mir.scrollTop = ta.scrollTop; });
-    window.addEventListener('resize', later);
-    try { new ResizeObserver(later).observe(ta); } catch (e) {}
-    try { new MutationObserver(later).observe(ta, { attributes: true, attributeFilter: ['disabled', 'class', 'style'] }); } catch (e) {}
-    /* Kod tarafında messageInput.value = ... ile yapılan atamalar input olayı üretmez; onları da yakala */
+    inn.className = 'in';
+    mir.appendChild(inn);
+    el.parentNode.insertBefore(mir, el.nextSibling);
+    var m = { mir: mir, inn: inn, key: null, active: false, bl: 0, bt: 0 };
+    mirrors.set(el, m);
+    if (ro) ro.observe(el);
+    return m;
+  }
+
+  function deactivate(el, m) {
+    if (!m.active) return;
+    m.active = false; m.key = null;
+    el.classList.remove('fe-on', 'fe-ph');
+    el.style.removeProperty('caret-color');
+    m.mir.classList.remove('on');
+    m.inn.textContent = '';
+  }
+
+  function place(el, m) {
+    var mir = m.mir;
+    mir.style.left = '0px'; mir.style.top = '0px';
+    var r0 = mir.getBoundingClientRect(), er = el.getBoundingClientRect();
+    mir.style.left = (er.left - r0.left + m.bl) + 'px';
+    mir.style.top = (er.top - r0.top + m.bt) + 'px';
+    if (el.tagName === 'INPUT') m.inn.style.transform = el.scrollLeft ? 'translateX(' + (-el.scrollLeft) + 'px)' : '';
+    else mir.scrollTop = el.scrollTop;
+  }
+
+  function syncField(el) {
+    var m = mirrors.get(el);
+    if (!el.isConnected) { cands.delete(el); if (m) { deactivate(el, m); if (m.mir.parentNode) m.mir.parentNode.removeChild(m.mir); mirrors.delete(el); } return; }
+    var v = el.value, ph = !v, text = ph ? (el.placeholder || '') : v;
+    if (!text || !TEST.test(text)) { cands.delete(el); if (m) deactivate(el, m); return; }
+    cands.add(el); kick();
+    if (m && m.active) el.classList.remove('fe-on', 'fe-ph');
+    var er = el.getBoundingClientRect();
+    var cs = getComputedStyle(el);
+    if (!er.width || !er.height || cs.visibility === 'hidden' || (cs.webkitTextSecurity && cs.webkitTextSecurity !== 'none')) { if (m) deactivate(el, m); return; }
+    var col = ph ? getComputedStyle(el, '::placeholder').color : cs.color;
+    if (clear(col)) { if (m) deactivate(el, m); return; } // placeholder'ı zaten kendi katmanıyla çizen alanlar (ör. mesaj kutusu)
+    if (!m) m = create(el);
+    var mir = m.mir, inn = m.inn, key = (ph ? 'p:' : 'v:') + text;
+    if (m.key !== key) {
+      inn.textContent = '';
+      split(text, inn);
+      inn.appendChild(document.createTextNode('​'));
+      m.key = key;
+    }
+    var props = ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'letterSpacing', 'lineHeight', 'textAlign', 'textTransform',
+      'wordSpacing', 'tabSize', 'direction', 'textIndent'];
+    for (var i = 0; i < props.length; i++) { mir.style[props[i]] = cs[props[i]]; inn.style[props[i]] = cs[props[i]]; }
+    mir.style.paddingTop = cs.paddingTop; mir.style.paddingBottom = cs.paddingBottom;
+    mir.style.paddingLeft = cs.paddingLeft; mir.style.paddingRight = cs.paddingRight;
+    inn.style.whiteSpace = el.tagName === 'TEXTAREA' ? 'pre-wrap' : 'pre';
+    inn.style.wordWrap = 'break-word';
+    mir.style.color = col;
+    mir.style.opacity = cs.opacity;
+    /* input'larda clientWidth/clientLeft içerik kutusunu verdiği için kenarlıkları stilden hesaplıyoruz */
+    var bl = parseFloat(cs.borderLeftWidth) || 0, bt = parseFloat(cs.borderTopWidth) || 0;
+    var w = el.tagName === 'TEXTAREA' ? el.clientWidth : er.width - bl - (parseFloat(cs.borderRightWidth) || 0);
+    var h = el.tagName === 'TEXTAREA' ? el.clientHeight : er.height - bt - (parseFloat(cs.borderBottomWidth) || 0);
+    m.bl = bl; m.bt = bt;
+    mir.style.width = w + 'px';
+    mir.style.height = h + 'px';
+    var ta = cs.textAlign;
+    inn.style.margin = (ta === 'center') ? '0 auto' : (ta === 'right' || ta === 'end') ? '0 0 0 auto' : '0';
+    mir.classList.add('on');
+    place(el, m);
+    el.style.setProperty('caret-color', ph ? cs.color : col);
+    el.classList.add(ph ? 'fe-ph' : 'fe-on');
+    m.active = true;
+  }
+
+  var pend = new Set(), raf = 0;
+  function later(el) {
+    if (!fieldOK(el)) return;
+    pend.add(el);
+    if (!raf) raf = requestAnimationFrame(function () { raf = 0; var l = Array.from(pend); pend.clear(); l.forEach(syncField); });
+  }
+  /* Emojili alan varken her karede konumu denetle (düzen değişse, panel açılsa da hizalı kalsın) */
+  function kick() { if (tickOn) return; tickOn = true; requestAnimationFrame(tick); }
+  function tick() {
+    if (!cands.size) { tickOn = false; return; }
+    cands.forEach(function (el) {
+      var m = mirrors.get(el);
+      if (m && m.active) { if (el.isConnected) place(el, m); else syncField(el); }
+      else if (el.isConnected && el.getBoundingClientRect().width) syncField(el);
+    });
+    requestAnimationFrame(tick);
+  }
+
+  document.addEventListener('input', function (e) { var t = e.target; if (fieldOK(t)) { syncField(t); later(t); } }, true);
+  ['focusin', 'keyup', 'compositionupdate', 'compositionend'].forEach(function (ev) {
+    document.addEventListener(ev, function (e) { later(e.target); }, true);
+  });
+  document.addEventListener('scroll', function (e) { var t = e.target, m = fieldOK(t) && mirrors.get(t); if (m && m.active) place(t, m); }, true);
+  document.addEventListener('selectionchange', function () { later(document.activeElement); });
+  window.addEventListener('resize', function () { cands.forEach(later); });
+
+  /* Kod tarafında el.value = ... ile yapılan atamalar input olayı üretmez; onları da yakala */
+  [window.HTMLInputElement, window.HTMLTextAreaElement].forEach(function (C) {
     try {
-      var d = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
-      Object.defineProperty(ta, 'value', {
-        configurable: true,
-        get: function () { return d.get.call(this); },
-        set: function (x) { d.set.call(this, x); later(); }
+      var d = Object.getOwnPropertyDescriptor(C.prototype, 'value');
+      Object.defineProperty(C.prototype, 'value', {
+        configurable: true, enumerable: d.enumerable, get: d.get,
+        set: function (x) { d.set.call(this, x); if (fieldOK(this)) later(this); }
       });
     } catch (e) {}
-  }
+  });
 
   function start() {
     scan(document.body);
-    mo.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
-    syncMirror();
+    mo.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['placeholder'] });
+    Array.prototype.forEach.call(document.querySelectorAll('input,textarea'), later);
     /* Uzun basma tepsisindeki 25 emojiyi önceden indir */
     var tray = ['1f90d', '1fa76', '1fa77', '1f49c', '2764-fe0f', '1fa75', '1f499', '1f496', '1f497', '1f494', '1f62d', '1fae0', '1f633',
       '1f60e', '1f608', '1f480', '2620-fe0f', '1f970', '1f928', '1f97a', '1f44d', '1f44e', '1faf6', '1f595', '1f44b'];
