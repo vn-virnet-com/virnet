@@ -1780,7 +1780,7 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 .gm-cover.dnow { background: linear-gradient(145deg, #d9f1ff, #b9a8ff); }
 .gm-card.dnow .gm-bg { background: radial-gradient(60% 70% at 20% 30%, #7fe0c3, transparent 70%), radial-gradient(60% 70% at 85% 80%, #8f7bff, transparent 70%); }
 .dn-wrap { position: absolute; top: 0; bottom: 0; left: 50%; width: min(100%, calc((100vh - 46px - var(--vn-top, 0px)) * .5625)); width: min(100%, calc((100dvh - 46px - var(--vn-top, 0px)) * .5625)); transform: translateX(-50%); display: flex; flex-direction: column; background: #1b1b1f; overflow: hidden; }
-.dn-top { position: relative; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; background: #141417; }
+.dn-top { position: relative; flex: 1 1 0; min-height: 52px; display: flex; flex-direction: column; background: #141417; }
 .dn-msgs { flex: 1 1 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 8px 10px; display: flex; flex-direction: column; gap: 5px; -webkit-user-select: text; user-select: text; }
 .dn-m { display: flex; align-items: flex-end; gap: 6px; max-width: 84%; align-self: flex-start; }
 .dn-m.own { align-self: flex-end; flex-direction: row-reverse; }
@@ -1802,15 +1802,21 @@ body.nick-hidden .dn-nick { display: none; }
 .dn-lock { display: none; position: absolute; inset: 0; z-index: 3; background: rgba(110, 110, 118, .55); -webkit-backdrop-filter: grayscale(1); backdrop-filter: grayscale(1); }
 .dn-lock.on { display: block; }
 .dn-mid { position: relative; flex: 0 0 7px; background: #000; z-index: 4; }
-.dn-fill { height: 100%; width: 0; margin: 0 auto; background: linear-gradient(90deg, #4da3ff, #9b6bff); transition: width .12s linear; }
+.dn-fill { height: 100%; width: var(--f, 0%); margin: 0 auto; background: linear-gradient(90deg, #4da3ff, #9b6bff); transition: width .12s linear; }
 .dn-cd { display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); box-sizing: border-box; min-width: 34px; height: 34px; padding: 0 4px; border-radius: 17px; background: #000; border: 2px solid #4da3ff; color: #fff; font: 700 18px/30px 'Lexend', sans-serif; text-align: center; }
 .dn-cd.on { display: block; }
-.dn-bot { position: relative; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+.dn-bot { position: relative; flex: 0 0 var(--dn-bh, 50%); min-height: 0; display: flex; flex-direction: column; }
 .dn-hint { flex: 0 0 auto; box-sizing: border-box; min-height: 30px; padding: 6px 8px; text-align: center; background: #111; color: #fff; font: 600 14px/18px 'Lexend', sans-serif; letter-spacing: 1px; }
 .dn-cvh { position: relative; flex: 1 1 0; min-height: 0; }
 .dn-bot.nodraw .pnt-tools { visibility: hidden; }
 .dn-opts { display: none; position: absolute; inset: 0; z-index: 5; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px; background: rgba(10, 10, 14, .94); }
 .dn-opts.on { display: flex; }
+@media (min-width: 769px) {
+  .dn-wrap { left: 0; width: 100%; transform: none; flex-direction: row; }
+  .dn-top, .dn-bot { flex: 1 1 0; min-width: 0; min-height: 0; }
+  .dn-mid { flex: 0 0 7px; display: flex; align-items: center; }
+  .dn-fill { width: 100%; height: var(--f, 0%); margin: 0; transition: height .12s linear; }
+}
 .dn-opt-t { color: #fff; opacity: .8; font: 600 14px/1.2 'Lexend', sans-serif; }
 .dn-opt { width: 100%; max-width: 260px; padding: 14px; border-radius: 14px; border: 1px solid #555; background: #2b2b31; color: #fff; font: 700 18px/1.2 'Lexend', sans-serif; cursor: pointer; touch-action: manipulation; }
 .dn-opt:active { transform: scale(.97); }
@@ -3667,6 +3673,8 @@ function handleDisconnect() {
   try { ytListenResetAll(); } catch (e) {}
   setChatEnabled(false);
   setStatus('Bağlantı koptu, yeniden bağlanılıyor...', false);
+  // Dnow açıkken bağlantı koparsa oyun kapanır (tur durumu karşıyla eşleşemez)
+  try { if (dn && gameActive) { const gid = gameActive; gameClose(gid, true, true); flashStatus('Bağlantı koptu, oyun kapandı'); } } catch (e) {}
 }
 
 function watchdog() {
@@ -7029,7 +7037,6 @@ function gameStart(id, restored) {
   } else if (gkind === 'dnow') {
     ov.setAttribute('aria-label', 'Dnow');
     ov.querySelector('.gm-bar-t').textContent = 'Dnow';
-    ov.querySelector('.gm-snd').style.display = 'none';
     try { dnInit(ov.querySelector('.gm-stage'), id); } catch (e) {}
   } else {
     try { gmInit(ov.querySelector('.gm-stage'), id); } catch (e) {}
@@ -7378,7 +7385,7 @@ function pntStop() {
 /* ===== Dnow: gartic mantığında çiz-bil. Ev sahibi (kimlik sırası küçük taraf) turu, kelimeyi ve süreyi yönetir; çizim Paint tuvaliyle ortak ===== */
 var dn = null;
 var DN_DUR = 90000, DN_CD = 10000;
-var DN_WORDS = ["araba", "bulut", "güneş", "ay", "yıldız", "ağaç", "çiçek", "ev", "kapı", "pencere", "masa", "sandalye", "kitap", "kalem", "silgi", "çanta", "gözlük", "şapka", "ayakkabı", "çorap", "elbise", "tişört", "pantolon", "eldiven", "atkı", "şemsiye", "saat", "telefon", "bilgisayar", "klavye", "televizyon", "kumanda", "lamba", "ampul", "anahtar", "kilit", "makas", "çekiç", "testere", "merdiven", "bisiklet", "motosiklet", "otobüs", "tren", "uçak", "helikopter", "gemi", "denizaltı", "roket", "balon", "uçurtma", "balık", "kedi", "köpek", "kuş", "at", "inek", "koyun", "tavuk", "horoz", "ördek", "kurbağa", "yılan", "kaplumbağa", "tavşan", "fil", "zürafa", "aslan", "maymun", "penguen", "yunus", "balina", "köpekbalığı", "ahtapot", "yengeç", "kelebek", "arı", "örümcek", "karınca", "salyangoz uğur", "böceği", "dinozor", "ejderha", "robot", "hayalet", "kale", "köprü", "kule", "deniz feneri", "çadır", "ateş", "kar tanesi", "kardan adam", "yağmur", "şimşek", "gökkuşağı", "dağ", "volkan", "ada", "palmiye", "kaktüs", "mantar", "elma", "armut", "muz", "çilek", "karpuz", "üzüm", "portakal", "limon", "havuç", "domates", "patates", "soğan", "ekmek", "peynir", "yumurta", "pizza", "hamburger", "dondurma", "pasta", "simit", "çay bardağı", "çaydanlık", "kaşık", "çatal", "bıçak", "tabak", "bardak", "buzdolabı", "çekmece", "yüzük parmağı", "dolap", "yatak", "yastık", "battaniye", "ayna", "halı", "perde", "fırın", "süpürge", "kova", "sabun", "diş fırçası", "tarak", "havlu", "göz", "kulak", "burun", "ağız", "dil", "diş", "el", "ayak", "kalp", "kafatası", "iskelet", "gitar", "piyano", "davul", "keman", "mikrofon", "kulaklık", "kamera", "fotoğraf makinesi", "top", "basketbol potası", "raket", "olta", "çıpa", "dümen", "pusula", "harita", "hazine sandığı", "taç", "kılıç", "kalkan", "ok ve yay", "bayrak", "hediye kutusu", "mum", "doğum günü pastası", "çam ağacı", "posta kutusu", "trafik lambası", "yol levhası", "yel değirmeni", "kuyu", "çan", "saat kulesi", "piramit", "tekerlek", "vida", "somun", "ip", "düğüm", "makara", "yuva", "arı kovanı", "bal peteği"];
+var DN_WORDS = ["Araba", "Bulut", "Güneş", "Yıldız", "Çiçek", "Pencere", "Sandalye", "Kitap", "Çanta", "Gözlük", "Şapka", "Ayakkabı", "Elbise", "Eldiven", "Şemsiye", "Saat", "Telefon", "Bilgisayar", "Klavye", "Televizyon", "Kumanda", "Ampul", "Anahtar", "Kilit", "Makas", "Çekiç", "Testere", "Merdiven", "Bisiklet", "Motosiklet", "Otobüs", "Tren", "Uçak", "Helikopter", "Gemi", "Denizaltı", "Roket", "Balon", "Uçurtma", "Kedi", "Köpek", "Kuş", "At", "İnek", "Koyun", "Tavuk", "Horoz", "Ördek", "Kurbağa", "Yılan", "Kaplumbağa", "Tavşan", "Fil", "Zürafa", "Aslan", "Maymun", "Penguen", "Yunus", "Balina", "Köpekbalığı", "Ahtapot", "Yengeç", "Kelebek", "Arı", "Örümcek", "Karınca", "Salyangoz", "Uğur Böceği", "Dinozor", "Ejderha", "Robot", "Hayalet", "Kale", "Köprü", "Kule", "Deniz Feneri", "Çadır", "Ateş", "Kar Tanesi", "Kardan Adam", "Şimşek", "Gökkuşağı", "Dağ", "Volkan", "Ada", "Palmiye", "Kaktüs", "Mantar", "Armut", "Çilek", "Karpuz", "Üzüm", "Portakal", "Limon", "Havuç", "Domates", "Patates", "Soğan", "Ekmek", "Peynir", "Pizza", "Hamburger", "Dondurma", "Pasta", "Simit", "Çay Bardağı", "Çaydanlık", "Kaşık", "Çatal", "Bıçak", "Tabak", "Buzdolabı", "Çekmece", "Yüzük Parmağı", "Dolap", "Yatak", "Yastık", "Battaniye", "Ayna", "Halı", "Perde", "Fırın", "Süpürge", "Kova", "Diş Fırçası", "Tarak", "Havlu", "Kalp", "Kafatası", "İskelet", "Gitar", "Piyano", "Davul", "Keman", "Mikrofon", "Kulaklık", "Fotoğraf Makinesi", "Basketbol Potası", "Raket", "Olta", "Pusula", "Harita", "Hazine Sandığı", "Taç", "Kılıç", "Kalkan", "Yay", "Bayrak", "Hediye Kutusu", "Mum", "Doğum Günü Pastası", "Çam Ağacı", "Posta Kutusu", "Trafik Lambası", "Yol Levhası", "Tekerlek", "Yuva", "Arı Kovanı", "Piramit", "Yelkenli", "Kamyon", "İtfaiye Aracı", "Vinç", "Traktör", "Paraşüt", "Dönme Dolap", "Deve", "Flamingo", "Papağan", "Baykuş", "Tavus Kuşu", "Akrep", "Kirpi", "Panda", "Zebra", "Kanguru", "Yarasa", "Örümcek Ağı", "Teleskop", "Gramofon", "Çamaşır Makinesi", "Ütü", "Çalar Saat", "Kum Saati", "Avize", "Şömine", "Trompet", "Satranç Tahtası", "Sırt Çantası", "Bavul", "Fener", "Karavan", "Şato", "Dişli Çark", "Hamak", "Tost Makinesi", "Kamp Ateşi", "Dikiş Makinesi", "Kurt", "Tilki", "Ayı", "Geyik", "Sincap", "Fare", "Kaplan", "Leopar", "Gergedan", "Su Aygırı", "Koala", "Gorilla", "Timsah", "Kertenkele", "Bukalemun", "Denizatı", "Denizyıldızı", "Deniz Anası", "Mors", "Fok", "Pelikan", "Leylek", "Kartal", "Güvercin", "Karga", "Istakoz", "Sivrisinek", "Eşek", "Keçi", "Domuz", "Hindi", "Kuğu", "Palyaço Balığı", "Kutup Ayısı", "Kiraz", "Şeftali", "Ananas", "Nar", "Kavun", "Mısır", "Biber", "Patlıcan", "Salatalık", "Brokoli", "Sarımsak", "Zeytin", "Kabak", "Kek", "Kurabiye", "Çikolata", "Lolipop", "Sandviç", "Sosis", "Tavuk Budu", "Balık Kılçığı", "Kahve Fincanı", "Süt Kutusu", "Bal Kavanozu", "Patlamış Mısır", "Pide", "Döner", "Kebap Şişi", "Cüzdan", "Kemer", "Kravat", "Papyon", "Bere", "Terlik", "Çizme", "Gömlek", "Ceket", "Palto", "Kolye", "Küpe", "Bilezik", "Yüzük", "Diş Macunu", "Lavabo", "Küvet", "Musluk", "Radyatör", "Priz", "Pil", "El Feneri", "Kibrit", "Çakmak", "Zarf", "Pul", "Not Defteri", "Cetvel", "Pergel", "Kalemtıraş", "Boya Kalemi", "Fırça", "Palet", "Şövale", "Kitaplık", "Okul Çantası", "Tebeşir", "Dizüstü Bilgisayar", "Yazıcı", "Hoparlör", "Oyun Kolu", "Tablet", "Akıllı Saat", "Drone", "Uydu", "Uydu Çanağı", "Radyo", "Kaset", "Plak", "Daktilo", "Hesap Makinesi", "Dürbün", "Büyüteç", "Mikroskop", "Termometre", "Şırınga", "Stetoskop", "Bandaj", "Koltuk Değneği", "Tekerlekli Sandalye", "Ambulans", "Polis Arabası", "Taksi", "Tramvay", "Zeplin", "Savaş Uçağı", "Tank", "Kayık", "Kano", "Salıncak", "Kaydırak", "Tahterevalli", "Demiryolu", "Bariyer", "Trafik Konisi", "Benzin Pompası", "Elektrik Direği", "Yangın Musluğu", "Sokak Lambası", "Çöp Kutusu", "Çöp Kamyonu", "Park Bankı", "Çeşme", "Yüzme Havuzu", "Çatı", "Baca", "Balkon", "Asansör", "Kapı Zili", "Paspas", "Çamaşır Sepeti", "Çamaşır İpi", "Mandal", "Elbise Askısı", "Gardırop", "Komodin", "Koltuk", "Sehpa", "Saksı", "Bahçe Hortumu", "Vazo", "Tablo Çerçevesi", "Fıskiye", "Çit", "Tırmık", "Kürek", "El Arabası", "Balta", "Orak", "Sapan", "Bumerang", "Mızrak", "Zırh", "Miğfer", "Hançer", "Şövalye", "Korsan", "Korsan Gemisi", "Cadı", "Cadı Kazanı", "Vampir", "Mumya", "Zombi", "Cüce", "Peri", "Sihirli Lamba", "Tek Boynuzlu At", "Denizkızı", "Kral", "Melek", "İtfaiyeci", "Polis", "Doktor", "Aşçı", "Pilot", "Astronot", "Palyaço", "Sihirbaz", "Ninja", "Kovboy", "Dalgıç", "Çiftçi", "Korkuluk", "Dalga", "Şelale", "Nehir", "Göl", "Çöl", "Vaha", "Mağara", "Buzdağı", "Orman", "Yaprak", "Meşe Palamudu", "Çam Kozalağı", "Papatya", "Gül", "Lale", "Ayçiçeği", "Nilüfer", "Bambu", "Buğday", "Saman Balyası", "Hortum", "Kuyruklu Yıldız", "Meteor", "Gezegen", "Dolunay", "Hilal", "Kara Delik", "Uzay Gemisi", "Uzay Mekiği", "Uzaylı", "Futbol Topu", "Basketbol Topu", "Voleybol Filesi", "Masa Tenisi", "Dambıl", "Kayak", "Paten", "Kaykay", "Dalış Tüpü", "Madalya", "Kupa", "Podyum", "Boks Eldiveni", "Hedef Tahtası", "Golf Sopası", "Bilardo", "Domino", "Zar", "Oyun Kartı", "Yoyo", "Oyuncak Ayı", "Bebek Arabası", "Biberon", "Emzik", "Beşik", "Çıngırak", "Flüt", "Saz", "Org", "Arp", "Saksafon", "Akordeon", "Tef", "Zil", "Nota", "Müzik Kutusu", "Cami", "Minare", "Kilise", "Saray", "Köşk", "Ahır", "Kümes", "Kulübe", "İglu", "Gökdelen", "Fabrika Bacası", "Baraj", "Liman", "İskele", "Tapınak", "Pagoda", "Eyfel Kulesi", "Pisa Kulesi", "Beyin", "Kemik", "Parmak İzi", "Saç Tokası", "Bıyık", "Sakal", "Peruk", "Maske", "Güneş Gözlüğü", "Kask", "Pelerin"];
 var DN_EXTRA = ["Hercy", "Idaona", "Idana", "Montauk Air Force Station", "Eitin", "Nora", "Via", "Zaman Çarkı", "Evrensel", "Tünel", "Hlaa", "Momo", "Blusa", "Sepia", "MTC", "Leap", "Minse", "Chou", "Kara Madde Canavarı", "Ufo", "Skie", "Naturi", "Codec", "Üçlü Üçgen", "İkili Doğru", "Beşli Beşgen", "Dörtlü Dörtgen", "Alwer", "Loli Kavağı", "Locta", "Ceptil", "Uzak Uzay", "Galaksi", "Dünya", "Pinky Tinky", "Mühür", "Intent Göz", "Maviler Ağacı", "Blusa Adası", "Brac", "Ariel"];
 var DN_SEND_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.25 12L3.75 20.5L6.25 14.5L14.25 12L6.25 9.5L3.75 3.5Z"/></svg>';
 function dnNorm(s) {
@@ -7398,6 +7405,25 @@ function dnLev(a, b) {
   return prev[n];
 }
 function dnPattern(w) { return String(w || '').split('').map((c) => (c === ' ' ? '\u00a0\u00a0' : '_')).join(' '); }
+// Dnow sesleri: Kuks Feva'nın Web Audio altyapısı (aynı ses aç/kapa ayarı); dosya yok, hepsi üretilir
+function dnSfx(k) {
+  try {
+    const A = gmAu || gmAuInit(); if (!A || !A.on) return;
+    try { if (A.ctx.state !== 'running') A.ctx.resume(); } catch (e) {}
+    const t = A.ctx.currentTime + .02;
+    if (k === 'ok') {            // doğru bildi: yükselen parlak dörtlü + parıltı
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => gmTone(t + i * .085, f, .22, 'triangle', .3));
+      gmTone(t + .34, 1568, .5, 'sine', .16);
+    } else if (k === 'close') {  // çok yakın: iki yumuşak, hafif tereddütlü nota
+      gmTone(t, 440, .16, 'sine', .26, 494);
+      gmTone(t + .17, 554.37, .26, 'sine', .26, 523.25);
+    } else if (k === 'turn') {   // sıra sende: yükselen süpürme + çift zil
+      gmTone(t, 330, .22, 'sawtooth', .07, 880);
+      gmTone(t + .2, 987.77, .18, 'square', .1);
+      gmTone(t + .34, 1318.5, .38, 'triangle', .26);
+    }
+  } catch (e) {}
+}
 function dnIDraw() { const D = dn; return !!D && (D.dh === D.host); }
 function dnInit(stage, id) {
   dnStop();
@@ -7405,13 +7431,13 @@ function dnInit(stage, id) {
   const wrap = document.createElement('div');
   wrap.className = 'dn-wrap';
   wrap.innerHTML = '<div class="dn-top"><div class="dn-msgs"></div><div class="dn-row"><input type="text" class="dn-nick dn-chat-in" placeholder="İsim" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><input type="text" class="dn-in dn-chat-in" placeholder="Mesaj yaz..." maxlength="200" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="send" data-lpignore="true" data-1p-ignore="true" data-form-type="other"><button type="button" class="dn-send" aria-label="Gönder">' + DN_SEND_SVG + '</button><div class="dn-lock"></div></div></div>' +
-    '<div class="dn-mid"><div class="dn-fill"></div><div class="dn-cd"></div></div>' +
+    '<div class="dn-mid"><div class="dn-fill"></div></div>' +
     '<div class="dn-bot nodraw"><div class="dn-hint"></div><div class="dn-cvh"></div><div class="dn-opts"></div></div>';
   stage.appendChild(wrap);
   const q = (s) => wrap.querySelector(s);
   const D = dn = {
     id: id, host: String(myId) < String(friendId), wrap: wrap, msgs: q('.dn-msgs'), nick: q('.dn-nick'), inp: q('.dn-in'), send: q('.dn-send'),
-    lock: q('.dn-lock'), fill: q('.dn-fill'), cd: q('.dn-cd'), hint: q('.dn-hint'), bot: q('.dn-bot'), cvh: q('.dn-cvh'), opts: q('.dn-opts'),
+    lock: q('.dn-lock'), mid: q('.dn-mid'), ro: null, hint: q('.dn-hint'), bot: q('.dn-bot'), cvh: q('.dn-cvh'), opts: q('.dn-opts'),
     ph: 'wait', dh: false, word: null, optsArr: null, endAt: 0, cdAt: 0, round: 0, clr: -1, snap: -1, solved: false, pat: '', tk: 0, hello: 0, seq: 0, mids: {}, optKey: ''
   };
   // İsim kutusu: ayarlardaki isim kutusunun aynısı (aynı değer, aynı kayıt; ayarlarda gizliyse burada da gizli)
@@ -7424,6 +7450,18 @@ function dnInit(stage, id) {
   D.send.addEventListener('mousedown', (e) => e.preventDefault());
   D.send.addEventListener('click', () => dnSend());
   D.inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); dnSend(); } });
+  // Klavye açılınca yalnızca sohbet kısmı daralır: alt yarının (çizim) yüksekliği klavyesiz ekran yüksekliğinin yarısında sabit tutulur
+  const upd = () => {
+    if (dn !== D) return;
+    const ae = document.activeElement;
+    if (ae && ae.classList && ae.classList.contains('dn-chat-in')) return;
+    const h = stage.clientHeight;
+    if (h > 100) D.wrap.style.setProperty('--dn-bh', Math.round(h / 2) + 'px');
+  };
+  if (window.ResizeObserver) { D.ro = new ResizeObserver(upd); D.ro.observe(stage); }
+  upd();
+  [D.inp, D.nick].forEach((el) => el.addEventListener('blur', () => setTimeout(upd, 350)));
+  try { gmAuUnlock(); } catch (e) {}
   try { pntInit(D.cvh, id, true); } catch (e) {}
   dnApplyPhase();
   D.tk = setInterval(dnTick, 100);
@@ -7437,6 +7475,7 @@ function dnStop() {
   dn = null;
   try { clearInterval(D.tk); } catch (e) {}
   try { clearInterval(D.hello); } catch (e) {}
+  try { if (D.ro) D.ro.disconnect(); } catch (e) {}
   try { D.wrap.remove(); } catch (e) {}
 }
 function dnCanChat() { const D = dn; return !!D && !(dnIDraw() && (D.ph === 'pick' || D.ph === 'draw')); }
@@ -7461,9 +7500,9 @@ function dnSys(text) {
 function dnMark(mid, r) {
   const D = dn; if (!D) return;
   const o = D.mids[mid]; if (!o) return;
-  if (r === 'ok') { o.b.classList.add('ok'); const c = o.row.querySelector('.dn-close'); if (c) c.remove(); }
+  if (r === 'ok') { if (!o.b.classList.contains('ok')) dnSfx('ok'); o.b.classList.add('ok'); const c = o.row.querySelector('.dn-close'); if (c) c.remove(); }
   else if (r === 'close' && !o.b.classList.contains('ok') && !o.row.querySelector('.dn-close')) {
-    const c = document.createElement('span'); c.className = 'dn-close'; c.textContent = 'çok yakın'; o.row.appendChild(c);
+    const c = document.createElement('span'); c.className = 'dn-close'; c.textContent = 'çok yakın'; o.row.appendChild(c); dnSfx('close');
   }
 }
 function dnEval(text, fromGuest) {
@@ -7573,7 +7612,7 @@ function dnSnapshot() {
 function dnApplyPhase() {
   const D = dn; if (!D) return;
   const me = dnIDraw(), P = pnt, drawing = me && D.ph === 'draw';
-  if (D.ph === 'pick' && D.clr !== D.round) { D.clr = D.round; if (P) pntClear(false); }
+  if (D.ph === 'pick' && D.clr !== D.round) { D.clr = D.round; if (P) pntClear(false); if (me) dnSfx('turn'); }
   if (D.ph === 'cd' && D.snap !== D.round) { D.snap = D.round; dnSnapshot(); }
   if (P) {
     P.lock = !drawing;
@@ -7613,18 +7652,15 @@ function dnApplyPhase() {
 function dnTick() {
   const D = dn; if (!D) return;
   const now = Date.now();
+  let f = 0;
   if (D.ph === 'pick' || D.ph === 'draw') {
-    const f = Math.max(0, Math.min(1, (D.endAt - now) / DN_DUR));
-    D.fill.style.width = (f * 100).toFixed(2) + '%';
-    if (D.cd.classList.contains('on')) D.cd.classList.remove('on');
+    f = Math.max(0, Math.min(1, (D.endAt - now) / DN_DUR));
     if (D.host && now >= D.endAt) dnEnd(false);
   } else if (D.ph === 'cd') {
-    D.fill.style.width = '0%';
-    const sec = Math.ceil((D.cdAt - now) / 1000);
-    if (sec > 0) { const s = String(sec); if (D.cd.textContent !== s) D.cd.textContent = s; D.cd.classList.add('on'); }
-    else D.cd.classList.remove('on');
+    f = Math.max(0, Math.min(1, (D.cdAt - now) / DN_CD)); // 10 sn geri sayım da aynı şerit olarak azalır
     if (D.host && now >= D.cdAt) dnStartRound();
-  } else D.fill.style.width = '0%';
+  }
+  D.mid.style.setProperty('--f', (f * 100).toFixed(2) + '%');
 }
 
 /* ===== Kuks Feva oyunu: kuşbakışı, iki kişilik. Ev sahibi (kimlik sırası küçük taraf) oyunu işletir, durumu saniyede 5 kez karşıya yollar (karşı tarafın tıklaması gelince hemen ayrıca yollar); karşı taraf yalnızca tıklamalarını yollar ===== */
@@ -13277,14 +13313,14 @@ function pfRender() {
   }
   function batt(p, chg) {
     p = Math.max(0, Math.min(100, Math.round(p)));
-    var col = chg ? '#30d158' : (p <= 15 ? '#ff453a' : 'currentColor');
-    var w = Math.max(1, Math.round(21.2 * p / 100 * 10) / 10);
-    var tx = chg ? 15 : 13.2, fs = p >= 100 ? 7.6 : 8.6;
-    return '<svg width="28" height="13" viewBox="0 0 28 13"><rect x=".5" y=".5" width="24" height="12" rx="3.4" fill="none" stroke="currentColor" stroke-width="1" opacity=".6"/>'
-      + '<rect x="25.6" y="4.2" width="1.8" height="4.6" rx=".9" fill="currentColor" opacity=".6"/>'
-      + '<rect x="1.9" y="1.9" width="' + w + '" height="9.2" rx="2.2" fill="' + col + '"/>'
-      + (chg ? '<path transform="translate(5.2 6.5) scale(.62) translate(-11.8 -6)" d="M11.8 1.6L7.6 6.6h3l-.9 3.8 4.4-5.2h-3z" fill="#fff" stroke="#000" stroke-width="1" paint-order="stroke" stroke-linejoin="round"/>' : '')
-      + '<text x="' + tx + '" y="6.9" text-anchor="middle" dominant-baseline="central" font-family="-apple-system,Roboto,Arial,sans-serif" font-size="' + fs + '" font-weight="700" fill="#fff" stroke="#000" stroke-opacity=".85" stroke-width="1.3" paint-order="stroke" stroke-linejoin="round">' + p + '</text></svg>';
+    // Sabit renkli hap şekli (doluluğa göre dolma yok): şarjda koyu yeşil + beyaz yazı; %30 altı bordo + beyaz yazı; normalde tarih / gönder tuşu zemini + yazı rengi
+    var bg = chg ? '#0b5d2a' : (p < 30 ? '#7a0c1a' : 'var(--send-bg)');
+    var fg = (chg || p < 30) ? '#fff' : 'var(--send-ico)';
+    var fs = p >= 100 ? 8.6 : 10;
+    return '<svg width="31" height="14" viewBox="0 0 31 14">'
+      + '<rect x="0" y="0" width="27.6" height="14" rx="7" style="fill:' + bg + '"/>'
+      + '<rect x="28.6" y="4.3" width="2.2" height="5.4" rx="1.1" style="fill:' + bg + '"/>'
+      + '<text x="13.8" y="7.4" text-anchor="middle" dominant-baseline="central" font-family="-apple-system,Roboto,Arial,sans-serif" font-size="' + fs + '" font-weight="700" style="fill:' + fg + '">' + p + '</text></svg>';
   }
   /* Bluetooth kulaklık: iki kablosuz kulakiçi (AirPods tarzı), wifi ile aynı boy; sol-sağ birebir simetrik */
   function btIcon() {
