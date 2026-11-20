@@ -12863,7 +12863,7 @@ function pfRender() {
   const sc = document.getElementById('settings-scroll');
   if (!sc) return;
   const mq = window.matchMedia('(min-width: 769px)');
-  const Z_MIN = 0.3, Z_MAX = 1.35;
+  const Z_MIN = 0.3, Z_MAX = 3;   // klavye açıkken olduğu gibi: alan neyse tam o kadar dolacak şekilde oranlanır, boşluk dağıtılmaz
   const clampZ = (z) => Math.max(Z_MIN, Math.min(Z_MAX, z));
   let end = null, busy = false, raf = 0, burst = 0, burstT = 0;
   function ensureEnd() {
@@ -13547,6 +13547,14 @@ function pfRender() {
   var fitKey = '', fontReq = false;
   function fitClock() {
     if (!elT) return;
+    /* Masaüstü: ölçüm / kaydırma yok. Saat, tarih yazısıyla aynı boyutta ve aynı dikey ortalamada (CSS ile) durur */
+    try {
+      if (window.matchMedia && window.matchMedia('(min-width: 769px)').matches) {
+        if (elT.style.fontSize || elT.style.transform) { elT.style.fontSize = ''; elT.style.transform = ''; }
+        fitKey = '';
+        return;
+      }
+    } catch (e) {}
     try {
       var cs = getComputedStyle(elT);
       /* Rakam yüksekliği hedefi: her düzende 9px (wifi / bluetooth simgeleriyle aynı boy) */
