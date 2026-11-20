@@ -7638,7 +7638,7 @@ function dnApplyPhase() {
   let h = '';
   if (D.ph === 'wait') h = 'Karşı taraf bekleniyor...';
   else if (D.ph === 'pick') h = me ? 'Bir kelime seç' : 'Karşı taraf kelime seçiyor...';
-  else if (D.ph === 'draw') h = me ? ('Çiz: ' + (D.word || '')) : (D.pat || '');
+  else if (D.ph === 'draw') h = me ? ('Çiz: ' + (D.word || '')) : (D.pat || (D.host && D.word ? dnPattern(D.word) : ''));
   else if (D.ph === 'cd') h = 'Kelime: ' + (D.word || '') + (D.solved ? ' \u2713' : '');
   if (D.hint.textContent !== h) D.hint.textContent = h;
   // Kelime seçenekleri (yalnızca çizen kişide, çizime başlamadan önce)
