@@ -12874,35 +12874,39 @@ function pfRender() {
     sc.appendChild(end);
     return end;
   }
+  let lastSig = '', lastZ = 0, lastPad = 0;
   function fit() {
     if (busy) return; busy = true;
     try {
       const blocks = Array.from(sc.querySelectorAll(':scope > .set-block'));
-      blocks.forEach((b) => { b.style.zoom = ''; b.style.paddingBottom = ''; });
-      if (!mq.matches || sc.clientHeight <= 0) return;
+      const setAll = (z, pad) => blocks.forEach((b) => { b.style.zoom = z ? String(z) : ''; b.style.paddingBottom = pad > 0 ? pad + 'px' : ''; });
+      if (!mq.matches || sc.clientHeight <= 0) { setAll(0, 0); lastSig = ''; return; }
+      setAll(0, 0);
       const vis = blocks.filter((b) => b.offsetHeight > 0);
-      if (!vis.length) return;
+      if (!vis.length) { lastSig = ''; return; }
       const e = ensureEnd();
       const cs = getComputedStyle(sc);
       const pt = parseFloat(cs.paddingTop) || 0, pb = parseFloat(cs.paddingBottom) || 0;
       const avail = sc.clientHeight - pt - pb;
-      const used = () => e.offsetTop - pt;
-      const nat = used();
-      if (!(nat > 0) || !(avail > 0)) return;
-      const apply = (z) => blocks.forEach((b) => { b.style.zoom = String(z); });
-      let z = clampZ(avail / nat);
-      apply(z);
-      // yazılar zoom'la farklı satıra sarılabilir: oran ölçülüp birkaç adımda yakınsatılır
-      for (let i = 0; i < 5; i++) {
-        const u = used();
-        if (!(u > 0) || Math.abs(avail - u) <= 0.5) break;
-        const nz = clampZ(z * avail / u);
-        if (Math.abs(nz - z) < 0.0005) break;
-        z = nz; apply(z);
+      // girdiler değişmediyse aynı sonucu aynen geri yaz (boyut oynamaz, gözlemciler tetiklenmez)
+      const sig = Math.round(avail * 10) + '|' + vis.map((b) => b.offsetHeight).join(',') + '|' + sc.clientWidth;
+      if (sig === lastSig && lastZ) { setAll(lastZ, lastPad); return; }
+      const used = (z) => { setAll(z, 0); return e.offsetTop - pt; };
+      if (!(avail > 0)) return;
+      // sığan en büyük oran ikili aramayla bulunur: sonuç girdilere göre tek ve kararlıdır (öne arkaya gidip gelme olmaz)
+      let z;
+      if (used(Z_MAX) <= avail) z = Z_MAX;
+      else if (used(Z_MIN) > avail) z = Z_MIN;   // çok kısa alan: en küçükte bile sığmazsa kaydırılabilir kalır
+      else {
+        let lo = Z_MIN, hi = Z_MAX;
+        for (let i = 0; i < 16; i++) { const mid = (lo + hi) / 2; if (used(mid) <= avail) lo = mid; else hi = mid; }
+        z = Math.floor(lo * 10000) / 10000;
       }
-      // kalan boşluk (üst sınıra takılınca) gruplara eşit paylaştırılır: alan tam dolar
-      const extra = avail - used();
-      if (extra > 0.5) vis.forEach((b) => { b.style.paddingBottom = (extra / vis.length / z) + 'px'; });
+      const u = used(z);
+      const extra = avail - u;
+      const pad = (extra > 0.5) ? (extra / vis.length / z) : 0;
+      setAll(z, pad);
+      lastSig = sig; lastZ = z; lastPad = pad;
     } finally { busy = false; }
   }
   function schedule() {
