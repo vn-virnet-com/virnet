@@ -11294,16 +11294,22 @@ function goPanel(idx) {
   const menu = document.getElementById('settings-scroll');
   if (!menu) return;
   const segs = Array.prototype.slice.call(menu.querySelectorAll('.seg'));
+  let epoch = 0;   // yazı tipleri yüklenince arttırılır: eski ölçümler geçersiz olur
   function fit(seg) {
     const btns = Array.prototype.slice.call(seg.querySelectorAll('.seg-btn'));
     const n = btns.length;
     const avail = seg.clientWidth - 4;
     if (!n || avail <= 0) return;
+    // Yerleşim yalnızca menü genişliğine ve tuş yazılarına bağlıdır. Yükseklik/zoom değişimleri (diğer sığdırıcı)
+    // bu ölçümü yeniden tetikleyip iki kodun birbirini sürekli oynatmasına yol açıyordu.
+    const key = epoch + '|' + menu.clientWidth + '|' + n + '|' + seg.textContent.length;
+    if (seg._wrapKey === key) return;
     seg.classList.add('measure');
     let nat = 0;
     btns.forEach((b) => { nat = Math.max(nat, b.offsetWidth); });
     seg.classList.remove('measure');
     if (!nat) return;
+    seg._wrapKey = key;
     let cols = Math.max(1, Math.floor((avail + 2) / (nat + 2)));
     if (cols >= n) { seg.style.gridAutoFlow = ''; seg.style.gridTemplateColumns = ''; return; }
     const rows = Math.ceil(n / cols);
@@ -11320,7 +11326,7 @@ function goPanel(idx) {
     segs.forEach((sg) => ro.observe(sg));
   }
   window.addEventListener('resize', sched);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(sched);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { epoch++; sched(); });
   sched();
 })();
 (function initNotesPopup() {
@@ -12902,6 +12908,7 @@ function pfRender() {
         for (let i = 0; i < 16; i++) { const mid = (lo + hi) / 2; if (used(mid) <= avail) lo = mid; else hi = mid; }
         z = Math.floor(lo * 10000) / 10000;
       }
+      if (lastZ && z !== lastZ && Math.abs(z - lastZ) < 0.004 && used(lastZ) <= avail) z = lastZ;
       const u = used(z);
       const extra = avail - u;
       const pad = (extra > 0.5) ? (extra / vis.length / z) : 0;
@@ -12922,7 +12929,17 @@ function pfRender() {
     ro.observe(sc);
     Array.from(sc.querySelectorAll(':scope > .set-block')).forEach((b) => ro.observe(b));
   }
-  try { new MutationObserver(schedule).observe(sc, { subtree: true, attributes: true, attributeFilter: ['class', 'hidden'], childList: true, characterData: true }); } catch (e) {}
+  try {
+    const stripCls = (v) => (v || '').split(/\s+/).filter((c) => c && c !== 'measure').sort().join(' ');
+    new MutationObserver((muts) => {
+      for (let i = 0; i < muts.length; i++) {
+        const m = muts[i];
+        // seg ölçümü için geçici eklenen/silinen 'measure' sınıfı gerçek bir değişiklik değil
+        if (m.type === 'attributes' && m.attributeName === 'class' && stripCls(m.oldValue) === stripCls(m.target.getAttribute('class'))) continue;
+        schedule(); return;
+      }
+    }).observe(sc, { subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['class', 'hidden'], childList: true, characterData: true });
+  } catch (e) {}
   sc.addEventListener('transitionend', schedule, true);
   sc.addEventListener('click', () => { setTimeout(schedule, 60); setTimeout(schedule, 320); }, true);
   try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule); } catch (e) {}
