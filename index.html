@@ -1772,6 +1772,49 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 .gm-cover.pnt { background: linear-gradient(145deg, #ffffff, #dfe6f5); }
 .gm-card.pnt .gm-bg { background: radial-gradient(60% 70% at 20% 30%, #5ec8ff, transparent 70%), radial-gradient(60% 70% at 85% 80%, #c86bff, transparent 70%); }
 /* Paint: ortak beyaz tuval */
+/* Dnow: gartic mantığında çizip bilme oyunu */
+.gp-dnow { background: linear-gradient(145deg, #d9f1ff, #b9a8ff); }
+.gp-dnow svg { width: 50px; height: 50px; }
+.gp-row { gap: 18px !important; }
+.gp-card { padding-left: 18px !important; padding-right: 18px !important; }
+.gm-cover.dnow { background: linear-gradient(145deg, #d9f1ff, #b9a8ff); }
+.gm-card.dnow .gm-bg { background: radial-gradient(60% 70% at 20% 30%, #7fe0c3, transparent 70%), radial-gradient(60% 70% at 85% 80%, #8f7bff, transparent 70%); }
+.dn-wrap { position: absolute; top: 0; bottom: 0; left: 50%; width: min(100%, calc((100vh - 46px - var(--vn-top, 0px)) * .5625)); width: min(100%, calc((100dvh - 46px - var(--vn-top, 0px)) * .5625)); transform: translateX(-50%); display: flex; flex-direction: column; background: #1b1b1f; overflow: hidden; }
+.dn-top { position: relative; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; background: #141417; }
+.dn-msgs { flex: 1 1 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 8px 10px; display: flex; flex-direction: column; gap: 5px; -webkit-user-select: text; user-select: text; }
+.dn-m { display: flex; align-items: flex-end; gap: 6px; max-width: 84%; align-self: flex-start; }
+.dn-m.own { align-self: flex-end; flex-direction: row-reverse; }
+.dn-b { box-sizing: border-box; padding: 5px 10px; border-radius: 16px; background: #2b2b31; color: #fff; font-size: 14px; line-height: 1.3; overflow-wrap: anywhere; word-break: break-word; white-space: pre-wrap; transition: background-color .3s; }
+.dn-b.ok { background: #14532d; }
+.dn-n { display: block; font-size: 11px; opacity: .65; font-weight: 600; margin-bottom: 1px; }
+.dn-b.nameless .dn-t { font-weight: 700; }
+.dn-close { flex: 0 0 auto; font-size: 11px; font-weight: 600; color: #ffcc66; white-space: nowrap; }
+.dn-sys { align-self: center; font-size: 12px; opacity: .8; color: #fff; text-align: center; }
+.dn-img { align-self: center; width: 56%; max-width: 230px; border-radius: 12px; background: #fff; display: block; }
+.dn-row { flex: 0 0 auto; display: flex; align-items: stretch; gap: 6px; padding: 6px 8px; background: #141417; }
+.dn-nick, .dn-in { box-sizing: border-box; min-width: 0; height: 38px; padding: 0 11px; border-radius: 19px; border: 1px solid #3a3a42; background: #26262b; color: #fff; font: 500 16px/1 'Lexend', sans-serif; outline: none; -webkit-user-select: text; user-select: text; }
+.dn-nick { flex: 0 0 24%; font-weight: 700; }
+.dn-in { flex: 1 1 auto; }
+body.nick-hidden .dn-nick { display: none; }
+.dn-send { flex: 0 0 auto; width: 38px; height: 38px; padding: 0; border-radius: 50%; border: 0; background: #4da3ff; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; }
+.dn-send svg { width: 20px; height: 20px; fill: currentColor; }
+.dn-send:disabled { opacity: .45; }
+.dn-lock { display: none; position: absolute; inset: 0; z-index: 3; background: rgba(110, 110, 118, .55); -webkit-backdrop-filter: grayscale(1); backdrop-filter: grayscale(1); }
+.dn-lock.on { display: block; }
+.dn-mid { position: relative; flex: 0 0 7px; background: #000; z-index: 4; }
+.dn-fill { height: 100%; width: 0; margin: 0 auto; background: linear-gradient(90deg, #4da3ff, #9b6bff); transition: width .12s linear; }
+.dn-cd { display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); box-sizing: border-box; min-width: 34px; height: 34px; padding: 0 4px; border-radius: 17px; background: #000; border: 2px solid #4da3ff; color: #fff; font: 700 18px/30px 'Lexend', sans-serif; text-align: center; }
+.dn-cd.on { display: block; }
+.dn-bot { position: relative; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+.dn-hint { flex: 0 0 auto; box-sizing: border-box; min-height: 30px; padding: 6px 8px; text-align: center; background: #111; color: #fff; font: 600 14px/18px 'Lexend', sans-serif; letter-spacing: 1px; }
+.dn-cvh { position: relative; flex: 1 1 0; min-height: 0; }
+.dn-bot.nodraw .pnt-tools { visibility: hidden; }
+.dn-opts { display: none; position: absolute; inset: 0; z-index: 5; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px; background: rgba(10, 10, 14, .94); }
+.dn-opts.on { display: flex; }
+.dn-opt-t { color: #fff; opacity: .8; font: 600 14px/1.2 'Lexend', sans-serif; }
+.dn-opt { width: 100%; max-width: 260px; padding: 14px; border-radius: 14px; border: 1px solid #555; background: #2b2b31; color: #fff; font: 700 18px/1.2 'Lexend', sans-serif; cursor: pointer; touch-action: manipulation; }
+.dn-opt:active { transform: scale(.97); }
+
 .pnt-wrap { position: absolute; inset: 0; display: flex; flex-direction: column; background: #1b1b1f; }
 .pnt-area { position: relative; flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .pnt-cv { display: block; background: #fff; touch-action: none; cursor: crosshair; box-shadow: 0 2px 14px rgba(0,0,0,.5); }
@@ -1790,6 +1833,16 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 .pnt-tool:active { transform: scale(.92); }
 .pnt-tool.era { background: var(--c-fff); color: var(--c-000); }
 .pnt-tool svg { width: 18px; height: 18px; display: block; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.pnt-clr.wait { opacity: .45; }
+/* Sayfa temizleme isteği: sağ altta minik pencere (✓ kabul, ✕ boşa gider) */
+.pnt-ask { position: absolute; right: 10px; bottom: 10px; z-index: 5; box-sizing: border-box; display: none; align-items: center; gap: 8px; max-width: min(260px, calc(100% - 20px)); padding: 7px 7px 7px 12px; border-radius: 16px; background: var(--c-1a); border: 1px solid var(--c-55); box-shadow: 0 6px 20px rgba(0,0,0,.55); color: var(--c-fff); font: 500 12.5px/1.25 'Lexend', sans-serif; }
+.pnt-ask.show { display: flex; animation: pntAskIn .22s ease-out; }
+.pnt-ask-t { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.pnt-ask button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 1px solid var(--c-55); background: var(--c-33); color: var(--c-fff); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.pnt-ask button:active { transform: scale(.9); }
+.pnt-ask .y { background: #2e7d32; border-color: #43a047; }
+.pnt-ask svg { width: 15px; height: 15px; display: block; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+@keyframes pntAskIn { from { opacity: 0; transform: translate(10px, 10px) scale(.92); } to { opacity: 1; transform: none; } }
 .gm-acts { display: flex; align-items: center; gap: 8px; }
 .gm-snd { position: relative; isolation: isolate; overflow: hidden; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #fff; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; border: 1px solid var(--yt-a28); background: radial-gradient(120% 110% at 28% 8%, var(--yt-a42) 0%, transparent 58%), linear-gradient(160deg, var(--yt-a35) 0%, var(--yt-a16) 100%); box-shadow: inset 0 1.5px 1px var(--yt-a60), inset 0 -2px 3px var(--yt-a20), 0 3px 8px rgba(0,0,0,.34); transition: transform .12s, opacity .15s; }
 .gm-snd:active { transform: scale(.9); }
@@ -3499,6 +3552,14 @@ function setupConnection(c) {
     if (data.type === 'game-timeout') { receiveGameTimeout(data); return; }
     if (data.type === 'paint-s') { receivePaintS(data); return; }
     if (data.type === 'paint-hello') { receivePaintHello(data); return; }
+    if (data.type === 'paint-clr') { receivePaintClr(data); return; }
+    if (data.type === 'paint-clr-ask') { receivePaintClrAsk(data); return; }
+    if (data.type === 'paint-clr-ans') { receivePaintClrAns(data); return; }
+    if (data.type === 'dn-hello') { receiveDnHello(data); return; }
+    if (data.type === 'dn-st') { receiveDnSt(data); return; }
+    if (data.type === 'dn-pick') { receiveDnPick(data); return; }
+    if (data.type === 'dn-chat') { receiveDnChat(data); return; }
+    if (data.type === 'dn-res') { receiveDnRes(data); return; }
     if (data.type === 'dial-cancel') { receiveDialCancel(data); return; }
     if (data.type === 'qnote' || data.type === 'qnote-hello') { receiveQNote(data); return; }
     if (data.type === 'msg-ack') { receiveMsgAck(data); return; }
@@ -6690,6 +6751,8 @@ function vcFly(slot, live, sec) {
 
 /* ===== Kuks Feva: arama baloncuğundan oyun daveti, iki taraf katılınca tam ekran oyun ===== */
 var PNT_MARK = '\u2062PAINT\u2062';
+var DN_MARK = '\u2062DNOW\u2062';
+var DN_ICON_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 6h32a5 5 0 0 1 5 5v19a5 5 0 0 1-5 5H25l-9 8v-8H8a5 5 0 0 1-5-5V11a5 5 0 0 1 5-5z" fill="#fff" stroke="#5b6b8a" stroke-width="2" stroke-linejoin="round"/><path d="M32 10l5 5-14 14-5-5z" fill="#c98f4a" stroke="#7a4e1d" stroke-width="1.4" stroke-linejoin="round"/><path d="M18 24l5 5c-1 3-4 5-9 4 1-3 0-6 4-9z" fill="#1e88e5"/><circle cx="34" cy="26" r="2.7" fill="#e53935"/><circle cx="13" cy="14" r="2.7" fill="#fdd835"/><circle cx="39" cy="20" r="2.2" fill="#43a047"/></svg>';
 var PNT_ICON_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5C12.4 5 4 13 4 23.5 4 33 11.5 39 18 39h3c2.2 0 3.2 1.6 3.2 3 0 1.5 1.1 2.8 3.2 2.8C36 44.8 44 36 44 25.5 44 13.8 35.5 5 24 5z" fill="#f3e2c4" stroke="#8a6a3a" stroke-width="2" stroke-linejoin="round"/><circle cx="15" cy="22" r="3.6" fill="#e53935"/><circle cx="21.5" cy="13.5" r="3.6" fill="#fdd835"/><circle cx="32" cy="14" r="3.6" fill="#43a047"/><circle cx="37.5" cy="23.5" r="3.6" fill="#1e88e5"/></svg>';
 var GAME_KEY = 'gameStates', GAME_PLAY_KEY = 'gamePlay', GAME_PLAY_MAX = 6 * 3600 * 1000;
 var GAME_PAD_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="11" x2="10" y2="11"/><line x1="8" y1="9" x2="8" y2="13"/><line x1="15" y1="12" x2="15.01" y2="12"/><line x1="18" y1="10" x2="18.01" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></svg>';
@@ -6743,6 +6806,7 @@ function gameOpenPicker() {
   bd.innerHTML = '<div class="gp-card" role="dialog" aria-label="Oyun seç"><div class="gp-row">' +
     '<button type="button" class="gp-app" data-k="kuks" aria-label="Kuks Feva"><span class="gp-ic gp-kuks">' + GAME_BURGER_SVG + '</span><span class="gp-lab">Kuks Feva</span></button>' +
     '<button type="button" class="gp-app" data-k="paint" aria-label="Paint"><span class="gp-ic gp-paint">' + PNT_ICON_SVG + '</span><span class="gp-lab">Paint</span></button>' +
+    '<button type=\"button\" class=\"gp-app\" data-k=\"dnow\" aria-label=\"Dnow\"><span class=\"gp-ic gp-dnow\">' + DN_ICON_SVG + '</span><span class=\"gp-lab\">Dnow</span></button>' +
     '</div></div>';
   const close = () => { document.removeEventListener('keydown', onKey, true); try { bd.remove(); } catch (e) {} };
   const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); close(); } };
@@ -6753,7 +6817,7 @@ function gameOpenPicker() {
     e.stopPropagation();
     const b = e.target && e.target.closest ? e.target.closest('.gp-app') : null;
     if (!b) { if (e.target === bd) close(); return; }
-    const k = b.getAttribute('data-k') === 'paint' ? 'paint' : 'kuks';
+    const k = b.getAttribute('data-k') === 'paint' ? 'paint' : b.getAttribute('data-k') === 'dnow' ? 'dnow' : 'kuks';
     close();
     gameSendInvite(k);
   });
@@ -6762,15 +6826,16 @@ function gameOpenPicker() {
 }
 function gameBuildCard(msgDiv, id, name, own, fresh) {
   const el = document.createElement('div');
-  const kind = (typeof name === 'string' && name.indexOf(PNT_MARK) === 0) ? 'paint' : 'kuks';
+  const kind = (typeof name === 'string' && name.indexOf(PNT_MARK) === 0) ? 'paint' : (typeof name === 'string' && name.indexOf(DN_MARK) === 0) ? 'dnow' : 'kuks';
   if (kind === 'paint') name = name.slice(PNT_MARK.length);
+  else if (kind === 'dnow') name = name.slice(DN_MARK.length);
   el._kind = kind;
-  el.className = 'gm-card' + (kind === 'paint' ? ' pnt' : '');
-  el.innerHTML = '<div class="gm-bg"></div><div class="gm-ui"><div class="gm-head"><div class="gm-cover' + (kind === 'paint' ? ' pnt' : '') + '">' + (kind === 'paint' ? PNT_ICON_SVG : GAME_BURGER_SVG) + '</div><div class="gm-title"></div></div>' +
+  el.className = 'gm-card' + (kind === 'paint' ? ' pnt' : kind === 'dnow' ? ' dnow' : '');
+  el.innerHTML = '<div class="gm-bg"></div><div class="gm-ui"><div class="gm-head"><div class="gm-cover' + (kind === 'paint' ? ' pnt' : kind === 'dnow' ? ' dnow' : '') + '">' + (kind === 'paint' ? PNT_ICON_SVG : kind === 'dnow' ? DN_ICON_SVG : GAME_BURGER_SVG) + '</div><div class="gm-title"></div></div>' +
     '<button type="button" class="gm-join"><span class="gm-lab">Katıl ve Oyna</span><span class="gm-cnt">0/2</span></button></div>';
   const ti = el.querySelector('.gm-title');
   const b = document.createElement('b'); b.textContent = gameClean(name) || 'Biri';
-  ti.appendChild(b); ti.appendChild(document.createTextNode(kind === 'paint' ? ' seninle Paint oynamak istiyor!' : ' seninle Kuks Feva oynamak istiyor!'));
+  ti.appendChild(b); ti.appendChild(document.createTextNode(kind === 'paint' ? ' seninle Paint oynamak istiyor!' : kind === 'dnow' ? ' seninle Dnow oynamak istiyor!' : ' seninle Kuks Feva oynamak istiyor!'));
   const btn = el.querySelector('.gm-join'), lab = el.querySelector('.gm-lab'), cnt = el.querySelector('.gm-cnt');
   el._id = id;
   el._ts = fresh ? Date.now() : (msgTsOfId(id) || Date.now());
@@ -6846,7 +6911,7 @@ function gameSendInvite(kind) {
   if (!isConnected()) { flashStatus('Bağlantı yok, oyun daveti gönderilemedi'); return; }
   gameInvAt = Date.now();
   try { gmAuUnlock(); } catch (e) {} // dokunuş anında ses motorunu aç (oyun sesi sonradan çalabilsin)
-  sendTextNow(GAME_PREFIX + (kind === 'paint' ? PNT_MARK : '') + (gameClean(fullNick()) || 'Biri'));
+  sendTextNow(GAME_PREFIX + (kind === 'paint' ? PNT_MARK : kind === 'dnow' ? DN_MARK : '') + (gameClean(fullNick()) || 'Biri'));
 }
 function gameJoin(id) {
   if (gameIsClosed(id) || gameIsTimeout(id) || gameMine[id] || gameActive) return;
@@ -6919,6 +6984,7 @@ function gameMediaGuardTick() {
 }
 function gameKeyBlock(e) {
   if (!gameOver) return;
+  try { if (e.target && e.target.closest && e.target.closest('.dn-chat-in')) return; } catch (er) {}
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   e.stopPropagation(); e.preventDefault();
 }
@@ -6960,6 +7026,11 @@ function gameStart(id, restored) {
     ov.querySelector('.gm-bar-t').textContent = 'Paint';
     ov.querySelector('.gm-snd').style.display = 'none';
     try { pntInit(ov.querySelector('.gm-stage'), id); } catch (e) {}
+  } else if (gkind === 'dnow') {
+    ov.setAttribute('aria-label', 'Dnow');
+    ov.querySelector('.gm-bar-t').textContent = 'Dnow';
+    ov.querySelector('.gm-snd').style.display = 'none';
+    try { dnInit(ov.querySelector('.gm-stage'), id); } catch (e) {}
   } else {
     try { gmInit(ov.querySelector('.gm-stage'), id); } catch (e) {}
   }
@@ -6982,6 +7053,7 @@ function gameClose(id, fromPeer, solo, pdur) {
     document.removeEventListener('keydown', gameKeyBlock, true);
     document.removeEventListener('keyup', gameKeyBlock, true);
     try { gmStop(); } catch (e) {}
+    try { dnStop(); } catch (e) {}
     try { pntStop(); } catch (e) {}
     if (gameOver) { gameOver.remove(); gameOver = null; }
     gameInerted.forEach((ch) => { try { ch.inert = false; ch.removeAttribute('aria-hidden'); } catch (e) {} });
@@ -7004,7 +7076,7 @@ function receiveGameClose(d) {
 var pnt = null;
 var PNT_COLORS = ['#000000', '#e53935', '#fb8c00', '#fdd835', '#43a047', '#1e88e5', '#8e24aa', '#6d4c41'];
 var PNT_PEN_W = 0.011, PNT_ERA_W = 0.05;
-function pntInit(stage, id) {
+function pntInit(stage, id, withClear) {
   pntStop();
   stage.style.position = 'relative';
   const wrap = document.createElement('div');
@@ -7012,7 +7084,7 @@ function pntInit(stage, id) {
   wrap.innerHTML = '<div class="pnt-area"><canvas class="pnt-cv"></canvas></div><div class="pnt-tools"></div>';
   stage.appendChild(wrap);
   const area = wrap.querySelector('.pnt-area'), cv = wrap.querySelector('canvas'), tools = wrap.querySelector('.pnt-tools');
-  pnt = { id: id, wrap: wrap, area: area, cv: cv, c: cv.getContext('2d'), strokes: [], map: {}, color: PNT_COLORS[0], era: false, cur: null, out: null, flushT: 0, helloT: 0, peerA: 0, myA: 1, asp: 1, W: 1, H: 1, seq: 0, ro: null, tries: 0, pid: null };
+  pnt = { id: id, wrap: wrap, area: area, cv: cv, c: cv.getContext('2d'), strokes: [], map: {}, color: PNT_COLORS[0], era: false, cur: null, out: null, flushT: 0, helloT: 0, peerA: 0, myA: 1, asp: 1, W: 1, H: 1, seq: 0, ro: null, tries: 0, pid: null, ep: 0, clrWait: false, clrT: 0, clrBtn: null, ask: null };
   const P = pnt;
   // --- araç çubuğu ---
   const sws = [];
@@ -7079,6 +7151,37 @@ function pntInit(stage, id) {
   function paintTool() { tb.innerHTML = P.era ? ERA : PEN; tb.classList.toggle('era', P.era); tb.setAttribute('aria-label', P.era ? 'Silgi (kaleme dön)' : 'Kalem (silgiye geç)'); }
   tb.addEventListener('click', () => { P.era = !P.era; paintTool(); selPaint(); });
   tools.appendChild(tb);
+  if (!withClear) {
+  // Sayfayı temizle: silgi düğmesinin sağında; karşı tarafa onay isteği gider
+  const clr = document.createElement('button');
+  clr.type = 'button'; clr.className = 'pnt-tool pnt-clr'; clr.setAttribute('aria-label', 'Sayfayı temizle');
+  clr.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 11v5M14 11v5"/></svg>';
+  clr.addEventListener('mousedown', (e) => e.preventDefault()); // odak (klavye) hiçbir yere kaymasın
+  clr.addEventListener('click', () => pntAskClear());
+  tools.appendChild(clr); P.clrBtn = clr;
+  const ask = document.createElement('div');
+  ask.className = 'pnt-ask'; ask.setAttribute('role', 'alertdialog');
+  ask.innerHTML = '<span class="pnt-ask-t"></span><button type="button" class="y" aria-label="Temizlensin"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button><button type="button" class="n" aria-label="Reddet"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
+  ask.addEventListener('mousedown', (e) => e.preventDefault());
+  ask.querySelector('.y').addEventListener('click', () => {
+    if (pnt !== P) return;
+    pntClearAll(P.ep + 1);
+    try { if (isConnected()) conn.send({ type: 'paint-clr-ans', msgId: P.id, ok: 1, e: P.ep }); } catch (e) {}
+  });
+  ask.querySelector('.n').addEventListener('click', () => {
+    if (pnt !== P) return;
+    ask.classList.remove('show');
+    try { if (isConnected()) conn.send({ type: 'paint-clr-ans', msgId: P.id, ok: 0, e: P.ep }); } catch (e) {}
+  });
+  area.appendChild(ask); P.ask = ask;
+  }
+  if (withClear) {
+    const cb = document.createElement('button');
+    cb.type = 'button'; cb.className = 'pnt-tool'; cb.setAttribute('aria-label', 'Hepsini temizle');
+    cb.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 10v6M14 10v6"/></svg>';
+    cb.addEventListener('click', () => { if (pnt === P && !P.lock) pntClear(true); });
+    tools.appendChild(cb);
+  }
   paintTool(); selPaint();
   // --- tuval ölçüsü: iki tarafın alan oranının küçüğü (dikey olan ekrana göre) ---
   const layout = () => {
@@ -7103,7 +7206,7 @@ function pntInit(stage, id) {
   const pt = (e) => { const r = cv.getBoundingClientRect(); return [Math.max(0, Math.min(1, (e.clientX - r.left) / (r.width || 1))), Math.max(0, Math.min(1, (e.clientY - r.top) / (r.height || 1)))]; };
   const rd = (v) => Math.round(v * 10000) / 10000;
   cv.addEventListener('pointerdown', (e) => {
-    if (P.cur || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    if (P.lock || P.cur || (e.pointerType === 'mouse' && e.button !== 0)) return;
     e.preventDefault();
     try { cv.setPointerCapture(e.pointerId); } catch (er) {}
     P.pid = e.pointerId;
@@ -7161,6 +7264,44 @@ function receivePaintHello(d) {
   if (!d.r) pntHello(1);
   if (changed && P.layout) P.layout();
 }
+// --- Sayfa temizleme isteği ---
+function pntAskClear() {
+  const P = pnt; if (!P || P.clrWait) return;
+  try { if (!isConnected()) return; } catch (e) { return; }
+  let nm = ''; try { nm = String(fullNick() || '').slice(0, 40); } catch (e) {}
+  try { conn.send({ type: 'paint-clr-ask', msgId: P.id, n: nm }); } catch (e) { return; }
+  P.clrWait = true;
+  if (P.clrBtn) P.clrBtn.classList.add('wait');
+  if (P.clrT) clearTimeout(P.clrT);
+  P.clrT = setTimeout(() => { P.clrT = 0; if (pnt === P) { P.clrWait = false; if (P.clrBtn) P.clrBtn.classList.remove('wait'); } }, 15000);
+}
+function pntClrIdle(P) {
+  P.clrWait = false;
+  if (P.clrT) { clearTimeout(P.clrT); P.clrT = 0; }
+  if (P.clrBtn) P.clrBtn.classList.remove('wait');
+}
+function pntClearAll(ep) {
+  const P = pnt; if (!P) return;
+  P.ep = ep;
+  P.strokes = []; P.map = {}; P.cur = null; P.pid = null; P.out = null;
+  if (P.flushT) { clearTimeout(P.flushT); P.flushT = 0; }
+  if (P.ask) P.ask.classList.remove('show');
+  pntClrIdle(P);
+  pntRedraw();
+}
+function receivePaintClrAsk(d) {
+  const P = pnt;
+  if (!P || !d || d.msgId !== P.id || !P.ask) return;
+  const nm = (typeof d.n === 'string' ? d.n : '').trim().slice(0, 40) || 'Karşı taraf';
+  P.ask.querySelector('.pnt-ask-t').textContent = nm + ' sayfayı temizlemek istiyor';
+  P.ask.classList.remove('show'); void P.ask.offsetWidth; P.ask.classList.add('show');
+}
+function receivePaintClrAns(d) {
+  const P = pnt;
+  if (!P || !d || d.msgId !== P.id) return;
+  if (d.ok && typeof d.e === 'number' && isFinite(d.e) && d.e > P.ep) { pntClearAll(d.e); return; }
+  if (!d.ok) pntClrIdle(P); // reddedildi: istek sessizce boşa gider
+}
 function pntSchedule() { const P = pnt; if (P && !P.flushT) P.flushT = setTimeout(pntFlush, 40); }
 function pntFlush() {
   const P = pnt; if (!P) return;
@@ -7168,12 +7309,13 @@ function pntFlush() {
   const o = P.out; if (!o || !o.p.length) return;
   P.out = null;
   for (let i = 0; i < o.p.length; i += 150) {
-    try { if (isConnected()) conn.send({ type: 'paint-s', msgId: P.id, k: o.k, c: o.c, w: o.w, p: o.p.slice(i, i + 150) }); } catch (e) {}
+    try { if (isConnected()) conn.send({ type: 'paint-s', msgId: P.id, e: P.ep, k: o.k, c: o.c, w: o.w, p: o.p.slice(i, i + 150) }); } catch (e) {}
   }
 }
 function receivePaintS(d) {
   const P = pnt;
   if (!P || !d || d.msgId !== P.id || typeof d.k !== 'string' || d.k.length > 40 || !Array.isArray(d.p)) return;
+  if ((d.e | 0) !== P.ep) return; // temizlemeden önceki (eski dönem) çizgiler atılır
   if (typeof d.c !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(d.c) || typeof d.w !== 'number' || !isFinite(d.w)) return;
   const key = 'r' + d.k;
   let st = P.map[key];
@@ -7211,13 +7353,278 @@ function pntRedraw() {
     for (let i = 1; i < st.p.length; i++) pntSeg(st, st.p[i - 1], st.p[i]);
   }
 }
+function pntClear(send) {
+  const P = pnt; if (!P) return;
+  P.strokes = []; P.map = {}; P.cur = null; P.pid = null; P.out = null;
+  if (P.flushT) { clearTimeout(P.flushT); P.flushT = 0; }
+  pntRedraw();
+  if (send) { try { if (isConnected()) conn.send({ type: 'paint-clr', msgId: P.id }); } catch (e) {} }
+}
+function receivePaintClr(d) {
+  const P = pnt;
+  if (!P || !d || d.msgId !== P.id) return;
+  pntClear(false);
+}
 function pntStop() {
   const P = pnt; if (!P) return;
   pnt = null;
   try { if (P.flushT) clearTimeout(P.flushT); } catch (e) {}
   try { if (P.helloT) clearInterval(P.helloT); } catch (e) {}
+  try { if (P.clrT) clearTimeout(P.clrT); } catch (e) {}
   try { if (P.ro) P.ro.disconnect(); } catch (e) {}
   try { P.wrap.remove(); } catch (e) {}
+}
+
+/* ===== Dnow: gartic mantığında çiz-bil. Ev sahibi (kimlik sırası küçük taraf) turu, kelimeyi ve süreyi yönetir; çizim Paint tuvaliyle ortak ===== */
+var dn = null;
+var DN_DUR = 90000, DN_CD = 10000;
+var DN_WORDS = ["araba", "bulut", "güneş", "ay", "yıldız", "ağaç", "çiçek", "ev", "kapı", "pencere", "masa", "sandalye", "kitap", "kalem", "silgi", "çanta", "gözlük", "şapka", "ayakkabı", "çorap", "elbise", "tişört", "pantolon", "eldiven", "atkı", "şemsiye", "saat", "telefon", "bilgisayar", "klavye", "televizyon", "kumanda", "lamba", "ampul", "anahtar", "kilit", "makas", "çekiç", "testere", "merdiven", "bisiklet", "motosiklet", "otobüs", "tren", "uçak", "helikopter", "gemi", "denizaltı", "roket", "balon", "uçurtma", "balık", "kedi", "köpek", "kuş", "at", "inek", "koyun", "tavuk", "horoz", "ördek", "kurbağa", "yılan", "kaplumbağa", "tavşan", "fil", "zürafa", "aslan", "maymun", "penguen", "yunus", "balina", "köpekbalığı", "ahtapot", "yengeç", "kelebek", "arı", "örümcek", "karınca", "salyangoz uğur", "böceği", "dinozor", "ejderha", "robot", "hayalet", "kale", "köprü", "kule", "deniz feneri", "çadır", "ateş", "kar tanesi", "kardan adam", "yağmur", "şimşek", "gökkuşağı", "dağ", "volkan", "ada", "palmiye", "kaktüs", "mantar", "elma", "armut", "muz", "çilek", "karpuz", "üzüm", "portakal", "limon", "havuç", "domates", "patates", "soğan", "ekmek", "peynir", "yumurta", "pizza", "hamburger", "dondurma", "pasta", "simit", "çay bardağı", "çaydanlık", "kaşık", "çatal", "bıçak", "tabak", "bardak", "buzdolabı", "çekmece", "yüzük parmağı", "dolap", "yatak", "yastık", "battaniye", "ayna", "halı", "perde", "fırın", "süpürge", "kova", "sabun", "diş fırçası", "tarak", "havlu", "göz", "kulak", "burun", "ağız", "dil", "diş", "el", "ayak", "kalp", "kafatası", "iskelet", "gitar", "piyano", "davul", "keman", "mikrofon", "kulaklık", "kamera", "fotoğraf makinesi", "top", "basketbol potası", "raket", "olta", "çıpa", "dümen", "pusula", "harita", "hazine sandığı", "taç", "kılıç", "kalkan", "ok ve yay", "bayrak", "hediye kutusu", "mum", "doğum günü pastası", "çam ağacı", "posta kutusu", "trafik lambası", "yol levhası", "yel değirmeni", "kuyu", "çan", "saat kulesi", "piramit", "tekerlek", "vida", "somun", "ip", "düğüm", "makara", "yuva", "arı kovanı", "bal peteği"];
+var DN_EXTRA = ["Hercy", "Idaona", "Idana", "Montauk Air Force Station", "Eitin", "Nora", "Via", "Zaman Çarkı", "Evrensel", "Tünel", "Hlaa", "Momo", "Blusa", "Sepia", "MTC", "Leap", "Minse", "Chou", "Kara Madde Canavarı", "Ufo", "Skie", "Naturi", "Codec", "Üçlü Üçgen", "İkili Doğru", "Beşli Beşgen", "Dörtlü Dörtgen", "Alwer", "Loli Kavağı", "Locta", "Ceptil", "Uzak Uzay", "Galaksi", "Dünya", "Pinky Tinky", "Mühür", "Intent Göz", "Maviler Ağacı", "Blusa Adası", "Brac", "Ariel"];
+var DN_SEND_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.25 12L3.75 20.5L6.25 14.5L14.25 12L6.25 9.5L3.75 3.5Z"/></svg>';
+function dnNorm(s) {
+  let t = '';
+  try { t = String(s || '').toLocaleLowerCase('tr'); } catch (e) { t = String(s || '').toLowerCase(); }
+  return t.replace(/[çÇ]/g, 'c').replace(/[ğĞ]/g, 'g').replace(/[ıİ]/g, 'i').replace(/i\u0307/g, 'i').replace(/[öÖ]/g, 'o').replace(/[şŞ]/g, 's').replace(/[üÜ]/g, 'u').replace(/[âÂ]/g, 'a').replace(/[^a-z0-9]/g, '');
+}
+function dnLev(a, b) {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = [], cur = [];
+  for (let j = 0; j <= n; j++) prev[j] = j;
+  for (let i = 1; i <= m; i++) {
+    cur[0] = i;
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    const t = prev; prev = cur; cur = t;
+  }
+  return prev[n];
+}
+function dnPattern(w) { return String(w || '').split('').map((c) => (c === ' ' ? '\u00a0\u00a0' : '_')).join(' '); }
+function dnIDraw() { const D = dn; return !!D && (D.dh === D.host); }
+function dnInit(stage, id) {
+  dnStop();
+  stage.style.position = 'relative';
+  const wrap = document.createElement('div');
+  wrap.className = 'dn-wrap';
+  wrap.innerHTML = '<div class="dn-top"><div class="dn-msgs"></div><div class="dn-row"><input type="text" class="dn-nick dn-chat-in" placeholder="İsim" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><input type="text" class="dn-in dn-chat-in" placeholder="Mesaj yaz..." maxlength="200" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="send" data-lpignore="true" data-1p-ignore="true" data-form-type="other"><button type="button" class="dn-send" aria-label="Gönder">' + DN_SEND_SVG + '</button><div class="dn-lock"></div></div></div>' +
+    '<div class="dn-mid"><div class="dn-fill"></div><div class="dn-cd"></div></div>' +
+    '<div class="dn-bot nodraw"><div class="dn-hint"></div><div class="dn-cvh"></div><div class="dn-opts"></div></div>';
+  stage.appendChild(wrap);
+  const q = (s) => wrap.querySelector(s);
+  const D = dn = {
+    id: id, host: String(myId) < String(friendId), wrap: wrap, msgs: q('.dn-msgs'), nick: q('.dn-nick'), inp: q('.dn-in'), send: q('.dn-send'),
+    lock: q('.dn-lock'), fill: q('.dn-fill'), cd: q('.dn-cd'), hint: q('.dn-hint'), bot: q('.dn-bot'), cvh: q('.dn-cvh'), opts: q('.dn-opts'),
+    ph: 'wait', dh: false, word: null, optsArr: null, endAt: 0, cdAt: 0, round: 0, clr: -1, snap: -1, solved: false, pat: '', tk: 0, hello: 0, seq: 0, mids: {}, optKey: ''
+  };
+  // İsim kutusu: ayarlardaki isim kutusunun aynısı (aynı değer, aynı kayıt; ayarlarda gizliyse burada da gizli)
+  D.nick.value = nickInput.value;
+  D.nick.addEventListener('input', () => {
+    nickInput.value = D.nick.value; lsSet('nick', D.nick.value);
+    try { nickInput.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+    try { applyNickState(); } catch (e) {}
+  });
+  D.send.addEventListener('mousedown', (e) => e.preventDefault());
+  D.send.addEventListener('click', () => dnSend());
+  D.inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); dnSend(); } });
+  try { pntInit(D.cvh, id, true); } catch (e) {}
+  dnApplyPhase();
+  D.tk = setInterval(dnTick, 100);
+  if (!D.host) {
+    const hi = () => { if (dn !== D || D.ph !== 'wait') { clearInterval(D.hello); D.hello = 0; return; } try { if (isConnected()) conn.send({ type: 'dn-hello', msgId: id }); } catch (e) {} };
+    D.hello = setInterval(hi, 1500); hi();
+  }
+}
+function dnStop() {
+  const D = dn; if (!D) return;
+  dn = null;
+  try { clearInterval(D.tk); } catch (e) {}
+  try { clearInterval(D.hello); } catch (e) {}
+  try { D.wrap.remove(); } catch (e) {}
+}
+function dnCanChat() { const D = dn; return !!D && !(dnIDraw() && (D.ph === 'pick' || D.ph === 'draw')); }
+function dnScroll() { const D = dn; if (D) D.msgs.scrollTop = D.msgs.scrollHeight; }
+function dnAddMsg(text, name, own, mid) {
+  const D = dn; if (!D) return null;
+  const row = document.createElement('div'); row.className = 'dn-m' + (own ? ' own' : '');
+  const b = document.createElement('div'); b.className = 'dn-b' + (name ? '' : ' nameless');
+  if (name) { const n = document.createElement('span'); n.className = 'dn-n'; n.textContent = name; b.appendChild(n); }
+  const t = document.createElement('span'); t.className = 'dn-t'; t.textContent = text; b.appendChild(t);
+  row.appendChild(b);
+  D.msgs.appendChild(row);
+  while (D.msgs.children.length > 300) D.msgs.removeChild(D.msgs.firstChild);
+  if (mid) D.mids[mid] = { row: row, b: b };
+  dnScroll();
+  return row;
+}
+function dnSys(text) {
+  const D = dn; if (!D) return;
+  const e = document.createElement('div'); e.className = 'dn-sys'; e.textContent = text; D.msgs.appendChild(e); dnScroll();
+}
+function dnMark(mid, r) {
+  const D = dn; if (!D) return;
+  const o = D.mids[mid]; if (!o) return;
+  if (r === 'ok') { o.b.classList.add('ok'); const c = o.row.querySelector('.dn-close'); if (c) c.remove(); }
+  else if (r === 'close' && !o.b.classList.contains('ok') && !o.row.querySelector('.dn-close')) {
+    const c = document.createElement('span'); c.className = 'dn-close'; c.textContent = 'çok yakın'; o.row.appendChild(c);
+  }
+}
+function dnEval(text, fromGuest) {
+  const D = dn; if (!D || D.ph !== 'draw' || !D.word) return null;
+  if (fromGuest ? !dnIDraw() : dnIDraw()) return null; // yalnızca bilmeye çalışan kişinin mesajı sayılır
+  const a = dnNorm(text), b = dnNorm(D.word);
+  if (!a || !b) return null;
+  if (a === b) return 'ok';
+  const L = b.length, lim = L >= 5 ? 2 : (L >= 3 ? 1 : 0);
+  if (lim && Math.abs(a.length - L) <= lim && dnLev(a, b) <= lim) return 'close';
+  return null;
+}
+function dnSend() {
+  const D = dn; if (!D || !dnCanChat()) return;
+  const t = D.inp.value.trim().slice(0, 200); if (!t) return;
+  D.inp.value = '';
+  const n = gameClean(fullNick());
+  const m = 'd' + Date.now().toString(36) + (D.seq++).toString(36);
+  dnAddMsg(t, n, true, m);
+  let r = null;
+  if (D.host) { r = dnEval(t, false); if (r) dnMark(m, r); }
+  try { if (isConnected()) conn.send({ type: 'dn-chat', msgId: D.id, m: m, t: t, n: n, r: r }); } catch (e) {}
+  if (r === 'ok') dnEnd(true);
+  try { D.inp.focus({ preventScroll: true }); } catch (e) {}
+}
+function receiveDnChat(d) {
+  const D = dn;
+  if (!D || !d || d.msgId !== D.id || typeof d.t !== 'string') return;
+  const t = d.t.slice(0, 200), n = gameClean(d.n), m = String(d.m || '').slice(0, 40);
+  if (!t.trim()) return;
+  dnAddMsg(t, n, false, m);
+  if (D.host) {
+    const r = dnEval(t, true);
+    if (r) { dnMark(m, r); try { if (isConnected()) conn.send({ type: 'dn-res', msgId: D.id, m: m, r: r }); } catch (e) {} }
+    if (r === 'ok') dnEnd(true);
+  } else if (d.r === 'ok' || d.r === 'close') dnMark(m, d.r);
+}
+function receiveDnRes(d) {
+  const D = dn;
+  if (!D || !d || d.msgId !== D.id || (d.r !== 'ok' && d.r !== 'close')) return;
+  dnMark(String(d.m || '').slice(0, 40), d.r);
+}
+function receiveDnHello(d) {
+  const D = dn;
+  if (!D || !D.host || !d || d.msgId !== D.id) return;
+  if (D.ph === 'wait') dnStartRound(); else dnBroadcast();
+}
+function dnStartRound() {
+  const D = dn; if (!D || !D.host) return;
+  D.round++;
+  D.dh = D.round === 1 ? Math.random() < 0.5 : !D.dh;
+  const pool = DN_WORDS.concat(DN_EXTRA);
+  const a = pool[Math.floor(Math.random() * pool.length)];
+  let b = a; while (b === a) b = pool[Math.floor(Math.random() * pool.length)];
+  D.optsArr = [a, b]; D.word = null; D.solved = false; D.ph = 'pick'; D.endAt = Date.now() + DN_DUR;
+  dnApplyPhase(); dnBroadcast();
+}
+function dnPick(i) {
+  const D = dn; if (!D || !D.host || D.ph !== 'pick' || !D.optsArr || !D.optsArr[i]) return;
+  D.word = D.optsArr[i]; D.ph = 'draw';
+  dnApplyPhase(); dnBroadcast();
+}
+function dnEnd(solved) {
+  const D = dn; if (!D || !D.host || (D.ph !== 'pick' && D.ph !== 'draw')) return;
+  if (!D.word) D.word = D.optsArr[0];
+  D.solved = !!solved; D.ph = 'cd'; D.cdAt = Date.now() + DN_CD;
+  dnApplyPhase(); dnBroadcast();
+}
+function dnBroadcast() {
+  const D = dn; if (!D || !D.host || !isConnected()) return;
+  const m = { type: 'dn-st', msgId: D.id, ph: D.ph, dh: D.dh ? 1 : 0, rd: D.round, rem: Math.max(0, (D.ph === 'cd' ? D.cdAt : D.endAt) - Date.now()) };
+  if (D.ph === 'pick') { if (!D.dh) m.o = D.optsArr; }
+  else if (D.ph === 'draw') { if (D.dh) m.pat = dnPattern(D.word); else m.w = D.word; }
+  else if (D.ph === 'cd') { m.w = D.word; m.ok = D.solved ? 1 : 0; }
+  try { conn.send(m); } catch (e) {}
+}
+function receiveDnSt(d) {
+  const D = dn;
+  if (!D || D.host || !d || d.msgId !== D.id || (d.ph !== 'pick' && d.ph !== 'draw' && d.ph !== 'cd')) return;
+  const rem = Math.max(0, Math.min(DN_DUR, +d.rem || 0));
+  D.ph = d.ph; D.dh = !!d.dh; D.round = +d.rd || 0;
+  if (d.ph === 'cd') D.cdAt = Date.now() + rem; else D.endAt = Date.now() + rem;
+  D.optsArr = Array.isArray(d.o) ? d.o.slice(0, 2).map((x) => String(x).slice(0, 40)) : null;
+  D.word = typeof d.w === 'string' ? d.w.slice(0, 40) : null;
+  D.pat = typeof d.pat === 'string' ? d.pat.slice(0, 80) : '';
+  D.solved = !!d.ok;
+  dnApplyPhase();
+}
+function receiveDnPick(d) {
+  const D = dn;
+  if (!D || !D.host || !d || d.msgId !== D.id || D.dh) return; // seçimi yalnızca çizen (karşı) taraf yapabilir
+  dnPick(d.i === 1 ? 1 : 0);
+}
+function dnSnapshot() {
+  const D = dn, P = pnt; if (!D || !P || !P.cv || !P.cv.width) return;
+  let url = '';
+  try {
+    const w = Math.min(360, P.cv.width), h = Math.max(1, Math.round(P.cv.height * w / P.cv.width));
+    const t = document.createElement('canvas'); t.width = w; t.height = h;
+    const c = t.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, w, h); c.drawImage(P.cv, 0, 0, w, h);
+    url = t.toDataURL('image/jpeg', 0.85);
+  } catch (e) {}
+  if (url) { const im = document.createElement('img'); im.className = 'dn-img'; im.alt = 'Çizim'; im.src = url; D.msgs.appendChild(im); }
+  dnSys('Kelime: ' + (D.word || '?') + (D.solved ? ' \u2713' : ' \u2022 bilen olmadı'));
+  dnScroll();
+}
+function dnApplyPhase() {
+  const D = dn; if (!D) return;
+  const me = dnIDraw(), P = pnt, drawing = me && D.ph === 'draw';
+  if (D.ph === 'pick' && D.clr !== D.round) { D.clr = D.round; if (P) pntClear(false); }
+  if (D.ph === 'cd' && D.snap !== D.round) { D.snap = D.round; dnSnapshot(); }
+  if (P) {
+    P.lock = !drawing;
+    if (P.lock && P.cur) { P.cur = null; P.pid = null; pntFlush(); }
+  }
+  D.bot.classList.toggle('nodraw', !drawing);
+  const locked = me && (D.ph === 'pick' || D.ph === 'draw');
+  D.lock.classList.toggle('on', locked);
+  D.inp.disabled = locked; D.send.disabled = locked;
+  if (locked) { try { D.inp.blur(); } catch (e) {} }
+  let h = '';
+  if (D.ph === 'wait') h = 'Karşı taraf bekleniyor...';
+  else if (D.ph === 'pick') h = me ? 'Bir kelime seç' : 'Karşı taraf kelime seçiyor...';
+  else if (D.ph === 'draw') h = me ? ('Çiz: ' + (D.word || '')) : (D.pat || '');
+  else if (D.ph === 'cd') h = 'Kelime: ' + (D.word || '') + (D.solved ? ' \u2713' : '');
+  if (D.hint.textContent !== h) D.hint.textContent = h;
+  // Kelime seçenekleri (yalnızca çizen kişide, çizime başlamadan önce)
+  const key = (me && D.ph === 'pick' && D.optsArr) ? D.round + ':' + D.optsArr.join('|') : '';
+  if (key !== D.optKey) {
+    D.optKey = key; D.opts.innerHTML = '';
+    if (key) {
+      const t = document.createElement('div'); t.className = 'dn-opt-t'; t.textContent = 'Kelimeni seç'; D.opts.appendChild(t);
+      D.optsArr.forEach((w, i) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'dn-opt'; b.textContent = w;
+        b.addEventListener('click', () => {
+          if (!dn || D.ph !== 'pick') return;
+          if (D.host) dnPick(i); else { try { if (isConnected()) conn.send({ type: 'dn-pick', msgId: D.id, i: i }); } catch (e) {} }
+          D.opts.classList.remove('on');
+        });
+        D.opts.appendChild(b);
+      });
+    }
+    D.opts.classList.toggle('on', !!key);
+  }
+  dnTick();
+}
+function dnTick() {
+  const D = dn; if (!D) return;
+  const now = Date.now();
+  if (D.ph === 'pick' || D.ph === 'draw') {
+    const f = Math.max(0, Math.min(1, (D.endAt - now) / DN_DUR));
+    D.fill.style.width = (f * 100).toFixed(2) + '%';
+    if (D.cd.classList.contains('on')) D.cd.classList.remove('on');
+    if (D.host && now >= D.endAt) dnEnd(false);
+  } else if (D.ph === 'cd') {
+    D.fill.style.width = '0%';
+    const sec = Math.ceil((D.cdAt - now) / 1000);
+    if (sec > 0) { const s = String(sec); if (D.cd.textContent !== s) D.cd.textContent = s; D.cd.classList.add('on'); }
+    else D.cd.classList.remove('on');
+    if (D.host && now >= D.cdAt) dnStartRound();
+  } else D.fill.style.width = '0%';
 }
 
 /* ===== Kuks Feva oyunu: kuşbakışı, iki kişilik. Ev sahibi (kimlik sırası küçük taraf) oyunu işletir, durumu saniyede 5 kez karşıya yollar (karşı tarafın tıklaması gelince hemen ayrıca yollar); karşı taraf yalnızca tıklamalarını yollar ===== */
