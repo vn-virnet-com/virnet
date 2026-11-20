@@ -1755,10 +1755,6 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 /* APK: üstteki sahte durum çubuğu (saat / wifi / pil) oyunlarda da görünür kalsın; oyun penceresi onun altında başlar */
 html.vn-fs #gm-over { top: var(--vn-sb, 0px); height: calc(100% - var(--vn-sb, 0px)); height: calc(100dvh - var(--vn-sb, 0px)); }
 html.vn-fs .gm-bar { height: 46px; padding-top: 0; }
-/* Oyun/paint açıkken üstteki sahte durum çubuğu (saat / wifi / pil) net kalsın: oyun penceresi kendi kutusuna kırpılır, şerit her şeyin üstünde ve bulanıklaştırılmaz */
-html.vn-fs #gm-over { overflow: hidden; clip-path: inset(0); }
-html.vn-fs #gm-picker { top: var(--vn-sb, 0px); }
-html.vn-fs body.gm-on #vn-sysbar { z-index: 2147483600; -webkit-backdrop-filter: none; backdrop-filter: none; filter: none; opacity: 1; }
 .gm-bar-t { font: 700 14px/1 'Lexend', sans-serif; letter-spacing: .3px; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
 .gm-x { position: relative; isolation: isolate; overflow: hidden; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #fff; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; border: 1px solid var(--yt-a28); background: radial-gradient(120% 110% at 28% 8%, color-mix(in srgb, var(--bad) 70%, #fff) 0%, transparent 58%), linear-gradient(160deg, color-mix(in srgb, var(--bad) 78%, transparent) 0%, color-mix(in srgb, var(--bad) 45%, transparent) 100%); box-shadow: inset 0 1.5px 1px var(--yt-a60), inset 0 -2px 3px var(--yt-a20), 0 3px 8px rgba(0,0,0,.34); transition: transform .12s; }
 .gm-x:active { transform: scale(.9); }
