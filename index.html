@@ -13408,9 +13408,9 @@ function pfRender() {
   }
   function batt(p, chg) {
     p = Math.max(0, Math.min(100, Math.round(p)));
-    // Sabit renkli hap şekli (doluluğa göre dolma yok): şarjda açık fıstık yeşili + siyah yazı; %30 altı açık kırmızı + siyah yazı; normalde tarih / gönder tuşu zemini + yazı rengi
-    var bg = chg ? '#a8dc6e' : (p < 30 ? '#ff6b6b' : 'var(--send-bg)');
-    var fg = (chg || p < 30) ? '#000' : 'var(--send-ico)';
+    // Sabit renkli hap şekli (doluluğa göre dolma yok): şarjda açık fıstık yeşili + siyah yazı; %30 ve altı açık kırmızı + siyah yazı; %31-50 açık sarı + siyah yazı; normalde tarih / gönder tuşu zemini + yazı rengi
+    var bg = chg ? '#a8dc6e' : (p <= 30 ? '#ff6b6b' : (p <= 50 ? '#ffe566' : 'var(--send-bg)'));
+    var fg = (chg || p <= 50) ? '#000' : 'var(--send-ico)';
     var fs = p >= 100 ? 9.4 : 11;
     var ty = (7 + fs * 0.355).toFixed(2);   // rakamların alt çizgisi: dikey orta (7) + rakam yüksekliğinin yarısı (~0,71em / 2)
     return '<svg width="31" height="14" viewBox="0 0 31 14">'
