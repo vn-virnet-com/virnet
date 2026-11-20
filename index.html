@@ -1752,6 +1752,9 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 #gm-over { position: fixed; left: 0; top: 0; width: 100%; height: 100%; height: 100dvh; z-index: 2147483000; display: flex; flex-direction: column; background: #000; color: var(--c-fff); font-family: 'Lexend', sans-serif; touch-action: none; overscroll-behavior: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; animation: gmIn .22s ease; }
 @keyframes gmIn { from { opacity: 0; } to { opacity: 1; } }
 .gm-bar { position: relative; isolation: isolate; flex: 0 0 auto; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; height: calc(46px + var(--vn-top)); padding: var(--vn-top) 8px 0 16px; background: linear-gradient(160deg, color-mix(in srgb, var(--c-fff) 14%, transparent) 0%, color-mix(in srgb, var(--c-fff) 4%, transparent) 55%, color-mix(in srgb, var(--c-fff) 8%, transparent) 100%), color-mix(in srgb, var(--c-1a) 92%, #000); border-bottom: 1px solid var(--yt-a20); box-shadow: inset 0 1px 0 var(--yt-a35), 0 6px 18px rgba(0,0,0,.45); }
+/* APK: üstteki sahte durum çubuğu (saat / wifi / pil) oyunlarda da görünür kalsın; oyun penceresi onun altında başlar */
+html.vn-fs #gm-over { top: var(--vn-sb, 0px); height: calc(100% - var(--vn-sb, 0px)); height: calc(100dvh - var(--vn-sb, 0px)); }
+html.vn-fs .gm-bar { height: 46px; padding-top: 0; }
 .gm-bar-t { font: 700 14px/1 'Lexend', sans-serif; letter-spacing: .3px; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
 .gm-x { position: relative; isolation: isolate; overflow: hidden; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #fff; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; border: 1px solid var(--yt-a28); background: radial-gradient(120% 110% at 28% 8%, color-mix(in srgb, var(--bad) 70%, #fff) 0%, transparent 58%), linear-gradient(160deg, color-mix(in srgb, var(--bad) 78%, transparent) 0%, color-mix(in srgb, var(--bad) 45%, transparent) 100%); box-shadow: inset 0 1.5px 1px var(--yt-a60), inset 0 -2px 3px var(--yt-a20), 0 3px 8px rgba(0,0,0,.34); transition: transform .12s; }
 .gm-x:active { transform: scale(.9); }
@@ -1781,7 +1784,7 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 .gm-cover.dnow { background: linear-gradient(145deg, #d9f1ff, #b9a8ff); }
 .gm-card.dnow .gm-bg { background: radial-gradient(60% 70% at 20% 30%, #7fe0c3, transparent 70%), radial-gradient(60% 70% at 85% 80%, #8f7bff, transparent 70%); }
 .dn-wrap { position: absolute; top: 0; bottom: 0; left: 50%; width: min(100%, calc((100vh - 46px - var(--vn-top, 0px)) * .5625)); width: min(100%, calc((100dvh - 46px - var(--vn-top, 0px)) * .5625)); transform: translateX(-50%); display: flex; flex-direction: column; background: #1b1b1f; overflow: hidden; }
-.dn-top { position: relative; flex: 1 1 0; min-height: 52px; display: flex; flex-direction: column; background: #141417; }
+.dn-top { position: relative; flex: 1 1 0; min-height: 52px; display: flex; flex-direction: column; background: var(--c-000); }
 .dn-msgs { flex: 1 1 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 8px 10px; display: flex; flex-direction: column; gap: 5px; -webkit-user-select: text; user-select: text; }
 .dn-m { display: flex; align-items: flex-end; gap: 6px; max-width: 84%; align-self: flex-start; }
 .dn-m.own { align-self: flex-end; flex-direction: row-reverse; }
@@ -1792,14 +1795,24 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 .dn-close { flex: 0 0 auto; font-size: 11px; font-weight: 600; color: #ffcc66; white-space: nowrap; }
 .dn-sys { align-self: center; font-size: 12px; opacity: .8; color: #fff; text-align: center; }
 .dn-img { align-self: center; width: 56%; max-width: 230px; border-radius: 12px; background: #fff; display: block; }
-.dn-row { flex: 0 0 auto; display: flex; align-items: stretch; gap: 6px; padding: 6px 8px; background: #141417; }
-.dn-nick, .dn-in { box-sizing: border-box; min-width: 0; height: 38px; padding: 0 11px; border-radius: 19px; border: 1px solid #3a3a42; background: #26262b; color: #fff; font: 500 16px/1 'Lexend', sans-serif; outline: none; -webkit-user-select: text; user-select: text; }
-.dn-nick { flex: 0 0 24%; font-weight: 700; }
-.dn-in { flex: 1 1 auto; }
+.dn-row { flex: 0 0 auto; display: flex; align-items: flex-end; padding: 15px; background: var(--c-000); }
+@media (min-width: 769px) { .dn-row { padding: var(--dock-gap, 15px); } }
+/* Sohbet satırı: gerçek sohbetteki isim kutusu, metin kutusu ve gönder tuşunun birebir aynısı (aynı renk/ölçü/köşe; gönder tuşunda uzun basma, sürükleme, ses kaydı yok) */
+.dn-nick, .dn-in { box-sizing: border-box; min-width: 0; height: var(--dock-h, 42px); background: var(--c-111); border: 1px solid var(--c-33); font-size: 16px; outline: none; -webkit-user-select: text; user-select: text; }
+.dn-nick { flex: 0 0 auto; width: 70px; min-width: 70px; color: var(--c-88); padding: 9px 5px; text-align: center; border-radius: var(--r-lg) 0 0 var(--r-lg); border-right: none; }
+@media (min-width: 769px) { .dn-nick { width: 120px; min-width: 120px; padding: 9px 8px; } .dn-in { padding: 0 18px; } }
+.dn-in { flex: 1 1 auto; color: var(--c-fff); padding: 0 15px; border-radius: 0; border-right: none; }
+.dn-in.nameless { font-weight: 700; }
+.dn-in::placeholder { color: var(--c-fff); opacity: .5; }
+.dn-in.nameless::placeholder { font-weight: 400; }
+.dn-in:disabled { opacity: .3; cursor: not-allowed; }
+.dn-nick:focus, .dn-in:focus { border-color: var(--accent) !important; border-right: 1px solid var(--accent) !important; box-shadow: none; position: relative; z-index: 2; }
 body.nick-hidden .dn-nick { display: none; }
-.dn-send { flex: 0 0 auto; width: 38px; height: 38px; padding: 0; border-radius: 50%; border: 0; background: #4da3ff; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; }
-.dn-send svg { width: 20px; height: 20px; fill: currentColor; }
-.dn-send:disabled { opacity: .45; }
+body.nick-hidden .dn-in { border-radius: var(--r-lg) 0 0 var(--r-lg); }
+.dn-send { flex: 0 0 auto; width: var(--dock-h, 42px); min-width: var(--dock-h, 42px); height: var(--dock-h, 42px); padding: 0; background: var(--send-bg); color: var(--send-ico); border: 1px solid var(--c-33); border-radius: 0 var(--r-lg) var(--r-lg) 0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color .12s ease; touch-action: manipulation; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.dn-send:active { background: color-mix(in srgb, var(--send-bg) 66%, #000); }
+.dn-send .sp-ico { width: 26px; height: 26px; display: block; pointer-events: none; fill: currentColor; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
+.dn-send:disabled { opacity: .3; cursor: not-allowed; }
 .dn-lock { display: none; position: absolute; inset: 0; z-index: 3; background: rgba(110, 110, 118, .55); -webkit-backdrop-filter: grayscale(1); backdrop-filter: grayscale(1); }
 .dn-lock.on { display: block; }
 .dn-mid { position: relative; flex: 0 0 7px; background: #000; z-index: 4; }
@@ -1810,6 +1823,15 @@ body.nick-hidden .dn-nick { display: none; }
 .dn-hint { flex: 0 0 auto; box-sizing: border-box; min-height: 30px; padding: 6px 8px; text-align: center; background: #111; color: #fff; font: 600 14px/18px 'Lexend', sans-serif; letter-spacing: 1px; }
 .dn-cvh { position: relative; flex: 1 1 0; min-height: 0; }
 .dn-bot.nodraw .pnt-tools { visibility: hidden; }
+/* Dnow: renk paleti tek satıra sığar (ikinci satırda tek başına çöp kutusu kalmasın) */
+.dn-bot .pnt-tools { flex-wrap: nowrap; gap: 4px; padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
+.dn-bot .pnt-sw { flex: 0 1 28px; width: 28px; min-width: 14px; height: auto; aspect-ratio: 1 / 1; }
+.dn-bot .pnt-tool { flex: 0 0 auto; margin-left: 0; width: 32px; height: 32px; }
+/* Dnow (telefon): tahmin eden tarafta gizli palet boşluk bırakmasın; yeri sohbete geçer. Tuval ölçüsü iki tarafta aynı kalır (alan = yarı yükseklik - ipucu - palet) */
+@media (max-width: 768px) {
+  .dn-wrap.dn-g .dn-bot { flex-basis: calc(var(--dn-bh, 50%) - var(--dn-th, 0px)); }
+  .dn-wrap.dn-g .dn-bot .pnt-tools { position: absolute; left: 0; right: 0; bottom: 0; visibility: hidden; pointer-events: none; }
+}
 .dn-opts { display: none; position: absolute; inset: 0; z-index: 5; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px; background: rgba(10, 10, 14, .94); }
 .dn-opts.on { display: flex; }
 @media (min-width: 769px) {
@@ -7391,7 +7413,7 @@ var dn = null;
 var DN_DUR = 90000, DN_CD = 10000;
 var DN_WORDS = ["Araba", "Bulut", "Güneş", "Yıldız", "Çiçek", "Pencere", "Sandalye", "Kitap", "Çanta", "Gözlük", "Şapka", "Ayakkabı", "Elbise", "Eldiven", "Şemsiye", "Saat", "Telefon", "Bilgisayar", "Klavye", "Televizyon", "Kumanda", "Ampul", "Anahtar", "Kilit", "Makas", "Çekiç", "Testere", "Merdiven", "Bisiklet", "Motosiklet", "Otobüs", "Tren", "Uçak", "Helikopter", "Gemi", "Denizaltı", "Roket", "Balon", "Uçurtma", "Kedi", "Köpek", "Kuş", "At", "İnek", "Koyun", "Tavuk", "Horoz", "Ördek", "Kurbağa", "Yılan", "Kaplumbağa", "Tavşan", "Fil", "Zürafa", "Aslan", "Maymun", "Penguen", "Yunus", "Balina", "Köpekbalığı", "Ahtapot", "Yengeç", "Kelebek", "Arı", "Örümcek", "Karınca", "Salyangoz", "Uğur Böceği", "Dinozor", "Ejderha", "Robot", "Hayalet", "Kale", "Köprü", "Kule", "Deniz Feneri", "Çadır", "Ateş", "Kar Tanesi", "Kardan Adam", "Şimşek", "Gökkuşağı", "Dağ", "Volkan", "Ada", "Palmiye", "Kaktüs", "Mantar", "Armut", "Çilek", "Karpuz", "Üzüm", "Portakal", "Limon", "Havuç", "Domates", "Patates", "Soğan", "Ekmek", "Peynir", "Pizza", "Hamburger", "Dondurma", "Pasta", "Simit", "Çay Bardağı", "Çaydanlık", "Kaşık", "Çatal", "Bıçak", "Tabak", "Buzdolabı", "Çekmece", "Yüzük Parmağı", "Dolap", "Yatak", "Yastık", "Battaniye", "Ayna", "Halı", "Perde", "Fırın", "Süpürge", "Kova", "Diş Fırçası", "Tarak", "Havlu", "Kalp", "Kafatası", "İskelet", "Gitar", "Piyano", "Davul", "Keman", "Mikrofon", "Kulaklık", "Fotoğraf Makinesi", "Basketbol Potası", "Raket", "Olta", "Pusula", "Harita", "Hazine Sandığı", "Taç", "Kılıç", "Kalkan", "Yay", "Bayrak", "Hediye Kutusu", "Mum", "Doğum Günü Pastası", "Çam Ağacı", "Posta Kutusu", "Trafik Lambası", "Yol Levhası", "Tekerlek", "Yuva", "Arı Kovanı", "Piramit", "Yelkenli", "Kamyon", "İtfaiye Aracı", "Vinç", "Traktör", "Paraşüt", "Dönme Dolap", "Deve", "Flamingo", "Papağan", "Baykuş", "Tavus Kuşu", "Akrep", "Kirpi", "Panda", "Zebra", "Kanguru", "Yarasa", "Örümcek Ağı", "Teleskop", "Gramofon", "Çamaşır Makinesi", "Ütü", "Çalar Saat", "Kum Saati", "Avize", "Şömine", "Trompet", "Satranç Tahtası", "Sırt Çantası", "Bavul", "Fener", "Karavan", "Şato", "Dişli Çark", "Hamak", "Tost Makinesi", "Kamp Ateşi", "Dikiş Makinesi", "Kurt", "Tilki", "Ayı", "Geyik", "Sincap", "Fare", "Kaplan", "Leopar", "Gergedan", "Su Aygırı", "Koala", "Gorilla", "Timsah", "Kertenkele", "Bukalemun", "Denizatı", "Denizyıldızı", "Deniz Anası", "Mors", "Fok", "Pelikan", "Leylek", "Kartal", "Güvercin", "Karga", "Istakoz", "Sivrisinek", "Eşek", "Keçi", "Domuz", "Hindi", "Kuğu", "Palyaço Balığı", "Kutup Ayısı", "Kiraz", "Şeftali", "Ananas", "Nar", "Kavun", "Mısır", "Biber", "Patlıcan", "Salatalık", "Brokoli", "Sarımsak", "Zeytin", "Kabak", "Kek", "Kurabiye", "Çikolata", "Lolipop", "Sandviç", "Sosis", "Tavuk Budu", "Balık Kılçığı", "Kahve Fincanı", "Süt Kutusu", "Bal Kavanozu", "Patlamış Mısır", "Pide", "Döner", "Kebap Şişi", "Cüzdan", "Kemer", "Kravat", "Papyon", "Bere", "Terlik", "Çizme", "Gömlek", "Ceket", "Palto", "Kolye", "Küpe", "Bilezik", "Yüzük", "Diş Macunu", "Lavabo", "Küvet", "Musluk", "Radyatör", "Priz", "Pil", "El Feneri", "Kibrit", "Çakmak", "Zarf", "Pul", "Not Defteri", "Cetvel", "Pergel", "Kalemtıraş", "Boya Kalemi", "Fırça", "Palet", "Şövale", "Kitaplık", "Okul Çantası", "Tebeşir", "Dizüstü Bilgisayar", "Yazıcı", "Hoparlör", "Oyun Kolu", "Tablet", "Akıllı Saat", "Drone", "Uydu", "Uydu Çanağı", "Radyo", "Kaset", "Plak", "Daktilo", "Hesap Makinesi", "Dürbün", "Büyüteç", "Mikroskop", "Termometre", "Şırınga", "Stetoskop", "Bandaj", "Koltuk Değneği", "Tekerlekli Sandalye", "Ambulans", "Polis Arabası", "Taksi", "Tramvay", "Zeplin", "Savaş Uçağı", "Tank", "Kayık", "Kano", "Salıncak", "Kaydırak", "Tahterevalli", "Demiryolu", "Bariyer", "Trafik Konisi", "Benzin Pompası", "Elektrik Direği", "Yangın Musluğu", "Sokak Lambası", "Çöp Kutusu", "Çöp Kamyonu", "Park Bankı", "Çeşme", "Yüzme Havuzu", "Çatı", "Baca", "Balkon", "Asansör", "Kapı Zili", "Paspas", "Çamaşır Sepeti", "Çamaşır İpi", "Mandal", "Elbise Askısı", "Gardırop", "Komodin", "Koltuk", "Sehpa", "Saksı", "Bahçe Hortumu", "Vazo", "Tablo Çerçevesi", "Fıskiye", "Çit", "Tırmık", "Kürek", "El Arabası", "Balta", "Orak", "Sapan", "Bumerang", "Mızrak", "Zırh", "Miğfer", "Hançer", "Şövalye", "Korsan", "Korsan Gemisi", "Cadı", "Cadı Kazanı", "Vampir", "Mumya", "Zombi", "Cüce", "Peri", "Sihirli Lamba", "Tek Boynuzlu At", "Denizkızı", "Kral", "Melek", "İtfaiyeci", "Polis", "Doktor", "Aşçı", "Pilot", "Astronot", "Palyaço", "Sihirbaz", "Ninja", "Kovboy", "Dalgıç", "Çiftçi", "Korkuluk", "Dalga", "Şelale", "Nehir", "Göl", "Çöl", "Vaha", "Mağara", "Buzdağı", "Orman", "Yaprak", "Meşe Palamudu", "Çam Kozalağı", "Papatya", "Gül", "Lale", "Ayçiçeği", "Nilüfer", "Bambu", "Buğday", "Saman Balyası", "Hortum", "Kuyruklu Yıldız", "Meteor", "Gezegen", "Dolunay", "Hilal", "Kara Delik", "Uzay Gemisi", "Uzay Mekiği", "Uzaylı", "Futbol Topu", "Basketbol Topu", "Voleybol Filesi", "Masa Tenisi", "Dambıl", "Kayak", "Paten", "Kaykay", "Dalış Tüpü", "Madalya", "Kupa", "Podyum", "Boks Eldiveni", "Hedef Tahtası", "Golf Sopası", "Bilardo", "Domino", "Zar", "Oyun Kartı", "Yoyo", "Oyuncak Ayı", "Bebek Arabası", "Biberon", "Emzik", "Beşik", "Çıngırak", "Flüt", "Saz", "Org", "Arp", "Saksafon", "Akordeon", "Tef", "Zil", "Nota", "Müzik Kutusu", "Cami", "Minare", "Kilise", "Saray", "Köşk", "Ahır", "Kümes", "Kulübe", "İglu", "Gökdelen", "Fabrika Bacası", "Baraj", "Liman", "İskele", "Tapınak", "Pagoda", "Eyfel Kulesi", "Pisa Kulesi", "Beyin", "Kemik", "Parmak İzi", "Saç Tokası", "Bıyık", "Sakal", "Peruk", "Maske", "Güneş Gözlüğü", "Kask", "Pelerin"];
 var DN_EXTRA = ["Hercy", "Idaona", "Idana", "Montauk Air Force Station", "Eitin", "Nora", "Via", "Zaman Çarkı", "Evrensel", "Tünel", "Hlaa", "Momo", "Blusa", "Sepia", "MTC", "Leap", "Minse", "Chou", "Kara Madde Canavarı", "Ufo", "Skie", "Naturi", "Codec", "Üçlü Üçgen", "İkili Doğru", "Beşli Beşgen", "Dörtlü Dörtgen", "Alwer", "Loli Kavağı", "Locta", "Ceptil", "Uzak Uzay", "Galaksi", "Dünya", "Pinky Tinky", "Mühür", "Intent Göz", "Maviler Ağacı", "Blusa Adası", "Brac", "Ariel"];
-var DN_SEND_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.25 12L3.75 20.5L6.25 14.5L14.25 12L6.25 9.5L3.75 3.5Z"/></svg>';
+var DN_SEND_SVG = '<svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.25 12L3.75 20.5L6.25 14.5L14.25 12L6.25 9.5L3.75 3.5Z"/></svg>';
 function dnNorm(s) {
   let t = '';
   try { t = String(s || '').toLocaleLowerCase('tr'); } catch (e) { t = String(s || '').toLowerCase(); }
@@ -7446,7 +7468,10 @@ function dnInit(stage, id) {
   };
   // İsim kutusu: ayarlardaki isim kutusunun aynısı (aynı değer, aynı kayıt; ayarlarda gizliyse burada da gizli)
   D.nick.value = nickInput.value;
+  const dnNm = () => D.inp.classList.toggle('nameless', !D.nick.value.trim());
+  dnNm();
   D.nick.addEventListener('input', () => {
+    dnNm();
     nickInput.value = D.nick.value; lsSet('nick', D.nick.value);
     try { nickInput.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
     try { applyNickState(); } catch (e) {}
@@ -7457,6 +7482,7 @@ function dnInit(stage, id) {
   // Alt yarı (çizim) klavyesiz ekranın yarısında durur. Klavye açılınca tuval bir tık (~%22) küçülür ki sohbet alanı aşırı daralmasın
   const upd = () => {
     if (dn !== D) return;
+    dnTh(D);
     const h = stage.clientHeight;
     if (h <= 100) return;
     const ae = document.activeElement;
@@ -7631,6 +7657,7 @@ function dnApplyPhase() {
     if (P.lock && P.cur) { P.cur = null; P.pid = null; pntFlush(); }
   }
   D.bot.classList.toggle('nodraw', !drawing);
+  D.wrap.classList.toggle('dn-g', !me); dnTh(D);
   const locked = me && (D.ph === 'pick' || D.ph === 'draw');
   D.lock.classList.toggle('on', locked);
   D.inp.disabled = locked; D.send.disabled = locked;
@@ -7661,6 +7688,7 @@ function dnApplyPhase() {
   }
   dnTick();
 }
+function dnTh(D) { try { const tl = D.cvh.querySelector('.pnt-tools'); const h = tl ? tl.offsetHeight : 0; if (h && h !== D.th) { D.th = h; D.wrap.style.setProperty('--dn-th', h + 'px'); } } catch (e) {} }
 function dnTick() {
   const D = dn; if (!D) return;
   const now = Date.now();
@@ -13701,7 +13729,11 @@ function pfRender() {
   if (window.__vnBlocked || window.__feInit) return;
   window.__feInit = true;
 
-  var STYLE = '3d', EXT = 'png';
+  var STYLE = '3d'; // yalnızca önbellek adı için
+  /* Tercih sırası: önce Fluent 3D; o emojinin 3D'si yoksa 3D'ye en çok benzeyen Fluent stili (Color: 3D ile aynı renk ve gölge dili),
+     o da yoksa Flat. High Contrast siyah-beyaz olduğundan listede yok (istenirse sona ['high-contrast', 'svg'] eklenir).
+     Hiçbiri yoksa cihazın kendi emojisi görünür. */
+  var STYLES = [['3d', 'png'], ['color', 'svg'], ['flat', 'svg']];
   var BASE = 'https://cdn.jsdelivr.net/gh/shuding/fluentui-emoji-unicode/assets/';
   var CACHE = 'fluent-emoji-' + STYLE + '-v1';
 
@@ -13723,11 +13755,22 @@ function pfRender() {
   }
 
   function urlsFor(parts) {
-    var a = parts.filter(function (p) { return p !== 'fe0f'; }).join('-');
-    var b = parts.join('-');
-    var list = [a];
-    if (b !== a) list.push(b);
-    return list.map(function (n) { return BASE + n + '_' + STYLE + '.' + EXT; });
+    var groups = [parts];
+    /* Ten rengi (1f3fb-1f3ff) hiçbir stilde yoksa tonsuz hali de denenir; ama önce aynı emojinin diğer Fluent stilleri denenir */
+    var ns = parts.filter(function (x) { var v = parseInt(x, 16); return v < 0x1f3fb || v > 0x1f3ff; });
+    if (ns.length && ns.length !== parts.length) groups.push(ns);
+    var out = [], seen = {};
+    groups.forEach(function (g) {
+      var a = g.filter(function (p) { return p !== 'fe0f'; }).join('-'), b = g.join('-');
+      var names = [a]; if (b !== a) names.push(b);
+      STYLES.forEach(function (st) {
+        names.forEach(function (n) {
+          var u = BASE + n + '_' + st[0] + '.' + st[1];
+          if (!seen[u]) { seen[u] = 1; out.push(u); }
+        });
+      });
+    });
+    return out;
   }
 
   function fetchBlob(url) {
@@ -13750,7 +13793,8 @@ function pfRender() {
     });
   }
 
-  function ready(code, blob) {
+  function ready(code, blob, url) {
+    try { if (/\.svg$/.test(url) && blob.type !== 'image/svg+xml') blob = blob.slice(0, blob.size, 'image/svg+xml'); } catch (e) {}
     var u = URL.createObjectURL(blob);
     var im = new Image();
     im.onload = function () {
@@ -13763,13 +13807,34 @@ function pfRender() {
     im.src = u;
   }
 
+  /* Hangi stilin bulunduğu hatırlanır: 3D'si olmayan emoji için her açılışta boşuna 404 istekleri atılmasın.
+     "Hiçbir stilde yok" (0) bilgisi yalnızca sunucu gerçekten 404 verdiyse ve en çok 14 gün saklanır (internet yokken yanlış kayıt olmasın). */
+  var PICK = {};
+  try { PICK = JSON.parse(localStorage.getItem('fe-pick-v2') || '{}') || {}; } catch (e) { PICK = {}; }
+  function savePick(code, v) {
+    if (PICK[code] === v) return;
+    PICK[code] = v;
+    try { localStorage.setItem('fe-pick-v2', JSON.stringify(PICK)); } catch (e) {}
+  }
+
   function ensure(code) {
     if (state[code]) return;
     state[code] = 1;
-    var urls = urlsFor(code.split('-'));
+    var urls = urlsFor(code.split('-')), def = urls[0], pk = PICK[code];
+    if (typeof pk === 'string' && pk.indexOf('0:') === 0) {
+      if (Date.now() - (+pk.slice(2) || 0) < 14 * 864e5) { state[code] = 3; return; }
+    } else if (typeof pk === 'string') {
+      var k = urls.indexOf(pk);
+      if (k > 0) { urls.splice(k, 1); urls.unshift(pk); }
+    }
+    var allHttp = true;
     (function next(i) {
-      if (i >= urls.length) { state[code] = 3; return; }
-      fetchBlob(urls[i]).then(function (b) { ready(code, b); }, function () { next(i + 1); });
+      if (i >= urls.length) { state[code] = 3; if (allHttp) savePick(code, '0:' + Date.now()); return; }
+      var u = urls[i];
+      fetchBlob(u).then(function (b) { if (u !== def) savePick(code, u); ready(code, b, u); }, function (err) {
+        if (!(err && err.message === 'http')) allHttp = false;
+        next(i + 1);
+      });
     })(0);
   }
 
