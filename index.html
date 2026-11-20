@@ -13327,11 +13327,12 @@ function pfRender() {
     // Sabit renkli hap şekli (doluluğa göre dolma yok): şarjda açık fıstık yeşili + siyah yazı; %30 altı açık kırmızı + siyah yazı; normalde tarih / gönder tuşu zemini + yazı rengi
     var bg = chg ? '#a8dc6e' : (p < 30 ? '#ff6b6b' : 'var(--send-bg)');
     var fg = (chg || p < 30) ? '#000' : 'var(--send-ico)';
-    var fs = p >= 100 ? 8.6 : 10;
+    var fs = p >= 100 ? 9.4 : 11;
+    var ty = (7 + fs * 0.355).toFixed(2);   // rakamların alt çizgisi: dikey orta (7) + rakam yüksekliğinin yarısı (~0,71em / 2)
     return '<svg width="31" height="14" viewBox="0 0 31 14">'
       + '<rect x="0" y="0" width="27.6" height="14" rx="7" style="fill:' + bg + '"/>'
       + '<rect x="28.6" y="4.3" width="2.2" height="5.4" rx="1.1" style="fill:' + bg + '"/>'
-      + '<text x="13.8" y="7.4" text-anchor="middle" dominant-baseline="central" font-family="-apple-system,Roboto,Arial,sans-serif" font-size="' + fs + '" font-weight="700" style="fill:' + fg + '">' + p + '</text></svg>';
+      + '<text x="13.8" y="' + ty + '" text-anchor="middle" font-family="-apple-system,Roboto,Arial,sans-serif" font-size="' + fs + '" font-weight="700" style="fill:' + fg + '">' + p + '</text></svg>';
   }
   /* Bluetooth kulaklık: iki kablosuz kulakiçi (AirPods tarzı), wifi ile aynı boy; sol-sağ birebir simetrik */
   function btIcon() {
@@ -13513,14 +13514,16 @@ function pfRender() {
     if (!elT) return;
     try {
       var cs = getComputedStyle(elT);
-      var key = cs.fontFamily + '|' + cs.fontWeight + '|' + (document.fonts && document.fonts.status);
+      /* Rakam yüksekliği hedefi: telefonda 9px (simgelerle aynı boy); masaüstü düzeninde saat daha küçük, 8px */
+      var tgt = (window.matchMedia && window.matchMedia('(min-width: 769px)').matches) ? 8 : 9;
+      var key = cs.fontFamily + '|' + cs.fontWeight + '|' + (document.fonts && document.fonts.status) + '|' + tgt;
       if (key === fitKey) return;
       var cx = document.createElement('canvas').getContext('2d');
       cx.font = cs.fontWeight + ' 1000px ' + cs.fontFamily;
       var m = cx.measureText('1247');   /* düz uçlu rakamlar: tam büyük-harf yüksekliği */
       var asc = m.actualBoundingBoxAscent, desc = m.actualBoundingBoxDescent;
       if (!(asc + desc > 0)) return;
-      var fs = 9 * 1000 / (asc + desc), k = fs / 1000;
+      var fs = tgt * 1000 / (asc + desc), k = fs / 1000;
       elT.style.fontSize = fs.toFixed(2) + 'px';
       /* taban çizgisinin satır içindeki gerçek yeri tarayıcıdan ölçülür (yuvarlama farkı kalmasın) */
       var tmp = document.createElement('span');
