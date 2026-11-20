@@ -2035,11 +2035,14 @@ body.gm-on #leap-hud { display: none !important; }
     if (!locked) return;
     if (!root.classList.contains('pin-locked')) root.classList.add('pin-locked');
     if (!lock.classList.contains('show')) lock.classList.add('show');
+    if (lock.inert) { try { lock.inert = false; } catch (e) {} }
+    if (lock.hasAttribute('inert')) lock.removeAttribute('inert');
+    if (lock.hasAttribute('aria-hidden')) lock.removeAttribute('aria-hidden');
     if (document.body && lock.parentNode !== document.body) document.body.insertBefore(lock, document.body.firstChild);
     if (lock.getAttribute('style')) lock.removeAttribute('style');
   }
   try {
-    new MutationObserver(enforce).observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+    new MutationObserver(enforce).observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden', 'inert', 'aria-hidden'] });
   } catch (e) {}
   setInterval(enforce, 700);
 
@@ -7025,7 +7028,7 @@ function gameStart(id, restored) {
   sndB.addEventListener('click', () => { try { gmAuUnlock(); } catch (e) {} gmSndSet(!gmSndOn()); sndPaint(); });
   ov.addEventListener('pointerdown', () => { try { gmAuUnlock(); } catch (e) {} }); // ses motoru ilk dokunuşta açılır
   gameInerted = [];
-  Array.from(document.body.children).forEach((ch) => { if (!ch.inert) { try { ch.inert = true; ch.setAttribute('aria-hidden', 'true'); gameInerted.push(ch); } catch (e) {} } });
+  Array.from(document.body.children).forEach((ch) => { if (ch.id === 'pin-lock' || ch.id === 'idle-modal') return; if (!ch.inert) { try { ch.inert = true; ch.setAttribute('aria-hidden', 'true'); gameInerted.push(ch); } catch (e) {} } });
   document.body.appendChild(ov);
   gameOver = ov;
   const gkind = (gameCards[id] && gameCards[id]._kind) || 'kuks';
@@ -7450,17 +7453,25 @@ function dnInit(stage, id) {
   D.send.addEventListener('mousedown', (e) => e.preventDefault());
   D.send.addEventListener('click', () => dnSend());
   D.inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); dnSend(); } });
-  // Klavye açılınca yalnızca sohbet kısmı daralır: alt yarının (çizim) yüksekliği klavyesiz ekran yüksekliğinin yarısında sabit tutulur
+  // Alt yarı (çizim) klavyesiz ekranın yarısında durur. Klavye açılınca tuval bir tık (~%22) küçülür ki sohbet alanı aşırı daralmasın
   const upd = () => {
     if (dn !== D) return;
-    const ae = document.activeElement;
-    if (ae && ae.classList && ae.classList.contains('dn-chat-in')) return;
     const h = stage.clientHeight;
-    if (h > 100) D.wrap.style.setProperty('--dn-bh', Math.round(h / 2) + 'px');
+    if (h <= 100) return;
+    const ae = document.activeElement;
+    const typing = !!(ae && ae.classList && ae.classList.contains('dn-chat-in'));
+    if (h > (D.full || 0)) D.full = h;
+    const half = Math.round((D.full || h) / 2);
+    if (!typing) { D.full = h; D.wrap.style.setProperty('--dn-bh', Math.round(h / 2) + 'px'); return; }
+    if (h >= D.full - 120) { D.wrap.style.setProperty('--dn-bh', half + 'px'); return; } // klavye yok / kapandı
+    let bh = Math.round(half * 0.78);          // tuval bir tık küçülür
+    bh = Math.min(bh, h - 7 - 150);            // sohbet en az ~150px kalsın
+    bh = Math.max(bh, 130);                    // tuval de kullanılamayacak kadar küçülmesin
+    D.wrap.style.setProperty('--dn-bh', bh + 'px');
   };
   if (window.ResizeObserver) { D.ro = new ResizeObserver(upd); D.ro.observe(stage); }
   upd();
-  [D.inp, D.nick].forEach((el) => el.addEventListener('blur', () => setTimeout(upd, 350)));
+  [D.inp, D.nick].forEach((el) => { el.addEventListener('blur', () => setTimeout(upd, 350)); el.addEventListener('focus', () => setTimeout(upd, 450)); });
   try { gmAuUnlock(); } catch (e) {}
   try { pntInit(D.cvh, id, true); } catch (e) {}
   dnApplyPhase();
@@ -13313,9 +13324,9 @@ function pfRender() {
   }
   function batt(p, chg) {
     p = Math.max(0, Math.min(100, Math.round(p)));
-    // Sabit renkli hap şekli (doluluğa göre dolma yok): şarjda koyu yeşil + beyaz yazı; %30 altı bordo + beyaz yazı; normalde tarih / gönder tuşu zemini + yazı rengi
-    var bg = chg ? '#0b5d2a' : (p < 30 ? '#7a0c1a' : 'var(--send-bg)');
-    var fg = (chg || p < 30) ? '#fff' : 'var(--send-ico)';
+    // Sabit renkli hap şekli (doluluğa göre dolma yok): şarjda açık fıstık yeşili + siyah yazı; %30 altı açık kırmızı + siyah yazı; normalde tarih / gönder tuşu zemini + yazı rengi
+    var bg = chg ? '#a8dc6e' : (p < 30 ? '#ff6b6b' : 'var(--send-bg)');
+    var fg = (chg || p < 30) ? '#000' : 'var(--send-ico)';
     var fs = p >= 100 ? 8.6 : 10;
     return '<svg width="31" height="14" viewBox="0 0 31 14">'
       + '<rect x="0" y="0" width="27.6" height="14" rx="7" style="fill:' + bg + '"/>'
