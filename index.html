@@ -104,6 +104,7 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 #vn-sysbar .vs-lw { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; align-items: center; gap: 7px; padding-left: 12px; margin-right: 10px; }
 #vn-sysbar .vs-r { margin-left: auto; flex: 0 0 auto; height: 100%; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
 #vn-sysbar .vs-c, #vn-sysbar .vs-l, #vn-sysbar .vs-net, #vn-sysbar .vs-bt, #vn-sysbar .vs-bat, #vn-sysbar .vs-t { height: 100%; display: flex; align-items: center; line-height: 1; white-space: nowrap; font-size: inherit; }
+#vn-sysbar .vs-t { font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
 #vn-sysbar .vs-c { flex: 0 0 auto; opacity: .8; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 /* Tarih: mesaj gönderme tuşunun arka plan rengiyle, köşeleri yumuşak ince dikdörtgen; içinde "17 Kas" */
 #vn-sysbar .vs-lw .vs-c { height: auto; align-self: center; box-sizing: border-box; padding: 1.5px 6px; border-radius: 6px; background: var(--send-bg); opacity: 1; font-weight: 700; }
@@ -1546,7 +1547,7 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 .leap-num-t { display: inline-block; white-space: nowrap; will-change: transform; }
 
 #settings-scroll .set-block { background: var(--c-1a); border: 0; border-top: 1px solid var(--c-33); border-radius: 0; overflow: hidden; }
-#settings-scroll .set-block:last-child { border-bottom: 1px solid var(--c-33); }
+#settings-scroll .set-block:last-of-type { border-bottom: 1px solid var(--c-33); }
 #settings-scroll .set-block + .set-block, #settings-scroll .set-block.collapsed + .set-block { margin-top: 0; }
 #settings-scroll .set-title { justify-content: flex-start; gap: 10px; min-height: 44px; box-sizing: border-box; margin: 0; padding: 8px 14px; background: transparent; border-radius: 0; font-size: 14px; font-weight: 700; color: var(--c-fff); transition: background .15s ease; }
 #settings-scroll .set-title::before { content: ""; flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; background-color: var(--c-44); background-repeat: no-repeat; background-position: center; background-size: 14px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
@@ -12856,40 +12857,74 @@ function pfRender() {
   }
   requestAnimationFrame(frame);
 })();
-/* Masaüstü: ayarlar kendi alanına dikeyde sığar; tüm gruplar ortak oranda küçülür */
+/* Masaüstü: ayarlar kendi alanına dikeyde tam sığar; tüm gruplar (yazı, düğme, boşluk) ortak oranda küçülür / büyür.
+   Ölçüm zoom'dan bağımsız: listenin sonuna konan sıfır yükseklikli işaretin konumu toplam yüksekliği verir. */
 (function initSettingsFit() {
   const sc = document.getElementById('settings-scroll');
   if (!sc) return;
   const mq = window.matchMedia('(min-width: 769px)');
-  let busy = false;
+  const Z_MIN = 0.3, Z_MAX = 1.35;
+  const clampZ = (z) => Math.max(Z_MIN, Math.min(Z_MAX, z));
+  let end = null, busy = false, raf = 0, burst = 0, burstT = 0;
+  function ensureEnd() {
+    if (end && end.parentNode === sc) { if (sc.lastElementChild !== end) sc.appendChild(end); return end; }
+    end = document.createElement('span');
+    end.id = 'set-fit-end'; end.setAttribute('aria-hidden', 'true');
+    end.style.cssText = 'display:block;height:0;width:0;margin:0;padding:0;border:0;overflow:hidden;pointer-events:none;';
+    sc.appendChild(end);
+    return end;
+  }
   function fit() {
     if (busy) return; busy = true;
-    const blocks = Array.from(sc.querySelectorAll(':scope > .set-block'));
-    blocks.forEach((b) => { b.style.zoom = ''; b.style.paddingBottom = ''; });
-    if (mq.matches && sc.clientHeight > 0) {
+    try {
+      const blocks = Array.from(sc.querySelectorAll(':scope > .set-block'));
+      blocks.forEach((b) => { b.style.zoom = ''; b.style.paddingBottom = ''; });
+      if (!mq.matches || sc.clientHeight <= 0) return;
       const vis = blocks.filter((b) => b.offsetHeight > 0);
+      if (!vis.length) return;
+      const e = ensureEnd();
       const cs = getComputedStyle(sc);
-      const avail = sc.clientHeight - (parseFloat(cs.paddingBottom) || 0) - (parseFloat(cs.paddingTop) || 0);
-      let h = 0;
-      vis.forEach((b) => { h += b.getBoundingClientRect().height; });
-      if (h > 0 && vis.length) {
-        const z = Math.max(0.45, Math.min(1.35, avail / h));
-        blocks.forEach((b) => { b.style.zoom = String(z); });
-        // kalan boşluk (üst sınıra takılınca) gruplara eşit paylaştırılır: alan tam dolar
-        let h2 = 0;
-        vis.forEach((b) => { h2 += b.getBoundingClientRect().height; });
-        const extra = avail - h2;
-        if (extra > 0.5) vis.forEach((b) => { b.style.paddingBottom = (extra / vis.length / z) + 'px'; });
+      const pt = parseFloat(cs.paddingTop) || 0, pb = parseFloat(cs.paddingBottom) || 0;
+      const avail = sc.clientHeight - pt - pb;
+      const used = () => e.offsetTop - pt;
+      const nat = used();
+      if (!(nat > 0) || !(avail > 0)) return;
+      const apply = (z) => blocks.forEach((b) => { b.style.zoom = String(z); });
+      let z = clampZ(avail / nat);
+      apply(z);
+      // yazılar zoom'la farklı satıra sarılabilir: oran ölçülüp birkaç adımda yakınsatılır
+      for (let i = 0; i < 5; i++) {
+        const u = used();
+        if (!(u > 0) || Math.abs(avail - u) <= 0.5) break;
+        const nz = clampZ(z * avail / u);
+        if (Math.abs(nz - z) < 0.0005) break;
+        z = nz; apply(z);
       }
-    }
-    busy = false;
+      // kalan boşluk (üst sınıra takılınca) gruplara eşit paylaştırılır: alan tam dolar
+      const extra = avail - used();
+      if (extra > 0.5) vis.forEach((b) => { b.style.paddingBottom = (extra / vis.length / z) + 'px'; });
+    } finally { busy = false; }
   }
-  window.addEventListener('resize', fit);
-  if (mq.addEventListener) mq.addEventListener('change', fit);
-  if (window.ResizeObserver) new ResizeObserver(fit).observe(sc);
-  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit); } catch (e) {}
-  window.addEventListener('pin-level', fit);
-  fit(); setTimeout(fit, 400); setTimeout(fit, 1500);
+  function schedule() {
+    const now = Date.now();
+    if (now - burstT > 600) { burstT = now; burst = 0; }
+    if (++burst > 14 || raf) return;   // kendi yazdığımız değişimlerden sonsuz döngü olmasın
+    raf = requestAnimationFrame(() => { raf = 0; fit(); });
+  }
+  window.addEventListener('resize', schedule);
+  if (mq.addEventListener) mq.addEventListener('change', schedule);
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(schedule);
+    ro.observe(sc);
+    Array.from(sc.querySelectorAll(':scope > .set-block')).forEach((b) => ro.observe(b));
+  }
+  try { new MutationObserver(schedule).observe(sc, { subtree: true, attributes: true, attributeFilter: ['class', 'hidden'], childList: true, characterData: true }); } catch (e) {}
+  sc.addEventListener('transitionend', schedule, true);
+  sc.addEventListener('click', () => { setTimeout(schedule, 60); setTimeout(schedule, 320); }, true);
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule); } catch (e) {}
+  window.addEventListener('pin-level', () => { schedule(); setTimeout(schedule, 120); });
+  document.addEventListener('visibilitychange', schedule);
+  fit(); setTimeout(schedule, 400); setTimeout(schedule, 1500);
 })();
 (function initLeap() {
   const el = document.getElementById('leap-num');
@@ -13509,13 +13544,18 @@ function pfRender() {
     c = {};
   }
   /* Saat: rakamların boyalı üst/alt kenarı simgelerle (9px) birebir aynı hizada olsun diye gerçek yazı tipi ölçülür */
-  var fitKey = '';
+  var fitKey = '', fontReq = false;
   function fitClock() {
     if (!elT) return;
     try {
       var cs = getComputedStyle(elT);
-      /* Rakam yüksekliği hedefi: telefonda 9px (simgelerle aynı boy); masaüstü düzeninde saat daha küçük, 8px */
-      var tgt = (window.matchMedia && window.matchMedia('(min-width: 769px)').matches) ? 8 : 9;
+      /* Rakam yüksekliği hedefi: her düzende 9px (wifi / bluetooth simgeleriyle aynı boy) */
+      var tgt = 9;
+      /* Yazı tipi (Lexend) henüz inmediyse canvas başka yazı tipiyle ölçer ve saat yanlış boyda çıkar: önce yüklenir, sonra yeniden ölçülür */
+      if (!fontReq) {
+        fontReq = true;
+        try { if (document.fonts && document.fonts.load) document.fonts.load(cs.fontWeight + ' 16px ' + cs.fontFamily, '0123456789:').then(function () { fitKey = ''; fitClock(); }, function () {}); } catch (e) {}
+      }
       var key = cs.fontFamily + '|' + cs.fontWeight + '|' + (document.fonts && document.fonts.status) + '|' + tgt;
       if (key === fitKey) return;
       var cx = document.createElement('canvas').getContext('2d');
