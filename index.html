@@ -123,9 +123,15 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 /* Not güncellenince tepsi adı sarı yanıp söner (noktayla birlikte); notlar açılıp bakılınca kalkar */
 #vn-sysbar.note-unseen .vs-l { color: var(--warn); animation: notes-blink 1s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { #vn-sysbar.note-unseen .vs-l { animation: none; } }
-#vn-sysbar .vs-n { position: absolute; left: 0; top: 0; width: 38px; height: 100%; box-sizing: border-box; padding-left: 12px; z-index: 2; display: flex; align-items: center; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#vn-sysbar .vs-n { position: absolute; left: 0; top: 0; width: 38px; height: 100%; box-sizing: border-box; padding-left: 15px; z-index: 2; display: flex; align-items: center; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 #vn-sysbar .vs-n i { display: none; flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; background: #ff3b30; }
-#vn-sysbar .vs-n.on i { display: block; }
+#vn-sysbar .vs-n.on i { display: block; animation: vs-pulse 1s ease-in-out infinite alternate; will-change: transform, box-shadow; }
+/* Bildirim noktası: git-gel nabız (hafif büyüyüp küçülür, etrafında yumuşak kırmızı hale açılıp kapanır) */
+@keyframes vs-pulse {
+  from { transform: scale(.82); box-shadow: 0 0 0 0 rgba(255,59,48,0); }
+  to   { transform: scale(1.18); box-shadow: 0 0 6px 2px rgba(255,59,48,.6); }
+}
+@media (prefers-reduced-motion: reduce) { #vn-sysbar .vs-n.on i { animation: none; } }
 #vn-nt { position: fixed; z-index: 12650; top: calc(var(--vn-sb, 0px) + 4px); left: 8px; right: 8px; max-width: 360px; max-height: min(70vh, 460px); box-sizing: border-box; display: none; flex-direction: column; background: var(--c-111); color: var(--c-fff); border: 1px solid var(--c-33); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.55); overflow: hidden; font-size: 12.5px; font-weight: 400; letter-spacing: 0; line-height: 1.3; }
 #vn-nt.show { display: flex; animation: vnCalIn .14s ease-out; }
 #vn-nt .nt-h { display: flex; align-items: center; justify-content: space-between; padding: 8px 8px 8px 14px; font-weight: 700; font-size: 13.5px; border-bottom: 1px solid var(--c-33); }
