@@ -412,6 +412,12 @@ body.no-time .time-tag { display: none !important; }
   overflow: hidden; white-space: pre; resize: none; margin: 0; display: block;
 }
 #nick-input.nick-cut { text-align: left; }
+/* Satır eklenince / silinince mesaj kutusu yumuşakça büyüyüp küçülür */
+#message-input { transition: height .16s ease-out; scrollbar-width: none; }
+#message-input::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: reduce) { #message-input { transition: none; } }
+/* Düzenlerken (odaktayken) yazı ve imleç kutunun tam ortasında: normal küçük yazı alanı gibi */
+#nick-input:focus { text-align: center; padding-left: 0; }
 #nick-dot { flex: 0 0 auto; box-sizing: border-box; height: var(--cmp-h); line-height: 22px; padding: calc((var(--cmp-h) - 22px) / 2) 5px; color: var(--c-88); font-size: 16px; font-family: inherit; user-select: none; -webkit-user-select: none; pointer-events: none; }
 body.nick-hidden #nick-dot { display: none; }
 body.nick-hidden #message-input { padding-left: 14px; }
