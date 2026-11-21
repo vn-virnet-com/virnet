@@ -583,7 +583,7 @@ body #typing-indicator { display: none !important; }
 body:not(.lv-admin) #tb-call { display: none; }
 #tool-pad { transition: opacity .18s ease; }
 #input-wrapper.has-text #tool-pad { opacity: .35; pointer-events: none; }   /* 1. aşama: yazı başlayınca tuşlar (··· dahil) koyulaşıp soluk kalır, kutu küçülmez */
-#input-wrapper.has-text2 #tool-row { grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .2s ease, visibility 0s .2s; }   /* 2. aşama: 1 kelime + boşluk + sonraki kelimenin ilk harfi → kutu daralır */
+#input-wrapper.has-text2 #tool-row { grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .2s ease, visibility 0s .2s; }   /* 2. aşama: yazı alt satıra geçip mesaj kutusu yukarı uzayınca alt satır gizlenir */
 #input-wrapper.rec-on #tool-pad { opacity: 1; pointer-events: auto; }
 #input-wrapper.rec-on #tool-row { grid-template-rows: 1fr; visibility: visible; transition: none; }
 #input-wrapper.chat-off .tb:not(#mx-x):not(#tb-more) { pointer-events: none; }   /* bağlantı yokken tuşlar soluklaşmaz, yalnızca basınca çalışmaz */
@@ -6232,6 +6232,9 @@ function adjustInputHeight() {
   messageInput.style.transition = '';
   messageInput.style.height = h + 'px';
 
+  // Alt satır (tuşlar) yalnızca yazı alt satıra geçip kutu yukarı doğru uzayınca gizlenir
+  try { const w = document.getElementById('input-wrapper'); if (w) w.classList.toggle('has-text2', h > baseH); } catch (e) {}
+
   fitToViewport();
   if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
 }
@@ -9381,7 +9384,7 @@ const inputWrapper = document.getElementById('input-wrapper');
 function syncComposer() {
   const v = messageInput.value;
   inputWrapper.classList.toggle('has-text', v.length > 0);
-  inputWrapper.classList.toggle('has-text2', /\S+\s+\S+\s+\S+\s/.test(v));   // 1 kelime + boşluk + 1 kelime + boşluk + 1 kelime + boşluk
+  if (!v) inputWrapper.classList.remove('has-text2');   // 2. aşama (alt satırın gizlenmesi) artık adjustInputHeight içinde: kutu yukarı uzayınca
 }
 (function hookValue() {
   const d = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
