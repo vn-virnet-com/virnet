@@ -399,7 +399,7 @@ body.no-time .time-tag { display: none !important; }
   padding: 15px; background: var(--c-000); border-top: 1px solid transparent; /* ince ayırıcı çizgi kaldırıldı (yerine sohbetin altında kısa bir solma var) */
   display: none; align-items: flex-end;
 }
-:root { --cmp-h: 40px; }
+:root { --cmp-h: 40px; --tb-h: 30px; --tb-w: 44px; }   /* alt tuşlar: eski yuvarlak hali için --tb-h:38px; --tb-w:38px */
 @media (min-width: 769px) { :root { --cmp-h: 44px; } }
 /* Mesaj kutusu: tek yuvarlak baloncuk. Üst satır: isim · mesaj ... yuvarlak gönder tuşu. Alt satır (yalnız kutu boşken): fotoğraf, kamera | ses, şarkı */
 #input-wrapper { display: flex; flex-direction: column; width: 100%; box-sizing: border-box; padding: 6px; background: var(--c-111); border: 1px solid var(--c-33); border-radius: 26px; position: relative; transition: border-color .15s ease; }
@@ -407,16 +407,17 @@ body.no-time .time-tag { display: none !important; }
 #top-row { display: flex; align-items: flex-end; gap: 6px; min-width: 0; }
 #msg-line { flex: 1; min-width: 0; display: flex; align-items: flex-start; }
 #nick-input {
-  flex: 0 0 auto; box-sizing: border-box; width: 44px; min-width: 0; max-width: 45%; height: var(--cmp-h); background: transparent; border: 0;
-  color: var(--c-88); padding: 0 0 0 12px; font-size: 16px; outline: none; text-align: right; border-radius: 0;
+  flex: 0 0 auto; box-sizing: border-box; width: 44px; min-width: 0; max-width: 60%; height: var(--cmp-h); background: transparent; border: 0;
+  color: var(--c-88); padding: calc((var(--cmp-h) - 22px) / 2) 0 calc((var(--cmp-h) - 22px) / 2) 12px; font-size: 16px; line-height: 22px; font-family: inherit; outline: none; text-align: right; border-radius: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0;
 }
-#nick-dot { flex: 0 0 auto; height: var(--cmp-h); line-height: var(--cmp-h); padding: 0 5px; color: var(--c-88); font-size: 16px; user-select: none; -webkit-user-select: none; pointer-events: none; }
+#nick-dot { flex: 0 0 auto; height: var(--cmp-h); line-height: var(--cmp-h); padding: 0 5px; color: var(--c-88); font-size: 16px; font-family: inherit; user-select: none; -webkit-user-select: none; pointer-events: none; }
 body.nick-hidden #nick-dot { display: none; }
 body.nick-hidden #message-input { padding-left: 14px; }
 body.nick-hidden #ph-overlay { left: 14px; }
 #message-input {
   flex: 1; min-width: 0; box-sizing: border-box; background: transparent; border: 0; color: var(--c-fff);
-  padding: calc((var(--cmp-h) - 22px) / 2) 6px calc((var(--cmp-h) - 22px) / 2) 0; font-size: 16px; outline: none; border-radius: 0;
+  padding: calc((var(--cmp-h) - 22px) / 2) 6px calc((var(--cmp-h) - 22px) / 2) 0; margin: 0; font-size: 16px; font-family: inherit; outline: none; border-radius: 0; display: block;
   resize: none; height: var(--cmp-h); max-height: 150px; line-height: 22px; overflow-y: auto;
 }
 /* İsimsiz (isim kutusu boş) yazılan mesajlar otomatik kalın: yazarken, canlı önizlemede ve gönderildikten sonra */
@@ -428,7 +429,7 @@ body.nick-hidden #ph-overlay { left: 14px; }
 /* Gerçek placeholder görünmez; yerine sığmayan yazıyı yavaşça kaydıran üst katman gösterilir */
 #message-input::placeholder { color: transparent; white-space: nowrap; overflow: hidden; text-overflow: clip; }
 #message-input:placeholder-shown { overflow: hidden; }
-#ph-overlay { display: none; position: absolute; left: 0; right: 6px; top: 0; height: var(--cmp-h); overflow: hidden; pointer-events: none; font-size: 16px; line-height: var(--cmp-h); color: var(--c-fff); opacity: 0.5; white-space: nowrap; z-index: 3; }
+#ph-overlay { display: none; position: absolute; left: 0; right: 6px; top: 0; height: var(--cmp-h); overflow: hidden; pointer-events: none; font-size: 16px; font-family: inherit; line-height: var(--cmp-h); color: var(--c-fff); opacity: 0.5; white-space: nowrap; z-index: 3; }
 #message-input:placeholder-shown ~ #ph-overlay { display: block; }
 #ph-text { display: inline-block; white-space: nowrap; will-change: transform; }
 #send-btn {
@@ -549,36 +550,36 @@ body #typing-indicator { display: none !important; }
 /* Alt araç satırı: yalnız kutu boşken görünür; yazı başlayınca yumuşakça kapanır */
 #tool-row { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .2s ease; }
 #tool-in { min-height: 0; overflow: hidden; }
-#tool-pad { display: flex; justify-content: space-between; align-items: center; padding-top: 6px; }
+#tool-pad { display: flex; justify-content: space-between; align-items: center; padding-top: 5px; }
 .tb-grp { display: flex; align-items: center; gap: 8px; }
 .tb {
-  flex: 0 0 auto; width: 38px; height: 38px; padding: 0; border: 0; border-radius: 50%; background: var(--c-22); color: var(--c-cc);
+  flex: 0 0 auto; width: var(--tb-w); height: var(--tb-h); padding: 0; border: 0; border-radius: calc(var(--tb-h) / 2); background: var(--c-22); color: var(--c-cc);
   display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; transition: background-color .12s ease, opacity .15s ease;
 }
 .tb:active { background: var(--c-33); }
-.tb svg { width: 20px; height: 20px; display: block; pointer-events: none; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.tb svg { width: 18px; height: 18px; display: block; pointer-events: none; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 body:not(.lv-admin) #tb-call { display: none; }
 #input-wrapper.has-text #tool-row { grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .2s ease, visibility 0s .2s; }
 #input-wrapper.rec-on #tool-row { grid-template-rows: 1fr; visibility: visible; transition: none; }
 #input-wrapper.chat-off .tb { opacity: .3; pointer-events: none; }
 #input-wrapper.rec-on .tb:not(#mic-btn) { opacity: 0; pointer-events: none; }
 /* Ses kaydı: mikrofona basılı tutunca baloncuk sola uzar: [çöp | kilit | mikrofon]. Çöpün üstüne gelince bütün baloncuk kırmızı olur, bırakınca kayıt silinir */
-#mic-wrap { position: relative; width: 38px; height: 38px; flex: 0 0 auto; }
+#mic-wrap { position: relative; width: var(--tb-w); height: var(--tb-h); flex: 0 0 auto; }
 #mic-btn { position: relative; z-index: 3; touch-action: none; }
 #mic-btn.rec { background: #d33; color: #fff; animation: recp 1s ease-in-out infinite; }
-#mic-btn .sp-ico { width: 19px; height: 19px; fill: currentColor; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+#mic-btn .sp-ico { width: 17px; height: 17px; fill: currentColor; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
 #rec-ext {
-  position: absolute; right: 0; top: 0; height: 38px; width: 38px; border-radius: 19px; background: var(--c-33);
+  position: absolute; right: 0; top: 0; height: var(--tb-h); width: var(--tb-w); border-radius: calc(var(--tb-h) / 2); background: var(--c-33);
   display: flex; align-items: center; opacity: 0; pointer-events: none; overflow: hidden; z-index: 2;
   transition: width .2s ease, opacity .12s ease, background-color .12s ease;
 }
-#input-wrapper.rec-on #rec-ext { opacity: 1; width: 114px; }
-#input-wrapper.rec-on #rec-ext.locked { width: 76px; }
+#input-wrapper.rec-on #rec-ext { opacity: 1; width: calc(var(--tb-w) + 80px); }
+#input-wrapper.rec-on #rec-ext.locked { width: calc(var(--tb-w) + 40px); }
 #rec-ext.hot { background: #d33; }
 #rec-ext.hot + #mic-btn { background: #d33; }
-.rx { flex: 0 0 38px; width: 38px; height: 38px; padding: 0; border: 0; background: transparent; color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
-.rx svg { display: block; width: 20px; height: 20px; stroke: #fff; pointer-events: none; }
+.rx { flex: 0 0 40px; width: 40px; height: var(--tb-h); padding: 0; border: 0; background: transparent; color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
+.rx svg { display: block; width: 18px; height: 18px; stroke: #fff; pointer-events: none; }
 #rec-lock.hot { background: color-mix(in srgb, #fff 22%, transparent); }
 #rec-ext.locked #rec-lock { display: none; }
 #rec-ext.locked #rec-trash { pointer-events: auto; cursor: pointer; }
@@ -2162,11 +2163,11 @@ body.gm-on #leap-hud { display: none !important; }
         <button type="button" class="tb" id="tb-call" aria-label="Ara"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></button>
       </div>
       <div class="tb-grp">
+        <button type="button" class="tb" id="tb-song" aria-label="Şarkı ara"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
         <div id="mic-wrap">
           <div id="rec-ext"><button type="button" class="rx" id="rec-trash" aria-label="Kaydı sil"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button><span class="rx" id="rec-lock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>
           <button type="button" class="tb" id="mic-btn" aria-label="Ses kaydet (basılı tut)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></button>
         </div>
-        <button type="button" class="tb" id="tb-song" aria-label="Şarkı ara"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
       </div>
     </div></div></div>
   </div>
@@ -3084,7 +3085,7 @@ nickInput.addEventListener('focus', () => {
   pushNickHistory(nickInput.value);
   nickBrowsing = false;
   { const hh = readNickHistory(); nickHistPos = (hh.length && hh[hh.length - 1] === '') ? hh.length - 1 : hh.length; }
-  nickInput.value = ''; lsSet('nick', ''); applyNickState();
+  setTimeout(() => { try { nickInput.select(); } catch (e) {} }, 0);
 });
 nickInput.addEventListener('input', () => { if (!nickHistSetting) nickBrowsing = false; });
 // (İsim geçmişinde ctrl/ok tuşları veya kaydırmayla gezinme kaldırıldı)
@@ -9346,17 +9347,22 @@ function syncComposer() { inputWrapper.classList.toggle('has-text', messageInput
 messageInput.addEventListener('input', syncComposer);
 /* İsim kutusu yazıya göre genişler: isim · mesaj arasında boşluk kalmaz */
 const nickCtx = document.createElement('canvas').getContext('2d');
+const NICK_SHOW_MAX = 7;   // odakta değilken görünen en fazla karakter
 function fitNick() {
   try {
     const cs = getComputedStyle(nickInput);
     nickCtx.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
-    const w = nickCtx.measureText(nickInput.value || nickInput.placeholder || '').width;
-    const max = isMobileLayout() ? 110 : 170;
+    const focused = document.activeElement === nickInput;
+    let txt = nickInput.value || nickInput.placeholder || '';
+    if (!focused && nickInput.value.length > NICK_SHOW_MAX) txt = nickInput.value.slice(0, NICK_SHOW_MAX) + '…';
+    const w = nickCtx.measureText(txt).width;
+    const max = focused ? (isMobileLayout() ? 170 : 260) : 140;
     nickInput.style.width = Math.min(max, Math.max(34, Math.ceil(w) + 16)) + 'px';
   } catch (e) {}
 }
 ['input', 'focus', 'blur'].forEach((ev) => nickInput.addEventListener(ev, fitNick));
 window.addEventListener('resize', fitNick);
+window.addEventListener('load', fitNick);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitNick);
 if (window.ResizeObserver) new ResizeObserver(() => { try { if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight; } catch (e) {} }).observe(inputArea);
 syncComposer(); fitNick();
@@ -9553,7 +9559,7 @@ function hideRecUi() {
 // Parmağın bulunduğu bölge: mikrofonun solunda önce kilit, onun da solunda çöp
 function recZoneAt(x, y) {
   if (!recMR) return null;
-  const m = micBtn.getBoundingClientRect(), u = m.width;
+  const m = micBtn.getBoundingClientRect(), u = 40;
   if (recLocked) return null;
   if (x < m.left - u - 4) return 'trash';
   if (x < m.left - 8) return 'lock';
