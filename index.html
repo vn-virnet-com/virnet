@@ -119,11 +119,8 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
     #vn-sysbar .vs-bat svg { height: 13px; }
 /* Sağ boşluk (saatin sonu) = sol boşluk (tarihin başı): 14px + 16px = 30px. Nokta: sol 15px, genişlik 8px, tarihe 7px (diğer öğelerle aynı aralık) */
 #vn-sysbar .vs-r { padding-right: 16px; }
-#vn-sysbar.note-unseen .vs-l::after { content: ''; flex: 0 0 6px; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: var(--warn); }
-/* Not güncellenince tepsi adı sarı yanıp söner (noktayla birlikte); notlar açılıp bakılınca kalkar */
-#vn-sysbar.note-unseen .vs-l { color: var(--warn); animation: notes-blink 1s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { #vn-sysbar.note-unseen .vs-l { animation: none; } }
-#vn-sysbar .vs-n { position: absolute; left: 0; top: 0; width: 38px; height: 100%; box-sizing: border-box; padding-left: 15px; z-index: 2; display: flex; align-items: center; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+/* Bildirim dokunma alanı: soldan tarih çipinin başladığı yere kadar (14px şerit boşluğu + 16px .vs-lw boşluğu = 30px); çipin üstüne taşmaz */
+#vn-sysbar .vs-n { position: absolute; left: 0; top: 0; width: 30px; height: 100%; box-sizing: border-box; padding-left: 15px; z-index: 2; display: flex; align-items: center; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 #vn-sysbar .vs-n i { display: none; flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; background: #ff3b30; }
 #vn-sysbar .vs-n.on i { display: block; animation: vs-blink 1s linear infinite; }
 /* Bildirim noktası: 1 saniyede bir bordo ↔ açık kırmızı yanıp söner */
@@ -11412,11 +11409,11 @@ function goPanel(idx) {
 })();
 (function initNotesPopup() {
   if (notesUnseen) notesBtn.classList.add('unseen');
-  // Yüzen menünün parlaması, not tuşundaki 'unseen' durumunu izler
+  // Mesaj kutusundaki ··· tuşunun sarı yanıp sönmesi, not tuşundaki 'unseen' durumunu izler
   (function syncFabNoteGlow() {
-    const fabEl = document.getElementById('vn-sysbar');
-    if (!fabEl || !window.MutationObserver) return;
-    const sync = () => { const u = notesBtn.classList.contains('unseen') && !notesPop.classList.contains('show'); fabEl.classList.toggle('note-unseen', u); document.getElementById('tb-more').classList.toggle('note-unseen', u); };
+    const moreEl = document.getElementById('tb-more');
+    if (!moreEl || !window.MutationObserver) return;
+    const sync = () => { const u = notesBtn.classList.contains('unseen') && !notesPop.classList.contains('show'); moreEl.classList.toggle('note-unseen', u); };
     new MutationObserver(sync).observe(notesBtn, { attributes: true, attributeFilter: ['class'] });
     new MutationObserver(sync).observe(notesPop, { attributes: true, attributeFilter: ['class'] });
     sync();
@@ -13680,25 +13677,40 @@ function pfRender() {
     if (!curH) return;
     if (!elL || !bar.contains(elL)) build();
     var o = {}; try { o = JSON.parse(V.sys()) || {}; } catch (e) {}
-    var d = new Date(), p2 = function (n) { return ('0' + n).slice(-2); };
     var tray = ''; try { if (typeof pfData !== 'undefined' && pfData && pfData.tray) tray = String(pfData.tray); } catch (e) {}
     var net = o.net === 'wifi' || o.net === 'eth' ? wifi(o.net === 'eth' ? -1 : (o.lvl == null ? -1 : o.lvl))
             : o.net === 'cell' ? cell(o.lvl == null ? -1 : o.lvl)
             : o.net === 'other' ? wifi(-1) : off();
     var b = (typeof o.bat === 'number' && o.bat >= 0) ? batt(o.bat, !!o.chg) : '';
     put('l', elL, tray || 'Menü');
-    put('c', elC, '<span>' + d.getDate() + ' ' + ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'][d.getMonth()] + '</span>', true);
     put('bt', elBt, o.bt ? btIcon() : '', true);
     put('n', elN, net, true);
     put('b', elB, b, true);
-    put('t', elT, p2(d.getHours()) + ':' + p2(d.getMinutes()));
-    fitClock();
+    clockNow();
     ntPull();
   }
+  /* Saat + tarih: dakika/gün değiştiği anda güncellenir (4 sn'lik döngüyü beklemez). Zamanlayıcı bir sonraki dakika başına kurulur */
+  var MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+  function clockNow() {
+    if (!elT || !elC || !bar.contains(elT)) return;
+    var d = new Date(), p2 = function (n) { return ('0' + n).slice(-2); };
+    put('c', elC, '<span>' + d.getDate() + ' ' + MONTHS[d.getMonth()] + '</span>', true);
+    put('t', elT, p2(d.getHours()) + ':' + p2(d.getMinutes()));
+    fitClock();
+  }
+  var clkTm = 0;
+  function clockSched() {
+    clearTimeout(clkTm);
+    var n = new Date();
+    clkTm = setTimeout(function () { clockNow(); clockSched(); }, 60000 - (n.getSeconds() * 1000 + n.getMilliseconds()) + 15);   // +15 ms: erken tetiklenirse eski dakikayı göstermesin
+  }
+  function resync() { tick(); clockNow(); clockSched(); }
   tick();
+  clockSched();
   setInterval(tick, 4000);
-  window.addEventListener('focus', tick);
-  window.addEventListener('pageshow', tick);
+  window.addEventListener('focus', resync);
+  window.addEventListener('pageshow', resync);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) resync(); });
 })();
 
 /* APK arka plana gidince: yalnızca 3828 ile girenlerde ekran, göze basılmış gibi gizlenir; geri dönünce PIN sorulur (6687 etkilenmez) */
