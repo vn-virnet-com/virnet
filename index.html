@@ -409,10 +409,10 @@ body.no-time .time-tag { display: none !important; }
 #nick-input {
   flex: 0 0 auto; box-sizing: border-box; width: 44px; min-width: 0; max-width: 60%; height: var(--cmp-h); background: transparent; border: 0;
   color: var(--c-88); padding: calc((var(--cmp-h) - 22px) / 2) 0 calc((var(--cmp-h) - 22px) / 2) 12px; font-size: 16px; line-height: 22px; font-family: inherit; outline: none; text-align: right; border-radius: 0;
-  overflow: hidden; text-overflow: clip; white-space: nowrap; margin: 0;
+  overflow: hidden; white-space: pre; resize: none; margin: 0; display: block;
 }
 #nick-input.nick-cut { text-align: left; }
-#nick-dot { flex: 0 0 auto; height: var(--cmp-h); line-height: var(--cmp-h); padding: 0 5px; color: var(--c-88); font-size: 16px; font-family: inherit; user-select: none; -webkit-user-select: none; pointer-events: none; }
+#nick-dot { flex: 0 0 auto; box-sizing: border-box; height: var(--cmp-h); line-height: 22px; padding: calc((var(--cmp-h) - 22px) / 2) 5px; color: var(--c-88); font-size: 16px; font-family: inherit; user-select: none; -webkit-user-select: none; pointer-events: none; }
 body.nick-hidden #nick-dot { display: none; }
 body.nick-hidden #message-input { padding-left: 14px; }
 body.nick-hidden #ph-overlay { left: 14px; }
@@ -430,7 +430,7 @@ body.nick-hidden #ph-overlay { left: 14px; }
 /* Gerçek placeholder görünmez; yerine sığmayan yazıyı yavaşça kaydıran üst katman gösterilir */
 #message-input::placeholder { color: transparent; white-space: nowrap; overflow: hidden; text-overflow: clip; }
 #message-input:placeholder-shown { overflow: hidden; }
-#ph-overlay { display: none; position: absolute; left: 0; right: 6px; top: 0; height: var(--cmp-h); overflow: hidden; pointer-events: none; font-size: 16px; font-family: inherit; line-height: var(--cmp-h); color: var(--c-fff); opacity: 0.5; white-space: nowrap; z-index: 3; }
+#ph-overlay { display: none; position: absolute; left: 0; right: 6px; top: 0; box-sizing: border-box; height: var(--cmp-h); padding-top: calc((var(--cmp-h) - 22px) / 2); overflow: hidden; pointer-events: none; font-size: 16px; font-family: inherit; line-height: 22px; color: var(--c-fff); opacity: 0.5; white-space: nowrap; z-index: 3; }
 #message-input:placeholder-shown ~ #ph-overlay { display: block; }
 #ph-text { display: inline-block; white-space: nowrap; will-change: transform; }
 #send-btn {
@@ -544,7 +544,7 @@ body #typing-indicator { display: none !important; }
 #send-btn.rec { background: #d33; animation: recp 1s ease-in-out infinite; }
 @keyframes recp { 50% { opacity: .6; } }
 /* Kayıt sırasında mesaj kutusunda kırmızı, yanıp sönen yazı (durum placeholder'ından bağımsız) */
-#rec-ph { display: none; position: absolute; left: 0; right: 0; top: 0; bottom: 0; padding: 0 6px; background: var(--c-111); z-index: 4; pointer-events: none; font-size: 16px; line-height: var(--cmp-h); white-space: nowrap; overflow: hidden; }
+#rec-ph { display: none; position: absolute; left: 0; right: 0; top: 0; bottom: 0; box-sizing: border-box; padding: calc((var(--cmp-h) - 22px) / 2) 6px 0; background: var(--c-111); z-index: 4; pointer-events: none; font-size: 16px; line-height: 22px; white-space: nowrap; overflow: hidden; }
 #rec-ph span { color: #ff3b30; font-weight: 700; animation: recblink 1s ease-in-out infinite; }
 #msg-wrap.recording #rec-ph { display: block; }
 @keyframes recblink { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
@@ -553,6 +553,10 @@ body #typing-indicator { display: none !important; }
 #tool-in { min-height: 0; overflow: hidden; }
 #tool-pad { display: flex; justify-content: space-between; align-items: center; padding-top: 5px; }
 .tb-grp { display: flex; align-items: center; gap: 8px; }
+/* Ayarlarda isim kutusu gizliyse: isim, alt satırdaki iki tuş grubunun tam ortasında soluk görünür */
+#tool-nick { flex: 1 1 0; min-width: 0; padding: 0 10px; text-align: center; font-size: 14px; line-height: 30px; color: var(--c-88); opacity: .45; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; user-select: none; -webkit-user-select: none; }
+body:not(.nick-hidden) #tool-nick { display: none; }
+#input-wrapper.rec-on #tool-nick { visibility: hidden; }
 .tb {
   flex: 0 0 auto; width: var(--tb-w); height: var(--tb-h); padding: 0; border: 0; border-radius: calc(var(--tb-h) / 2); background: var(--c-22); color: var(--c-cc);
   display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
@@ -2152,7 +2156,7 @@ body.gm-on #leap-hud { display: none !important; }
   <div id="input-wrapper">
     <div id="top-row">
       <div id="msg-line">
-        <input type="text" id="nick-input" name="chat-label" placeholder="İsim" tabindex="1" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><span id="nick-dot" aria-hidden="true">·</span>
+        <textarea id="nick-input" rows="1" wrap="off" name="chat-label" placeholder="İsim" tabindex="1" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></textarea><span id="nick-dot" aria-hidden="true">·</span>
         <div id="msg-wrap"><textarea id="message-input" placeholder="Bağlanıyor..." tabindex="2"></textarea><div id="ph-overlay" aria-hidden="true"><span id="ph-text">Bağlanıyor...</span></div><div id="rec-ph" aria-hidden="true"><span>Ses kaydediliyor...</span></div></div>
       </div>
       <button id="send-btn" type="button" aria-label="Gönder" disabled><svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.25 12L3.75 20.5L6.25 14.5L14.25 12L6.25 9.5L3.75 3.5Z"/></svg></button>
@@ -2163,6 +2167,7 @@ body.gm-on #leap-hud { display: none !important; }
         <button type="button" class="tb" id="tb-cam" aria-label="Fotoğraf çek"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></button>
         <button type="button" class="tb" id="tb-call" aria-label="Ara"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></button>
       </div>
+      <span id="tool-nick" aria-hidden="true"></span>
       <div class="tb-grp">
         <button type="button" class="tb" id="tb-song" aria-label="Şarkı ara"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
         <div id="mic-wrap">
@@ -9344,14 +9349,16 @@ function syncComposer() { inputWrapper.classList.toggle('has-text', messageInput
 (function hookValue() {
   const d = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
   Object.defineProperty(messageInput, 'value', { configurable: true, get() { return d.get.call(this); }, set(v) { d.set.call(this, v); syncComposer(); } });
-  const dn = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+  const dn = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
   Object.defineProperty(nickInput, 'value', { configurable: true, get() { return dn.get.call(this); }, set(v) { dn.set.call(this, v); fitNick(); } });
 })();
 messageInput.addEventListener('input', syncComposer);
 /* İsim kutusu yazıya göre genişler: isim · mesaj arasında boşluk kalmaz */
 const nickCtx = document.createElement('canvas').getContext('2d');
 const NICK_SHOW_MAX = 7;   // odakta değilken görünen en fazla karakter
+function updateToolNick() { const e = document.getElementById('tool-nick'); if (e) e.textContent = nickInput.value; }
 function fitNick() {
+  updateToolNick();
   try {
     const cs = getComputedStyle(nickInput);
     nickCtx.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
@@ -9371,11 +9378,14 @@ function fitNick() {
   } catch (e) {}
 }
 ['input', 'focus', 'blur'].forEach((ev) => nickInput.addEventListener(ev, fitNick));
+nickInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); try { messageInput.focus(); } catch (er) {} } });
+nickInput.addEventListener('input', () => { if (/[\r\n]/.test(nickInput.value)) nickInput.value = nickInput.value.replace(/[\r\n]+/g, ' '); });
 window.addEventListener('resize', fitNick);
 window.addEventListener('load', fitNick);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitNick);
 if (window.ResizeObserver) new ResizeObserver(() => { try { if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight; } catch (e) {} }).observe(inputArea);
 syncComposer(); fitNick();
+if (window.MutationObserver) new MutationObserver(updateToolNick).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
 function flashStatus(text) {
   setStatus(text, isConnected());
