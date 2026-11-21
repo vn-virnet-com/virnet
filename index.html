@@ -6204,13 +6204,19 @@ chatArea.addEventListener('click', (e) => {
 function adjustInputHeight() {
   const mob = isMobileLayout();
   const baseH = mob ? 40 : 44; // --cmp-h ile aynı
+  // Ölçümü animasyonsuz yap: yoksa süren geçiş yüzünden scrollHeight eski (büyük) yüksekliği gösterir ve kutu satır silinince küçülmez
+  const cur = messageInput.offsetHeight || baseH;
+  messageInput.style.transition = 'none';
   messageInput.style.height = baseH + 'px';
   // Kutu boşken (placeholder gösteriliyorken) yükseklik hiç büyümez; uzun placeholder satır atlayıp kutuyu şişirmesin
   // Masaüstünde birkaç px'lik ölçü farkı ilk satırda kutuyu büyütmesin: ikinci satır gelene kadar (yarım satır payıyla) sabit kalır
-  if (messageInput.value !== '' && messageInput.scrollHeight > baseH + (mob ? 0 : 8)) {
-    messageInput.style.height = Math.min(150, messageInput.scrollHeight) + 'px';
-  }
+  let h = baseH;
+  if (messageInput.value !== '' && messageInput.scrollHeight > baseH + (mob ? 0 : 8)) h = Math.min(150, messageInput.scrollHeight);
   if (!mob) messageInput.style.overflowY = messageInput.scrollHeight > 150 ? 'auto' : 'hidden'; // tek/iki satırda gereksiz kaydırma çubuğu çıkmasın
+  messageInput.style.height = cur + 'px';   // eski yükseklikten başla, hedefe yumuşakça git (büyürken de küçülürken de)
+  void messageInput.offsetHeight;
+  messageInput.style.transition = '';
+  messageInput.style.height = h + 'px';
 
   fitToViewport();
   if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
