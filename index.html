@@ -404,9 +404,12 @@ body.no-time .time-tag { display: none !important; }
 }
 #nick-input.nick-cut { text-align: left; }
 /* Satır eklenince / silinince mesaj kutusu yumuşakça büyüyüp küçülür */
-#message-input { transition: height .16s ease-out; scrollbar-width: none; }
+#message-input { transition: height .16s ease-out, padding .16s ease-out; scrollbar-width: none; }
+#nick-input, #nick-dot { transition: margin-top .16s ease-out; }
+/* 2. satır: kutu 1. satırdaki (tuşlu) yükseklikte sabit kalır, mesaj dikey ortalanır; isim ilk satırla hizalı kalsın diye aşağı kayar */
+#input-wrapper.two-line #nick-input, #input-wrapper.two-line #nick-dot { margin-top: var(--l2-shift, 0px); }
 #message-input::-webkit-scrollbar { display: none; }
-@media (prefers-reduced-motion: reduce) { #message-input { transition: none; } }
+@media (prefers-reduced-motion: reduce) { #message-input, #nick-input, #nick-dot { transition: none; } }
 /* Düzenlerken (odaktayken) yazı ve imleç kutunun tam ortasında: normal küçük yazı alanı gibi */
 #nick-input.nick-full { text-align: left; }   /* düzenlerken 7 harfi geçince tamamı görünür; 7 harfe kadar odaksızken nasıl duruyorsa öyle durur */
 #nick-dot { flex: 0 0 auto; box-sizing: border-box; height: var(--cmp-h); line-height: 22px; padding: calc((var(--cmp-h) - 22px) / 2) 5px; color: var(--c-88); font-size: 16px; font-family: inherit; user-select: none; -webkit-user-select: none; pointer-events: none; }
@@ -547,7 +550,7 @@ body #typing-indicator { display: none !important; }
 #msg-wrap.recording #rec-ph { display: block; }
 @keyframes recblink { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
 /* Alt araç satırı: yalnız kutu boşken görünür; yazı başlayınca yumuşakça kapanır */
-#tool-row { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .2s ease; }
+#tool-row { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .16s ease-out; }
 #tool-in { min-height: 0; overflow: hidden; }
 #tool-pad { display: flex; justify-content: space-evenly; align-items: center; padding-top: 5px; }
 .tb-grp { display: contents; }  /* iki grup tek sıra gibi davranır: tüm tuşlar alana eşit aralıkla dağılır */
@@ -583,7 +586,7 @@ body #typing-indicator { display: none !important; }
 body:not(.lv-admin) #tb-call { display: none; }
 #tool-pad { transition: opacity .18s ease; }
 #input-wrapper.has-text #tool-pad { opacity: .35; pointer-events: none; }   /* 1. aşama: yazı başlayınca tuşlar (··· dahil) koyulaşıp soluk kalır, kutu küçülmez */
-#input-wrapper.has-text2 #tool-row { grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .2s ease, visibility 0s .2s; }   /* 2. aşama: yazı alt satıra geçip mesaj kutusu yukarı uzayınca alt satır gizlenir */
+#input-wrapper.has-text2 #tool-row { grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .16s ease-out, visibility 0s .16s; }   /* 2. aşama: yazı alt satıra geçip mesaj kutusu yukarı uzayınca alt satır gizlenir */
 #input-wrapper.rec-on #tool-pad { opacity: 1; pointer-events: auto; }
 #input-wrapper.rec-on #tool-row { grid-template-rows: 1fr; visibility: visible; transition: none; }
 #input-wrapper.chat-off .tb:not(#mx-x):not(#tb-more) { pointer-events: none; }   /* bağlantı yokken tuşlar soluklaşmaz, yalnızca basınca çalışmaz */
@@ -6220,20 +6223,48 @@ function adjustInputHeight() {
   const baseH = mob ? 40 : 44; // --cmp-h ile aynı
   // Ölçümü animasyonsuz yap: yoksa süren geçiş yüzünden scrollHeight eski (büyük) yüksekliği gösterir ve kutu satır silinince küçülmez
   const cur = messageInput.offsetHeight || baseH;
+  const curPad = parseFloat(getComputedStyle(messageInput).paddingTop) || ((baseH - 22) / 2);
   messageInput.style.transition = 'none';
+  messageInput.style.paddingTop = ''; messageInput.style.paddingBottom = '';   // ölçüm varsayılan iç boşlukla yapılır
   messageInput.style.height = baseH + 'px';
   // Kutu boşken (placeholder gösteriliyorken) yükseklik hiç büyümez; uzun placeholder satır atlayıp kutuyu şişirmesin
   // Masaüstünde birkaç px'lik ölçü farkı ilk satırda kutuyu büyütmesin: ikinci satır gelene kadar (yarım satır payıyla) sabit kalır
+  const sh = messageInput.scrollHeight;
+  const grown = messageInput.value !== '' && sh > baseH + (mob ? 0 : 8);
   let h = baseH;
-  if (messageInput.value !== '' && messageInput.scrollHeight > baseH + (mob ? 0 : 8)) h = Math.min(150, messageInput.scrollHeight);
-  if (!mob) messageInput.style.overflowY = messageInput.scrollHeight > 150 ? 'auto' : 'hidden'; // tek/iki satırda gereksiz kaydırma çubuğu çıkmasın
+  if (grown) h = Math.min(150, sh);
+  if (!mob) messageInput.style.overflowY = sh > 150 ? 'auto' : 'hidden'; // tek/iki satırda gereksiz kaydırma çubuğu çıkmasın
+
+  // Tam 2. satırdaysa: tuşlar gizlenirken kutu daralmasın; 1. satırdaki (tuşlu) yükseklikte sabit kalsın, mesaj dikey ortalansın
+  const toolPad = document.getElementById('tool-pad');
+  const toolH = toolPad ? toolPad.offsetHeight : 0;
+  const two = grown && toolH >= 22 && Math.round((sh - baseH) / 22) + 1 === 2;
+  let pad = null, shift = 0;
+  if (two) {
+    h = baseH + toolH;
+    pad = (h - 44) / 2;                    // 2 satır × 22px, kutunun tam ortasında
+    shift = pad - (baseH - 22) / 2;        // isim/nokta ilk satırla hizalı kalsın
+  }
+
   messageInput.style.height = cur + 'px';   // eski yükseklikten başla, hedefe yumuşakça git (büyürken de küçülürken de)
+  messageInput.style.paddingTop = curPad + 'px'; messageInput.style.paddingBottom = curPad + 'px';
   void messageInput.offsetHeight;
   messageInput.style.transition = '';
   messageInput.style.height = h + 'px';
+  if (pad === null) { messageInput.style.paddingTop = ''; messageInput.style.paddingBottom = ''; }
+  else { messageInput.style.paddingTop = pad + 'px'; messageInput.style.paddingBottom = pad + 'px'; }
 
   // Alt satır (tuşlar) yalnızca yazı alt satıra geçip kutu yukarı doğru uzayınca gizlenir
-  try { const w = document.getElementById('input-wrapper'); if (w) w.classList.toggle('has-text2', h > baseH); } catch (e) {}
+  try {
+    const w = document.getElementById('input-wrapper');
+    if (w) {
+      w.classList.toggle('has-text2', h > baseH);
+      w.classList.toggle('two-line', two);
+      w.style.setProperty('--l2-shift', shift + 'px');
+    }
+  } catch (e) {}
+  // Emojili metin aynası iç boşluk değişince yeniden hizalansın
+  try { if (window.__feLater) { window.__feLater(messageInput); setTimeout(() => window.__feLater && window.__feLater(messageInput), 200); } } catch (e) {}
 
   fitToViewport();
   if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
