@@ -11697,7 +11697,8 @@ function goPanel(idx) {
   let downFocused = false, downOnMsg = false, downAt = 0, restoreOk = true;
   document.addEventListener('pointerdown', (e) => {
     downFocused = document.activeElement === messageInput;
-    downOnMsg = !!(e.target && e.target.closest && e.target.closest('.msg, .lp-clone'));
+    // ··· tuşu: klavye zaten kapalıysa basınca açılmasın, açıksa açık kalsın
+    downOnMsg = !!(e.target && e.target.closest && e.target.closest('.msg, .lp-clone, #tb-more'));
     downAt = Date.now(); restoreOk = true;
     lastPtr = Date.now();
     if (pickerBusy && Date.now() - pickerAt > 1500) pickerBusy = false;
