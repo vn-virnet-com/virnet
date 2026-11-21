@@ -441,7 +441,6 @@ html[data-theme="gray"]   { --send-bg:#d0d0d0; --send-ico:#232323; }
 html[data-theme="blue"]   { --send-bg:#9fc5f8; --send-ico:#12305f; }
 html[data-theme="purple"] { --send-bg:#c9adf2; --send-ico:#2c1860; }
 #send-btn { background: var(--send-bg); color: var(--send-ico); transition: background-color .12s ease; }
-#send-btn.kb .sp-ico { fill: none; }
 #send-btn.pressed { background: color-mix(in srgb, var(--send-bg) 66%, #000); }
 #send-btn .sp-ico { width: 22px; height: 22px; display: block; pointer-events: none; fill: currentColor; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
 #nick-input:focus, #message-input:focus {
@@ -9293,7 +9292,6 @@ sendBtn.addEventListener('pointerup', (event) => {
                  event.clientY >= r.top - 12 && event.clientY <= r.bottom + 12;
   if (!inside) return;
   if (recLocked && recMR) { stopRec(true); return; }
-  if (sbAct()) return;
   sendMessage();
   setTimeout(() => { if (!nolinkModal.classList.contains('show')) messageInput.focus(); }, 10);
 });
@@ -9303,7 +9301,6 @@ sendBtn.addEventListener('contextmenu', (e) => e.preventDefault());
 sendBtn.addEventListener('click', () => {
   if (Date.now() - lastPointerAction < 700) return;
   if (recLocked && recMR) { stopRec(true); return; }
-  if (sbAct()) return;
   sendMessage();
 });
 
@@ -9367,31 +9364,7 @@ document.getElementById('tb-call').addEventListener('click', () => { if (!editin
 
 /* Kutu boşken alt satır görünür, yazı başlayınca kapanır (value programla değişse de) */
 const inputWrapper = document.getElementById('input-wrapper');
-/* Mobil gönder tuşu: kutu boş + klavye kapalı = klavye aç; kutu boş + klavye açık = çizgili klavye (kapat); yazı varsa = gönder */
-const KB_SVG = '<svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5.5" width="20" height="13" rx="3"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h.01M17 14h.01M10 14.5h4';
-let sbCur = 'send';
-function sbMode() {
-  try { if (!isMobileLayout() || editingId || (recLocked && recMR) || messageInput.value.length > 0) return 'send'; } catch (e) { return 'send'; }
-  return document.body.classList.contains('kb-open') ? 'hide' : 'show';
-}
-function sbIcon() {
-  const m = sbMode();
-  if (m === sbCur) return;
-  sbCur = m;
-  sendBtn.classList.toggle('kb', m !== 'send');
-  sendBtn.innerHTML = m === 'send' ? SEND_ICON : KB_SVG + (m === 'hide' ? 'M4 3l16 18' : '') + '"/></svg>';
-  sendBtn.setAttribute('aria-label', m === 'send' ? 'Gönder' : m === 'hide' ? 'Klavyeyi kapat' : 'Klavyeyi aç');
-}
-function sbAct() {
-  const m = sbMode();
-  if (m === 'send') return false;
-  if (m === 'show') { if (!messageInput.disabled) messageInput.focus(); }
-  else { const a = document.activeElement; if (a && a.blur) a.blur(); }
-  return true;
-}
-new MutationObserver(sbIcon).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-mqMobile.addEventListener('change', sbIcon);
-function syncComposer() { inputWrapper.classList.toggle('has-text', messageInput.value.length > 0); sbIcon(); }
+function syncComposer() { inputWrapper.classList.toggle('has-text', messageInput.value.length > 0); }
 (function hookValue() {
   const d = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
   Object.defineProperty(messageInput, 'value', { configurable: true, get() { return d.get.call(this); }, set(v) { d.set.call(this, v); syncComposer(); } });
