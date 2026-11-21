@@ -11607,11 +11607,27 @@ function goPanel(idx) {
     if (a === messageInput || (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) || (pc && pc.classList.contains('show')) || document.documentElement.classList.contains('pin-locked') || document.body.classList.contains('once-viewing')) return;
     focusInputForReply();
   };
+  // ··· açılmadan önce klavye kapalıydıysa: dönüşte mesaj kutusu seçilir (fiziksel klavye yazabilsin) ama ekran klavyesi açılmaz
+  const silentFocus = () => {
+    const a = document.activeElement, pc = document.getElementById('privacy-cover');
+    if (messageInput.disabled || a === messageInput || (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) || (pc && pc.classList.contains('show')) || document.documentElement.classList.contains('pin-locked') || document.body.classList.contains('once-viewing')) return;
+    messageInput.setAttribute('inputmode', 'none');
+    try { messageInput.focus({ preventScroll: true }); } catch (e) {}
+  };
+  // Kutuya dokunulunca ekran klavyesi normal şekilde açılsın
+  const unsoft = (e) => {
+    if (messageInput.getAttribute('inputmode') !== 'none') return;
+    messageInput.removeAttribute('inputmode');
+    if (e && e.type === 'pointerdown' && e.pointerType === 'mouse') return;
+    if (document.activeElement === messageInput) { try { messageInput.blur(); messageInput.focus({ preventScroll: true }); } catch (er) {} }
+  };
+  messageInput.addEventListener('pointerdown', unsoft, true);
+  messageInput.addEventListener('blur', () => { if (messageInput.getAttribute('inputmode') === 'none') messageInput.removeAttribute('inputmode'); });
   function set(on) {
     if (on === w.classList.contains('mx-on')) return;
     if (on) { hadFocus = document.activeElement === messageInput; document.getElementById('mx-leap-num').textContent = leapFmt(leapVal); }
     w.classList.toggle('mx-on', on); b.setAttribute('aria-expanded', on);
-    if (on) fit(); else { b.style.width = ''; if (hadFocus) setTimeout(refocus, 120); }
+    if (on) fit(); else { b.style.width = ''; if (hadFocus) setTimeout(refocus, 120); else if (window.matchMedia('(pointer: coarse)').matches) setTimeout(silentFocus, 120); }
   }
   b.addEventListener('click', () => set(!w.classList.contains('mx-on')));   // açıkken Leap satırına basınca da kapanır
   // Menüdeki tuşlardan biri kullanılınca menü kapanır, normal yazma satırı döner (not tuşu click üretmez, pointerup ile çalışır: kısa gecikmeyle kapanır)
@@ -11702,7 +11718,7 @@ function goPanel(idx) {
     downAt = Date.now(); restoreOk = true;
     lastPtr = Date.now();
     // ··· tuşu: klavye kapalıysa (odak takılı kalmış olsa bile) mesaj kutusunu bırak, klavye açılmasın; açıksa dokunma
-    if (e.target && e.target.closest && e.target.closest('#tb-more') && isMobileLayout() && !document.body.classList.contains('kb-open')) {
+    if (e.target && e.target.closest && e.target.closest('#tb-more') && window.matchMedia('(pointer: coarse)').matches && !document.body.classList.contains('kb-open')) {
       downFocused = false; kbWanted = false;
       if (document.activeElement === messageInput) { try { messageInput.blur(); } catch (er) {} }
     }
