@@ -408,7 +408,7 @@ body.no-time .time-tag { display: none !important; }
 #message-input::-webkit-scrollbar { display: none; }
 @media (prefers-reduced-motion: reduce) { #message-input { transition: none; } }
 /* Düzenlerken (odaktayken) yazı ve imleç kutunun tam ortasında: normal küçük yazı alanı gibi */
-#nick-input:focus { text-align: center; padding-left: 0; }
+#nick-input.nick-full { text-align: left; }   /* düzenlerken 7 harfi geçince tamamı görünür; 7 harfe kadar odaksızken nasıl duruyorsa öyle durur */
 #nick-dot { flex: 0 0 auto; box-sizing: border-box; height: var(--cmp-h); line-height: 22px; padding: calc((var(--cmp-h) - 22px) / 2) 5px; color: var(--c-88); font-size: 16px; font-family: inherit; user-select: none; -webkit-user-select: none; pointer-events: none; }
 body.nick-hidden #nick-dot { display: none; }
 body.nick-hidden #message-input { padding-left: 14px; }
@@ -9399,8 +9399,11 @@ function fitNick() {
     nickCtx.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
     const focused = document.activeElement === nickInput;
     const v = nickInput.value;
-    const cut = !focused && v.length > NICK_SHOW_MAX;
+    const long = v.length > NICK_SHOW_MAX;
+    const cut = !focused && long;
     nickInput.classList.toggle('nick-cut', cut);
+    nickInput.classList.toggle('nick-full', focused && long);
+    if (cut) nickInput.scrollLeft = 0;
     if (cut) {   // ilk 6 harf tam, 7. harfin yatayda yarısı görünür: devamı olduğu anlaşılsın
       const w6 = nickCtx.measureText(v.slice(0, NICK_SHOW_MAX - 1)).width;
       const w7 = nickCtx.measureText(v.slice(0, NICK_SHOW_MAX)).width - w6;
