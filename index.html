@@ -122,7 +122,8 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 /* Bildirim dokunma alanı: soldan tarih çipinin başladığı yere kadar (14px şerit boşluğu + 16px .vs-lw boşluğu = 30px); çipin üstüne taşmaz */
 #vn-sysbar .vs-n { position: absolute; left: 0; top: 0; width: 38px; height: 100%; box-sizing: border-box; padding-right: 7px; z-index: 2; display: flex; align-items: center; justify-content: flex-end; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 /* Bildirim rozeti: 16px yuvarlak, içinde bembeyaz okunmamış bildirim sayısı (9'dan fazlaysa "9+") */
-#vn-sysbar .vs-n i { display: none; flex: 0 0 auto; box-sizing: border-box; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: #ff3b30; color: #fff; font-style: normal; font-size: 10px; font-weight: 800; line-height: 16px; text-align: center; letter-spacing: 0; text-shadow: 0 0 1px rgba(0,0,0,.35); overflow: hidden; font-variant-numeric: tabular-nums; }
+#vn-sysbar .vs-n i { display: none; flex: 0 0 auto; box-sizing: border-box; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: #ff3b30; color: #fff; font-style: normal; font-size: 10px; font-weight: 800; line-height: 16px; text-align: center; letter-spacing: 0; text-shadow: 0 0 1px rgba(0,0,0,.35); font-variant-numeric: tabular-nums; }
+#vn-sysbar .vs-n i .vs-nt { display: inline-block; line-height: 16px; will-change: transform; }
 #vn-sysbar .vs-n.on i { display: block; animation: vs-blink 1s linear infinite; }
 /* Bildirim noktası: 1 saniyede bir bordo ↔ açık kırmızı yanıp söner */
 @keyframes vs-blink {
@@ -13656,18 +13657,26 @@ function pfRender() {
     var d = bar.querySelector('.vs-n'); if (!d) return;
     var n = ntUnread(), b = d.querySelector('i');
     d.classList.toggle('on', n > 0);
-    if (b) { b.textContent = n > 9 ? '9+' : (n > 0 ? String(n) : ''); ntCenter(b); }
+    if (b) {
+      b.textContent = '';
+      if (n > 0) { var sp = document.createElement('span'); sp.className = 'vs-nt'; sp.textContent = n > 9 ? '9+' : String(n); b.appendChild(sp); ntCenter(b); }
+    }
   }
-  /* Rakam, yuvarlağın en üst ile en alt noktası arasında dikey ortalanır: yazı tipinin gerçek ölçüsüne göre satır yüksekliği ayarlanır */
+  /* Rakamın boyalı kısmı (en üst ile en alt nokta) yuvarlağın tam dikey ortasına gelir: gerçek taban çizgisi ve harf boyutu ölçülür, fark kadar kaydırılır */
   function ntCenter(b) {
     try {
-      var t = b.textContent; if (!t) return;
-      var cs = getComputedStyle(b), c = ntCenter.c || (ntCenter.c = document.createElement('canvas').getContext('2d'));
+      var sp = b.firstChild; if (!sp || sp.className !== 'vs-nt') return;
+      var t = sp.firstChild ? sp.firstChild.nodeValue : ''; if (!t) return;
+      var pr = sp.querySelector('s');
+      if (!pr) { pr = document.createElement('s'); pr.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline;text-decoration:none'; sp.appendChild(pr); }
+      sp.style.transform = '';
+      var cs = getComputedStyle(sp), c = ntCenter.c || (ntCenter.c = document.createElement('canvas').getContext('2d'));
       c.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
       var m = c.measureText(t);
-      if (m.fontBoundingBoxAscent === undefined || m.actualBoundingBoxAscent === undefined) return;
-      var delta = (m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2 + (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
-      b.style.lineHeight = (16 - 2 * delta).toFixed(2) + 'px';
+      var base = pr.getBoundingClientRect().bottom, r = b.getBoundingClientRect();
+      if (!r.height || m.actualBoundingBoxAscent === undefined) return;
+      var dy = (r.top + r.height / 2) - (base + (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2);
+      sp.style.transform = 'translateY(' + dy.toFixed(2) + 'px)';
     } catch (e) {}
   }
   try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { var d = bar.querySelector('.vs-n'), b = d && d.querySelector('i'); if (b) ntCenter(b); }); } catch (e) {}
