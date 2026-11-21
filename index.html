@@ -122,7 +122,7 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 /* Bildirim dokunma alanı: soldan tarih çipinin başladığı yere kadar (14px şerit boşluğu + 16px .vs-lw boşluğu = 30px); çipin üstüne taşmaz */
 #vn-sysbar .vs-n { position: absolute; left: 0; top: 0; width: 38px; height: 100%; box-sizing: border-box; padding-right: 7px; z-index: 2; display: flex; align-items: center; justify-content: flex-end; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 /* Bildirim rozeti: 16px yuvarlak, içinde bembeyaz okunmamış bildirim sayısı (9'dan fazlaysa "9+") */
-#vn-sysbar .vs-n i { display: none; flex: 0 0 auto; box-sizing: border-box; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: #ff3b30; color: #fff; font-style: normal; font-size: 10px; font-weight: 800; line-height: 16px; text-align: center; letter-spacing: 0; text-shadow: 0 1px 1px rgba(0,0,0,.35); font-variant-numeric: tabular-nums; }
+#vn-sysbar .vs-n i { display: none; flex: 0 0 auto; box-sizing: border-box; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: #ff3b30; color: #fff; font-style: normal; font-size: 10px; font-weight: 800; line-height: 16px; text-align: center; letter-spacing: 0; text-shadow: 0 0 1px rgba(0,0,0,.35); overflow: hidden; font-variant-numeric: tabular-nums; }
 #vn-sysbar .vs-n.on i { display: block; animation: vs-blink 1s linear infinite; }
 /* Bildirim noktası: 1 saniyede bir bordo ↔ açık kırmızı yanıp söner */
 @keyframes vs-blink {
@@ -421,6 +421,11 @@ body.nick-hidden #nick-dot { display: none; }
 body.nick-locked #nick-input, body.nick-locked .dn-nick { pointer-events: none !important; -webkit-user-select: none; user-select: none; caret-color: transparent; }
 /* "Karşı Tarafın İsmi" ayarı yalnızca 6687'de görünür */
 body:not(.lv-admin) .sb-peernick { display: none !important; }
+/* 3828: isim kutusu hiçbir yerde görünmez (sohbet, dock, ayarlar); 'İsimler' ayarı da yoktur */
+body.nick-locked #nick-input, body.nick-locked #nick-dot, body.nick-locked .dn-nick, body.nick-locked .sb-nick { display: none !important; }
+body.nick-locked #message-input { padding-left: 14px; border-radius: var(--r-lg) 0 0 var(--r-lg); }
+body.nick-locked #ph-overlay { left: 14px; }
+body.nick-locked .dn-in { border-radius: var(--r-lg) 0 0 var(--r-lg); }
 .peer-nick-row { display: flex; gap: 6px; align-items: center; }
 #peer-nick-input { flex: 1 1 auto; min-width: 0; box-sizing: border-box; height: 36px; padding: 0 10px; background: var(--c-000); border: 1px solid var(--c-33); border-radius: 10px; color: var(--c-fff); font-size: 16px; outline: none; -webkit-user-select: text; user-select: text; }
 #peer-nick-input:focus { border-color: var(--accent); }
@@ -10268,7 +10273,7 @@ document.addEventListener('keydown', (event) => {
   const active = document.activeElement;
   if (active && active !== messageInput && active !== nickInput && active.closest &&
       active.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""]')) return;
-  const nickOk = !document.body.classList.contains('nick-hidden') && !nickInput.disabled && nickInput.offsetParent !== null;
+  const nickOk = !document.body.classList.contains('nick-hidden') && !document.body.classList.contains('nick-locked') && !nickInput.disabled && nickInput.offsetParent !== null;
   const msgOk = !messageInput.disabled && messageInput.offsetParent !== null;
   let target = null;
   if (active === messageInput) target = nickOk ? nickInput : null;
@@ -13651,8 +13656,21 @@ function pfRender() {
     var d = bar.querySelector('.vs-n'); if (!d) return;
     var n = ntUnread(), b = d.querySelector('i');
     d.classList.toggle('on', n > 0);
-    if (b) b.textContent = n > 9 ? '9+' : (n > 0 ? String(n) : '');
+    if (b) { b.textContent = n > 9 ? '9+' : (n > 0 ? String(n) : ''); ntCenter(b); }
   }
+  /* Rakam, yuvarlağın en üst ile en alt noktası arasında dikey ortalanır: yazı tipinin gerçek ölçüsüne göre satır yüksekliği ayarlanır */
+  function ntCenter(b) {
+    try {
+      var t = b.textContent; if (!t) return;
+      var cs = getComputedStyle(b), c = ntCenter.c || (ntCenter.c = document.createElement('canvas').getContext('2d'));
+      c.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+      var m = c.measureText(t);
+      if (m.fontBoundingBoxAscent === undefined || m.actualBoundingBoxAscent === undefined) return;
+      var delta = (m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2 + (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
+      b.style.lineHeight = (16 - 2 * delta).toFixed(2) + 'px';
+    } catch (e) {}
+  }
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { var d = bar.querySelector('.vs-n'), b = d && d.querySelector('i'); if (b) ntCenter(b); }); } catch (e) {}
   function ntHm(ts) {
     var d = new Date(ts), n = new Date(), p = function (x) { return ('0' + x).slice(-2); };
     var s = p(d.getHours()) + ':' + p(d.getMinutes());
