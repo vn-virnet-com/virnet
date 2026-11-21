@@ -399,16 +399,25 @@ body.no-time .time-tag { display: none !important; }
   padding: 15px; background: var(--c-000); border-top: 1px solid transparent; /* ince ayırıcı çizgi kaldırıldı (yerine sohbetin altında kısa bir solma var) */
   display: none; align-items: flex-end;
 }
-#input-wrapper { display: flex; width: 100%; align-items: flex-end; }
+:root { --cmp-h: 40px; }
+@media (min-width: 769px) { :root { --cmp-h: 44px; } }
+/* Mesaj kutusu: tek yuvarlak baloncuk. Üst satır: isim · mesaj ... yuvarlak gönder tuşu. Alt satır (yalnız kutu boşken): fotoğraf, kamera | ses, şarkı */
+#input-wrapper { display: flex; flex-direction: column; width: 100%; box-sizing: border-box; padding: 6px; background: var(--c-111); border: 1px solid var(--c-33); border-radius: 26px; position: relative; transition: border-color .15s ease; }
+#input-wrapper:focus-within { border-color: var(--accent); }
+#top-row { display: flex; align-items: flex-end; gap: 6px; min-width: 0; }
+#msg-line { flex: 1; min-width: 0; display: flex; align-items: flex-start; }
 #nick-input {
-  width: 70px; min-width: 70px; background: var(--c-111); border: 1px solid var(--c-33); color: var(--c-88);
-  padding: 9px 5px; font-size: 16px; outline: none; text-align: center;
-  border-radius: var(--r-lg) 0 0 var(--r-lg); border-right: none; height: 42px;
+  flex: 0 0 auto; box-sizing: border-box; width: 44px; min-width: 0; max-width: 45%; height: var(--cmp-h); background: transparent; border: 0;
+  color: var(--c-88); padding: 0 0 0 12px; font-size: 16px; outline: none; text-align: right; border-radius: 0;
 }
+#nick-dot { flex: 0 0 auto; height: var(--cmp-h); line-height: var(--cmp-h); padding: 0 5px; color: var(--c-88); font-size: 16px; user-select: none; -webkit-user-select: none; pointer-events: none; }
+body.nick-hidden #nick-dot { display: none; }
+body.nick-hidden #message-input { padding-left: 14px; }
+body.nick-hidden #ph-overlay { left: 14px; }
 #message-input {
-  flex: 1; background: var(--c-111); border: 1px solid var(--c-33); color: var(--c-fff);
-  padding: 9px 15px; font-size: 16px; outline: none; border-radius: 0; border-right: none;
-  resize: none; height: 42px; max-height: 150px; line-height: 22px; overflow-y: auto;
+  flex: 1; min-width: 0; box-sizing: border-box; background: transparent; border: 0; color: var(--c-fff);
+  padding: calc((var(--cmp-h) - 22px) / 2) 6px calc((var(--cmp-h) - 22px) / 2) 0; font-size: 16px; outline: none; border-radius: 0;
+  resize: none; height: var(--cmp-h); max-height: 150px; line-height: 22px; overflow-y: auto;
 }
 /* İsimsiz (isim kutusu boş) yazılan mesajlar otomatik kalın: yazarken, canlı önizlemede ve gönderildikten sonra */
 #message-input.nameless { font-weight: 700; }
@@ -419,12 +428,12 @@ body.no-time .time-tag { display: none !important; }
 /* Gerçek placeholder görünmez; yerine sığmayan yazıyı yavaşça kaydıran üst katman gösterilir */
 #message-input::placeholder { color: transparent; white-space: nowrap; overflow: hidden; text-overflow: clip; }
 #message-input:placeholder-shown { overflow: hidden; }
-#ph-overlay { display: none; position: absolute; left: 16px; right: 8px; top: 0; height: 42px; overflow: hidden; pointer-events: none; font-size: 16px; line-height: 42px; color: var(--c-fff); opacity: 0.5; white-space: nowrap; z-index: 3; }
+#ph-overlay { display: none; position: absolute; left: 0; right: 6px; top: 0; height: var(--cmp-h); overflow: hidden; pointer-events: none; font-size: 16px; line-height: var(--cmp-h); color: var(--c-fff); opacity: 0.5; white-space: nowrap; z-index: 3; }
 #message-input:placeholder-shown ~ #ph-overlay { display: block; }
 #ph-text { display: inline-block; white-space: nowrap; will-change: transform; }
 #send-btn {
-  width: 42px; min-width: 42px; height: 42px; background: var(--accent); color: var(--on-accent);
-  border: 1px solid var(--c-33); border-radius: 0 var(--r-lg) var(--r-lg) 0; font-size: 18px; cursor: pointer;
+  flex: 0 0 auto; width: var(--cmp-h); min-width: var(--cmp-h); height: var(--cmp-h); padding: 0; background: var(--accent); color: var(--on-accent);
+  border: 0; border-radius: 50%; font-size: 18px; cursor: pointer;
   display: flex; align-items: center; justify-content: center; font-weight: bold;
 }
 #send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -435,9 +444,9 @@ html[data-theme="blue"]   { --send-bg:#9fc5f8; --send-ico:#12305f; }
 html[data-theme="purple"] { --send-bg:#c9adf2; --send-ico:#2c1860; }
 #send-btn { background: var(--send-bg); color: var(--send-ico); transition: background-color .12s ease; }
 #send-btn.pressed { background: color-mix(in srgb, var(--send-bg) 66%, #000); }
-#send-btn .sp-ico { width: 26px; height: 26px; display: block; pointer-events: none; fill: currentColor; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
+#send-btn .sp-ico { width: 22px; height: 22px; display: block; pointer-events: none; fill: currentColor; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
 #nick-input:focus, #message-input:focus {
-  border-color: var(--accent) !important; border-right: 1px solid var(--accent) !important; box-shadow: none; z-index: 2;
+  box-shadow: none;
 }
 
 .reply-container {
@@ -533,27 +542,46 @@ body #typing-indicator { display: none !important; }
 #send-btn.rec { background: #d33; animation: recp 1s ease-in-out infinite; }
 @keyframes recp { 50% { opacity: .6; } }
 /* Kayıt sırasında mesaj kutusunda kırmızı, yanıp sönen yazı (durum placeholder'ından bağımsız) */
-#rec-ph { display: none; position: absolute; left: 1px; right: 0; top: 1px; bottom: 1px; padding: 0 15px; background: var(--c-111); z-index: 4; pointer-events: none; font-size: 16px; line-height: 40px; white-space: nowrap; overflow: hidden; }
+#rec-ph { display: none; position: absolute; left: 0; right: 0; top: 0; bottom: 0; padding: 0 6px; background: var(--c-111); z-index: 4; pointer-events: none; font-size: 16px; line-height: var(--cmp-h); white-space: nowrap; overflow: hidden; }
 #rec-ph span { color: #ff3b30; font-weight: 700; animation: recblink 1s ease-in-out infinite; }
 #msg-wrap.recording #rec-ph { display: block; }
 @keyframes recblink { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
-/* Kaydı basılı tutarken yukarıda çıkan çöp kutusu: üstüne sürükleyip bırakınca kayıt iptal olur */
-#rec-trash, #rec-lock {
-  position: fixed; z-index: 22500; display: none; align-items: center; justify-content: center; box-sizing: border-box;
-  width: 42px; height: 42px; background: var(--c-111); border: 1px solid var(--c-33); border-bottom: 0;
-  color: #fff; pointer-events: none; touch-action: none;
-  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; transition: background .12s;
+/* Alt araç satırı: yalnız kutu boşken görünür; yazı başlayınca yumuşakça kapanır */
+#tool-row { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .2s ease; }
+#tool-in { min-height: 0; overflow: hidden; }
+#tool-pad { display: flex; justify-content: space-between; align-items: center; padding-top: 6px; }
+.tb-grp { display: flex; align-items: center; gap: 8px; }
+.tb {
+  flex: 0 0 auto; width: 38px; height: 38px; padding: 0; border: 0; border-radius: 50%; background: var(--c-22); color: var(--c-cc);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; transition: background-color .12s ease, opacity .15s ease;
 }
-/* Gönder tuşunun üstünde bitişik dizilim: kilit tam üstte (sağ üst köşe yuvarlak), çöp kovası onun solunda */
-#rec-lock { border-radius: 0 var(--r-lg) 0 0; }
-#rec-trash { border-radius: var(--r-lg) 0 0 0; border-right: 0; }
-#rec-trash.solo { border-radius: var(--r-lg) var(--r-lg) 0 0; border-right: 1px solid var(--c-33); }
-#rec-trash svg, #rec-lock svg { display: block; width: 20px; height: 20px; stroke: #fff; pointer-events: none; }
-#rec-trash.show, #rec-lock.show { display: flex; animation: rtin .15s ease-out; }
-#rec-lock.hot { background: var(--hot); border-color: var(--hot); }
-#rec-trash.tap { pointer-events: auto; cursor: pointer; }
-#rec-trash.hot { background: #d33; border-color: #d33; }
-@keyframes rtin { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.tb:active { background: var(--c-33); }
+.tb svg { width: 20px; height: 20px; display: block; pointer-events: none; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+body:not(.lv-admin) #tb-call { display: none; }
+#input-wrapper.has-text #tool-row { grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .2s ease, visibility 0s .2s; }
+#input-wrapper.rec-on #tool-row { grid-template-rows: 1fr; visibility: visible; transition: none; }
+#input-wrapper.chat-off .tb { opacity: .3; pointer-events: none; }
+#input-wrapper.rec-on .tb:not(#mic-btn) { opacity: 0; pointer-events: none; }
+/* Ses kaydı: mikrofona basılı tutunca baloncuk sola uzar: [çöp | kilit | mikrofon]. Çöpün üstüne gelince bütün baloncuk kırmızı olur, bırakınca kayıt silinir */
+#mic-wrap { position: relative; width: 38px; height: 38px; flex: 0 0 auto; }
+#mic-btn { position: relative; z-index: 3; touch-action: none; }
+#mic-btn.rec { background: #d33; color: #fff; animation: recp 1s ease-in-out infinite; }
+#mic-btn .sp-ico { width: 19px; height: 19px; fill: currentColor; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+#rec-ext {
+  position: absolute; right: 0; top: 0; height: 38px; width: 38px; border-radius: 19px; background: var(--c-33);
+  display: flex; align-items: center; opacity: 0; pointer-events: none; overflow: hidden; z-index: 2;
+  transition: width .2s ease, opacity .12s ease, background-color .12s ease;
+}
+#input-wrapper.rec-on #rec-ext { opacity: 1; width: 114px; }
+#input-wrapper.rec-on #rec-ext.locked { width: 76px; }
+#rec-ext.hot { background: #d33; }
+#rec-ext.hot + #mic-btn { background: #d33; }
+.rx { flex: 0 0 38px; width: 38px; height: 38px; padding: 0; border: 0; background: transparent; color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
+.rx svg { display: block; width: 20px; height: 20px; stroke: #fff; pointer-events: none; }
+#rec-lock.hot { background: color-mix(in srgb, #fff 22%, transparent); }
+#rec-ext.locked #rec-lock { display: none; }
+#rec-ext.locked #rec-trash { pointer-events: auto; cursor: pointer; }
 #confirm-audio { display: none; width: 100%; justify-content: center; }
 #confirm-audio .aud-pl { width: 100%; }
 .aud-pl { display:flex; flex-direction:column; align-items:stretch; gap:4px; width:262px; max-width:100%; box-sizing:border-box; padding:6px 12px 6px 6px; background:var(--c-1a); border:1px solid var(--c-33); border-radius: var(--r-lg); }
@@ -1058,8 +1086,8 @@ body.no-anim #app { transition: none !important; }
 .live-msg .live-new, .msg .live-new { animation: live-word-in 500ms ease-out both; }
 @media (prefers-reduced-motion: reduce) { .live-msg .live-new, .msg .live-new { animation: none; } }
 /* Dinamik mod: kutu hafif sarı tonda; kayan sarı parıltı daha saydam (%18 opaklık) */
-body.live-on #message-input { background-color: color-mix(in srgb, var(--warn) 9%, var(--c-111)); background-image: linear-gradient(110deg, transparent 30%, color-mix(in srgb, var(--warn) 18%, transparent) 50%, transparent 70%); background-size: 260% 100%; background-position: 130% 0; background-repeat: no-repeat; animation: cdTagShine 2.6s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { body.live-on #message-input { animation: none; background-image: none; } }
+body.live-on #input-wrapper { background-color: color-mix(in srgb, var(--warn) 9%, var(--c-111)); background-image: linear-gradient(110deg, transparent 30%, color-mix(in srgb, var(--warn) 18%, transparent) 50%, transparent 70%); background-size: 260% 100%; background-position: 130% 0; background-repeat: no-repeat; animation: cdTagShine 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { body.live-on #input-wrapper { animation: none; background-image: none; } }
 
 #nick-input { -webkit-touch-callout: none; touch-action: pan-y; }
 /* İsim geçmişinde gezinirken (kaydırma / ok tuşu) kısa bir kayma efekti */
@@ -1071,7 +1099,7 @@ body.live-on #message-input { background-color: color-mix(in srgb, var(--warn) 9
 
 /* ---- Şerit orta alanı (Yeni mesaj yolda şeridi) ---- */
 #sb-mid { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; justify-content: center; margin: 0 -7px; }  /* tuşların görünmez 13px iç boşluğuna taşar: simgelere yaklaşık 6px kalır */
-#nick-input { touch-action: none; }
+#nick-input { touch-action: manipulation; }
 #nick-ghost { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-size: 13.5px; color: var(--c-88); opacity: 0.55; pointer-events: none; user-select: none; -webkit-user-select: none; }
 /* Titreşim ayarı yalnızca mobil görünümde */
 #blk-haptic { display: none; }
@@ -1583,13 +1611,6 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
   /* Masaüstü de mobildeki gibi: yazma satırı ve sağ panelin alt barı alttan/kenarlardan bağımsız, yüzen yuvarlak kutular; ikisi aynı boyda */
   :root { --dock-h: 50px; --dock-gap: 15px; --bp-tabs-h: calc(var(--dock-h) + var(--dock-gap) * 2); }
   #input-area { padding: var(--dock-gap); min-height: 0; border-top: 0; }
-  #nick-input { width: 120px; min-width: 120px; height: var(--dock-h); padding: 9px 8px; }
-  #message-input { height: var(--dock-h); padding: 13px 18px; }
-  #send-btn { width: var(--dock-h); min-width: var(--dock-h); height: var(--dock-h); }
-  /* Placeholder, yazılan metinle birebir aynı yerden başlar: 1px çerçeve + üst boşluk (13px) + 22px'lik satır */
-  #ph-overlay { top: 1px; height: calc(var(--dock-h) - 2px); padding-top: calc((var(--dock-h) - 24px) / 2); line-height: 22px; left: 19px; }
-  #rec-ph { line-height: calc(var(--dock-h) - 2px); }
-  .cm-item { height: var(--dock-h); }
   #chat-area { -webkit-mask-image: none; mask-image: none; }
   /* Sağ panel alt barı (Bildirim / Profil): yazma satırıyla aynı yükseklik ve boşluklar; panel içeriği barın altına taşmaz (içerik barın üstünde biter) */
   #bell-pop #bp-tabs { left: var(--dock-gap); right: var(--dock-gap); bottom: var(--dock-gap); height: var(--dock-h); padding: 0; border: 0; border-radius: var(--r-lg); background: transparent; }
@@ -2127,9 +2148,27 @@ body.gm-on #leap-hud { display: none !important; }
 </div>
 <div id="input-area">
   <div id="input-wrapper">
-    <input type="text" id="nick-input" name="chat-label" placeholder="İsim" tabindex="1" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
-    <div id="msg-wrap"><textarea id="message-input" placeholder="Bağlanıyor..." tabindex="2"></textarea><div id="ph-overlay" aria-hidden="true"><span id="ph-text">Bağlanıyor...</span></div><div id="rec-ph" aria-hidden="true"><span>Ses kaydediliyor...</span></div></div>
-    <button id="send-btn" disabled><svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.25 12L3.75 20.5L6.25 14.5L14.25 12L6.25 9.5L3.75 3.5Z"/></svg></button>
+    <div id="top-row">
+      <div id="msg-line">
+        <input type="text" id="nick-input" name="chat-label" placeholder="İsim" tabindex="1" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><span id="nick-dot" aria-hidden="true">·</span>
+        <div id="msg-wrap"><textarea id="message-input" placeholder="Bağlanıyor..." tabindex="2"></textarea><div id="ph-overlay" aria-hidden="true"><span id="ph-text">Bağlanıyor...</span></div><div id="rec-ph" aria-hidden="true"><span>Ses kaydediliyor...</span></div></div>
+      </div>
+      <button id="send-btn" type="button" aria-label="Gönder" disabled><svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.25 12L3.75 20.5L6.25 14.5L14.25 12L6.25 9.5L3.75 3.5Z"/></svg></button>
+    </div>
+    <div id="tool-row"><div id="tool-in"><div id="tool-pad">
+      <div class="tb-grp">
+        <button type="button" class="tb" id="tb-photo" aria-label="Fotoğraf gönder"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></button>
+        <button type="button" class="tb" id="tb-cam" aria-label="Fotoğraf çek"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></button>
+        <button type="button" class="tb" id="tb-call" aria-label="Ara"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></button>
+      </div>
+      <div class="tb-grp">
+        <div id="mic-wrap">
+          <div id="rec-ext"><button type="button" class="rx" id="rec-trash" aria-label="Kaydı sil"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button><span class="rx" id="rec-lock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>
+          <button type="button" class="tb" id="mic-btn" aria-label="Ses kaydet (basılı tut)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></button>
+        </div>
+        <button type="button" class="tb" id="tb-song" aria-label="Şarkı ara"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
+      </div>
+    </div></div></div>
   </div>
 </div>
 </div>
@@ -2957,6 +2996,7 @@ function setChatEnabled(enabled) {
 }
 function applyChatEnabled(enabled) {
   sendBtn.disabled = !enabled;
+  { const w = document.getElementById('input-wrapper'); if (w) w.classList.toggle('chat-off', !enabled); }
   if (!enabled) {
     if (!messageInput.disabled) {
       chatDraft = messageInput.value;
@@ -3047,68 +3087,7 @@ nickInput.addEventListener('focus', () => {
   nickInput.value = ''; lsSet('nick', ''); applyNickState();
 });
 nickInput.addEventListener('input', () => { if (!nickHistSetting) nickBrowsing = false; });
-nickInput.addEventListener('keydown', (e) => {
-  if (editingId || e.isComposing) return;
-  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-  // Ctrl + ←/→: kutuda yazı olsa bile isim geçmişinde gezinir. Yalnızca ←/→: kutu boşken ya da geçmişten getirilen isim görünürken
-  const ctrl = e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey;
-  if (!ctrl && (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey)) return;
-  if (!ctrl && !(nickInput.value === '' || nickBrowsing)) return;   // kullanıcı yazdıysa imleç normal çalışır
-  e.preventDefault();
-  if (ctrl && !nickBrowsing && nickInput.value.trim() !== '') {   // yazılı isim önce geçmişe girer, sonra yanlara geçilir
-    pushNickHistory(nickInput.value);
-    const hh = readNickHistory(), cur = nickInput.value.trim().toLowerCase();
-    const ci = hh.findIndex((x) => x.trim().toLowerCase() === cur);
-    nickHistPos = ci < 0 ? hh.length : ci;
-    nickBrowsing = true;
-  }
-  const h = readNickHistory();
-  const emptyLast = h.length > 0 && h[h.length - 1] === '';   // son kayıt boş isimse kutudaki boşluk odur
-  const endPos = emptyLast ? h.length - 1 : h.length;
-  if (!nickBrowsing) nickHistPos = endPos;
-  if (e.key === 'ArrowLeft') {
-    if (nickHistPos <= 0 || h.length === 0) return;
-    nickHistPos--;
-    setNickFromHistory(h[nickHistPos], -1);
-  } else {
-    if (nickHistPos >= endPos) return;
-    nickHistPos++;
-    setNickFromHistory(nickHistPos >= h.length ? '' : h[nickHistPos], 1);
-  }
-});
-// Mobil: isim kutusuna dokunmadan sola kaydır = bir önceki isim, sağa kaydır = bir sonraki isim
-(function initNickSwipe() {
-  let sx = 0, sy = 0, tracking = false, swiped = false;
-  function go(dir) {
-    let h = readNickHistory();
-    const cur = nickInput.value.trim().toLowerCase();
-    let idx = h.findIndex((x) => x.trim().toLowerCase() === cur);
-    if (idx < 0) { pushNickHistory(nickInput.value); h = readNickHistory(); idx = h.length - 1; }
-    const ni = idx + dir;
-    if (ni < 0 || ni >= h.length) return;
-    setNickFromHistory(h[ni], dir);
-  }
-  nickInput.addEventListener('touchstart', (e) => {
-    tracking = false; swiped = false;
-    if (e.touches.length !== 1 || editingId || document.activeElement === nickInput) return;
-    tracking = true; sx = e.touches[0].clientX; sy = e.touches[0].clientY;
-  }, { passive: true });
-  nickInput.addEventListener('touchmove', (e) => {
-    if (!tracking || swiped) return;
-    const dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
-    if (Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      swiped = true; nickSwipeAt = Date.now();
-      if (e.cancelable) e.preventDefault();
-      go(dx < 0 ? -1 : 1);
-    }
-  }, { passive: false });
-  const end = (e) => {
-    if (swiped) { nickSwipeAt = Date.now(); if (e.cancelable) e.preventDefault(); }
-    tracking = false; swiped = false;
-  };
-  nickInput.addEventListener('touchend', end, { passive: false });
-  nickInput.addEventListener('touchcancel', end, { passive: false });
-})();
+// (İsim geçmişinde ctrl/ok tuşları veya kaydırmayla gezinme kaldırıldı)
 nickInput.addEventListener('blur', () => {
   if (!editingId) pushNickHistory(nickInput.value);
   nickBrowsing = false;
@@ -6204,7 +6183,7 @@ chatArea.addEventListener('click', (e) => {
 
 function adjustInputHeight() {
   const mob = isMobileLayout();
-  const baseH = mob ? 42 : 50; // masaüstünde yazma satırı sağ alt barla aynı yükseklikte (--dock-h = 50px)
+  const baseH = mob ? 40 : 44; // --cmp-h ile aynı
   messageInput.style.height = baseH + 'px';
   // Kutu boşken (placeholder gösteriliyorken) yükseklik hiç büyümez; uzun placeholder satır atlayıp kutuyu şişirmesin
   // Masaüstünde birkaç px'lik ölçü farkı ilk satırda kutuyu büyütmesin: ikinci satır gelene kadar (yarım satır payıyla) sabit kalır
@@ -9260,69 +9239,72 @@ let lastPointerAction = 0;
 function clearPress() {
   if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
   longReady = false;
-  sendBtn.classList.remove('longpress');
-  if (!sendBtn.querySelector('.sp-ico')) sendBtn.innerHTML = SEND_ICON;
 }
-function endChipDrag() {
-  chipDrag = false;
-  chipHot = null;
-  closeChipMenu();
-}
+const micBtn = document.getElementById('mic-btn');
+const MIC_ICON_HTML = micBtn.innerHTML;
+const MIC_HOLD_MS = 250;
+let sendPid = null;
 
+/* Gönder tuşu: yalnızca gönderir (yuvarlak, kutunun içinde). Kilitli kayıtta gönder tuşu da kaydı gönderir */
 sendBtn.addEventListener('pointerdown', (event) => {
   if (event.pointerType === 'mouse' && event.button !== 0) return;
   event.preventDefault();
   sendBtn.classList.add('pressed');
-  if (recLocked && recMR) { recLockTapId = event.pointerId; return; }
+  sendPid = event.pointerId;
+  try { sendBtn.setPointerCapture(event.pointerId); } catch (e) {}
+});
+sendBtn.addEventListener('pointerup', (event) => {
+  sendBtn.classList.remove('pressed');
+  if (event.pointerId !== sendPid) return;
+  sendPid = null;
+  lastPointerAction = Date.now();
+  try { sendBtn.releasePointerCapture(event.pointerId); } catch (e) {}
+  const r = sendBtn.getBoundingClientRect();
+  const inside = event.clientX >= r.left - 12 && event.clientX <= r.right + 12 &&
+                 event.clientY >= r.top - 12 && event.clientY <= r.bottom + 12;
+  if (!inside) return;
+  if (recLocked && recMR) { stopRec(true); return; }
+  sendMessage();
+  setTimeout(() => { if (!nolinkModal.classList.contains('show')) messageInput.focus(); }, 10);
+});
+sendBtn.addEventListener('pointercancel', () => { sendBtn.classList.remove('pressed'); sendPid = null; });
+sendBtn.addEventListener('lostpointercapture', () => sendBtn.classList.remove('pressed'));
+sendBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+sendBtn.addEventListener('click', () => {
+  if (Date.now() - lastPointerAction < 700) return;
+  if (recLocked && recMR) { stopRec(true); return; }
+  sendMessage();
+});
+
+/* Mikrofon: basılı tut = kayıt başlar, baloncuk sola uzar. Bırak = gönder; kilide bırak = kilitle; çöpe bırak = sil.
+   Kilitliyken mikrofon (gönder simgesi) kaydı gönderir, çöpe dokunmak siler */
+micBtn.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'mouse' && event.button !== 0) return;
+  event.preventDefault();
+  if (recLocked && recMR) { recLockTapId = event.pointerId; try { micBtn.setPointerCapture(event.pointerId); } catch (e) {} return; }
   clearPress();
-  endChipDrag();
   pressActive = true;
   pressId = event.pointerId;
-  pressY = event.clientY;
-  try { sendBtn.setPointerCapture(event.pointerId); } catch (e) {}
+  try { micBtn.setPointerCapture(event.pointerId); } catch (e) {}
   pressTimer = setTimeout(() => {
     pressTimer = null;
     longReady = true;
-    sendBtn.classList.add('longpress');
-    sendBtn.textContent = '🎤';
     if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
     if (!editingId) startRec();
-  }, LONG_PRESS_MS);
+  }, MIC_HOLD_MS);
 });
-
-sendBtn.addEventListener('pointermove', (event) => {
-  if (!pressActive || event.pointerId !== pressId) return;
-  if (longReady && !chipDrag) {
-    // Ses kaydı sırasında: parmağı çöp kutusuna sürükleyince vurgula
-    if (recMR) {
-      const z = recZoneAt(event.clientX, event.clientY);
-      setRecTrashHot(z === 'trash');
-      setRecLockHot(z === 'lock');
-    }
-    return;
-  }
-  if (!chipDrag) {
-    // Basılı tutma süresi beklemeden, yukarı sürüklemek yeterli; fotoğraf moduna geçildiyse veya düzenleme sırasındaysa menü açılmaz
-    if (longReady || editingId) return;
-    if (pressY - event.clientY < DRAG_UP_PX) return;
-    chipDrag = true;
-    if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
-    openChipMenu();
-  }
-  const it = chipItemAt(event.clientX, event.clientY);
-  if (it !== chipHot) {
-    if (chipHot) chipHot.classList.remove('hot');
-    chipHot = it;
-    if (it) it.classList.add('hot');
-  }
+micBtn.addEventListener('pointermove', (event) => {
+  if (!pressActive || event.pointerId !== pressId || !longReady || !recMR || recLocked) return;
+  const z = recZoneAt(event.clientX, event.clientY);
+  setRecTrashHot(z === 'trash');
+  setRecLockHot(z === 'lock');
 });
-
-sendBtn.addEventListener('pointerup', (event) => {
-  sendBtn.classList.remove('pressed');
+micBtn.addEventListener('pointerup', (event) => {
+  try { micBtn.releasePointerCapture(event.pointerId); } catch (e) {}
   if (recLockTapId !== null && event.pointerId === recLockTapId) {
     recLockTapId = null;
     lastPointerAction = Date.now();
-    const rr = sendBtn.getBoundingClientRect();
+    const rr = micBtn.getBoundingClientRect();
     const ins = event.clientX >= rr.left - 12 && event.clientX <= rr.right + 12 &&
                 event.clientY >= rr.top - 12 && event.clientY <= rr.bottom + 12;
     if (ins && recMR && recLocked) stopRec(true);
@@ -9330,50 +9312,54 @@ sendBtn.addEventListener('pointerup', (event) => {
   }
   if (!pressActive || event.pointerId !== pressId) return;
   pressActive = false;
-  lastPointerAction = Date.now();
-  try { sendBtn.releasePointerCapture(event.pointerId); } catch (e) {}
-  if (chipDrag) {
-    const it = chipItemAt(event.clientX, event.clientY);
-    endChipDrag();
-    clearPress();
-    if (it) { if (it.dataset.kind === 'search') openYtSearch(); else if (it.dataset.kind === 'photo') { if (!editingId) openPhotoSrc(); } else if (it.dataset.kind === 'call') { if (!editingId) openCallCompose(); } }
-    return;
-  }
   const wasLong = longReady;
   const zone = (wasLong && recMR) ? recZoneAt(event.clientX, event.clientY) : null;
-  const onTrash = zone === 'trash';
-  const r = sendBtn.getBoundingClientRect();
-  const inside = event.clientX >= r.left - 12 && event.clientX <= r.right + 12 &&
-                 event.clientY >= r.top - 12 && event.clientY <= r.bottom + 12;
   clearPress();
-  if (wasLong && zone === 'lock') { lockRec(); return; }
-  if (wasLong) {
-    const cancel = onTrash || !inside;
-    if (cancel && recMR) flashStatus('Ses kaydı iptal edildi');
-    stopRec(!cancel);
-    return;
-  }
-  if (!inside) return;
-  {
-    sendMessage();
-    setTimeout(() => { if (!nolinkModal.classList.contains('show')) messageInput.focus(); }, 10);
-  }
+  if (!wasLong) { flashStatus('Ses kaydı için mikrofona basılı tut'); return; }
+  if (zone === 'lock') { lockRec(); return; }
+  const cancel = zone === 'trash';
+  if (cancel && recMR) flashStatus('Ses kaydı iptal edildi');
+  stopRec(!cancel);
 });
-
-sendBtn.addEventListener('pointercancel', (event) => {
-  sendBtn.classList.remove('pressed');
+micBtn.addEventListener('pointercancel', (event) => {
   if (recLockTapId !== null && event.pointerId === recLockTapId) { recLockTapId = null; return; }
   if (recLocked && recMR) return;
-  stopRec(false); pressActive = false; endChipDrag(); clearPress();
+  stopRec(false); pressActive = false; clearPress();
 });
-sendBtn.addEventListener('lostpointercapture', () => sendBtn.classList.remove('pressed'));
-sendBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+micBtn.addEventListener('contextmenu', (e) => e.preventDefault());
 
-sendBtn.addEventListener('click', () => {
-  if (Date.now() - lastPointerAction < 700) return;
-  if (recLocked && recMR) { stopRec(true); return; }
-  sendMessage();
-});
+/* Alt satırdaki tuşlar */
+document.getElementById('tb-photo').addEventListener('click', () => { if (editingId) return; if (window.__kbPicker) window.__kbPicker.start(); fileInput.click(); });
+document.getElementById('tb-cam').addEventListener('click', () => { if (editingId) return; if (window.__kbPicker) window.__kbPicker.start(); cameraInput.click(); });
+document.getElementById('tb-song').addEventListener('click', () => { openYtSearch(); });
+document.getElementById('tb-call').addEventListener('click', () => { if (!editingId && notifCanSend()) openCallCompose(); });
+
+/* Kutu boşken alt satır görünür, yazı başlayınca kapanır (value programla değişse de) */
+const inputWrapper = document.getElementById('input-wrapper');
+function syncComposer() { inputWrapper.classList.toggle('has-text', messageInput.value.length > 0); }
+(function hookValue() {
+  const d = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
+  Object.defineProperty(messageInput, 'value', { configurable: true, get() { return d.get.call(this); }, set(v) { d.set.call(this, v); syncComposer(); } });
+  const dn = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+  Object.defineProperty(nickInput, 'value', { configurable: true, get() { return dn.get.call(this); }, set(v) { dn.set.call(this, v); fitNick(); } });
+})();
+messageInput.addEventListener('input', syncComposer);
+/* İsim kutusu yazıya göre genişler: isim · mesaj arasında boşluk kalmaz */
+const nickCtx = document.createElement('canvas').getContext('2d');
+function fitNick() {
+  try {
+    const cs = getComputedStyle(nickInput);
+    nickCtx.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    const w = nickCtx.measureText(nickInput.value || nickInput.placeholder || '').width;
+    const max = isMobileLayout() ? 110 : 170;
+    nickInput.style.width = Math.min(max, Math.max(34, Math.ceil(w) + 16)) + 'px';
+  } catch (e) {}
+}
+['input', 'focus', 'blur'].forEach((ev) => nickInput.addEventListener(ev, fitNick));
+window.addEventListener('resize', fitNick);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitNick);
+if (window.ResizeObserver) new ResizeObserver(() => { try { if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight; } catch (e) {} }).observe(inputArea);
+syncComposer(); fitNick();
 
 function flashStatus(text) {
   setStatus(text, isConnected());
@@ -9528,110 +9514,76 @@ async function startRec() {
     mr.start();
     recT0 = Date.now(); sendRec('rec'); recBeat = setInterval(() => sendRec('rec'), 2000);
     recGuardStart();
-    sendBtn.classList.add('rec');
+    micBtn.classList.add('rec');
     showRecUi();
     recAuto = setTimeout(() => stopRec(true), 120000);
   } catch (e) { setAudSess('playback'); relRecHold(); flashStatus('Mikrofon izni gerekli'); }
 }
-/* Kayıt arayüzü: kırmızı yanıp sönen placeholder + yukarıda çöp kutusu */
-let recTrashEl = null, recLockEl = null;
+/* Kayıt arayüzü: kırmızı yanıp sönen placeholder + mikrofondan sola uzayan baloncuk (çöp | kilit | mikrofon) */
 const recPhSpan = document.querySelector('#rec-ph span');
-const REC_TRASH_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
-const REC_LOCK_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+const recExt = document.getElementById('rec-ext');
+const recTrashEl = document.getElementById('rec-trash');
+const recLockEl = document.getElementById('rec-lock');
 const REC_TXT = 'Ses kaydediliyor...', REC_TXT_TRASH = 'Bırakınca iptal edilecek', REC_TXT_LOCK = 'Bırakınca kilitlenecek', REC_TXT_LOCKED = 'Ses kaydediliyor... (kilitli)';
+// Kilitli kayıtta çöp kutusuna dokunmak kaydı iptal eder
+recTrashEl.addEventListener('click', () => {
+  if (!recLocked || !recMR) return;
+  flashStatus('Ses kaydı iptal edildi');
+  stopRec(false);
+});
 function showRecUi() {
   const wrap = document.getElementById('msg-wrap');
   if (wrap) wrap.classList.add('recording');
+  document.getElementById('input-wrapper').classList.add('rec-on');
   recLocked = false; recLockTapId = null;
   if (recPhSpan) recPhSpan.textContent = REC_TXT;
-  if (!recTrashEl) {
-    recTrashEl = document.createElement('div');
-    recTrashEl.id = 'rec-trash';
-    recTrashEl.setAttribute('aria-hidden', 'true');
-    recTrashEl.innerHTML = REC_TRASH_SVG;
-    // Kilitli kayıtta çöp kutusuna dokunmak kaydı iptal eder
-    recTrashEl.addEventListener('click', () => {
-      if (!recLocked || !recMR) return;
-      flashStatus('Ses kaydı iptal edildi');
-      stopRec(false);
-    });
-    document.body.appendChild(recTrashEl);
-  }
-  if (!recLockEl) {
-    recLockEl = document.createElement('div');
-    recLockEl.id = 'rec-lock';
-    recLockEl.setAttribute('aria-hidden', 'true');
-    recLockEl.innerHTML = REC_LOCK_SVG;
-    document.body.appendChild(recLockEl);
-  }
-  recTrashEl.classList.remove('hot', 'tap');
+  recExt.classList.remove('hot', 'locked');
   recLockEl.classList.remove('hot');
-  recTrashEl.classList.add('show');
-  recLockEl.classList.add('show');
-  recTrashEl.classList.remove('solo');
-  placeRecUi();
+  micBtn.innerHTML = MIC_ICON_HTML;
 }
-// Kilit gönder tuşunun hemen üstünde, çöp kovası kilidin solunda (bitişik)
-function placeRecUi() {
-  if (!recTrashEl || !recLockEl) return;
-  const b = sendBtn.getBoundingClientRect();
-  const w = b.width, h = b.height;
-  [recTrashEl, recLockEl].forEach((el) => { el.style.width = w + 'px'; el.style.height = h + 'px'; });
-  const top = Math.max(0, b.top - h);
-  recLockEl.style.left = b.left + 'px';
-  recLockEl.style.top = top + 'px';
-  if (recLocked) {
-    recTrashEl.classList.add('solo');
-    recTrashEl.style.left = b.left + 'px';
-  } else {
-    recTrashEl.classList.remove('solo');
-    recTrashEl.style.left = Math.max(0, b.left - w) + 'px';
-  }
-  recTrashEl.style.top = top + 'px';
-}
+function placeRecUi() {}
 function hideRecUi() {
   const wrap = document.getElementById('msg-wrap');
   if (wrap) wrap.classList.remove('recording');
-  if (recTrashEl) recTrashEl.classList.remove('show', 'hot', 'tap');
-  if (recLockEl) recLockEl.classList.remove('show', 'hot');
+  document.getElementById('input-wrapper').classList.remove('rec-on');
+  recExt.classList.remove('hot', 'locked');
+  recLockEl.classList.remove('hot');
+  micBtn.innerHTML = MIC_ICON_HTML;
 }
+// Parmağın bulunduğu bölge: mikrofonun solunda önce kilit, onun da solunda çöp
 function recZoneAt(x, y) {
-  let best = null, bestD = Infinity;
-  [['trash', recTrashEl], ['lock', recLockEl]].forEach((z) => {
-    const el = z[1];
-    if (!el || !el.classList.contains('show')) return;
-    const r = el.getBoundingClientRect();
-    if (x >= r.left - 16 && x <= r.right + 16 && y >= r.top - 50 && y <= r.bottom - 6) {
-      const d = Math.abs(x - (r.left + r.width / 2)) + Math.abs(y - (r.top + r.height / 2));
-      if (d < bestD) { bestD = d; best = z[0]; }
-    }
-  });
-  return best;
+  if (!recMR) return null;
+  const m = micBtn.getBoundingClientRect(), u = m.width;
+  if (recLocked) return null;
+  if (x < m.left - u - 4) return 'trash';
+  if (x < m.left - 8) return 'lock';
+  return null;
 }
 function recPhText() {
-  if (recTrashEl && recTrashEl.classList.contains('hot')) return REC_TXT_TRASH;
-  if (recLockEl && recLockEl.classList.contains('hot')) return REC_TXT_LOCK;
+  if (recExt.classList.contains('hot')) return REC_TXT_TRASH;
+  if (recLockEl.classList.contains('hot')) return REC_TXT_LOCK;
   return REC_TXT;
 }
 function setRecTrashHot(on) {
-  if (!recTrashEl || recTrashEl.classList.contains('hot') === !!on) return;
-  recTrashEl.classList.toggle('hot', !!on);
+  if (recExt.classList.contains('hot') === !!on) return;
+  recExt.classList.toggle('hot', !!on);   // çöpün üstündeyken 3 tuşlu baloncuğun tamamı kırmızı
   if (recPhSpan) recPhSpan.textContent = recPhText();
   if (on && navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
 }
 function setRecLockHot(on) {
-  if (!recLockEl || recLockEl.classList.contains('hot') === !!on) return;
+  if (recLockEl.classList.contains('hot') === !!on) return;
   recLockEl.classList.toggle('hot', !!on);
   if (recPhSpan) recPhSpan.textContent = recPhText();
   if (on && navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
 }
-// Kaydı kilitle: parmak çekilse de kayıt sürer; gönder tuşu gönderir, çöp kutusuna dokunmak iptal eder
+// Kaydı kilitle: parmak çekilse de kayıt sürer; mikrofon (gönder simgesi) gönderir, çöp kutusuna dokunmak iptal eder
 function lockRec() {
   if (!recMR || recLocked) return;
   recLocked = true;
-  if (recLockEl) recLockEl.classList.remove('show', 'hot');
-  if (recTrashEl) { recTrashEl.classList.remove('hot'); recTrashEl.classList.add('tap'); }
-  placeRecUi();
+  recExt.classList.remove('hot');
+  recLockEl.classList.remove('hot');
+  recExt.classList.add('locked');
+  micBtn.innerHTML = SEND_ICON;
   if (recPhSpan) recPhSpan.textContent = REC_TXT_LOCKED;
   if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
 }
@@ -9642,7 +9594,7 @@ document.addEventListener('visibilitychange', () => {
 function stopRec(send) {
   recLocked = false; recLockTapId = null;
   if (recAuto) { clearTimeout(recAuto); recAuto = null; }
-  sendBtn.classList.remove('rec');
+  micBtn.classList.remove('rec');
   hideRecUi();
   if (!recMR) return;
   recSend = !!send;
@@ -10580,7 +10532,7 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
     st = null;
     if (!isMobileLayout() || e.touches.length !== 1) return;
     const tg = e.target;
-    if (tg && tg.closest && tg.closest('#fab, #live-toggle, #notes-btn, #send-btn, input, textarea, #cancel-reply-btn')) return;
+    if (tg && tg.closest && tg.closest('#fab, #live-toggle, #notes-btn, #send-btn, #mic-btn, input, textarea, #cancel-reply-btn')) return;
     if (bellPop.classList.contains('composing')) return;
     const t = e.touches[0];
     st = { x: t.clientX, y: t.clientY, t0: Date.now(), mode: null, dx: 0, idx: curPanelIdx(), dir: 0, target: 0, kind: '', card: !!(tg && tg.closest && tg.closest('#bp-list .bp-card')) };
