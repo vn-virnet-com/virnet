@@ -601,7 +601,7 @@ body #typing-indicator { display: none !important; }
 #input-wrapper.mx-on #tb-more .mx-d { opacity: 0; }
 #input-wrapper.mx-on #tb-more .mx-l { opacity: 1; transition-delay: .1s; }
 @media (prefers-reduced-motion: reduce) { #tb-more, #tb-more > span, #tb-more .mx-d, #tool-pad .tb, #mic-wrap, #mx-row { transition: none !important; animation: none !important; } }
-body:not(.lv-admin) #tb-call { display: none; }
+body:not(.lv-admin):not(.pin-third) #tb-call { display: none; }
 #tool-pad { transition: opacity .18s ease; }
 #input-wrapper.has-text #tool-pad { opacity: .35; pointer-events: none; }   /* 1. aşama: yazı başlayınca tuşlar (··· dahil) koyulaşıp soluk kalır, kutu küçülmez */
 #input-wrapper.has-text2 #tool-row { grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .16s ease-out, visibility 0s .16s; }   /* 2. aşama: yazı alt satıra geçip mesaj kutusu yukarı uzayınca alt satır gizlenir */
@@ -2826,6 +2826,7 @@ function sendLive() {
   const v = messageInput.value;
   if (v.trim() === '') { stopLive(); return; }
   if (secretProfile(v)) return;   // gizli kod kelimeleri karşıya gönderilmez
+  if (dialPickOn()) return;       // 3828: 'Kimi aramak istiyorsun?' modunda yazılan isim canlı gitmez
   if (linkBlocked(v)) return;     // 3828: bağlantı canlı da gitmez
   if (!notifCanSend()) { const lv = v.trim().toLowerCase(); if (lv === '.' || /^\.a(r(a)?)?$/.test(lv) || /^\.ara\s/.test(lv)) return; } // .ara komutu karşıya canlı gitmez
   if (!liveId) liveId = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
@@ -6404,7 +6405,19 @@ function secretProfile(v) {
   });
 });
 
+let dialPick = false;   // 3828: arama tuşuna basılınca yanıt şeridi 'Kimi aramak istiyorsun?' olur
+function dialPickOn() { return dialPick && !replyingTo && !editingId && !notifCanSend(); }
+function openDialPick() {
+  if (editingId || notifCanSend()) return;
+  replyingTo = null;
+  dialPick = true;
+  replyBarText.innerText = 'Kimi aramak istiyorsun?';
+  replyBar.style.display = 'flex';
+  adjustInputHeight();
+  setTimeout(() => { try { messageInput.focus(); } catch (e) {} }, 10);
+}
 function closeReplyBar() {
+  dialPick = false;
   replyingTo = null;
   replyBar.style.display = 'none';
   adjustInputHeight();
@@ -6467,10 +6480,12 @@ function sendMessage() {
     }
   }
 
-  // ".ara İsim": normal mesaj yerine arama kartı gider
-  {
-    const dm = /^\.ara\s+(.+)$/i.exec(textToSend);
-    const dn = (dm && !notifCanSend()) ? callCleanName(dm[1]) : ''; // 6687 ile girenlerde komut çalışmaz, normal mesaj gider
+  // 3828: ".ara İsim" komutu artık yok; arama yalnızca arama tuşundaki "Kimi aramak istiyorsun?" şeridiyle yapılır
+  if (!notifCanSend() && /^\.ara(\s|$)/i.test(textToSend) && !dialPickOn()) return;
+
+  // 3828 arama modu: yazılan isim, eski ".ara İsim" gibi işlenir (aynı arama kartı, aynı işlev)
+  if (dialPickOn()) {
+    const dn = callCleanName(textToSend);
     if (dn) {
       stopLive();
       sendTextNow(DIAL_PREFIX + dn);
@@ -9470,7 +9485,7 @@ micBtn.addEventListener('contextmenu', (e) => e.preventDefault());
 document.getElementById('tb-photo').addEventListener('click', () => { if (editingId) return; if (window.__kbPicker) window.__kbPicker.start(); fileInput.click(); });
 document.getElementById('tb-cam').addEventListener('click', () => { if (editingId) return; if (window.__kbPicker) window.__kbPicker.start(); cameraInput.click(); });
 document.getElementById('tb-song').addEventListener('click', () => { openYtSearch(); });
-document.getElementById('tb-call').addEventListener('click', () => { if (!editingId && notifCanSend()) openCallCompose(); });
+document.getElementById('tb-call').addEventListener('click', () => { if (editingId) return; if (notifCanSend()) openCallCompose(); else if (thirdCanSend()) openDialPick(); });
 
 /* Kutu boşken alt satır görünür, yazı başlayınca kapanır (value programla değişse de) */
 const inputWrapper = document.getElementById('input-wrapper');
@@ -13259,7 +13274,7 @@ function pfRender() {
 
 /* Yönetici (yüksek PIN seviyesi) olunca Leap sayısının imleci değişir; eski üye listesi verileri temizlenir */
 (function () {
-  const sync = () => { let a = false; try { a = sessionStorage.getItem('pinLive') === '1'; } catch (e) {} document.body.classList.toggle('lv-admin', a); };
+  const sync = () => { let a = false; try { a = sessionStorage.getItem('pinLive') === '1'; } catch (e) {} document.body.classList.toggle('lv-admin', a); let t = false; try { t = sessionStorage.getItem('pinOk') === '1' && !a; } catch (e) {} document.body.classList.toggle('pin-third', t); };
   window.addEventListener('pin-level', sync);
   sync();
   ['membersData', 'membersRev', 'membersBy'].forEach((k) => { lsRemove(k); });
