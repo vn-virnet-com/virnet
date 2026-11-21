@@ -11701,6 +11701,11 @@ function goPanel(idx) {
     downOnMsg = !!(e.target && e.target.closest && e.target.closest('.msg, .lp-clone, #tb-more'));
     downAt = Date.now(); restoreOk = true;
     lastPtr = Date.now();
+    // ··· tuşu: klavye kapalıysa (odak takılı kalmış olsa bile) mesaj kutusunu bırak, klavye açılmasın; açıksa dokunma
+    if (e.target && e.target.closest && e.target.closest('#tb-more') && isMobileLayout() && !document.body.classList.contains('kb-open')) {
+      downFocused = false; kbWanted = false;
+      if (document.activeElement === messageInput) { try { messageInput.blur(); } catch (er) {} }
+    }
     if (pickerBusy && Date.now() - pickerAt > 1500) pickerBusy = false;
     if (onArrow(e.target)) {
       // Aşağı ok kendi akışını yönetir: odak/klavye onun sırasıyla açılır, burada erken açılmasın
