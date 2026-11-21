@@ -13076,7 +13076,7 @@ function pfRender() {
   const sc = document.getElementById('settings-scroll');
   if (!sc) return;
   const mq = window.matchMedia('(min-width: 769px)');
-  const Z_MIN = 0.3, Z_MAX = 3;   // klavye açıkken olduğu gibi: alan neyse tam o kadar dolacak şekilde oranlanır, boşluk dağıtılmaz
+  const Z_MIN = 0.3, Z_MAX = 1.35, PAD_MAX = 10;   // Z_MAX: ayarlar en fazla bu oranda büyür (az ayar kalınca dev gibi olmasın); PAD_MAX: kalan boşluktan her gruba en çok bu kadar px ek boşluk   // klavye açıkken olduğu gibi: alan neyse tam o kadar dolacak şekilde oranlanır, boşluk dağıtılmaz
   const clampZ = (z) => Math.max(Z_MIN, Math.min(Z_MAX, z));
   let end = null, busy = false, raf = 0, burst = 0, burstT = 0;
   function ensureEnd() {
@@ -13118,7 +13118,7 @@ function pfRender() {
       if (lastZ && z !== lastZ && Math.abs(z - lastZ) < 0.004 && used(lastZ) <= avail) z = lastZ;
       const u = used(z);
       const extra = avail - u;
-      const pad = (extra > 0.5) ? (extra / vis.length / z) : 0;
+      const pad = (extra > 0.5) ? Math.min(PAD_MAX, extra / vis.length / z) : 0;
       setAll(z, pad);
       lastSig = sig; lastZ = z; lastPad = pad;
     } finally { busy = false; }
