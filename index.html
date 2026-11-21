@@ -9381,7 +9381,7 @@ const inputWrapper = document.getElementById('input-wrapper');
 function syncComposer() {
   const v = messageInput.value;
   inputWrapper.classList.toggle('has-text', v.length > 0);
-  inputWrapper.classList.toggle('has-text2', /\S+\s+\S+\s/.test(v));   // 1 kelime + boşluk + 1 kelime + boşluk
+  inputWrapper.classList.toggle('has-text2', /\S+\s+\S+\s+\S+\s/.test(v));   // 1 kelime + boşluk + 1 kelime + boşluk + 1 kelime + boşluk
 }
 (function hookValue() {
   const d = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
