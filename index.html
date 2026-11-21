@@ -405,11 +405,9 @@ body.no-time .time-tag { display: none !important; }
 #nick-input.nick-cut { text-align: left; }
 /* Satır eklenince / silinince mesaj kutusu yumuşakça büyüyüp küçülür */
 #message-input { transition: height .16s ease-out, padding .16s ease-out; scrollbar-width: none; }
-#nick-input, #nick-dot { transition: margin-top .16s ease-out; }
-/* 2. satır: kutu 1. satırdaki (tuşlu) yükseklikte sabit kalır, mesaj dikey ortalanır; isim ilk satırla hizalı kalsın diye aşağı kayar */
-#input-wrapper.two-line #nick-input, #input-wrapper.two-line #nick-dot { margin-top: var(--l2-shift, 0px); }
+/* 2. satır: kutu 1. satırdaki (tuşlu) yükseklikte sabit kalır, mesaj dikey ortalanır; isim 3. satırdaki yerinde (üstte) kalır */
 #message-input::-webkit-scrollbar { display: none; }
-@media (prefers-reduced-motion: reduce) { #message-input, #nick-input, #nick-dot { transition: none; } }
+@media (prefers-reduced-motion: reduce) { #message-input { transition: none; } }
 /* Düzenlerken (odaktayken) yazı ve imleç kutunun tam ortasında: normal küçük yazı alanı gibi */
 #nick-input.nick-full { text-align: left; }   /* düzenlerken 7 harfi geçince tamamı görünür; 7 harfe kadar odaksızken nasıl duruyorsa öyle durur */
 #nick-dot { flex: 0 0 auto; box-sizing: border-box; height: var(--cmp-h); line-height: 22px; padding: calc((var(--cmp-h) - 22px) / 2) 5px; color: var(--c-88); font-size: 16px; font-family: inherit; user-select: none; -webkit-user-select: none; pointer-events: none; }
@@ -6239,11 +6237,10 @@ function adjustInputHeight() {
   const toolPad = document.getElementById('tool-pad');
   const toolH = toolPad ? toolPad.offsetHeight : 0;
   const two = grown && toolH >= 22 && Math.round((sh - baseH) / 22) + 1 === 2;
-  let pad = null, shift = 0;
+  let pad = null;
   if (two) {
     h = baseH + toolH;
     pad = (h - 44) / 2;                    // 2 satır × 22px, kutunun tam ortasında
-    shift = pad - (baseH - 22) / 2;        // isim/nokta ilk satırla hizalı kalsın
   }
 
   messageInput.style.height = cur + 'px';   // eski yükseklikten başla, hedefe yumuşakça git (büyürken de küçülürken de)
@@ -6259,8 +6256,6 @@ function adjustInputHeight() {
     const w = document.getElementById('input-wrapper');
     if (w) {
       w.classList.toggle('has-text2', h > baseH);
-      w.classList.toggle('two-line', two);
-      w.style.setProperty('--l2-shift', shift + 'px');
     }
   } catch (e) {}
   // Emojili metin aynası iç boşluk değişince yeniden hizalansın
