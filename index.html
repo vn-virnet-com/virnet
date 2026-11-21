@@ -572,6 +572,7 @@ body #typing-indicator { display: none !important; }
 #tool-in { min-height: 0; overflow: hidden; }
 #tool-pad { --tb-h: 18px; display: flex; justify-content: space-evenly; align-items: center; padding-top: 4px; }   /* tuşlar baştan dikeyde dar: 4+18 = 22px = 2. satırın kutuya kattığı yükseklik, 2. satıra geçince toplam boy hiç değişmez */
 #tool-pad .tb svg { width: 13px; height: 13px; }
+#input-wrapper.mx-on #tool-pad { --tb-h: 30px; padding-top: 5px; }   /* ··· açılıp Leap hapı tüm alanı kaplayınca hap eski (30px) boyuna döner: köşeleri mesaj kutusunun yuvarlaklığıyla uyumlu */
 .tb-grp { display: contents; }  /* iki grup tek sıra gibi davranır: tüm tuşlar alana eşit aralıkla dağılır */
 .tb {
   flex: 0 0 auto; width: var(--tb-w); height: var(--tb-h); padding: 0; border: 0; border-radius: calc(var(--tb-h) / 2); background: var(--c-22); color: var(--c-cc);
