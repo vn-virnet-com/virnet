@@ -581,7 +581,10 @@ body #typing-indicator { display: none !important; }
 #input-wrapper.mx-on #tb-more .mx-l { opacity: 1; transition-delay: .1s; }
 @media (prefers-reduced-motion: reduce) { #tb-more, #tb-more > span, #tb-more .mx-d, #tool-pad .tb, #mic-wrap, #mx-row { transition: none !important; animation: none !important; } }
 body:not(.lv-admin) #tb-call { display: none; }
-#input-wrapper.has-text #tool-row { grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .2s ease, visibility 0s .2s; }
+#tool-pad { transition: opacity .18s ease; }
+#input-wrapper.has-text #tool-pad { opacity: .35; pointer-events: none; }   /* 1. aşama: yazı başlayınca tuşlar (··· dahil) koyulaşıp soluk kalır, kutu küçülmez */
+#input-wrapper.has-text2 #tool-row { grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .2s ease, visibility 0s .2s; }   /* 2. aşama: 1 kelime + boşluk + sonraki kelimenin ilk harfi → kutu daralır */
+#input-wrapper.rec-on #tool-pad { opacity: 1; pointer-events: auto; }
 #input-wrapper.rec-on #tool-row { grid-template-rows: 1fr; visibility: visible; transition: none; }
 #input-wrapper.chat-off .tb:not(#mx-x):not(#tb-more) { pointer-events: none; }   /* bağlantı yokken tuşlar soluklaşmaz, yalnızca basınca çalışmaz */
 #input-wrapper.rec-on .tb:not(#mic-btn) { opacity: 0; pointer-events: none; }
@@ -9375,7 +9378,11 @@ document.getElementById('tb-call').addEventListener('click', () => { if (!editin
 
 /* Kutu boşken alt satır görünür, yazı başlayınca kapanır (value programla değişse de) */
 const inputWrapper = document.getElementById('input-wrapper');
-function syncComposer() { inputWrapper.classList.toggle('has-text', messageInput.value.length > 0); }
+function syncComposer() {
+  const v = messageInput.value;
+  inputWrapper.classList.toggle('has-text', v.length > 0);
+  inputWrapper.classList.toggle('has-text2', /\S+\s+\S+\s/.test(v));   // 1 kelime + boşluk + 1 kelime + boşluk
+}
 (function hookValue() {
   const d = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
   Object.defineProperty(messageInput, 'value', { configurable: true, get() { return d.get.call(this); }, set(v) { d.set.call(this, v); syncComposer(); try { if (window.__feLater) window.__feLater(this); } catch (e) {} } });
