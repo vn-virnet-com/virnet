@@ -11607,7 +11607,7 @@ function goPanel(idx) {
     w.classList.toggle('mx-on', on); b.setAttribute('aria-expanded', on);
     if (on) fit(); else { b.style.width = ''; if (hadFocus) setTimeout(refocus, 120); }
   }
-  b.addEventListener('click', () => set(true));
+  b.addEventListener('click', () => set(!w.classList.contains('mx-on')));   // açıkken Leap satırına basınca da kapanır
   // Menüdeki tuşlardan biri kullanılınca menü kapanır, normal yazma satırı döner (not tuşu click üretmez, pointerup ile çalışır: kısa gecikmeyle kapanır)
   const KEYS = '#eye-btn, #notes-btn, #refresh-btn, #live-toggle';
   row.addEventListener('click', (e) => { if (e.target.closest(KEYS)) setTimeout(() => set(false), 0); }, true);
