@@ -409,8 +409,9 @@ body.no-time .time-tag { display: none !important; }
 #nick-input {
   flex: 0 0 auto; box-sizing: border-box; width: 44px; min-width: 0; max-width: 60%; height: var(--cmp-h); background: transparent; border: 0;
   color: var(--c-88); padding: calc((var(--cmp-h) - 22px) / 2) 0 calc((var(--cmp-h) - 22px) / 2) 12px; font-size: 16px; line-height: 22px; font-family: inherit; outline: none; text-align: right; border-radius: 0;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0;
+  overflow: hidden; text-overflow: clip; white-space: nowrap; margin: 0;
 }
+#nick-input.nick-cut { text-align: left; }
 #nick-dot { flex: 0 0 auto; height: var(--cmp-h); line-height: var(--cmp-h); padding: 0 5px; color: var(--c-88); font-size: 16px; font-family: inherit; user-select: none; -webkit-user-select: none; pointer-events: none; }
 body.nick-hidden #nick-dot { display: none; }
 body.nick-hidden #message-input { padding-left: 14px; }
@@ -3085,7 +3086,7 @@ nickInput.addEventListener('focus', () => {
   pushNickHistory(nickInput.value);
   nickBrowsing = false;
   { const hh = readNickHistory(); nickHistPos = (hh.length && hh[hh.length - 1] === '') ? hh.length - 1 : hh.length; }
-  setTimeout(() => { try { nickInput.select(); } catch (e) {} }, 0);
+  nickInput.value = ''; lsSet('nick', ''); applyNickState();
 });
 nickInput.addEventListener('input', () => { if (!nickHistSetting) nickBrowsing = false; });
 // (İsim geçmişinde ctrl/ok tuşları veya kaydırmayla gezinme kaldırıldı)
@@ -8607,6 +8608,8 @@ function sendCallCard() {
   if (!isConnected()) { closeCallCompose(); flashStatus('Bağlantı yok, arama kartı gönderilemedi'); return; }
   closeCallCompose();
   sendTextNow(CALL_PREFIX + name);
+  const refocus = () => { try { if (!messageInput.disabled) messageInput.focus({ preventScroll: true }); } catch (e) {} };
+  refocus(); setTimeout(refocus, 60); setTimeout(refocus, 250);
 }
 callIn.addEventListener('input', () => { callPrev._name = callCleanName(callIn.value); callPrev._set('ringing'); });
 callIn.addEventListener('keydown', (e) => {
@@ -9353,9 +9356,16 @@ function fitNick() {
     const cs = getComputedStyle(nickInput);
     nickCtx.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
     const focused = document.activeElement === nickInput;
-    let txt = nickInput.value || nickInput.placeholder || '';
-    if (!focused && nickInput.value.length > NICK_SHOW_MAX) txt = nickInput.value.slice(0, NICK_SHOW_MAX) + '…';
-    const w = nickCtx.measureText(txt).width;
+    const v = nickInput.value;
+    const cut = !focused && v.length > NICK_SHOW_MAX;
+    nickInput.classList.toggle('nick-cut', cut);
+    if (cut) {   // ilk 6 harf tam, 7. harfin yatayda yarısı görünür: devamı olduğu anlaşılsın
+      const w6 = nickCtx.measureText(v.slice(0, NICK_SHOW_MAX - 1)).width;
+      const w7 = nickCtx.measureText(v.slice(0, NICK_SHOW_MAX)).width - w6;
+      nickInput.style.width = Math.ceil(12 + w6 + w7 / 2) + 'px';
+      return;
+    }
+    const w = nickCtx.measureText(v || nickInput.placeholder || '').width;
     const max = focused ? (isMobileLayout() ? 170 : 260) : 140;
     nickInput.style.width = Math.min(max, Math.max(34, Math.ceil(w) + 16)) + 'px';
   } catch (e) {}
