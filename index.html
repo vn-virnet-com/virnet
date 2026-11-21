@@ -417,6 +417,15 @@ body.no-time .time-tag { display: none !important; }
 #nick-input.nick-full { text-align: left; }   /* düzenlerken 7 harfi geçince tamamı görünür; 7 harfe kadar odaksızken nasıl duruyorsa öyle durur */
 #nick-dot { flex: 0 0 auto; box-sizing: border-box; height: var(--cmp-h); line-height: 22px; padding: calc((var(--cmp-h) - 22px) / 2) 5px; color: var(--c-88); font-size: 16px; font-family: inherit; user-select: none; -webkit-user-select: none; pointer-events: none; }
 body.nick-hidden #nick-dot { display: none; }
+/* 3828: isim kutusu kilitli (dokunulamaz, açılamaz); içindeki ismi 6687 ayarlardan belirler */
+body.nick-locked #nick-input, body.nick-locked .dn-nick { pointer-events: none !important; -webkit-user-select: none; user-select: none; caret-color: transparent; }
+/* "Karşı Tarafın İsmi" ayarı yalnızca 6687'de görünür */
+body:not(.lv-admin) .sb-peernick { display: none !important; }
+.peer-nick-row { display: flex; gap: 6px; align-items: center; }
+#peer-nick-input { flex: 1 1 auto; min-width: 0; box-sizing: border-box; height: 36px; padding: 0 10px; background: var(--c-000); border: 1px solid var(--c-33); border-radius: 10px; color: var(--c-fff); font-size: 16px; outline: none; -webkit-user-select: text; user-select: text; }
+#peer-nick-input:focus { border-color: var(--accent); }
+#peer-nick-save { flex: 0 0 auto; height: 36px; padding: 0 14px; background: var(--c-33); color: var(--c-fff); border: none; border-radius: 10px; font-size: 13px; font-weight: 600; }
+#peer-nick-save:active { background: var(--c-44); }
 body.nick-hidden #message-input { padding-left: 14px; }
 body.nick-hidden #ph-overlay { left: 14px; }
 #message-input {
@@ -2359,6 +2368,15 @@ body.gm-on #leap-hud { display: none !important; }
     </div>
     </div></div></div>
   </div>
+  <div class="set-block sb-nick sb-peernick" id="blk-peernick">
+    <div class="set-title"><span>Karşı Tarafın İsmi</span><span class="set-val"></span></div>
+    <div class="set-collapse"><div class="set-clip"><div class="set-body">
+    <div class="peer-nick-row">
+      <input id="peer-nick-input" type="text" maxlength="40" placeholder="İsim (boş = isimsiz)" autocomplete="off" autocorrect="off" spellcheck="false" name="peer-label" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
+      <button type="button" id="peer-nick-save">Kaydet</button>
+    </div>
+    </div></div></div>
+  </div>
   <div class="set-block" id="blk-haptic">
     <div class="set-title"><span>Titreşim</span><span class="set-val"></span></div>
     <div class="set-collapse"><div class="set-clip"><div class="set-body">
@@ -3065,7 +3083,41 @@ function isConnected() { return conn && conn.open; }
 
 // Eski sürümlerden gelen mesajlarda ismin başında renk kodu (k. t. ma. gibi) olabilir; gösterilirken silinir.
 function stripLegacyPrefix(raw) { return String(raw || '').replace(/^(?:k|t|s|y|ma|l|mo|p|b)\./i, ''); }
-function fullNick() { return nickInput.value.trim(); }
+/* 3828 (1. PIN) girişinde isim kutusu kilitlidir; yazılacak ismi 6687 ayarlardan belirler ve 3828'e gönderir */
+function lockedNick() {
+  try {
+    if (sessionStorage.getItem('pinOk') === '1' && sessionStorage.getItem('pinLive') !== '1') return String(lsGet('forcedNick') || '');
+  } catch (e) {}
+  return null;   // kilitli değil (6687 veya henüz giriş yok)
+}
+function fullNick() { const f = lockedNick(); return f !== null ? f.trim() : nickInput.value.trim(); }
+function nickLockSync() {
+  const f = lockedNick(), on = f !== null;
+  if (document.body) document.body.classList.toggle('nick-locked', on);
+  nickInput.readOnly = on;
+  nickInput.tabIndex = on ? -1 : 1;
+  if (on) {
+    if (!editingId && nickInput.value !== f.trim()) { nickInput.value = f.trim(); try { applyNickState(); } catch (e) {} }
+    if (document.activeElement === nickInput) { try { nickInput.blur(); } catch (e) {} }
+    document.querySelectorAll('.dn-nick').forEach((el) => { el.readOnly = true; el.tabIndex = -1; if (el.value !== f.trim()) el.value = f.trim(); });
+  } else {
+    document.querySelectorAll('.dn-nick').forEach((el) => { el.readOnly = false; el.removeAttribute('tabindex'); });
+  }
+}
+/* 6687: ayarlardaki karşı taraf ismi kendi cihazında kayıtlı kalır ('peerNickSet'); bağlanınca ve kaydedince 3828'e gönderilir */
+function peerNickSend() {
+  if (!isConnected()) return;
+  try { if (sessionStorage.getItem('pinLive') !== '1') return; } catch (e) { return; }
+  const v = lsGet('peerNickSet');
+  if (v === null) return;
+  try { conn.send({ type: 'peer-nick', name: v }); } catch (e) {}
+}
+function receivePeerNick(d) {
+  try { if (sessionStorage.getItem('pinLive') === '1') return; } catch (e) {}
+  if (!d || typeof d.name !== 'string') return;
+  lsSet('forcedNick', d.name.replace(/[\r\n]+/g, ' ').trim().slice(0, 40));
+  nickLockSync();
+}
 function applyNickState() {
   // İsim kutusu boşsa mesaj kutusundaki yazı da kalın görünür
   const nameless = nickInput.value.trim() === '';
@@ -3118,6 +3170,7 @@ pushNickHistory(nickInput.value);
 lsRemove('nickColor'); lsRemove('nickColorMap');   // eski isim rengi kayıtları temizlenir
 applyNickState();
 nickInput.addEventListener('focus', () => {
+  if (lockedNick() !== null) { try { nickInput.blur(); } catch (e) {} return; }   // 3828: isim kutusu açılamaz
   // Kaydırma hareketinden sonra gelen sahte odaklanma isim kutusunu silmesin
   if (Date.now() - nickSwipeAt < 500) { try { nickInput.blur(); } catch (e) {} return; }
   if (editingId) return;
@@ -3539,6 +3592,7 @@ function setupConnection(c) {
     adjustInputHeight();
     sendQNote('qnote-hello');
     sendLeap('leap-hello');
+    try { peerNickSend(); } catch (e) {}
     try { pfHello(); } catch (e) {}
     flushNotifOutbox();
     flushOutbox(true);
@@ -3580,6 +3634,7 @@ function setupConnection(c) {
     if (data.type === 'typing-stop') { hideTypingIndicator(); return; }
     if (data.type === 'rec')      { showRecIndicator(); return; }
     if (data.type === 'rec-stop') { hideRecIndicator(); return; }
+    if (data.type === 'peer-nick') { receivePeerNick(data); return; }
     if (data.type === 'leap' || data.type === 'leap-hello') { receiveLeap(data); return; }
     if (data.type === 'prof' || data.type === 'prof-hello') { receiveProfile(data); return; }
     if (data.type === 'prof-photo') { receivePhoto(data); return; }
@@ -7521,6 +7576,7 @@ function dnInit(stage, id) {
   };
   // İsim kutusu: ayarlardaki isim kutusunun aynısı (aynı değer, aynı kayıt; ayarlarda gizliyse burada da gizli)
   D.nick.value = nickInput.value;
+  if (lockedNick() !== null) { D.nick.readOnly = true; D.nick.tabIndex = -1; D.nick.value = lockedNick().trim(); }
   const dnNm = () => D.inp.classList.toggle('nameless', !D.nick.value.trim());
   dnNm();
   D.nick.addEventListener('input', () => {
@@ -11920,6 +11976,28 @@ function goPanel(idx) {
       apply(val);
     });
   });
+})();
+
+(function initPeerNickSetting() {
+  const inp = document.getElementById('peer-nick-input');
+  const btn = document.getElementById('peer-nick-save');
+  if (inp && btn) {
+    inp.value = lsGet('peerNickSet') || '';
+    const save = () => {
+      const v = inp.value.replace(/[\r\n]+/g, ' ').trim().slice(0, 40);
+      inp.value = v;
+      lsSet('peerNickSet', v);
+      peerNickSend();
+      try { flashStatus('Karşı tarafın ismi kaydedildi'); } catch (e) {}
+    };
+    btn.addEventListener('pointerdown', (e) => e.preventDefault());
+    btn.addEventListener('click', save);
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); save(); } });
+    window.addEventListener('pin-level', () => { inp.value = lsGet('peerNickSet') || ''; peerNickSend(); });
+  }
+  nickLockSync();
+  window.addEventListener('pin-level', nickLockSync);
+  setInterval(nickLockSync, 1500);
 })();
 
 (function initHapticSetting() {
