@@ -120,8 +120,9 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 /* Sağ boşluk (saatin sonu) = sol boşluk (tarihin başı): 14px + 16px = 30px. Nokta: sol 15px, genişlik 8px, tarihe 7px (diğer öğelerle aynı aralık) */
 #vn-sysbar .vs-r { padding-right: 16px; }
 /* Bildirim dokunma alanı: soldan tarih çipinin başladığı yere kadar (14px şerit boşluğu + 16px .vs-lw boşluğu = 30px); çipin üstüne taşmaz */
-#vn-sysbar .vs-n { position: absolute; left: 0; top: 0; width: 30px; height: 100%; box-sizing: border-box; padding-left: 15px; z-index: 2; display: flex; align-items: center; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-#vn-sysbar .vs-n i { display: none; flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; background: #ff3b30; }
+#vn-sysbar .vs-n { position: absolute; left: 0; top: 0; width: 30px; height: 100%; box-sizing: border-box; padding-right: 7px; z-index: 2; display: flex; align-items: center; justify-content: flex-end; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+/* Bildirim rozeti: 16px yuvarlak, içinde bembeyaz okunmamış bildirim sayısı (9'dan fazlaysa "9+") */
+#vn-sysbar .vs-n i { display: none; flex: 0 0 auto; box-sizing: border-box; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: #ff3b30; color: #fff; font-style: normal; font-size: 10px; font-weight: 800; line-height: 16px; text-align: center; letter-spacing: 0; text-shadow: 0 1px 1px rgba(0,0,0,.35); font-variant-numeric: tabular-nums; }
 #vn-sysbar .vs-n.on i { display: block; animation: vs-blink 1s linear infinite; }
 /* Bildirim noktası: 1 saniyede bir bordo ↔ açık kırmızı yanıp söner */
 @keyframes vs-blink {
@@ -13567,7 +13568,13 @@ function pfRender() {
   var ntList = [], ntRaw = '', ntSeen = 0;
   try { ntSeen = parseInt(localStorage.getItem('vnNotifSeen') || '0', 10) || 0; } catch (e) {}
   function ntMax() { var m = 0, i; for (i = 0; i < ntList.length; i++) if ((Number(ntList[i].ts) || 0) > m) m = Number(ntList[i].ts); return m; }
-  function ntDot() { var d = bar.querySelector('.vs-n'); if (d) d.classList.toggle('on', ntMax() > ntSeen); }
+  function ntUnread() { var n = 0, i; for (i = 0; i < ntList.length; i++) if ((Number(ntList[i].ts) || 0) > ntSeen) n++; return n; }
+  function ntDot() {
+    var d = bar.querySelector('.vs-n'); if (!d) return;
+    var n = ntUnread(), b = d.querySelector('i');
+    d.classList.toggle('on', n > 0);
+    if (b) b.textContent = n > 9 ? '9+' : (n > 0 ? String(n) : '');
+  }
   function ntHm(ts) {
     var d = new Date(ts), n = new Date(), p = function (x) { return ('0' + x).slice(-2); };
     var s = p(d.getHours()) + ':' + p(d.getMinutes());
