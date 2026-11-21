@@ -410,7 +410,7 @@ body.no-time .time-tag { display: none !important; }
 }
 #nick-input.nick-cut { text-align: left; }
 /* Satır eklenince / silinince mesaj kutusu yumuşakça büyüyüp küçülür */
-#message-input { transition: height .16s ease-out, padding .16s ease-out; scrollbar-width: none; }
+#message-input { transition: none; scrollbar-width: none; }   /* 1.→2. satır geçişinde kayma olmasın: animasyon yok */
 /* 2. satır: kutu 1. satırdaki (tuşlu) yükseklikte sabit kalır, mesaj dikey ortalanır; isim 3. satırdaki yerinde (üstte) kalır */
 #message-input::-webkit-scrollbar { display: none; }
 @media (prefers-reduced-motion: reduce) { #message-input { transition: none; } }
@@ -568,8 +568,8 @@ body #typing-indicator { display: none !important; }
 #msg-wrap.recording #rec-ph { display: block; }
 @keyframes recblink { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
 /* Alt araç satırı: yalnız kutu boşken görünür; yazı başlayınca yumuşakça kapanır */
-#tool-row { display: block; }
-#tool-in { min-height: 0; overflow: hidden; max-height: 22px; transition: max-height .16s ease-out; }   /* 22px = #tool-pad yüksekliği (4+18). grid-template-rows yerine max-height: bazı mobil tarayıcılar grid satırını animasyonlu küçültmez, tuşlar bir anda yok olup yazı önce yukarı kayıp sonra iniyordu; max-height her yerde mesaj kutusunun büyümesiyle birebir eşzamanlı akar, toplam boy sabit kalır */
+#tool-row { display: grid; grid-template-rows: 1fr; transition: none; }
+#tool-in { min-height: 0; overflow: hidden; }
 #tool-pad { --tb-h: 18px; display: flex; justify-content: space-evenly; align-items: center; padding-top: 4px; }   /* tuşlar baştan dikeyde dar: 4+18 = 22px = 2. satırın kutuya kattığı yükseklik, 2. satıra geçince toplam boy hiç değişmez */
 #tool-pad .tb svg { width: 16px; height: 16px; }   /* 18px'lik hapın içinde simge ucu ile hap kenarı arasında ~1-2px boşluk kalacak şekilde büyütüldü; simgelerin 24'lük çizim alanındaki doluluğu farklı olduğu için tek tek ayarlı */
 #tool-pad #tb-photo svg, #tool-pad #tb-song svg { width: 17px; height: 17px; }
@@ -611,11 +611,9 @@ body #typing-indicator { display: none !important; }
 body:not(.lv-admin):not(.pin-third) #tb-call { display: none; }
 #tool-pad { transition: opacity .18s ease; }
 #input-wrapper.has-text #tool-pad { opacity: .35; pointer-events: none; }   /* 1. aşama: yazı başlayınca tuşlar (··· dahil) koyulaşıp soluk kalır, kutu küçülmez */
-#input-wrapper.has-text2 #tool-row { visibility: hidden; transition: visibility 0s .16s; }
-#input-wrapper.has-text2 #tool-in { max-height: 0; }   /* 2. aşama: yazı alt satıra geçip mesaj kutusu yukarı uzayınca alt satır gizlenir */
+#input-wrapper.has-text2 #tool-row { grid-template-rows: 0fr; visibility: hidden; transition: none; }   /* 2. aşama: yazı alt satıra geçip mesaj kutusu yukarı uzayınca alt satır gizlenir */
 #input-wrapper.rec-on #tool-pad { opacity: 1; pointer-events: auto; }
-#input-wrapper.rec-on #tool-row { visibility: visible; transition: none; }
-#input-wrapper.rec-on #tool-in { max-height: 22px; transition: none; }
+#input-wrapper.rec-on #tool-row { grid-template-rows: 1fr; visibility: visible; transition: none; }
 #input-wrapper.chat-off .tb:not(#mx-x):not(#tb-more) { pointer-events: none; }   /* bağlantı yokken tuşlar soluklaşmaz, yalnızca basınca çalışmaz */
 #input-wrapper.rec-on .tb:not(#mic-btn) { opacity: 0; pointer-events: none; }
 /* Ses kaydı: mikrofona basılı tutunca baloncuk sola uzar: [çöp | kilit | mikrofon]. Çöpün üstüne gelince bütün baloncuk kırmızı olur, bırakınca kayıt silinir */
@@ -6310,10 +6308,9 @@ function adjustInputHeight() {
 
   // 2. satırda kutu doğal yüksekliğinde (baseH + 22px) uzar; alt tuş satırı baştan 22px olduğu için (#tool-pad) toplam boy değişmez
 
-  messageInput.style.height = cur + 'px';   // eski yükseklikten başla, hedefe yumuşakça git (büyürken de küçülürken de)
-  void messageInput.offsetHeight;
+  messageInput.style.height = h + 'px';   // animasyonsuz: yazı 2. satıra geçerken kutu ile alt tuşlar aynı karede değişir, metin kaymaz
   messageInput.style.transition = '';
-  messageInput.style.height = h + 'px';
+  if (h >= sh) messageInput.scrollTop = 0;   // içerik sığıyorsa textarea'nın kendi içinde yukarı kaymış olması engellenir
 
   // Alt satır (tuşlar) yalnızca yazı alt satıra geçip kutu yukarı doğru uzayınca gizlenir
   try {
