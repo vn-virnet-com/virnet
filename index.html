@@ -1105,9 +1105,27 @@ body.no-anim #app { transition: none !important; }
 @keyframes live-word-in { from { opacity: 0; } to { opacity: 1; } }
 .live-msg .live-new, .msg .live-new { animation: live-word-in 500ms ease-out both; }
 @media (prefers-reduced-motion: reduce) { .live-msg .live-new, .msg .live-new { animation: none; } }
-/* Dinamik mod: kutu hafif sarı tonda; kayan sarı parıltı daha saydam (%18 opaklık) */
-body.live-on #input-wrapper { background-color: color-mix(in srgb, var(--warn) 9%, var(--c-111)); background-image: linear-gradient(110deg, transparent 30%, color-mix(in srgb, var(--warn) 18%, transparent) 50%, transparent 70%); background-size: 260% 100%; background-position: 130% 0; background-repeat: no-repeat; animation: cdTagShine 2.6s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { body.live-on #input-wrapper { animation: none; background-image: none; } }
+/* Dinamik mod: sabit sarı arka plan yok. Kutunun içinde sürekli, kesintisiz ve rastgele dolaşan 4 yuvarlak, yumuşak (blur) hafif sarı ışık. Her ışığın x ve y hareketi farklı sürede gidip geldiği için döngü fark edilmez */
+@property --lb1x { syntax: "<percentage>"; inherits: false; initial-value: 15%; }
+@property --lb1y { syntax: "<percentage>"; inherits: false; initial-value: 30%; }
+@property --lb2x { syntax: "<percentage>"; inherits: false; initial-value: 70%; }
+@property --lb2y { syntax: "<percentage>"; inherits: false; initial-value: 65%; }
+@property --lb3x { syntax: "<percentage>"; inherits: false; initial-value: 40%; }
+@property --lb3y { syntax: "<percentage>"; inherits: false; initial-value: 80%; }
+@property --lb4x { syntax: "<percentage>"; inherits: false; initial-value: 88%; }
+@property --lb4y { syntax: "<percentage>"; inherits: false; initial-value: 25%; }
+@keyframes lb1x { from { --lb1x: -5%; } to { --lb1x: 95%; } }
+@keyframes lb1y { from { --lb1y: 5%; } to { --lb1y: 100%; } }
+@keyframes lb2x { from { --lb2x: 5%; } to { --lb2x: 110%; } }
+@keyframes lb2y { from { --lb2y: -5%; } to { --lb2y: 90%; } }
+@keyframes lb3x { from { --lb3x: -10%; } to { --lb3x: 100%; } }
+@keyframes lb3y { from { --lb3y: 0%; } to { --lb3y: 105%; } }
+@keyframes lb4x { from { --lb4x: 0%; } to { --lb4x: 105%; } }
+@keyframes lb4y { from { --lb4y: -10%; } to { --lb4y: 95%; } }
+@keyframes lbFade { from { opacity: 0; } to { opacity: 1; } }
+body.live-on #input-wrapper { isolation: isolate; }
+body.live-on #input-wrapper::before { content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1; pointer-events: none; background: radial-gradient(circle 74px at var(--lb1x) var(--lb1y), color-mix(in srgb, var(--warn) 34%, transparent), transparent), radial-gradient(circle 58px at var(--lb2x) var(--lb2y), color-mix(in srgb, #fff3a3 30%, transparent), transparent), radial-gradient(circle 84px at var(--lb3x) var(--lb3y), color-mix(in srgb, var(--warn) 26%, transparent), transparent), radial-gradient(circle 64px at var(--lb4x) var(--lb4y), color-mix(in srgb, #ffe680 30%, transparent), transparent); animation: lbFade .5s ease-out both, lb1x 3.7s ease-in-out 0s infinite alternate, lb1y 2.9s ease-in-out -1.3s infinite alternate, lb2x 4.3s ease-in-out -2.1s infinite alternate, lb2y 3.3s ease-in-out -0.7s infinite alternate, lb3x 5.1s ease-in-out -3.4s infinite alternate, lb3y 3.9s ease-in-out -2.2s infinite alternate, lb4x 3.1s ease-in-out -1.1s infinite alternate, lb4y 4.7s ease-in-out -3s infinite alternate; }
+@media (prefers-reduced-motion: reduce) { body.live-on #input-wrapper::before { animation: none; } }
 
 #nick-input { -webkit-touch-callout: none; touch-action: pan-y; }
 /* İsim geçmişinde gezinirken (kaydırma / ok tuşu) kısa bir kayma efekti */
