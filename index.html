@@ -571,7 +571,9 @@ body #typing-indicator { display: none !important; }
 #tool-row { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .16s ease-out; }
 #tool-in { min-height: 0; overflow: hidden; }
 #tool-pad { --tb-h: 18px; display: flex; justify-content: space-evenly; align-items: center; padding-top: 4px; }   /* tuşlar baştan dikeyde dar: 4+18 = 22px = 2. satırın kutuya kattığı yükseklik, 2. satıra geçince toplam boy hiç değişmez */
-#tool-pad .tb svg { width: 13px; height: 13px; }
+#tool-pad .tb svg { width: 16px; height: 16px; }   /* 18px'lik hapın içinde simge ucu ile hap kenarı arasında ~1-2px boşluk kalacak şekilde büyütüldü; simgelerin 24'lük çizim alanındaki doluluğu farklı olduğu için tek tek ayarlı */
+#tool-pad #tb-photo svg, #tool-pad #tb-song svg { width: 17px; height: 17px; }
+#tool-pad #tb-cam svg { width: 19px; height: 19px; }
 /* ··· açılınca Leap hapı yanıt çubuğu (#reply-bar) gibi kutunun kenarlarına kadar yayılır: iç boşluğu (6px) taşıp sağa-sola-aşağıya dayanır, alt köşeleri kutunun kendi yuvarlaklığını (25px) izler, üst köşeleri düzdür */
 #input-wrapper.mx-on #tool-in { overflow: visible; }
 #input-wrapper.mx-on #tb-more { width: calc(100% + 12px) !important; height: 24px; margin: 0 -6px -6px; border-radius: 0 0 25px 25px / 0 0 24px 24px; }
