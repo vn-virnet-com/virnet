@@ -558,7 +558,7 @@ body #typing-indicator { display: none !important; }
 .tb svg { width: 18px; height: 18px; display: block; pointer-events: none; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 /* ··· tuşu: basınca üst yazma satırı yerine göz / not / yenile / dinamik mesaj tuşları + çarpı gelir; tuş sarı "Leap · sayı" hapına genişler */
 #mx-row { display: none; align-items: center; justify-content: space-evenly; height: var(--cmp-h); }
-#input-wrapper.mx-on:not(.rec-on) #top-row { display: none; }
+#input-wrapper.mx-on:not(.rec-on) #top-row { position: absolute; left: 6px; right: 6px; top: 6px; opacity: 0; pointer-events: none; }   /* gizli ama yerinde: klavye açıksa açık kalır */
 #input-wrapper.mx-on:not(.rec-on) #mx-row { display: flex; animation: mxIn .2s ease-out; }
 @keyframes mxIn { from { opacity: 0; } to { opacity: 1; } }
 #mx-row > :not(#mx-x) { width: var(--tb-w); height: var(--tb-h); padding: 0 !important; margin: 0 !important; justify-content: center; border-radius: calc(var(--tb-h) / 2); background: var(--c-22); color: var(--c-cc); flex: 0 0 auto; }
@@ -568,18 +568,20 @@ body #typing-indicator { display: none !important; }
 #tb-more { position: relative; overflow: hidden; transition: width .28s cubic-bezier(.4, 0, .2, 1), background-color .28s ease, opacity .15s ease; }
 #tb-more > span { display: flex; align-items: center; white-space: nowrap; transition: opacity .18s ease; }
 #tb-more .mx-d { font: 700 18px/1 sans-serif; color: var(--c-cc); }
-#tb-more .mx-l { position: absolute; left: 0; top: 0; height: 100%; width: max-content; padding: 0 13px; box-sizing: border-box; gap: 5px; opacity: 0; font: 700 13px/1 'Lexend', sans-serif; color: #000; }
+#tb-more .mx-l { position: absolute; left: 0; right: 0; top: 0; height: 100%; justify-content: center; padding: 0 13px; box-sizing: border-box; gap: 5px; opacity: 0; font: 700 13px/1 'Lexend', sans-serif; color: #000; }
 #tb-more b { color: #ff8a00; }
 #input-wrapper:not(.mx-on) #tb-more.note-unseen .mx-d { color: #ffee00; animation: notes-blink 1s ease-in-out infinite; }   /* yeni not gelince noktalar cırtlak sarı yanıp söner */
 #tb-more i { font-style: normal; }
 #input-wrapper.mx-on #tb-more { background: #fff3a3; }
+#tool-pad .tb:not(#tb-more), #mic-wrap { transition: width .28s cubic-bezier(.4, 0, .2, 1), opacity .18s ease, background-color .12s ease; }
+#input-wrapper.mx-on #tool-pad .tb:not(#tb-more), #input-wrapper.mx-on #mic-wrap { width: 0; opacity: 0; overflow: hidden; pointer-events: none; }   /* ··· açıkken alt satırdaki diğer tuşlar yok olur, Leap hapı tüm alanı kaplar */
 #input-wrapper.mx-on #tb-more .mx-d { opacity: 0; }
 #input-wrapper.mx-on #tb-more .mx-l { opacity: 1; transition-delay: .1s; }
-@media (prefers-reduced-motion: reduce) { #tb-more, #tb-more > span, #tb-more .mx-d, #mx-row { transition: none !important; animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { #tb-more, #tb-more > span, #tb-more .mx-d, #tool-pad .tb, #mic-wrap, #mx-row { transition: none !important; animation: none !important; } }
 body:not(.lv-admin) #tb-call { display: none; }
 #input-wrapper.has-text #tool-row { grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .2s ease, visibility 0s .2s; }
 #input-wrapper.rec-on #tool-row { grid-template-rows: 1fr; visibility: visible; transition: none; }
-#input-wrapper.chat-off .tb:not(#mx-x):not(#tb-more) { opacity: .3; pointer-events: none; }
+#input-wrapper.chat-off .tb:not(#mx-x):not(#tb-more) { pointer-events: none; }   /* bağlantı yokken tuşlar soluklaşmaz, yalnızca basınca çalışmaz */
 #input-wrapper.rec-on .tb:not(#mic-btn) { opacity: 0; pointer-events: none; }
 /* Ses kaydı: mikrofona basılı tutunca baloncuk sola uzar: [çöp | kilit | mikrofon]. Çöpün üstüne gelince bütün baloncuk kırmızı olur, bırakınca kayıt silinir */
 #mic-wrap { position: relative; width: var(--tb-w); height: var(--tb-h); flex: 0 0 auto; }
@@ -11591,9 +11593,9 @@ function goPanel(idx) {
 // ··· tuşu: üst yazma satırı yerine tuşlar + çarpı gelir; tuş açık sarı "Leap · sayı" hapına genişler, çarpıyla geri küçülür
 (function initMore() {
   const w = document.getElementById('input-wrapper'), b = document.getElementById('tb-more'), x = document.getElementById('mx-x');
-  const l = b.querySelector('.mx-l'), row = document.getElementById('mx-row');
+  const row = document.getElementById('mx-row');
   let hadFocus = false;
-  const fit = () => { if (w.classList.contains('mx-on')) b.style.width = Math.min(l.offsetWidth, Math.round(document.getElementById('tool-pad').clientWidth * 0.5)) + 'px'; };
+  const fit = () => { if (w.classList.contains('mx-on')) b.style.width = document.getElementById('tool-pad').clientWidth + 'px'; };
   const refocus = () => {   // yazma satırı geri gelince klavye açıksa mesaj kutusu tekrar seçilir (ekran gizlendiyse / başka alan seçiliyse dokunmaz)
     const a = document.activeElement, pc = document.getElementById('privacy-cover');
     if (a === messageInput || (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) || (pc && pc.classList.contains('show')) || document.documentElement.classList.contains('pin-locked') || document.body.classList.contains('once-viewing')) return;
@@ -11613,6 +11615,12 @@ function goPanel(idx) {
   x.addEventListener('click', () => set(false));
   [b, row].forEach((el) => el.addEventListener('mousedown', (e) => e.preventDefault()));   // odak (klavye) mesaj kutusundan kaçmasın
   window.addEventListener('resize', fit);
+  // Menü açıkken klavye açık kalabilir ama hiçbir tuş mesaj kutusuna yazmaz (olaylar uygulamanın işleyicilerine hiç ulaşmaz)
+  ['beforeinput', 'keydown', 'keypress', 'input', 'paste', 'cut', 'drop', 'compositionstart', 'compositionupdate', 'compositionend'].forEach((t) => window.addEventListener(t, (e) => {
+    if (e.target !== messageInput || !w.classList.contains('mx-on')) return;
+    e.stopImmediatePropagation(); if (e.cancelable) e.preventDefault();
+    if (messageInput.value) messageInput.value = '';
+  }, true));
   window.__mxClose = () => set(false); window.__mxFit = fit;
 })();
 
