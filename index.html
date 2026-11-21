@@ -101,7 +101,7 @@ html { --vn-top: max(env(safe-area-inset-top, 0px), var(--vn-sb, 0px)); }
 /* APK üst şerit: tüm öğeler aynı yazı boyutunda, aynı yükseklikte, dikeyde ortalı, aralarında eşit (7px) boşluk */
 #vn-sysbar { display: none; flex: 0 0 auto; box-sizing: border-box; height: var(--vn-sb, 0px); padding: 0 14px; align-items: center; justify-content: space-between; background: var(--c-000); color: color-mix(in srgb, var(--c-fff) 82%, transparent); font-size: 11.5px; font-weight: 600; line-height: 1; letter-spacing: 0; -webkit-user-select: none; user-select: none; pointer-events: none; font-variant-numeric: tabular-nums; }
 html.vn-fs #vn-sysbar { display: flex; position: relative; }
-#vn-sysbar .vs-lw { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; align-items: center; gap: 7px; padding-left: 16px; margin-right: 10px; }
+#vn-sysbar .vs-lw { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; align-items: center; gap: 7px; padding-left: 24px; margin-right: 10px; }
 #vn-sysbar .vs-r { margin-left: auto; flex: 0 0 auto; height: 100%; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
 #vn-sysbar .vs-c, #vn-sysbar .vs-l, #vn-sysbar .vs-net, #vn-sysbar .vs-bt, #vn-sysbar .vs-bat, #vn-sysbar .vs-t { height: 100%; display: flex; align-items: center; line-height: 1; white-space: nowrap; font-size: inherit; }
 #vn-sysbar .vs-t { font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
@@ -118,9 +118,9 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 #vn-sysbar .vs-bat { padding: 0 6px; margin: 0 -6px; }
     #vn-sysbar .vs-bat svg { height: 13px; }
 /* Sağ boşluk (saatin sonu) = sol boşluk (tarihin başı): 14px + 16px = 30px. Nokta: sol 15px, genişlik 8px, tarihe 7px (diğer öğelerle aynı aralık) */
-#vn-sysbar .vs-r { padding-right: 16px; }
+#vn-sysbar .vs-r { padding-right: 24px; }
 /* Bildirim dokunma alanı: soldan tarih çipinin başladığı yere kadar (14px şerit boşluğu + 16px .vs-lw boşluğu = 30px); çipin üstüne taşmaz */
-#vn-sysbar .vs-n { position: absolute; left: 0; top: 0; width: 30px; height: 100%; box-sizing: border-box; padding-right: 7px; z-index: 2; display: flex; align-items: center; justify-content: flex-end; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#vn-sysbar .vs-n { position: absolute; left: 0; top: 0; width: 38px; height: 100%; box-sizing: border-box; padding-right: 7px; z-index: 2; display: flex; align-items: center; justify-content: flex-end; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 /* Bildirim rozeti: 16px yuvarlak, içinde bembeyaz okunmamış bildirim sayısı (9'dan fazlaysa "9+") */
 #vn-sysbar .vs-n i { display: none; flex: 0 0 auto; box-sizing: border-box; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: #ff3b30; color: #fff; font-style: normal; font-size: 10px; font-weight: 800; line-height: 16px; text-align: center; letter-spacing: 0; text-shadow: 0 1px 1px rgba(0,0,0,.35); font-variant-numeric: tabular-nums; }
 #vn-sysbar .vs-n.on i { display: block; animation: vs-blink 1s linear infinite; }
