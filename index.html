@@ -410,8 +410,8 @@ body.no-time .time-tag { display: none !important; }
 }
 #nick-input.nick-cut { text-align: left; }
 /* Satır eklenince / silinince mesaj kutusu yumuşakça büyüyüp küçülür */
-#message-input { transition: height .16s ease-out, padding .16s ease-out, line-height .16s ease-out; scrollbar-width: none; }
-/* 2. satır: kutu 1. satırdaki (tuşlu) yükseklikte sabit kalır; 1. satır isimle aynı hizada üstte durur, 2. satır onunla kutunun altı arasında ortalanır */
+#message-input { transition: height .16s ease-out, padding .16s ease-out; scrollbar-width: none; }
+/* 2. satır: kutu 1. satırdaki (tuşlu) yükseklikte sabit kalır, mesaj dikey ortalanır; isim 3. satırdaki yerinde (üstte) kalır */
 #message-input::-webkit-scrollbar { display: none; }
 @media (prefers-reduced-motion: reduce) { #message-input { transition: none; } }
 /* Düzenlerken (odaktayken) yazı ve imleç kutunun tam ortasında: normal küçük yazı alanı gibi */
@@ -570,7 +570,8 @@ body #typing-indicator { display: none !important; }
 /* Alt araç satırı: yalnız kutu boşken görünür; yazı başlayınca yumuşakça kapanır */
 #tool-row { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .16s ease-out; }
 #tool-in { min-height: 0; overflow: hidden; }
-#tool-pad { display: flex; justify-content: space-evenly; align-items: center; padding-top: 5px; }
+#tool-pad { --tb-h: 18px; display: flex; justify-content: space-evenly; align-items: center; padding-top: 4px; }   /* tuşlar baştan dikeyde dar: 4+18 = 22px = 2. satırın kutuya kattığı yükseklik, 2. satıra geçince toplam boy hiç değişmez */
+#tool-pad .tb svg { width: 13px; height: 13px; }
 .tb-grp { display: contents; }  /* iki grup tek sıra gibi davranır: tüm tuşlar alana eşit aralıkla dağılır */
 .tb {
   flex: 0 0 auto; width: var(--tb-w); height: var(--tb-h); padding: 0; border: 0; border-radius: calc(var(--tb-h) / 2); background: var(--c-22); color: var(--c-cc);
@@ -6288,10 +6289,8 @@ function adjustInputHeight() {
   const baseH = mob ? 40 : 44; // --cmp-h ile aynı
   // Ölçümü animasyonsuz yap: yoksa süren geçiş yüzünden scrollHeight eski (büyük) yüksekliği gösterir ve kutu satır silinince küçülmez
   const cur = messageInput.offsetHeight || baseH;
-  const curPad = parseFloat(getComputedStyle(messageInput).paddingTop) || ((baseH - 22) / 2);
-  const curLh = parseFloat(getComputedStyle(messageInput).lineHeight) || 22;
   messageInput.style.transition = 'none';
-  messageInput.style.paddingTop = ''; messageInput.style.paddingBottom = ''; messageInput.style.lineHeight = '';   // ölçüm varsayılan iç boşluk ve satır yüksekliğiyle yapılır
+  messageInput.style.paddingTop = ''; messageInput.style.paddingBottom = '';   // ölçüm varsayılan iç boşlukla yapılır
   messageInput.style.height = baseH + 'px';
   // Kutu boşken (placeholder gösteriliyorken) yükseklik hiç büyümez; uzun placeholder satır atlayıp kutuyu şişirmesin
   // Masaüstünde birkaç px'lik ölçü farkı ilk satırda kutuyu büyütmesin: ikinci satır gelene kadar (yarım satır payıyla) sabit kalır
@@ -6301,29 +6300,12 @@ function adjustInputHeight() {
   if (grown) h = Math.min(150, sh);
   if (!mob) messageInput.style.overflowY = sh > 150 ? 'auto' : 'hidden'; // tek/iki satırda gereksiz kaydırma çubuğu çıkmasın
 
-  // Tam 2. satırdaysa: tuşlar gizlenirken kutu daralmasın; 1. satırdaki (tuşlu) yükseklikte sabit kalsın; 1. satır isimle hizalı, 2. satır altında ortalı
-  const toolPad = document.getElementById('tool-pad');
-  const toolH = toolPad ? toolPad.offsetHeight : 0;
-  const two = grown && toolH >= 22 && Math.round((sh - baseH) / 22) + 1 === 2;
-  let padT = null, padB = null, lh = null;
-  if (two) {
-    h = baseH + toolH;
-    // 1. satır isimle aynı hizada (üstte) kalır; 2. satır, 1. satırın altı ile kutunun en altı arasında ortalanır.
-    // Satır aralığı tek değer olduğu için: 1. satırın merkezi = baseH/2 (isimle aynı), 2. satırın merkezi = (1. satırın altı + kutu altı)/2
-    const c1 = baseH / 2;                  // 1. satır merkezi (isimle aynı)
-    const c2 = (c1 + 11 + h) / 2;          // 2. satır merkezi: 1. satırın altı (c1+11) ile kutu altı (h) arasının ortası
-    lh = c2 - c1;                          // satır yüksekliği = iki merkez arası
-    padT = c1 - lh / 2;
-    padB = Math.max(0, h - padT - 2 * lh);
-  }
+  // 2. satırda kutu doğal yüksekliğinde (baseH + 22px) uzar; alt tuş satırı baştan 22px olduğu için (#tool-pad) toplam boy değişmez
 
   messageInput.style.height = cur + 'px';   // eski yükseklikten başla, hedefe yumuşakça git (büyürken de küçülürken de)
-  messageInput.style.paddingTop = curPad + 'px'; messageInput.style.paddingBottom = curPad + 'px'; messageInput.style.lineHeight = curLh + 'px';
   void messageInput.offsetHeight;
   messageInput.style.transition = '';
   messageInput.style.height = h + 'px';
-  if (padT === null) { messageInput.style.paddingTop = ''; messageInput.style.paddingBottom = ''; messageInput.style.lineHeight = ''; }
-  else { messageInput.style.paddingTop = padT + 'px'; messageInput.style.paddingBottom = padB + 'px'; messageInput.style.lineHeight = lh + 'px'; }
 
   // Alt satır (tuşlar) yalnızca yazı alt satıra geçip kutu yukarı doğru uzayınca gizlenir
   try {
