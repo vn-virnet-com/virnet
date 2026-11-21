@@ -8619,6 +8619,8 @@ function openCallCompose() {
 function closeCallCompose() {
   callModal.classList.remove('show');
   try { callIn.blur(); } catch (e) {}
+  const refocus = () => { try { if (!messageInput.disabled) messageInput.focus({ preventScroll: true }); } catch (e) {} };   // Vazgeç / Esc / dışarı basış / gönder: odak mesaj kutusuna döner
+  refocus(); setTimeout(refocus, 60); setTimeout(refocus, 250);
 }
 function sendCallCard() {
   const name = callCleanName(callIn.value);
@@ -8626,8 +8628,6 @@ function sendCallCard() {
   if (!isConnected()) { closeCallCompose(); flashStatus('Bağlantı yok, arama kartı gönderilemedi'); return; }
   closeCallCompose();
   sendTextNow(CALL_PREFIX + name);
-  const refocus = () => { try { if (!messageInput.disabled) messageInput.focus({ preventScroll: true }); } catch (e) {} };
-  refocus(); setTimeout(refocus, 60); setTimeout(refocus, 250);
 }
 callIn.addEventListener('input', () => { callPrev._name = callCleanName(callIn.value); callPrev._set('ringing'); });
 callIn.addEventListener('keydown', (e) => {
