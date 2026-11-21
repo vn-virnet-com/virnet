@@ -9378,9 +9378,9 @@ const inputWrapper = document.getElementById('input-wrapper');
 function syncComposer() { inputWrapper.classList.toggle('has-text', messageInput.value.length > 0); }
 (function hookValue() {
   const d = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
-  Object.defineProperty(messageInput, 'value', { configurable: true, get() { return d.get.call(this); }, set(v) { d.set.call(this, v); syncComposer(); } });
+  Object.defineProperty(messageInput, 'value', { configurable: true, get() { return d.get.call(this); }, set(v) { d.set.call(this, v); syncComposer(); try { if (window.__feLater) window.__feLater(this); } catch (e) {} } });
   const dn = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
-  Object.defineProperty(nickInput, 'value', { configurable: true, get() { return dn.get.call(this); }, set(v) { dn.set.call(this, v); fitNick(); } });
+  Object.defineProperty(nickInput, 'value', { configurable: true, get() { return dn.get.call(this); }, set(v) { dn.set.call(this, v); fitNick(); try { if (window.__feLater) window.__feLater(this); } catch (e) {} } });
 })();
 messageInput.addEventListener('input', syncComposer);
 /* İsim kutusu yazıya göre genişler: isim · mesaj arasında boşluk kalmaz */
@@ -13990,6 +13990,7 @@ function pfRender() {
     pend.add(el);
     if (!raf) raf = requestAnimationFrame(function () { raf = 0; var l = Array.from(pend); pend.clear(); l.forEach(syncField); });
   }
+  window.__feLater = later; // value'su ayrıca ezilmiş alanlar (mesaj/isim kutusu) atamadan sonra buradan haber verir
   /* Emojili alan varken her karede konumu denetle (düzen değişse, panel açılsa da hizalı kalsın) */
   function kick() { if (tickOn) return; tickOn = true; requestAnimationFrame(tick); }
   function tick() {
