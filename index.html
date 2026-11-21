@@ -101,7 +101,7 @@ html { --vn-top: max(env(safe-area-inset-top, 0px), var(--vn-sb, 0px)); }
 /* APK üst şerit: tüm öğeler aynı yazı boyutunda, aynı yükseklikte, dikeyde ortalı, aralarında eşit (7px) boşluk */
 #vn-sysbar { display: none; flex: 0 0 auto; box-sizing: border-box; height: var(--vn-sb, 0px); padding: 0 14px; align-items: center; justify-content: space-between; background: var(--c-000); color: color-mix(in srgb, var(--c-fff) 82%, transparent); font-size: 11.5px; font-weight: 600; line-height: 1; letter-spacing: 0; -webkit-user-select: none; user-select: none; pointer-events: none; font-variant-numeric: tabular-nums; }
 html.vn-fs #vn-sysbar { display: flex; position: relative; }
-#vn-sysbar .vs-lw { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; align-items: center; gap: 7px; padding-left: 12px; margin-right: 10px; }
+#vn-sysbar .vs-lw { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; align-items: center; gap: 7px; padding-left: 16px; margin-right: 10px; }
 #vn-sysbar .vs-r { margin-left: auto; flex: 0 0 auto; height: 100%; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
 #vn-sysbar .vs-c, #vn-sysbar .vs-l, #vn-sysbar .vs-net, #vn-sysbar .vs-bt, #vn-sysbar .vs-bat, #vn-sysbar .vs-t { height: 100%; display: flex; align-items: center; line-height: 1; white-space: nowrap; font-size: inherit; }
 #vn-sysbar .vs-t { font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
@@ -117,19 +117,20 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 #vn-sysbar .vs-bt:empty { display: none; }
 #vn-sysbar .vs-bat { padding: 0 6px; margin: 0 -6px; }
     #vn-sysbar .vs-bat svg { height: 13px; }
-/* Sağ boşluk (saatin sonu) = sol boşluk (tarihin başı): 14px + 12px = 26px */
-#vn-sysbar .vs-r { padding-right: 12px; }
+/* Sağ boşluk (saatin sonu) = sol boşluk (tarihin başı): 14px + 16px = 30px. Nokta: sol 15px, genişlik 8px, tarihe 7px (diğer öğelerle aynı aralık) */
+#vn-sysbar .vs-r { padding-right: 16px; }
 #vn-sysbar.note-unseen .vs-l::after { content: ''; flex: 0 0 6px; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: var(--warn); }
 /* Not güncellenince tepsi adı sarı yanıp söner (noktayla birlikte); notlar açılıp bakılınca kalkar */
 #vn-sysbar.note-unseen .vs-l { color: var(--warn); animation: notes-blink 1s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { #vn-sysbar.note-unseen .vs-l { animation: none; } }
 #vn-sysbar .vs-n { position: absolute; left: 0; top: 0; width: 38px; height: 100%; box-sizing: border-box; padding-left: 15px; z-index: 2; display: flex; align-items: center; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 #vn-sysbar .vs-n i { display: none; flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; background: #ff3b30; }
-#vn-sysbar .vs-n.on i { display: block; animation: vs-pulse 1s ease-in-out infinite alternate; will-change: transform, box-shadow; }
-/* Bildirim noktası: git-gel nabız (hafif büyüyüp küçülür, etrafında yumuşak kırmızı hale açılıp kapanır) */
-@keyframes vs-pulse {
-  from { transform: scale(.82); box-shadow: 0 0 0 0 rgba(255,59,48,0); }
-  to   { transform: scale(1.18); box-shadow: 0 0 6px 2px rgba(255,59,48,.6); }
+#vn-sysbar .vs-n.on i { display: block; animation: vs-blink 1s linear infinite; }
+/* Bildirim noktası: 1 saniyede bir bordo ↔ açık kırmızı yanıp söner */
+@keyframes vs-blink {
+  0%, 45%   { background: #8c1126; }
+  55%, 95%  { background: #ff4d42; }
+  100%      { background: #8c1126; }
 }
 @media (prefers-reduced-motion: reduce) { #vn-sysbar .vs-n.on i { animation: none; } }
 #vn-nt { position: fixed; z-index: 12650; top: calc(var(--vn-sb, 0px) + 4px); left: 8px; right: 8px; max-width: 360px; max-height: min(70vh, 460px); box-sizing: border-box; display: none; flex-direction: column; background: var(--c-111); color: var(--c-fff); border: 1px solid var(--c-33); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.55); overflow: hidden; font-size: 12.5px; font-weight: 400; letter-spacing: 0; line-height: 1.3; }
