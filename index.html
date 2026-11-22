@@ -576,11 +576,12 @@ body #typing-indicator { display: none !important; }
 #tool-pad #tb-cam svg { width: 19px; height: 19px; }
 /* Masaüstü: alt hap tuşları dikeyde daha geniş (22px), simgeler biraz büyük. Kutunun 1. satırdaki toplam boyu ile 2. satırdaki boyu JS'te (adjustInputHeight) ölçülerek eşitlenir */
 @media (min-width: 769px) {
-  #tool-pad { --tb-h: 22px; }
-  #tool-pad .tb svg { width: 18px; height: 18px; }
-  #tool-pad #tb-photo svg, #tool-pad #tb-song svg { width: 19px; height: 19px; }
-  #tool-pad #tb-cam svg { width: 21px; height: 21px; }
-  #input-wrapper.mx-on #tb-more { height: calc(var(--tb-h) + 6px); }
+  #tool-pad { --tb-h: 26px; --tb-w: 52px; }
+  #tool-pad .tb svg { width: 21px; height: 21px; }
+  #tool-pad #tb-photo svg, #tool-pad #tb-song svg { width: 22px; height: 22px; }
+  #tool-pad #tb-cam svg { width: 24px; height: 24px; }
+  #tool-pad #mic-btn .sp-ico { width: 20px; height: 20px; }
+  #input-wrapper.mx-on #tool-pad #tb-more { height: calc(var(--tb-h) + 6px); }   /* sonraki genel mx-on kuralını (24px) geçsin diye daha özel seçici */
 }
 /* ··· açılınca Leap hapı yanıt çubuğu (#reply-bar) gibi kutunun kenarlarına kadar yayılır: iç boşluğu (6px) taşıp sağa-sola-aşağıya dayanır, alt köşeleri kutunun kendi yuvarlaklığını (25px) izler, üst köşeleri düzdür */
 #input-wrapper.mx-on #tool-in { overflow: visible; }
