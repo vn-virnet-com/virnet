@@ -6300,17 +6300,25 @@ function adjustInputHeight() {
   messageInput.style.height = baseH + 'px';
   // Kutu boşken (placeholder gösteriliyorken) yükseklik hiç büyümez; uzun placeholder satır atlayıp kutuyu şişirmesin
   // Masaüstünde birkaç px'lik ölçü farkı ilk satırda kutuyu büyütmesin: ikinci satır gelene kadar (yarım satır payıyla) sabit kalır
-  const sh = messageInput.scrollHeight;
-  const grown = messageInput.value !== '' && sh > baseH + (mob ? 0 : 8);
+  const rawSh = messageInput.scrollHeight;
+  let sh = rawSh;
+  if (!mob) {
+    // Masaüstü: ölçülen yükseklik emoji/yedek yazı tipleri yüzünden satır başına birkaç px şişebilir (2. satırda kutu büyürdü).
+    // Satır sayısı tam 22px'lik satırlara yuvarlanır: 2. satırda kutu her cihazda tam baseH + 22px olur (tuşlu tek satırlı halle aynı boy).
+    const padV = baseH - 22;
+    const lines = Math.max(1, Math.round((rawSh - padV) / 22));
+    sh = padV + lines * 22;
+  }
+  const grown = messageInput.value !== '' && sh > baseH;
   let h = baseH;
   if (grown) h = Math.min(150, sh);
-  if (!mob) messageInput.style.overflowY = sh > 150 ? 'auto' : 'hidden'; // tek/iki satırda gereksiz kaydırma çubuğu çıkmasın
+  if (!mob) messageInput.style.overflowY = rawSh > 150 ? 'auto' : 'hidden'; // tek/iki satırda gereksiz kaydırma çubuğu çıkmasın
 
   // 2. satırda kutu doğal yüksekliğinde (baseH + 22px) uzar; alt tuş satırı baştan 22px olduğu için (#tool-pad) toplam boy değişmez
 
   messageInput.style.height = h + 'px';   // animasyonsuz: yazı 2. satıra geçerken kutu ile alt tuşlar aynı karede değişir, metin kaymaz
   messageInput.style.transition = '';
-  if (h >= sh) messageInput.scrollTop = 0;   // içerik sığıyorsa textarea'nın kendi içinde yukarı kaymış olması engellenir
+  if (h >= rawSh || (!mob && h >= sh && sh <= 150)) messageInput.scrollTop = 0;   // içerik sığıyorsa textarea'nın kendi içinde yukarı kaymış olması engellenir
 
   // Alt satır (tuşlar) yalnızca yazı alt satıra geçip kutu yukarı doğru uzayınca gizlenir
   try {
