@@ -574,13 +574,13 @@ body #typing-indicator { display: none !important; }
 #tool-pad .tb svg { width: 16px; height: 16px; }   /* 18px'lik hapın içinde simge ucu ile hap kenarı arasında ~1-2px boşluk kalacak şekilde büyütüldü; simgelerin 24'lük çizim alanındaki doluluğu farklı olduğu için tek tek ayarlı */
 #tool-pad #tb-photo svg, #tool-pad #tb-song svg { width: 17px; height: 17px; }
 #tool-pad #tb-cam svg { width: 19px; height: 19px; }
-/* Masaüstü: alt tuş satırının boyu JS'in ölçtüğü 2. satır yüksekliğine göre (--tool-extra) genişler; varsayılan 22px = eski görünüm. Tuşlar ve simgeler orantılı büyür */
+/* Masaüstü: alt hap tuşları dikeyde daha geniş (22px), simgeler biraz büyük. Kutunun 1. satırdaki toplam boyu ile 2. satırdaki boyu JS'te (adjustInputHeight) ölçülerek eşitlenir */
 @media (min-width: 769px) {
-  #tool-pad { --tb-h: calc(var(--tool-extra, 22px) - 4px); }
-  #tool-pad .tb svg { width: calc(var(--tb-h) * 0.889); height: calc(var(--tb-h) * 0.889); }
-  #tool-pad #tb-photo svg, #tool-pad #tb-song svg { width: calc(var(--tb-h) * 0.944); height: calc(var(--tb-h) * 0.944); }
-  #tool-pad #tb-cam svg { width: calc(var(--tb-h) * 1.056); height: calc(var(--tb-h) * 1.056); }
-  #input-wrapper.mx-on #tb-more { height: calc(var(--tool-extra, 22px) + 2px); }
+  #tool-pad { --tb-h: 22px; }
+  #tool-pad .tb svg { width: 18px; height: 18px; }
+  #tool-pad #tb-photo svg, #tool-pad #tb-song svg { width: 19px; height: 19px; }
+  #tool-pad #tb-cam svg { width: 21px; height: 21px; }
+  #input-wrapper.mx-on #tb-more { height: calc(var(--tb-h) + 6px); }
 }
 /* ··· açılınca Leap hapı yanıt çubuğu (#reply-bar) gibi kutunun kenarlarına kadar yayılır: iç boşluğu (6px) taşıp sağa-sola-aşağıya dayanır, alt köşeleri kutunun kendi yuvarlaklığını (25px) izler, üst köşeleri düzdür */
 #input-wrapper.mx-on #tool-in { overflow: visible; }
@@ -6298,33 +6298,9 @@ chatArea.addEventListener('click', (e) => {
   if (Date.now() - lastScrollBtnTime < 700) { e.stopPropagation(); e.preventDefault(); }
 }, true);
 
-// Masaüstü: bu cihazda 2 satırlık metnin GERÇEK yüksekliği ölçülür (gizli bir kopya kutuyla, yazılan metne dokunmadan);
-// tek satırdaki alt tuş satırı (--tool-extra) buna göre genişler, böylece 2. satıra geçince toplam boy hiç değişmez.
-let deskH2Key = '', deskH2Val = 0;
-function syncDeskToolRow(baseH) {
-  try {
-    const cs = getComputedStyle(messageInput);
-    const key = [cs.fontFamily, cs.fontSize, cs.fontWeight, cs.lineHeight, cs.paddingTop, cs.paddingBottom, baseH].join('|');
-    if (key !== deskH2Key) {
-      const pr = document.createElement('textarea');
-      pr.setAttribute('aria-hidden', 'true'); pr.tabIndex = -1; pr.rows = 1; pr.wrap = 'soft';
-      pr.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;pointer-events:none;overflow:hidden;resize:none;border:0;margin:0;box-sizing:border-box;width:200px;height:' + baseH + 'px;' +
-        'font-family:' + cs.fontFamily + ';font-size:' + cs.fontSize + ';font-weight:' + cs.fontWeight + ';line-height:' + cs.lineHeight + ';padding:' + cs.paddingTop + ' 6px ' + cs.paddingBottom + ' 0;';
-      pr.value = 'x\nx';
-      document.body.appendChild(pr);
-      const v = pr.scrollHeight;
-      document.body.removeChild(pr);
-      deskH2Key = key; deskH2Val = v;
-    }
-    const extra = Math.max(22, Math.round(deskH2Val - baseH));
-    const w = document.getElementById('input-wrapper');
-    if (w && w.style.getPropertyValue('--tool-extra') !== extra + 'px') w.style.setProperty('--tool-extra', extra + 'px');
-  } catch (e) {}
-}
 function adjustInputHeight() {
   const mob = isMobileLayout();
   const baseH = mob ? 40 : 44; // --cmp-h ile aynı
-  if (!mob) syncDeskToolRow(baseH);
   // Ölçümü animasyonsuz yap: yoksa süren geçiş yüzünden scrollHeight eski (büyük) yüksekliği gösterir ve kutu satır silinince küçülmez
   const cur = messageInput.offsetHeight || baseH;
   messageInput.style.transition = 'none';
@@ -6336,6 +6312,20 @@ function adjustInputHeight() {
   const grown = messageInput.value !== '' && sh > baseH + (mob ? 0 : 8);
   let h = baseH;
   if (grown) h = Math.min(150, sh);
+  // Masaüstü: tam 2 satırda kutu, 1. satırdaki (alt tuşlu) toplam yüksekliğe sabitlenir; ölçü farkı/DPI yuvarlaması kutuyu büyütmesin
+  if (!mob && grown) {
+    try {
+      const cs = getComputedStyle(messageInput);
+      const lh = parseFloat(cs.lineHeight) || 22, pt = parseFloat(cs.paddingTop) || 0, pb = parseFloat(cs.paddingBottom) || 0;
+      const lines = Math.max(1, Math.round((sh - pt - pb) / lh));
+      const tp = document.getElementById('tool-pad');
+      const T = tp ? tp.offsetHeight : 0;
+      if (lines <= 2 && T > 0) {
+        h = baseH + T;
+        messageInput.style.paddingBottom = Math.max(pb, h - pt - lines * lh) + 'px';   // fazlalık altta kalır, 1. satır yerinden oynamaz
+      }
+    } catch (e) {}
+  }
   if (!mob) messageInput.style.overflowY = sh > 150 ? 'auto' : 'hidden'; // tek/iki satırda gereksiz kaydırma çubuğu çıkmasın
 
   // 2. satırda kutu doğal yüksekliğinde (baseH + 22px) uzar; alt tuş satırı baştan 22px olduğu için (#tool-pad) toplam boy değişmez
