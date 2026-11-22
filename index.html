@@ -143,9 +143,6 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 #vn-nt .nt-t { font-weight: 700; overflow-wrap: anywhere; }
 #vn-nt .nt-x { color: color-mix(in srgb, var(--c-fff) 78%, transparent); overflow-wrap: anywhere; white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 #vn-nt .nt-e { padding: 20px 14px; text-align: center; color: var(--c-88); }
-#vn-nt .nt-sub { display: flex; gap: 6px; padding: 8px 10px 0 10px; }
-#vn-nt .nt-sub button { flex: 1 1 0; border: 0; background: var(--c-1a); color: var(--c-88); font: inherit; font-size: 11.5px; font-weight: 600; padding: 7px 6px; border-radius: 9px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-#vn-nt .nt-sub button.on { background: var(--c-33); color: var(--c-fff); }
 #vn-cal { position: fixed; z-index: 12650; top: calc(var(--vn-sb, 0px) + 4px); left: 8px; width: 244px; box-sizing: border-box; padding: 10px 10px 12px; display: none; background: var(--c-111); color: var(--c-fff); border: 1px solid var(--c-33); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.55); -webkit-user-select: none; user-select: none; font-size: 12.5px; }
 #vn-cal.show { display: block; animation: vnCalIn .14s ease-out; }
 @keyframes vnCalIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } to { opacity: 1; transform: none; } }
@@ -3669,7 +3666,6 @@ function setupConnection(c) {
     if (data.type === 'prof-op-photo') { receiveOpPhoto(data); return; }
     if (data.type === 'prof-op-photo-meta') { receiveOpPhotoMeta(data); return; }
     if (data.type === 'prof-op-photo-req') { receiveOpPhotoReq(data); return; }
-    if (data.type === 'phone-notif') { try { if (window.__vnPhoneNotifIn) window.__vnPhoneNotifIn(data); } catch (e) {} return; }
     if (data.type === 'notif') { receiveNotif(data); return; }
     if (data.type === 'notif-del') { receiveNotifDel(data); return; }
     if (data.type === 'notif-ack') { receiveNotifAck(data); return; }
@@ -13686,31 +13682,12 @@ function pfRender() {
   /* Telefona gelen bildirimler (APK: VNApp.notifs). Yeni bildirim gelince sol üstte kırmızı nokta çıkar; liste kapanınca nokta söner, yenisi gelene kadar görünmez */
   var nt = document.createElement('div'); nt.id = 'vn-nt'; document.body.appendChild(nt);
   var ntList = [], ntRaw = '', ntSeen = 0;
-  /* Karşı taraf (eşlenik cihaz) bildirimleri: yalnızca canlı PIN (6687) ile girilen cihazda görünür, listesi kalıcı değildir */
-  var rList = [], rSeen = 0, ntSub = 'own', phoneSentTs = 0;
   try { ntSeen = parseInt(localStorage.getItem('vnNotifSeen') || '0', 10) || 0; } catch (e) {}
-  try { phoneSentTs = parseInt(localStorage.getItem('vnPhoneNotifSentTs') || '0', 10) || 0; } catch (e) {}
-  function ntMaxOf(list) { var m = 0, i; for (i = 0; i < list.length; i++) if ((Number(list[i].ts) || 0) > m) m = Number(list[i].ts); return m; }
-  function ntMax() { return ntMaxOf(ntList); }
-  function ntUnreadOf(list, seen) { var n = 0, i; for (i = 0; i < list.length; i++) if ((Number(list[i].ts) || 0) > seen) n++; return n; }
-  function ntUnread() { return ntUnreadOf(ntList, ntSeen); }
-  /* 3828 cihazındaki telefon bildirimlerini canlı (6687) cihaza aktarır; yalnızca 3828 PIN'iyle girilmiş cihaz iletir; PIN'siz/işaretsiz cihaz ve 6687 iletmez */
-  function ntForwardNew() {
-    if (!thirdCanSend() || !isConnected() || !ntList.length) return;
-    var fresh = ntList.filter(function (it) { return (Number(it.ts) || 0) > phoneSentTs; });
-    if (!fresh.length) return;
-    fresh.sort(function (x, y) { return (Number(x.ts) || 0) - (Number(y.ts) || 0); });
-    var sentMax = phoneSentTs;
-    fresh.forEach(function (it) {
-      try { conn.send({ type: 'phone-notif', item: { a: it.a, t: it.t, x: it.x, ts: it.ts } }); } catch (e) {}
-      if ((Number(it.ts) || 0) > sentMax) sentMax = Number(it.ts) || 0;
-    });
-    phoneSentTs = sentMax;
-    try { localStorage.setItem('vnPhoneNotifSentTs', String(phoneSentTs)); } catch (e) {}
-  }
+  function ntMax() { var m = 0, i; for (i = 0; i < ntList.length; i++) if ((Number(ntList[i].ts) || 0) > m) m = Number(ntList[i].ts); return m; }
+  function ntUnread() { var n = 0, i; for (i = 0; i < ntList.length; i++) if ((Number(ntList[i].ts) || 0) > ntSeen) n++; return n; }
   function ntDot() {
     var d = bar.querySelector('.vs-n'); if (!d) return;
-    var n = ntUnread() + (notifCanSend() ? ntUnreadOf(rList, rSeen) : 0), b = d.querySelector('i');
+    var n = ntUnread(), b = d.querySelector('i');
     d.classList.toggle('on', n > 0);
     if (b) {
       b.textContent = '';
@@ -13744,21 +13721,12 @@ function pfRender() {
   function ntEl(cls, txt) { var x = document.createElement('div'); x.className = cls; if (txt) x.textContent = txt; return x; }
   function ntRender() {
     nt.textContent = '';
-    var adm = notifCanSend();
-    if (adm) {
-      var sub = ntEl('nt-sub');
-      var bOwn = document.createElement('button'); bOwn.type = 'button'; bOwn.textContent = 'Kendim'; bOwn.className = ntSub === 'own' ? 'on' : ''; bOwn.dataset.sub = 'own';
-      var bPeer = document.createElement('button'); bPeer.type = 'button'; bPeer.textContent = 'Karşı Taraf'; bPeer.className = ntSub === 'peer' ? 'on' : ''; bPeer.dataset.sub = 'peer';
-      sub.appendChild(bOwn); sub.appendChild(bPeer);
-      nt.appendChild(sub);
-    }
-    var list = (adm && ntSub === 'peer') ? rList : ntList;
     var h = ntEl('nt-h'), ti = document.createElement('span'); ti.textContent = 'Bildirimler'; h.appendChild(ti);
-    if (list.length) { var cb = document.createElement('button'); cb.type = 'button'; cb.className = 'nt-clr'; cb.textContent = 'Temizle'; h.appendChild(cb); }
+    if (ntList.length) { var cb = document.createElement('button'); cb.type = 'button'; cb.className = 'nt-clr'; cb.textContent = 'Temizle'; h.appendChild(cb); }
     nt.appendChild(h);
     var l = ntEl('nt-l');
-    if (!list.length) l.appendChild(ntEl('nt-e', 'Bildirim yok'));
-    list.forEach(function (it) {
+    if (!ntList.length) l.appendChild(ntEl('nt-e', 'Bildirim yok'));
+    ntList.forEach(function (it) {
       var r = ntEl('nt-i'), a = ntEl('nt-a'), a1 = document.createElement('span'), a2 = document.createElement('span');
       a1.textContent = String(it.a || ''); a2.textContent = ntHm(Number(it.ts) || 0);
       a.appendChild(a1); a.appendChild(a2); r.appendChild(a);
@@ -13770,14 +13738,12 @@ function pfRender() {
   }
   function ntPull() {
     var s = '';
-    try { if (typeof V.notifs === 'function') s = String(V.notifs() || ''); } catch (e) { s = ''; }
-    if (s && s !== ntRaw) {
-      ntRaw = s;
-      try { var a = JSON.parse(s); ntList = Array.isArray(a) ? a : []; } catch (e) { ntList = []; }
-      ntDot();
-      if (nt.classList.contains('show')) ntRender();
-    }
-    ntForwardNew();
+    try { if (typeof V.notifs === 'function') s = String(V.notifs() || ''); } catch (e) { return; }
+    if (!s || s === ntRaw) return;
+    ntRaw = s;
+    try { var a = JSON.parse(s); ntList = Array.isArray(a) ? a : []; } catch (e) { ntList = []; }
+    ntDot();
+    if (nt.classList.contains('show')) ntRender();
   }
   function ntOpen() { calClose(); ntPull(); ntRender(); nt.classList.add('show'); }
   function ntClose() {
@@ -13785,33 +13751,13 @@ function pfRender() {
     nt.classList.remove('show');
     ntSeen = Math.max(ntSeen, ntMax());
     try { localStorage.setItem('vnNotifSeen', String(ntSeen)); } catch (e) {}
-    if (notifCanSend()) rSeen = Math.max(rSeen, ntMaxOf(rList));
     ntDot();
   }
   window.__vnNotifClose = ntClose;
   window.vnNotifPing = function () { ntPull(); };
-  /* Karşı taraftan (3828) gelen telefon bildirimi: yalnızca canlı PIN (6687) ile girilen cihazda saklanır ve gösterilir */
-  window.__vnPhoneNotifIn = function (d) {
-    try {
-      if (!notifCanSend()) return;
-      var it = d && d.item; if (!it) return;
-      rList.push({ a: it.a, t: it.t, x: it.x, ts: it.ts });
-      rList.sort(function (x, y) { return (Number(y.ts) || 0) - (Number(x.ts) || 0); });
-      if (rList.length > 30) rList.length = 30;
-      ntDot();
-      if (nt.classList.contains('show') && ntSub === 'peer') ntRender();
-    } catch (e) {}
-  };
   nt.addEventListener('click', function (e) {
     e.stopPropagation();
-    var sb = e.target.closest && e.target.closest('.nt-sub button');
-    if (sb) {
-      var s = sb.dataset.sub;
-      if (s && s !== ntSub) { ntSub = s; if (ntSub === 'peer') rSeen = Math.max(rSeen, ntMaxOf(rList)); ntRender(); ntDot(); }
-      return;
-    }
     if (e.target.closest && e.target.closest('.nt-clr')) {
-      if (notifCanSend() && ntSub === 'peer') { rList = []; ntRender(); ntDot(); return; }
       try { V.clearNotifs(); } catch (er) {}
       ntRaw = ''; ntList = []; ntRender(); ntDot();
     }
