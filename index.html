@@ -375,7 +375,6 @@ body.desk .msg:not(.hov):not(.acts-on):not(.editing) .msg-act.reply { opacity: 0
 .react-chip.mine { cursor: pointer; }
 @keyframes react-in { 0% { opacity: 0; transform: scale(0.4); } 100% { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .react-chip { animation: none; } }
-body.no-time .time-tag { display: none !important; }
 .time-tag {
   flex: 0 0 auto; font-size: calc(var(--time-fs) - 2px); font-family: 'Lexend', sans-serif; font-weight: 400;
   font-variant-numeric: tabular-nums; color: var(--c-77); white-space: nowrap; pointer-events: none; line-height: 1.2;
@@ -417,23 +416,13 @@ body.no-time .time-tag { display: none !important; }
 /* Düzenlerken (odaktayken) yazı ve imleç kutunun tam ortasında: normal küçük yazı alanı gibi */
 #nick-input.nick-full { text-align: left; }   /* düzenlerken 7 harfi geçince tamamı görünür; 7 harfe kadar odaksızken nasıl duruyorsa öyle durur */
 #nick-dot { flex: 0 0 auto; box-sizing: border-box; height: var(--cmp-h); line-height: 22px; padding: calc((var(--cmp-h) - 22px) / 2) 5px; color: var(--c-88); font-size: 16px; font-family: inherit; user-select: none; -webkit-user-select: none; pointer-events: none; }
-body.nick-hidden #nick-dot { display: none; }
-/* 3828: isim kutusu kilitli (dokunulamaz, açılamaz); içindeki ismi 6687 ayarlardan belirler */
+/* 3828: isim kutusu kilitli (dokunulamaz, açılamaz); ismi profildeki Görünen İsim'den otomatik alınır */
 body.nick-locked #nick-input, body.nick-locked .dn-nick { pointer-events: none !important; -webkit-user-select: none; user-select: none; caret-color: transparent; }
-/* "Karşı Tarafın İsmi" ayarı yalnızca 6687'de görünür */
-body:not(.lv-admin) .sb-peernick { display: none !important; }
-/* 3828: isim kutusu hiçbir yerde görünmez (sohbet, dock, ayarlar); 'İsimler' ayarı da yoktur */
-body.nick-locked #nick-input, body.nick-locked #nick-dot, body.nick-locked .dn-nick, body.nick-locked .sb-nick { display: none !important; }
+/* 3828: isim kutusu hiçbir yerde görünmez (sohbet, dock, ayarlar) */
+body.nick-locked #nick-input, body.nick-locked #nick-dot, body.nick-locked .dn-nick { display: none !important; }
 body.nick-locked #message-input { padding-left: 14px; border-radius: var(--r-lg) 0 0 var(--r-lg); }
 body.nick-locked #ph-overlay { left: 14px; }
 body.nick-locked .dn-in { border-radius: var(--r-lg) 0 0 var(--r-lg); }
-.peer-nick-row { display: flex; gap: 6px; align-items: center; }
-#peer-nick-input { flex: 1 1 auto; min-width: 0; box-sizing: border-box; height: 36px; padding: 0 10px; background: var(--c-000); border: 1px solid var(--c-33); border-radius: 10px; color: var(--c-fff); font-size: 16px; outline: none; -webkit-user-select: text; user-select: text; }
-#peer-nick-input:focus { border-color: var(--accent); }
-#peer-nick-save { flex: 0 0 auto; height: 36px; padding: 0 14px; background: var(--c-33); color: var(--c-fff); border: none; border-radius: 10px; font-size: 13px; font-weight: 600; }
-#peer-nick-save:active { background: var(--c-44); }
-body.nick-hidden #message-input { padding-left: 14px; }
-body.nick-hidden #ph-overlay { left: 14px; }
 #message-input {
   flex: 1; min-width: 0; box-sizing: border-box; background: transparent; border: 0; color: var(--c-fff);
   padding: calc((var(--cmp-h) - 22px) / 2) 6px calc((var(--cmp-h) - 22px) / 2) 0; margin: 0; font-size: 16px; font-family: inherit; outline: none; border-radius: 0; display: block;
@@ -1080,20 +1069,9 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
   .msg .msg-img { -webkit-touch-callout: none; }
 }
 
-/* ---- Ayar kilidi (karşılıklı dışlama) ---- */
-.set-block { transition: opacity 0.2s ease; }
-.set-block.locked { opacity: 0.35; pointer-events: none; }
-/* ---- Yazı boyutu: sadece sohbet ---- */
+/* ---- Yazı boyutu: sabit (orta), sadece sohbet ---- */
 :root { --r-xs:6px; --r-sm:8px; --r-md:10px; --r-lg:12px; --r-xl:16px; --r-pill:999px; --msg-fs:15px; --nick-fs:13px; --time-fs:13px; --reply-fs:12px; --badge-fs:10px; --img-max:160px; }
-body.fs-small { --msg-fs:13.5px; --nick-fs:12px; --time-fs:12px; --reply-fs:11px; --badge-fs:9px; --img-max:140px; }
-body.fs-large { --msg-fs:17px; --nick-fs:14.5px; --time-fs:14.5px; --reply-fs:13.5px; --badge-fs:11px; --img-max:190px; }
 
-/* ---- Ayarlar içeriği ---- */
-/* Ayarlar sayfası: sağ panelin 4. sekmesi */
-#bp-page-set { background: var(--c-000); }
-#bp-page-set #settings-scroll { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 10px 12px 12px; }
-.set-title { text-align: center; font-size: 15px; font-weight: 700; color: var(--c-fff); margin-bottom: 7px; }
-.set-block + .set-block { margin-top: 14px; }
 .seg { display: flex; flex-direction: column; border: 1px solid var(--c-33); border-radius: var(--r-lg); overflow: hidden; background: var(--c-111); }
 .seg-btn {
   background: var(--c-1a); color: var(--c-fff); border: none; padding: 9px 12px; font-size: 14px; font-weight: 700;
@@ -1105,15 +1083,6 @@ body.fs-large { --msg-fs:17px; --nick-fs:14.5px; --time-fs:14.5px; --reply-fs:13
 .seg-btn:last-child { border-bottom-left-radius: 7px; border-bottom-right-radius: 7px; }
 .seg-btn.danger { background: var(--dng-bg); color: #fff; }
 .seg-btn.danger:active { background: var(--dng-bg-a); }
-/* ---- Ayar grupları: açılır/kapanır ---- */
-.set-title { cursor: default; display: flex; align-items: center; justify-content: space-between; text-align: left; background: var(--c-22); padding: 8px 10px; border-radius: var(--r-lg); margin-bottom: 6px; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-.set-arrow { display: inline-block; font-size: 22px; line-height: 1; font-weight: 400; transform: rotate(90deg); transition: transform .25s ease; margin-left: 8px; }
-.set-block.collapsed .set-arrow { transform: rotate(0deg); }
-.set-collapse { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .25s ease, visibility 0s linear 0s; }
-.set-clip { overflow: hidden; min-height: 0; }
-.set-body { background: var(--c-000); border-radius: var(--r-lg); padding: 6px; transform: translateY(0); transition: transform .25s ease .2s, opacity .2s ease .2s; }
-.set-block.collapsed .set-collapse { grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .25s ease, visibility 0s linear .25s; }
-.set-block.collapsed .set-title { margin-bottom: 0; }
 /* Ayarların en üstündeki ince "Leap" çubuğu: genişletilmez; sayı en sağda. Yalnızca 6687 sayıyı değiştirebilir */
 .leap-bar { display: flex; align-items: center; justify-content: space-between; min-height: 26px; box-sizing: border-box; padding: 4px 10px 4px 7px; margin-bottom: 10px; border-radius: var(--r-lg); background: var(--c-22); color: var(--c-fff); user-select: none; -webkit-user-select: none; }
 .leap-name { flex: 0 0 auto; font-size: 13px; font-weight: 700; }
@@ -1135,12 +1104,6 @@ body.lv-admin .leap-num { cursor: pointer; }
 .leap-ext-row { padding: 2px 0 0; }
 .leap-delta { display: block; width: 100%; height: 34px; padding: 0 10px; border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); border-radius: var(--r-lg); background: var(--c-111); color: var(--c-fff); font-size: 16px; font-weight: 600; text-align: left; outline: none; font-variant-numeric: tabular-nums; -webkit-user-select: text; user-select: text; caret-color: var(--warn); }
 .leap-delta:focus { border-color: var(--warn); }
-.set-block.collapsed .set-body { transform: translateY(-110%); opacity: 0; transition: transform .25s ease, opacity .2s ease; }
-.set-block.collapsed + .set-block { margin-top: 8px; }
-.set-title { font-size: 13px; padding-left: 7px; }
-.set-title > span:first-child { flex: 0 0 auto; }
-.set-val { flex: 1 1 auto; text-align: center; font-size: 11px; font-weight: 600; opacity: .55; white-space: nowrap; min-width: 0; overflow: hidden; }
-body.no-anim .set-collapse, body.no-anim .set-body, body.no-anim .set-arrow { transition: none !important; }
 body.no-anim #app { transition: none !important; }
 .live-msg .msg-body { cursor: default; }
 /* Dinamik mesaj (alıcı tarafı): yeni gelen kısım 0,5 sn'de yavaşça normal tonunda belirir (parlama yok) */
@@ -1171,9 +1134,6 @@ body.live-on #input-wrapper::after {
 /* ---- Şerit orta alanı (Yeni mesaj yolda şeridi) ---- */
 #sb-mid { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; align-items: center; justify-content: center; margin: 0 -7px; }  /* tuşların görünmez 13px iç boşluğuna taşar: simgelere yaklaşık 6px kalır */
 #nick-input { touch-action: manipulation; }
-/* Titreşim ayarı yalnızca mobil görünümde */
-#blk-haptic { display: none; }
-@media (max-width: 768px) { #blk-haptic { display: flex; } }
 #notes-btn { cursor: pointer; display: inline-flex; align-items: center; padding: 8px 0 8px 13px; margin: -8px 0; color: var(--c-88); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 /* Not tuşunun konumu duruma göre JS ile taşınır (data-pos): strip = renk şeridinin en sağı, trash = ayarlar simgesinin sağı (masaüstü + isim kutusu gizli), top = sağ üst (eski yer) */
 #typing-indicator #notes-btn { flex: 0 0 auto; pointer-events: auto; padding: 8px 0 8px 13px; margin: -8px 0; }
@@ -1195,9 +1155,6 @@ body.sb-bottom #status-bar { border-bottom: none; border-top: 1px solid var(--c-
 /* Bildirim paneli: sağ panelin tamamını kaplar; kenar boşluğu, çerçeve ve köşe yuvarlaklığı yok */
 #bell-pop { border: 0; border-radius: 0; box-shadow: none; }
 #bell-pop #bp-clip, #bell-pop.composing #bp-clip { border-radius: 0; }
-#bell-pop #bp-tabs { padding: 0; border-radius: 0; }
-#bell-pop #bp-tabs-in { border: 0; border-radius: 0; }
-#bell-pop #bp-pill { border-radius: var(--r-sm); }
 #bell-pop #bp-list { padding: 0 0 64px; }
 #bell-pop .bp-card { margin: 0; border-width: 0 0 1px 0; border-radius: 0; padding: 10px 14px; }
 #sb-mid { position: relative; }
@@ -1232,15 +1189,14 @@ body.np-open #app > #bp-tabs { display: none !important; }
 .bp-tab { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; flex: 1 1 0; min-width: 0; padding: 0 2px; border: 0; background: transparent; color: var(--c-88); font-size: 12px; font-weight: 400; font-family: inherit; line-height: 1; cursor: pointer; white-space: nowrap; transition: color .25s ease; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .bp-tab.on { color: var(--on-accent); font-weight: 700; }
 .bp-tab svg { display: block; width: 22px; height: 22px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
-#bell-pop.composing #bp-tabs { display: none; }
 #bell-pop.composing #bp-clip { bottom: 0; border-radius: inherit; }
 .bp-tab .bp-dot { display: none; position: absolute; top: calc(50% - 15px); right: calc(50% - 18px); width: 9px; height: 9px; border-radius: 50%; background: var(--bad); border: 1.5px solid var(--c-111); box-sizing: content-box; }
 .bp-tab.new .bp-dot { display: block; }
-#bp-slider { --bp-page: 0; position: absolute; top: 0; bottom: 0; left: 0; width: 300%; display: flex; touch-action: pan-y; transition: transform .25s ease; will-change: transform; }
-#bp-slider { transform: translateX(calc(var(--bp-page) * -33.3333%)); }
+#bp-slider { --bp-page: 0; position: absolute; top: 0; bottom: 0; left: 0; width: 200%; display: flex; touch-action: pan-y; transition: transform .25s ease; will-change: transform; }
+#bp-slider { transform: translateX(calc(var(--bp-page) * -50%)); }
 #bell-pop.no-anim #bp-slider { transition: none; }
-.bp-page { position: relative; flex: 0 0 33.3333%; width: 33.3333%; height: 100%; overflow: hidden; }
-/* ===== Profil sayfası (Bildirim | Profil | Ayarlar): ortalı kart düzeni; yalnızca 6687 düzenler, 3828 görüntüler ===== */
+.bp-page { position: relative; flex: 0 0 50%; width: 50%; height: 100%; overflow: hidden; }
+/* ===== Profil sayfası (Bildirim | Profil): ortalı kart düzeni; yalnızca 6687 düzenler, 3828 görüntüler ===== */
 #bp-page-prof { background: var(--c-000); }
 #pf-scroll { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 0 12px 28px; scrollbar-width: none; -ms-overflow-style: none; font-family: 'Lexend', sans-serif; }
 #pf-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
@@ -1358,7 +1314,6 @@ body.pf-editing .pf-tagchip .pf-in { font-size: 16px; }
 @keyframes pfLB { 0%, 100% { transform: translate(-50%, -50%) translate(100px, 22px) scale(1.2); } 40% { transform: translate(-50%, -50%) translate(-80px, -34px) scale(.95); } 70% { transform: translate(-50%, -50%) translate(-20px, 42px) scale(1.3); } }
 @keyframes pfLC { 0%, 100% { transform: translate(-50%, -50%) translate(-30px, 34px) scale(.95); } 30% { transform: translate(-50%, -50%) translate(120px, -20px) scale(1.25); } 65% { transform: translate(-50%, -50%) translate(-115px, -30px) scale(1.1); } }
 @media (prefers-reduced-motion: reduce) { #pf-lights i { animation: none; } }
-@media (min-width: 769px) { #bp-page-set #settings-scroll { padding-bottom: 0 !important; } }
 #pf-av { cursor: pointer; background-size: cover; background-position: center; background-repeat: no-repeat; -webkit-tap-highlight-color: transparent; }
 #pf-av.has-photo #pf-av-t { display: none; }
 #pf-av-x { display: none; position: absolute; right: -3px; bottom: -3px; width: 26px; height: 26px; padding: 0; border: 2px solid var(--c-000); border-radius: 50%; background: var(--c-33); color: var(--c-fff); align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -1470,24 +1425,21 @@ button.pf-di:active { background: var(--c-22); }
 #np-view * { font-family: inherit; max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
 #np-edit { font-family: inherit; }
 #np-edit { display: none; border: none; outline: none; resize: none; border-radius: 0; caret-color: var(--accent); }
-body.nick-hidden #nick-input { display: none; }
-body.nick-hidden #message-input { border-radius: var(--r-lg) 0 0 var(--r-lg); }
-#settings-scroll > .set-block { flex-shrink: 0; }
 @media (min-width: 769px) {
-  .set-title { font-size: 12px; margin-bottom: 5px; }
-  .set-val { font-size: 10px; }
   .leap-name { font-size: 12px; }
   .leap-num { font-size: 10px; }
-  .set-block + .set-block { margin-top: 10px; }
   .seg-btn { padding: 5px 10px; font-size: 12px; }
-  /* Masaüstü: sağ panel (bildirim / profil) her zaman 36vw sabit. */
+  /* Masaüstü: sağ panel (profil) her zaman 36vw sabit. */
   #pane-chat { flex: 1 1 0; width: auto; min-width: 0; }
   #pane-notes { flex: 0 0 33.3333vw; width: 33.3333vw; }
-  /* Masaüstü: ayarlar solda sabit, sağ panelden biraz daha dar; sohbet ikisinin ortasında */
+  /* Masaüstü: bildirim solda sabit (eski ayar paneli alanı), sağ panelden biraz daha dar; sohbet ikisinin ortasında */
   #pane-settings { display: flex; flex: 0 0 22.2222vw; width: 22.2222vw; min-width: 210px; border-right: 1px solid var(--c-1a); background: var(--c-000); }
-  #pane-settings > #bp-page-set { flex: 1 1 auto; width: 100%; height: 100%; }
-  body.desk-set .bp-tab[data-p="2"] { display: none; }
-  body.desk-set #bp-pill { width: calc((100% - 4px) / 2); }
+  /* Masaüstü: bildirim solda (#bell-pop buraya taşınır), profil sağ panelde; sayfa geçişi ve alt sekme çubuğu yok */
+  #pane-notes > #bp-page-prof { flex: 1 1 auto; width: 100%; height: 100%; }
+  #bp-slider { width: 100%; transform: none; transition: none; }
+  #bp-slider > .bp-page { flex: 0 0 100%; width: 100%; }
+  #bp-tabs { display: none !important; }
+  #bell-pop #bp-clip { bottom: 0; border-radius: 0; }
   /* Masaüstü: yan panel (notlar) güncellenince, fareyle üstüne gelinene ya da tıklanana kadar yanıp söner */
   #pane-notes::after {
     content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 50; pointer-events: none;
@@ -1639,24 +1591,23 @@ body.vt-on #leap-hud { opacity: 0 !important; pointer-events: none !important; t
 body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezier(.2,.9,.3,1.15), top .2s ease; }
 
 /* ===== Modern ayarlar ===== */
-#bp-page-set #settings-scroll { padding: 14px 12px 28px; scrollbar-width: none; -ms-overflow-style: none; }
-#bp-page-set #settings-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
 .leap-num:not(.editing) { overflow: hidden; }
 .leap-num-t { display: inline-block; white-space: nowrap; will-change: transform; }
 
 /* Ayarlar: profil sayfasındaki kutu (pf-card) tasarımı; iki seçenekli ayarlar sağda aç/kapa anahtarı (pf-sw) */
-#settings-scroll > .set-block { width: 100%; max-width: 440px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
-#settings-scroll .pf-l { flex: 1 1 auto; width: auto; }
-#settings-scroll .pf-row.stk { flex-wrap: wrap; }
-#settings-scroll .pf-row.stk > :not(.pf-l) { flex: 1 0 100%; }
-#settings-scroll .seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 1px; width: 100%; border: 1px solid var(--c-33); border-radius: var(--r-md); overflow: hidden; background: var(--c-33); }
-#settings-scroll .seg.measure { display: flex !important; width: max-content; }
-#settings-scroll .seg.measure .seg-btn { flex: 0 0 auto !important; }
-#settings-scroll .seg-btn { min-width: 0; padding: 7px 4px; font-size: 12.5px; font-weight: 400; white-space: nowrap; border: 0; border-radius: 0; background: var(--c-000); color: var(--c-88); box-shadow: none; }
-#settings-scroll .seg-btn.active { background: var(--c-1a); color: var(--c-fff); box-shadow: inset 0 0 0 2px var(--accent); }
-#settings-scroll .seg-btn.danger { background: var(--dng-bg); color: #fff; }
-#settings-scroll .seg-btn.danger:active { background: var(--dng-bg-a); }
-@media (prefers-reduced-motion: reduce) { #settings-scroll .set-title, #settings-scroll .seg-btn { transition: none; } }
+.pf-set .pf-l { flex: 1 1 auto; width: auto; }
+.pf-set .pf-row.stk { flex-wrap: wrap; }
+.pf-set .pf-row.stk > :not(.pf-l) { flex: 1 0 100%; }
+.pf-set .seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 1px; width: 100%; border: 1px solid var(--c-33); border-radius: var(--r-md); overflow: hidden; background: var(--c-33); }
+.pf-set .seg.measure { display: flex !important; width: max-content; }
+.pf-set .seg.measure .seg-btn { flex: 0 0 auto !important; }
+.pf-set .seg-btn { min-width: 0; padding: 7px 4px; font-size: 12.5px; font-weight: 400; white-space: nowrap; border: 0; border-radius: 0; background: var(--c-000); color: var(--c-88); box-shadow: none; }
+.pf-set .seg-btn.active { background: var(--c-1a); color: var(--c-fff); box-shadow: inset 0 0 0 2px var(--accent); }
+.pf-set .seg-btn.danger { background: var(--dng-bg); color: #fff; }
+.pf-set .seg-btn.danger:active { background: var(--dng-bg-a); }
+/* Köşe düzeltmesi: kapsayıcı (.seg) kenarlık içinden r-md - 1px ile kırpılıyor; uçtaki butonların dış köşeleri de aynı eğriyi almalı, yoksa aktif çerçeve köşede kesik görünür */
+.pf-set .seg-btn:first-child { border-top-left-radius: calc(var(--r-md) - 1px); border-bottom-left-radius: calc(var(--r-md) - 1px); }
+.pf-set .seg-btn:last-child { border-top-right-radius: calc(var(--r-md) - 1px); border-bottom-right-radius: calc(var(--r-md) - 1px); }
 
 /* Masaüstü: yazma satırı (isim kutusu, metin kutusu, gönder tuşu ve sürükleyince açılan seçenekler) sağ panelin alt çubuğu gibi en alta yapışık, köşeleri düz;
    alt çubuk bir tık uzatıldı ve ikisinin üst kenarı aynı hizada (44px). Mobil bundan etkilenmez. */
@@ -1665,17 +1616,12 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
   :root { --dock-h: 50px; --dock-gap: 15px; --bp-tabs-h: calc(var(--dock-h) + var(--dock-gap) * 2); }
   #input-area { padding: var(--dock-gap); min-height: 0; border-top: 0; }
   #chat-area { -webkit-mask-image: none; mask-image: none; }
-  /* Sağ panel alt barı (Bildirim / Profil): yazma satırıyla aynı yükseklik ve boşluklar; panel içeriği barın altına taşmaz (içerik barın üstünde biter) */
-  #bell-pop #bp-tabs { left: var(--dock-gap); right: var(--dock-gap); bottom: var(--dock-gap); height: var(--dock-h); padding: 0; border: 0; border-radius: var(--r-lg); background: transparent; }
-  #bell-pop #bp-tabs-in { padding: 3px; background: var(--c-111); border: 1px solid var(--c-33); border-radius: var(--r-lg); }
-  #bell-pop #bp-pill { top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / 3); border-radius: var(--r-md); }
-  body.desk-set #bell-pop #bp-pill { width: calc((100% - 6px) / 2); }
 }
 
 /* Yüzen menü: 3 sn etkileşim olmazsa %75 saydam olur, yalnızca dış çerçevesi çok hafif parlar */
 /* Karşı taraf notu güncelleyip biz henüz görmediysek parlama sarıya döner ve hafifçe nabız gibi atar (menü uyanık olsa da görünür) */
 
-/* ===== MOBİL: sabit alt sekme çubuğu (CMD | Bildirim | Profil | Ayarlar) ===== */
+/* ===== MOBİL: sabit alt sekme çubuğu (CMD | Bildirim | Profil) ===== */
 .bp-cmd { display: none; }
 #bp-tabs-in.drag #bp-pill { transition: none; }
 @media (max-width: 768px) {
@@ -1685,7 +1631,7 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
   #app > #panes[style*="display: block"] ~ #bp-tabs { display: block; }
   body.kb-open #app > #panes ~ #bp-tabs { display: none; }
   #app > #bp-tabs #bp-tabs-in { border: 0; border-radius: 0; }
-  #app > #bp-tabs #bp-pill { width: calc((100% - 4px) / 4); border-radius: var(--r-sm); }
+  #app > #bp-tabs #bp-pill { width: calc((100% - 4px) / 3); border-radius: var(--r-sm); }
   #bell-pop #bp-clip, #bell-pop.composing #bp-clip { bottom: 0; }
 }
 
@@ -1881,8 +1827,6 @@ html.vn-fs .gm-bar { height: 46px; padding-top: 0; }
 .dn-in.nameless::placeholder { font-weight: 400; }
 .dn-in:disabled { opacity: .3; cursor: not-allowed; }
 .dn-nick:focus, .dn-in:focus { border-color: var(--accent) !important; border-right: 1px solid var(--accent) !important; box-shadow: none; position: relative; z-index: 2; }
-body.nick-hidden .dn-nick { display: none; }
-body.nick-hidden .dn-in { border-radius: var(--r-lg) 0 0 var(--r-lg); }
 .dn-send { flex: 0 0 auto; width: var(--dock-h, 42px); min-width: var(--dock-h, 42px); height: var(--dock-h, 42px); padding: 0; background: var(--send-bg); color: var(--send-ico); border: 1px solid var(--c-33); border-radius: 0 var(--r-lg) var(--r-lg) 0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color .12s ease; touch-action: manipulation; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .dn-send:active { background: color-mix(in srgb, var(--send-bg) 66%, #000); }
 .dn-send .sp-ico { width: 26px; height: 26px; display: block; pointer-events: none; fill: currentColor; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
@@ -1990,22 +1934,6 @@ body.gm-on #leap-hud { display: none !important; }
   </div>
 </div>
 <script>
-/* Titreşim ayarı: Kapalıyken sitedeki tüm navigator.vibrate çağrıları etkisiz olur */
-(function () {
-  var on = true;
-  try { on = localStorage.getItem('haptic') !== 'off'; } catch (e) {}
-  window.__hapticOn = function () { return on; };
-  window.__setHaptic = function (v) { on = !!v; if (!on) { try { if (orig) orig(0); } catch (e) {} } };
-  var orig = null;
-  try {
-    if (typeof navigator.vibrate === 'function') {
-      orig = navigator.vibrate.bind(navigator);
-      Object.defineProperty(navigator, 'vibrate', { configurable: true, writable: true, value: function (p) { if (!on) return false; return orig(p); } });
-    }
-  } catch (e) {}
-})();
-</script>
-<script>
 (function () {
   var HASH = 8563731915694895;       // siteyi açar, dinamik/statik ayarı yok
   var HASH_LIVE = 7933552419941149;  // siteyi açar, dinamik/statik ayarı var
@@ -2066,7 +1994,6 @@ body.gm-on #leap-hud { display: none !important; }
   }
   function fail() {
     busy = true; lock.classList.add('busy');
-    try { if (navigator.vibrate) navigator.vibrate(180); } catch (e) {}
     dotsBox.classList.remove('shake'); void dotsBox.offsetWidth; dotsBox.classList.add('shake');
     setTimeout(function () {
       entered = ''; render();
@@ -2089,7 +2016,7 @@ body.gm-on #leap-hud { display: none !important; }
         holdTimer = setTimeout(function () {
           var live = holdLive;
           holdTimer = null; holdSrc = null; holdLive = false;
-          if (live) { try { if (navigator.vibrate) navigator.vibrate(25); } catch (e) {} unlock(true); }
+          if (live) { unlock(true); }
           else fail();
         }, HOLD_MS);
       }
@@ -2323,39 +2250,25 @@ body.gm-on #leap-hud { display: none !important; }
       </div>
       <div class="pf-hint" id="pf-foot"></div>
     </div>
-  </div>
-  </div>
-  </div>
-  <div id="bp-page-set" class="bp-page">
-<div id="settings-scroll">
-  <div class="set-block" id="blk-live" style="display:none"><div class="seg" id="seg-live"><button type="button" class="seg-btn active" data-val="static" aria-pressed="true">Statik</button><button type="button" class="seg-btn" data-val="dynamic" aria-pressed="false">Dinamik</button></div></div>
-  <div class="set-block pf-sec">
-    <div class="pf-st">Görünüm</div>
-    <div class="pf-card">
-      <div class="pf-row stk"><span class="pf-l">Tema</span><div class="pf-v"><div class="seg" id="seg-theme"><button type="button" class="seg-btn active" data-val="black" aria-pressed="true">Siyah</button><button type="button" class="seg-btn" data-val="gray" aria-pressed="false">Gri</button><button type="button" class="seg-btn" data-val="blue" aria-pressed="false">Mavi</button><button type="button" class="seg-btn" data-val="purple" aria-pressed="false">Mor</button></div></div></div>
-      <div class="pf-row stk"><span class="pf-l">Boyut</span><div class="pf-v"><div class="seg" id="seg-fs"><button type="button" class="seg-btn" data-val="small" aria-pressed="false">Küçük</button><button type="button" class="seg-btn active" data-val="medium" aria-pressed="true">Orta</button><button type="button" class="seg-btn" data-val="large" aria-pressed="false">Büyük</button></div></div></div>
+
+    <div class="pf-sec pf-set">
+      <div class="pf-st">Görünüm</div>
+      <div class="pf-card">
+        <div class="pf-row stk"><span class="pf-l">Tema</span><div class="pf-v"><div class="seg" id="seg-theme"><button type="button" class="seg-btn active" data-val="black" aria-pressed="true">Siyah</button><button type="button" class="seg-btn" data-val="gray" aria-pressed="false">Gri</button><button type="button" class="seg-btn" data-val="blue" aria-pressed="false">Mavi</button><button type="button" class="seg-btn" data-val="purple" aria-pressed="false">Mor</button></div></div></div>
+      </div>
+    </div>
+    <div class="pf-sec pf-set" id="blk-setup">
+      <div class="pf-st">Kurulum</div>
+      <div class="pf-card">
+        <div class="pf-row stk"><div class="pf-v"><div class="seg" id="seg-setup"><button type="button" class="seg-btn" id="setup-show-btn">Göster</button><button type="button" class="seg-btn danger" id="setup-reset-btn">Sıfırla</button></div></div></div>
+      </div>
     </div>
   </div>
-  <div class="set-block pf-sec">
-    <div class="pf-st">Sohbet</div>
-    <div class="pf-card">
-      <div class="pf-row"><span class="pf-l">Saat</span><div class="pf-v"><button type="button" class="pf-sw on" role="switch" aria-checked="true" aria-label="Saat" data-seg="seg-time"></button><div class="seg" id="seg-time" style="display:none"><button type="button" class="seg-btn active" data-val="show" aria-pressed="true">Göster</button><button type="button" class="seg-btn" data-val="hide" aria-pressed="false">Gösterme</button></div></div></div>
-      <div class="pf-row sb-nick"><span class="pf-l">İsimler</span><div class="pf-v"><button type="button" class="pf-sw on" role="switch" aria-checked="true" aria-label="İsimler" data-seg="seg-nick"></button><div class="seg" id="seg-nick" style="display:none"><button type="button" class="seg-btn active" data-val="show" aria-pressed="true">Göster</button><button type="button" class="seg-btn" data-val="hide" aria-pressed="false">Gizle</button></div></div></div>
-      <div class="pf-row stk sb-nick sb-peernick" id="blk-peernick"><span class="pf-l">Karşı Tarafın İsmi</span><div class="peer-nick-row"><input id="peer-nick-input" type="text" maxlength="40" placeholder="İsim (boş = isimsiz)" autocomplete="off" autocorrect="off" spellcheck="false" name="peer-label" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><button type="button" id="peer-nick-save">Kaydet</button></div></div>
-      <div class="pf-row" id="blk-haptic"><span class="pf-l">Titreşim</span><div class="pf-v"><button type="button" class="pf-sw on" role="switch" aria-checked="true" aria-label="Titreşim" data-seg="seg-haptic"></button><div class="seg" id="seg-haptic" style="display:none"><button type="button" class="seg-btn active" data-val="on" aria-pressed="true">Açık</button><button type="button" class="seg-btn" data-val="off" aria-pressed="false">Kapalı</button></div></div></div>
-    </div>
-  </div>
-  <div class="set-block pf-sec" id="blk-setup">
-    <div class="pf-st">Kurulum</div>
-    <div class="pf-card">
-      <div class="pf-row stk"><div class="pf-v"><div class="seg" id="seg-setup"><button type="button" class="seg-btn" id="setup-show-btn">Göster</button><button type="button" class="seg-btn danger" id="setup-reset-btn">Sıfırla</button></div></div></div>
-    </div>
-  </div>
-</div>
   </div>
   </div>
   </div>
-  <div id="bp-tabs"><div id="bp-tabs-in"><div id="bp-pill"></div><button type="button" class="bp-tab on" data-p="0" aria-label="Bildirim" title="Bildirim"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="1" aria-label="Profil" title="Profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="2" aria-label="Ayarlar" title="Ayarlar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab bp-cmd" data-p="chat" aria-label="CMD (sohbet)" title="CMD"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor" stroke="none" font-family="Lexend,Arial,sans-serif">CMD</text></svg><span class="bp-dot"></span></button></div></div>
+  </div>
+  <div id="bp-tabs"><div id="bp-tabs-in"><div id="bp-pill"></div><button type="button" class="bp-tab on" data-p="0" aria-label="Bildirim" title="Bildirim"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="1" aria-label="Profil" title="Profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab bp-cmd" data-p="chat" aria-label="CMD (sohbet)" title="CMD"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor" stroke="none" font-family="Lexend,Arial,sans-serif">CMD</text></svg><span class="bp-dot"></span></button></div></div>
 </div>
   <div id="new-msg-badge" class="new-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg><span>Yeni</span></div>
 </div>
@@ -3042,10 +2955,15 @@ function isConnected() { return conn && conn.open; }
 
 // Eski sürümlerden gelen mesajlarda ismin başında renk kodu (k. t. ma. gibi) olabilir; gösterilirken silinir.
 function stripLegacyPrefix(raw) { return String(raw || '').replace(/^(?:k|t|s|y|ma|l|mo|p|b)\./i, ''); }
-/* 3828 (1. PIN) girişinde isim kutusu kilitlidir; yazılacak ismi 6687 ayarlardan belirler ve 3828'e gönderir */
+/* 3828 (1. PIN) girişinde isim kutusu kilitlidir; isim profildeki "Görünen İsim"den otomatik alınır */
+function profDispName() {
+  try { return String(pfData.disp || ''); } catch (e) {}   // pfData henüz tanımlanmadıysa (erken çağrı) kayıttan oku
+  try { return String(JSON.parse(lsGet('pfData') || '{}').disp || ''); } catch (e) {}
+  return '';
+}
 function lockedNick() {
   try {
-    if (sessionStorage.getItem('pinOk') === '1' && sessionStorage.getItem('pinLive') !== '1') return String(lsGet('forcedNick') || '');
+    if (sessionStorage.getItem('pinOk') === '1' && sessionStorage.getItem('pinLive') !== '1') return profDispName();
   } catch (e) {}
   return null;   // kilitli değil (6687 veya henüz giriş yok)
 }
@@ -3062,20 +2980,6 @@ function nickLockSync() {
   } else {
     document.querySelectorAll('.dn-nick').forEach((el) => { el.readOnly = false; el.removeAttribute('tabindex'); });
   }
-}
-/* 6687: ayarlardaki karşı taraf ismi kendi cihazında kayıtlı kalır ('peerNickSet'); bağlanınca ve kaydedince 3828'e gönderilir */
-function peerNickSend() {
-  if (!isConnected()) return;
-  try { if (sessionStorage.getItem('pinLive') !== '1') return; } catch (e) { return; }
-  const v = lsGet('peerNickSet');
-  if (v === null) return;
-  try { conn.send({ type: 'peer-nick', name: v }); } catch (e) {}
-}
-function receivePeerNick(d) {
-  try { if (sessionStorage.getItem('pinLive') === '1') return; } catch (e) {}
-  if (!d || typeof d.name !== 'string') return;
-  lsSet('forcedNick', d.name.replace(/[\r\n]+/g, ' ').trim().slice(0, 40));
-  nickLockSync();
 }
 function applyNickState() {
   // İsim kutusu boşsa mesaj kutusundaki yazı da kalın görünür
@@ -3270,7 +3174,7 @@ document.getElementById('setup-show-btn').addEventListener('click', openCodesMod
 document.getElementById('setup-show-btn').addEventListener('pointerdown', (e) => e.preventDefault());
 document.getElementById('codes-close').addEventListener('click', closeCodesModal);
 codesModal.addEventListener('click', (e) => { if (e.target === codesModal) closeCodesModal(); });
-// ---- Gizli depolama göstergesi: ayarlardaki "Kurulum" başlığına ~0,6 sn basılı tutunca açılır (normal dokunuş başlığı eskisi gibi açıp kapatır) ----
+// ---- Gizli depolama göstergesi: profil sekmesinin sonundaki "Kurulum" başlığına ~0,6 sn basılı tutunca açılır ----
 (function initStorageModal() {
   const blk = document.getElementById('blk-setup'), modal = document.getElementById('stor-modal');
   if (!blk || !modal) return;
@@ -3313,7 +3217,7 @@ codesModal.addEventListener('click', (e) => { if (e.target === codesModal) close
   title.addEventListener('pointerdown', (e) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     fired = false; sx = e.clientX; sy = e.clientY; cancel();
-    timer = setTimeout(() => { timer = null; fired = true; try { if (navigator.vibrate) navigator.vibrate(15); } catch (er) {} open(); }, 600);
+    timer = setTimeout(() => { timer = null; fired = true; open(); }, 600);
   });
   title.addEventListener('pointermove', (e) => { if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); });
   ['pointerup', 'pointercancel', 'pointerleave'].forEach((n) => title.addEventListener(n, cancel));
@@ -3551,7 +3455,6 @@ function setupConnection(c) {
     adjustInputHeight();
     sendQNote('qnote-hello');
     sendLeap('leap-hello');
-    try { peerNickSend(); } catch (e) {}
     try { pfHello(); } catch (e) {}
     flushNotifOutbox();
     flushOutbox(true);
@@ -3593,7 +3496,6 @@ function setupConnection(c) {
     if (data.type === 'typing-stop') { hideTypingIndicator(); return; }
     if (data.type === 'rec')      { showRecIndicator(); return; }
     if (data.type === 'rec-stop') { hideRecIndicator(); return; }
-    if (data.type === 'peer-nick') { receivePeerNick(data); return; }
     if (data.type === 'leap' || data.type === 'leap-hello') { receiveLeap(data); return; }
     if (data.type === 'prof' || data.type === 'prof-hello') { receiveProfile(data); return; }
     if (data.type === 'prof-photo') { receivePhoto(data); return; }
@@ -6527,7 +6429,6 @@ function openChipMenu() {
   chipMenuEl.style.left = Math.max(0, b.right - total) + 'px';
   chipMenuEl.style.top = Math.max(0, b.top - mh) + 'px';
   sendBtn.classList.add('cm-join');
-  if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
 }
 function closeChipMenu() {
   if (chipMenuEl) chipMenuEl.classList.remove('show');
@@ -9395,7 +9296,6 @@ micBtn.addEventListener('pointerdown', (event) => {
   pressTimer = setTimeout(() => {
     pressTimer = null;
     longReady = true;
-    if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
     if (!editingId) startRec();
   }, MIC_HOLD_MS);
 });
@@ -9695,13 +9595,11 @@ function setRecTrashHot(on) {
   if (recExt.classList.contains('hot') === !!on) return;
   recExt.classList.toggle('hot', !!on);   // çöpün üstündeyken 3 tuşlu baloncuğun tamamı kırmızı
   if (recPhSpan) recPhSpan.textContent = recPhText();
-  if (on && navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
 }
 function setRecLockHot(on) {
   if (recLockEl.classList.contains('hot') === !!on) return;
   recLockEl.classList.toggle('hot', !!on);
   if (recPhSpan) recPhSpan.textContent = recPhText();
-  if (on && navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
 }
 // Kaydı kilitle: parmak çekilse de kayıt sürer; mikrofon (gönder simgesi) gönderir, çöp kutusuna dokunmak iptal eder
 function lockRec() {
@@ -9712,7 +9610,6 @@ function lockRec() {
   recExt.classList.add('locked');
   micBtn.innerHTML = SEND_ICON;
   if (recPhSpan) recPhSpan.textContent = REC_TXT_LOCKED;
-  if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
 }
 // Uygulama arka plana giderse süren kayıt iptal edilir
 document.addEventListener('visibilitychange', () => {
@@ -10242,7 +10139,7 @@ document.addEventListener('keydown', (event) => {
   const active = document.activeElement;
   if (active && active !== messageInput && active !== nickInput && active.closest &&
       active.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""]')) return;
-  const nickOk = !document.body.classList.contains('nick-hidden') && !document.body.classList.contains('nick-locked') && !nickInput.disabled && nickInput.offsetParent !== null;
+  const nickOk = !document.body.classList.contains('nick-locked') && !nickInput.disabled && nickInput.offsetParent !== null;
   const msgOk = !messageInput.disabled && messageInput.offsetParent !== null;
   let target = null;
   if (active === messageInput) target = nickOk ? nickInput : null;
@@ -10527,7 +10424,6 @@ function attachSwipeReply(msgDiv) {
             editTriggered = true;
             msgDiv._swipedAt = Date.now();
             reset(true);
-            if (navigator.vibrate) { try { navigator.vibrate([20, 40, 20]); } catch (err) {} }
           }, 300);
         }
       } else {
@@ -10554,7 +10450,6 @@ function attachSwipeReply(msgDiv) {
     const commit = e.type !== 'touchcancel' && tx >= 70;
     if (commit && msgDiv.isConnected && !editingId) {
       msgDiv._doReply(); // önce yanıt + odak (kullanıcı hareketi içinde klavye açılsın)
-      if (navigator.vibrate) { try { navigator.vibrate(15); } catch (err) {} }
     }
     reset(true);
   };
@@ -10654,7 +10549,7 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
   const innerSlider = document.getElementById('bp-slider');
   const tabsIn = document.getElementById('bp-tabs-in');
   let st = null;
-  // Paneller: 0 = CMD (sohbet), 1 = Bildirim, 2 = Profil, 3 = Ayarlar
+  // Paneller: 0 = CMD (sohbet), 1 = Bildirim, 2 = Profil
   panes.addEventListener('touchstart', (e) => {
     st = null;
     if (!isMobileLayout() || e.touches.length !== 1) return;
@@ -10674,7 +10569,7 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
       if (Math.abs(dx) > Math.abs(dy) * 1.2) {
         const idx = st.idx;
         // CMD'de sağa kaydırma mesaj yanıtı; sonda sola yok; bildirim kartında sağa kaydırma kartı siler
-        if ((dx > 0 && idx === 0) || (dx < 0 && idx === 3) || (dx > 0 && idx === 1 && st.card)) { st = null; return; }
+        if ((dx > 0 && idx === 0) || (dx < 0 && idx === 2) || (dx > 0 && idx === 1 && st.card)) { st = null; return; }
         st.mode = 'h';
         st.dir = dx < 0 ? 1 : -1;
         st.target = idx + st.dir;
@@ -11118,11 +11013,11 @@ function syncBellPanel() {
   else closeBellPop();
 }
 
-/* Bildirim penceresi: altta Bildirim | Ayarlar sekmeleri; mobilde ayrıca sağa/sola kaydırarak geçiş. Son seçilen sayfa hatırlanır */
-let bpPage = (() => { const v = parseInt(lsGet('bpPage') || '0', 10); return (v >= 0 && v <= 2) ? v : 0; })();
-const BP_PAGES = 3;
+/* Bildirim penceresi: mobilde altta Bildirim | Profil sekmeleri; son seçilen sayfa hatırlanır. Masaüstünde bildirim solda, profil sağda, ikisi de hep açık */
+let bpPage = (() => { const v = parseInt(lsGet('bpPage') || '0', 10); return (v >= 0 && v <= 1) ? v : 0; })();
+const BP_PAGES = 2;
 ['cardFire','cardOutbox','cardState','cdAnimState','tagStrip','thirdCard','thirdOwnId'].forEach(lsRemove); // eski kalıntıları temizle
-const bpUnread = [false, false, false];
+const bpUnread = [false, false];
 let bpLastNew = null; // en son gelen yeni şey: {page, tgt}
 function bpDots() { document.querySelectorAll('.bp-tab').forEach((b, i) => { if (b.classList.contains('bp-cmd')) return; b.classList.toggle('new', !!bpUnread[i]); });}
 /* ===== Üstten inen bildirim kutusu (yalnızca mobil) ===== */
@@ -11205,9 +11100,9 @@ function vtShow(info) {
   if (hudVisible) vtRevealT = setTimeout(reveal, 190); else reveal();
 }
 function bpToastFor(page, tgt) {
-  // Mobil: sohbetteyken ya da sağ panelde başka sayfadayken. Masaüstü: sağ panelde başka bir sayfa açıkken
-  if (isMobileLayout()) { if (!(view === 'chat' || (view === 'notes' && bpPage !== page))) return; }
-  else if (bpPage === page) return;
+  // Mobil: sohbetteyken ya da sağ panelde başka sayfadayken. Masaüstü: bildirim paneli zaten hep açık, kutu çıkmaz
+  if (!isMobileLayout()) return;
+  if (!(view === 'chat' || (view === 'notes' && bpPage !== page))) return;
   const id = tgt && tgt.id;
   let name = '', text = '';
   const n = notifList.find((x) => x.id === id);
@@ -11241,7 +11136,8 @@ function bpGoTo(page, tgt) {
 // Seçili olmayan sayfaya yeni gönderi gelirse o sekmenin köşesinde kırmızı nokta çıkar
 function bpMarkUnread(i, tgt) { try { noteIncomingNotif(); } catch (e) {} bpLastNew = { page: i, tgt: tgt || null }; try { bpToastFor(i, tgt || null); } catch (e) {} if (i === bpPage) return; bpUnread[i] = true; bpDots(); }
 function bpSetPage(p, instant) {
-  p = Math.max(0, Math.min(document.body.classList.contains('desk-set') ? 1 : BP_PAGES - 1, p));
+  if (!isMobileLayout()) return;   // masaüstünde sayfa geçişi yok: bildirim solda, profil sağda, ikisi de hep açık
+  p = Math.max(0, Math.min(BP_PAGES - 1, p));
   if (instant) bellPop.classList.add('no-anim');
   bpPage = p;
   document.getElementById('bp-slider').style.setProperty('--bp-page', String(p));
@@ -11343,66 +11239,38 @@ function goPanel(idx) {
     b.addEventListener('mousedown', (e) => e.preventDefault());
     b.addEventListener('click', (e) => {
       e.preventDefault(); e.stopPropagation();
-      if (isMobileLayout()) { goPanel(b.dataset.p === 'chat' ? 0 : parseInt(b.dataset.p, 10) + 1); return; }
-      if (b.dataset.p === 'chat') return;
-      bpSetPage(parseInt(b.dataset.p, 10));
+      if (isMobileLayout()) goPanel(b.dataset.p === 'chat' ? 0 : parseInt(b.dataset.p, 10) + 1);
     });
   });
   bpSetPage(bpPage, true);
-  let g = null;
-  bellPop.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'mouse' || isMobileLayout()) return; // masaüstünde sekmelerle geçiş (mobil: birleşik kaydırma)
-    if (e.target.closest && e.target.closest('input, textarea, #bp-tabs')) return;
-    if (document.getElementById('bp-compose').classList.contains('show')) return;
-    g = { x: e.clientX, y: e.clientY, id: e.pointerId, on: false, back: !(e.target.closest && e.target.closest('#bp-list .bp-card')) };
-  });
-  bellPop.addEventListener('pointermove', (e) => {
-    if (!g || e.pointerId !== g.id || g.on) return;
-    const dx = e.clientX - g.x, dy = e.clientY - g.y;
-    if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { g = null; return; }
-    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.2) {
-      if (isMobileLayout()) {
-        // Mobil: sekmeler yalnızca alttaki tuşlarla değişir; herhangi bir sekmeden sağa kaydırmak sohbete döndürür (son sekme hatırlanır)
-        if (dx > 0 && g.back) { g.on = true; setView('chat'); }
-        else g = null;
-      } else if (dx < 0 && bpPage < (document.body.classList.contains('desk-set') ? 1 : BP_PAGES - 1)) { bpSetPage(bpPage + 1); g.on = true; }
-      else if (dx > 0 && bpPage > 0) { bpSetPage(bpPage - 1); g.on = true; }
-      else g = null;
-    }
-  });
-  const end = (e) => { if (g && e.pointerId === g.id) g = null; };
-  bellPop.addEventListener('pointerup', end);
-  bellPop.addEventListener('pointercancel', end);
 })();
-// Masaüstünde Ayarlar sayfası sağ panelden çıkıp solda sabit menüye taşınır; mobilde eski yerine (sağ panelin 3. sayfası) döner
-(function initDeskSettings() {
-  const set = document.getElementById('bp-page-set');
-  const pane = document.getElementById('pane-settings');
+// Masaüstünde bildirim paneli solda (eski ayar paneli alanında), profil sağ panelde durur; mobilde ikisi de eski yerine (sağ panelin sayfaları) döner
+(function initDeskPanes() {
+  const left = document.getElementById('pane-settings');
+  const right = document.getElementById('pane-notes');
+  const prof = document.getElementById('bp-page-prof');
   const sl = document.getElementById('bp-slider');
-  if (!set || !pane || !sl) return;
+  if (!left || !right || !prof || !sl) return;
   function place() {
     const desk = !mqMobile.matches;
-    document.body.classList.toggle('desk-set', desk);
+    document.body.classList.toggle('desk-split', desk);
     if (desk) {
-      if (set.parentNode !== pane) pane.appendChild(set);
-      if (bpPage === 2) bpSetPage(0, true);
-    } else if (set.parentNode !== sl) sl.appendChild(set);
+      if (bellPop.parentNode !== left) left.appendChild(bellPop);
+      if (prof.parentNode !== right) right.appendChild(prof);
+    } else {
+      if (prof.parentNode !== sl) sl.appendChild(prof);
+      if (bellPop.parentNode !== right) right.insertBefore(bellPop, right.firstChild);
+    }
   }
   place();
   if (mqMobile.addEventListener) mqMobile.addEventListener('change', place);
   else if (mqMobile.addListener) mqMobile.addListener(place);
-  // Menüdeki tuşlara fareyle basınca mesaj kutusunun odağı gitmesin (yazı alanları hariç)
-  pane.addEventListener('mousedown', (e) => {
-    const t = e.target;
-    if (!t || !t.closest || t.closest('input, textarea, [contenteditable="true"]')) return;
-    if (t.closest('button, [role="button"], [role="switch"], .set-title, .leap-bar') && e.cancelable) e.preventDefault();
-  });
 })();
-// Ayarlardaki seçenek tuşları sığmazsa eşit sütunlu satırlara bölünür (ör. 4 tuş dar menüde 2x2 olur)
+// Profildeki ayar seçenek tuşları sığmazsa eşit sütunlu satırlara bölünür (ör. 4 tuş dar menüde 2x2 olur)
 (function initSegWrap() {
-  const menu = document.getElementById('settings-scroll');
+  const menu = document.getElementById('pf-wrap');
   if (!menu) return;
-  const segs = Array.prototype.slice.call(menu.querySelectorAll('.seg'));
+  const segs = Array.prototype.slice.call(menu.querySelectorAll('.pf-set .seg'));
   let epoch = 0;   // yazı tipleri yüklenince arttırılır: eski ölçümler geçersiz olur
   function fit(seg) {
     const btns = Array.prototype.slice.call(seg.querySelectorAll('.seg-btn'));
@@ -11479,7 +11347,6 @@ function goPanel(idx) {
     notesUnseen = false;
     lsSet('qnoteUnseen', '0');
     notesBtn.classList.remove('unseen');
-    if (navigator.vibrate) { try { navigator.vibrate(40); } catch (err) {} }
     const oldColor = notesBtn.style.color;
     notesBtn.style.color = 'var(--ok)';
     setTimeout(() => { notesBtn.style.color = oldColor; }, 400);
@@ -11827,8 +11694,6 @@ function goPanel(idx) {
 })();
 
 (function initLiveModeSetting() {
-  const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-live .seg-btn'));
-  const blk = document.getElementById('blk-live');
   const tgl = document.getElementById('live-toggle');
   lsRemove('liveMode');
 
@@ -11838,7 +11703,6 @@ function goPanel(idx) {
     try { return sessionStorage.getItem('pinLive') === '1'; } catch (e) { return false; }
   }
   function showHide() {
-    if (blk) blk.style.display = 'none';   // ayarlarda gösterilmez (Ctrl+D ve yüzen menüde var)
     if (tgl) tgl.style.display = allowed ? 'inline-flex' : 'none';
   }
   allowed = readAllowed();
@@ -11848,11 +11712,6 @@ function goPanel(idx) {
     const dyn = allowed && (val === 'dynamic');
     liveMode = dyn;
     document.body.classList.toggle('live-on', dyn);
-    btns.forEach((b) => {
-      const on = b.dataset.val === (dyn ? 'dynamic' : 'static');
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
     if (tgl) {
       tgl.classList.toggle('on', dyn);
       tgl.setAttribute('aria-checked', dyn ? 'true' : 'false');
@@ -11900,136 +11759,12 @@ function goPanel(idx) {
       apply(val, false);
     });
   }
-  btns.forEach((b) => {
-    b.addEventListener('pointerdown', (e) => e.preventDefault());
-    b.addEventListener('click', () => {
-      if (!allowed) return;
-      const val = b.dataset.val === 'dynamic' ? 'dynamic' : 'static';
-      if (val === 'dynamic' && liveMode) return;
-      lsSet(LIVE_KEY, val);
-      apply(val, false);
-    });
-  });
 })();
 
-(function initTimeSetting() {
-  const KEY = 'timeShow';
-  const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-time .seg-btn'));
-  function apply(val) {
-    const hide = (val === 'hide');
-    document.body.classList.toggle('no-time', hide);
-    btns.forEach((b) => { const on = b.dataset.val === (hide ? 'hide' : 'show'); b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
-    try { if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight; } catch (e) {}
-  }
-  apply(lsGet(KEY) === 'hide' ? 'hide' : 'show');
-  btns.forEach((b) => {
-    b.addEventListener('pointerdown', (e) => e.preventDefault());
-    b.addEventListener('click', () => { const v = b.dataset.val === 'hide' ? 'hide' : 'show'; lsSet(KEY, v); apply(v); });
-  });
-})();
-
-(function initNickBoxSetting() {
-  const KEY = 'nickBox';
-  const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-nick .seg-btn'));
-  function apply(val) {
-    const hide = (val === 'hide');
-    document.body.classList.toggle('nick-hidden', hide);
-    if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
-    btns.forEach((b) => {
-      const on = b.dataset.val === (hide ? 'hide' : 'show');
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-  }
-  apply(lsGet(KEY) === 'hide' ? 'hide' : 'show');
-  btns.forEach((b) => {
-    b.addEventListener('pointerdown', (e) => e.preventDefault());
-    b.addEventListener('click', () => {
-      const val = b.dataset.val === 'hide' ? 'hide' : 'show';
-      lsSet(KEY, val);
-      apply(val);
-    });
-  });
-})();
-
-(function initPeerNickSetting() {
-  const inp = document.getElementById('peer-nick-input');
-  const btn = document.getElementById('peer-nick-save');
-  if (inp && btn) {
-    inp.value = lsGet('peerNickSet') || '';
-    const save = () => {
-      const v = inp.value.replace(/[\r\n]+/g, ' ').trim().slice(0, 40);
-      inp.value = v;
-      lsSet('peerNickSet', v);
-      peerNickSend();
-      try { flashStatus('Karşı tarafın ismi kaydedildi'); } catch (e) {}
-    };
-    btn.addEventListener('pointerdown', (e) => e.preventDefault());
-    btn.addEventListener('click', save);
-    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); save(); } });
-    window.addEventListener('pin-level', () => { inp.value = lsGet('peerNickSet') || ''; peerNickSend(); });
-  }
+(function initNickLock() {
   nickLockSync();
   window.addEventListener('pin-level', nickLockSync);
   setInterval(nickLockSync, 1500);
-})();
-
-(function initHapticSetting() {
-  const KEY = 'haptic';
-  const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-haptic .seg-btn'));
-  function apply(val) {
-    const off = (val === 'off');
-    if (window.__setHaptic) window.__setHaptic(!off);
-    btns.forEach((b) => {
-      const on = b.dataset.val === (off ? 'off' : 'on');
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-  }
-  apply(lsGet(KEY) === 'off' ? 'off' : 'on');
-  btns.forEach((b) => {
-    b.addEventListener('pointerdown', (e) => e.preventDefault());
-    b.addEventListener('click', () => {
-      const val = b.dataset.val === 'off' ? 'off' : 'on';
-      lsSet(KEY, val);
-      apply(val);
-    });
-  });
-})();
-
-// Açıkken her tuşa çok hafif titreşim (yalnızca mobil görünüm)
-(function initTapHaptics() {
-  const SEL = 'button:not(:disabled), [role="button"], [role="switch"], [role="option"], .seg-btn, .set-title, ' +
-    '#eye-btn, #refresh-btn, #notes-btn, #auto-chip-x, #live-toggle, ' +
-    '#scroll-down-btn, #send-btn, #cancel-reply-btn, #privacy-eye, #viewer-close, #viewer-dl, #bp-add, .bp-del, ' +
-    '#bp-actions span, .new-badge, .once-btn, #confirm-once-row, #photo-src-box button, #reset-check-row, ' +
-    '.msg-act, .react-add, .react-pick button, .react-chip.mine, .cm-item, .pin-key:not(.ghost), .lp-react button, .lp-item, label, input[type="checkbox"], input[type="radio"], .leap-num, .aud-play, .aud-spd, .yt-play, .yt-join, .bp-tab, .dial-opt, .ytd-b, .yts-b';
-  function tap(e, fromClick) {
-    if (!isMobileLayout()) return;
-    const t = e.target;
-    if (!t || !t.closest) return;
-    if (t.closest('#leap-hud, #fab')) return;     // bunlar kendi titreşimini verir
-    const inMenu = !!t.closest('#settings-scroll');
-    if (t.closest(SEL)) {
-      if (inMenu !== fromClick) return;          // ayarlar menüsü kaydırılabilir: orada tık anında, diğerlerinde dokunuş anında
-      try { navigator.vibrate(8); } catch (err) {}
-      return;
-    }
-    // Listede olmayan ama basılabilir görünen her şey (imleci "el" olan öğeler: satırlar, kartlar, sayılar, sekmeler...) tık anında titreşir;
-    // kaydırma sırasında değil, yalnızca gerçek dokunuşta
-    if (!fromClick) return;
-    let n = t, i = 0;
-    while (n && n !== document.body && i < 5) {
-      if (n.nodeType === 1 && n.disabled !== true && n.getAttribute('aria-disabled') !== 'true') {
-        let cur = '';
-        try { cur = getComputedStyle(n).cursor; } catch (err) {}
-        if (cur === 'pointer') { try { navigator.vibrate(8); } catch (err) {} return; }
-      }
-      n = n.parentElement; i++;
-    }
-  }
-  document.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') tap(e, false); }, true);
-  document.addEventListener('click', (e) => { if (e.detail > 0) tap(e, true); });
 })();
 
 (function initThemeSetting() {
@@ -12067,33 +11802,6 @@ function goPanel(idx) {
     });
   });
 })();
-
-(function initFontSizeSetting() {
-  const KEY = 'fontSize';
-  const btns = Array.prototype.slice.call(document.querySelectorAll('#seg-fs .seg-btn'));
-  function norm(v) { return (v === 'small' || v === 'large') ? v : 'medium'; }
-  function apply(val) {
-    val = norm(val);
-    document.body.classList.toggle('fs-small', val === 'small');
-    document.body.classList.toggle('fs-large', val === 'large');
-    btns.forEach((b) => {
-      const on = b.dataset.val === val;
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-    if (stickToBottom) chatArea.scrollTop = chatArea.scrollHeight;
-  }
-  apply(lsGet(KEY));
-  btns.forEach((b) => {
-    b.addEventListener('pointerdown', (e) => e.preventDefault());
-    b.addEventListener('click', () => {
-      const val = norm(b.dataset.val);
-      lsSet(KEY, val);
-      apply(val);
-    });
-  });
-})();
-
 
 renderQNote();
 updateBadges();
@@ -12237,7 +11945,7 @@ function receiveLeap(d) {
   leapVal = d.v; leapRev = d.rev; leapBy = by;
   leapPersist(); renderLeap();
 }
-/* ---- Profil (Bildirim | Profil | Ayarlar): hesap bilgileri. Yalnızca 6687 kalem tuşuyla düzenleme moduna geçip düzenler; 3828 (ve düzenleme kapalıyken 6687) yalnızca görüntüler.
+/* ---- Profil (Bildirim | Profil): hesap bilgileri. Yalnızca 6687 kalem tuşuyla düzenleme moduna geçip düzenler; 3828 (ve düzenleme kapalıyken 6687) yalnızca görüntüler.
    Veri belgesi Leap gibi eşitlenir: en son düzenlenen (rev, eşitlikte by) iki tarafta da geçerli olur. Cihaz listesi yapaydır ve belgenin içindedir. ---- */
 const PF_ID_RE = /^[a-z0-9]{6,20}$/;
 const PF_MAXDEV = 8;
@@ -12676,6 +12384,7 @@ function pfRender() {
   const can = pfCan();
   const d = pfData;
   document.body.classList.toggle('pf-editing', can);
+  try { nickLockSync(); } catch (e) {}
   const nm = d.disp || d.real || d.user || 'Adsız';
   pfEl('pf-av-t').textContent = (Array.from(nm.trim())[0] || '?').toUpperCase();
   pfEl('pf-hname').textContent = nm;
@@ -12773,7 +12482,6 @@ function pfRender() {
       pfLpX = e.clientX; pfLpY = e.clientY;
       pfLpT = setTimeout(() => {
         pfLpT = 0; pfLpAt = Date.now();
-        if (navigator.vibrate) { try { navigator.vibrate(12); } catch (x) {} }
         pfSaveImage(pfPhoto.d, 'profil');
       }, 550);
     });
@@ -13010,14 +12718,14 @@ function pfRender() {
   try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(pfFitUser); } catch (e) {}
   pfSave();
   pfRender();
-  setInterval(() => { if (!document.hidden && bpPage === 1) pfRender(); }, 5000);
+  setInterval(() => { if (!document.hidden && (!isMobileLayout() || bpPage === 1)) pfRender(); }, 5000);
 })();
 /* Uzun değerler (şifre, isim vb.) kutuya sığmıyorsa, odakta değilken yavaşça kayıp sonunu gösterir, sonra başa döner */
 (function initPfMarquee() {
   const st = new WeakMap();
   function frame(now) {
     requestAnimationFrame(frame);
-    if (document.hidden || typeof bpPage === 'undefined' || bpPage !== 1) return;
+    if (document.hidden || typeof bpPage === 'undefined' || (isMobileLayout() && bpPage !== 1)) return;
     const box = document.getElementById('pf-scroll');
     if (!box) return;
     box.querySelectorAll('.pf-sec input.pf-in[type="text"]').forEach((el) => {
@@ -13037,90 +12745,6 @@ function pfRender() {
     });
   }
   requestAnimationFrame(frame);
-})();
-/* Masaüstü: ayarlar kendi alanına dikeyde tam sığar; tüm gruplar (yazı, düğme, boşluk) ortak oranda küçülür / büyür.
-   Ölçüm zoom'dan bağımsız: listenin sonuna konan sıfır yükseklikli işaretin konumu toplam yüksekliği verir. */
-(function initSettingsFit() {
-  const sc = document.getElementById('settings-scroll');
-  if (!sc) return;
-  const mq = window.matchMedia('(min-width: 769px)');
-  const Z_MIN = 0.3, Z_MAX = 1.35, PAD_MAX = 10;   // Z_MAX: ayarlar en fazla bu oranda büyür (az ayar kalınca dev gibi olmasın); PAD_MAX: kalan boşluktan her gruba en çok bu kadar px ek boşluk   // klavye açıkken olduğu gibi: alan neyse tam o kadar dolacak şekilde oranlanır, boşluk dağıtılmaz
-  const clampZ = (z) => Math.max(Z_MIN, Math.min(Z_MAX, z));
-  let end = null, busy = false, raf = 0, burst = 0, burstT = 0;
-  function ensureEnd() {
-    if (end && end.parentNode === sc) { if (sc.lastElementChild !== end) sc.appendChild(end); return end; }
-    end = document.createElement('span');
-    end.id = 'set-fit-end'; end.setAttribute('aria-hidden', 'true');
-    end.style.cssText = 'display:block;height:0;width:0;margin:0;padding:0;border:0;overflow:hidden;pointer-events:none;';
-    sc.appendChild(end);
-    return end;
-  }
-  let lastSig = '', lastZ = 0, lastPad = 0;
-  function fit() {
-    if (busy) return; busy = true;
-    try {
-      const blocks = Array.from(sc.querySelectorAll(':scope > .set-block'));
-      const setAll = (z, pad) => blocks.forEach((b) => { b.style.zoom = z ? String(z) : ''; b.style.paddingBottom = pad > 0 ? pad + 'px' : ''; });
-      if (!mq.matches || sc.clientHeight <= 0) { setAll(0, 0); lastSig = ''; return; }
-      setAll(0, 0);
-      const vis = blocks.filter((b) => b.offsetHeight > 0);
-      if (!vis.length) { lastSig = ''; return; }
-      const e = ensureEnd();
-      const cs = getComputedStyle(sc);
-      const pt = parseFloat(cs.paddingTop) || 0, pb = parseFloat(cs.paddingBottom) || 0;
-      const avail = sc.clientHeight - pt - pb;
-      // girdiler değişmediyse aynı sonucu aynen geri yaz (boyut oynamaz, gözlemciler tetiklenmez)
-      const sig = Math.round(avail * 10) + '|' + vis.map((b) => b.offsetHeight).join(',') + '|' + sc.clientWidth;
-      if (sig === lastSig && lastZ) { setAll(lastZ, lastPad); return; }
-      const used = (z) => { setAll(z, 0); return e.offsetTop - pt; };
-      if (!(avail > 0)) return;
-      // sığan en büyük oran ikili aramayla bulunur: sonuç girdilere göre tek ve kararlıdır (öne arkaya gidip gelme olmaz)
-      let z;
-      if (used(Z_MAX) <= avail) z = Z_MAX;
-      else if (used(Z_MIN) > avail) z = Z_MIN;   // çok kısa alan: en küçükte bile sığmazsa kaydırılabilir kalır
-      else {
-        let lo = Z_MIN, hi = Z_MAX;
-        for (let i = 0; i < 16; i++) { const mid = (lo + hi) / 2; if (used(mid) <= avail) lo = mid; else hi = mid; }
-        z = Math.floor(lo * 10000) / 10000;
-      }
-      if (lastZ && z !== lastZ && Math.abs(z - lastZ) < 0.004 && used(lastZ) <= avail) z = lastZ;
-      const u = used(z);
-      const extra = avail - u;
-      const pad = (extra > 0.5) ? Math.min(PAD_MAX, extra / vis.length / z) : 0;
-      setAll(z, pad);
-      lastSig = sig; lastZ = z; lastPad = pad;
-    } finally { busy = false; }
-  }
-  function schedule() {
-    const now = Date.now();
-    if (now - burstT > 600) { burstT = now; burst = 0; }
-    if (++burst > 14 || raf) return;   // kendi yazdığımız değişimlerden sonsuz döngü olmasın
-    raf = requestAnimationFrame(() => { raf = 0; fit(); });
-  }
-  window.addEventListener('resize', schedule);
-  if (mq.addEventListener) mq.addEventListener('change', schedule);
-  if (window.ResizeObserver) {
-    const ro = new ResizeObserver(schedule);
-    ro.observe(sc);
-    Array.from(sc.querySelectorAll(':scope > .set-block')).forEach((b) => ro.observe(b));
-  }
-  try {
-    const stripCls = (v) => (v || '').split(/\s+/).filter((c) => c && c !== 'measure').sort().join(' ');
-    new MutationObserver((muts) => {
-      for (let i = 0; i < muts.length; i++) {
-        const m = muts[i];
-        // seg ölçümü için geçici eklenen/silinen 'measure' sınıfı gerçek bir değişiklik değil
-        if (m.type === 'attributes' && m.attributeName === 'class' && stripCls(m.oldValue) === stripCls(m.target.getAttribute('class'))) continue;
-        schedule(); return;
-      }
-    }).observe(sc, { subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['class', 'hidden'], childList: true, characterData: true });
-  } catch (e) {}
-  sc.addEventListener('transitionend', schedule, true);
-  sc.addEventListener('click', () => { setTimeout(schedule, 60); setTimeout(schedule, 320); }, true);
-  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule); } catch (e) {}
-  window.addEventListener('pin-level', () => { schedule(); setTimeout(schedule, 120); });
-  document.addEventListener('visibilitychange', schedule);
-  fit(); setTimeout(schedule, 400); setTimeout(schedule, 1500);
 })();
 (function initLeap() {
   const el = document.getElementById('leap-num');
@@ -13232,23 +12856,6 @@ function pfRender() {
   sync();
   ['membersData', 'membersRev', 'membersBy'].forEach((k) => { lsRemove(k); });
 })();
-/* ---- Ayar grupları hep açık ---- */
-(function () {
-  // Ayar grupları artık hep açık; kapatılamaz
-  try { sessionStorage.removeItem('keepSettingsState'); sessionStorage.removeItem('settingsCollapsed'); localStorage.removeItem('settingsCollapsed'); } catch (e) {}
-  document.querySelectorAll('#settings-scroll .set-block').forEach((b) => b.classList.remove('collapsed'));
-})();
-/* ---- Aç/kapa anahtarları: gizli seçenek tuşlarının ilkini (Göster/Açık) izler; basınca diğerine basar ---- */
-(function () {
-  const menu = document.getElementById('settings-scroll');
-  const bt = (s) => menu.querySelectorAll('#' + s.dataset.seg + ' .seg-btn');
-  function update() {
-    menu.querySelectorAll('.pf-sw[data-seg]').forEach((s) => { const on = bt(s)[0].classList.contains('active'); s.classList.toggle('on', on); s.setAttribute('aria-checked', on); });
-  }
-  menu.addEventListener('click', (e) => { const s = e.target.closest('.pf-sw[data-seg]'); if (s) bt(s)[s.classList.contains('on') ? 1 : 0].click(); });
-  update();
-  new MutationObserver(update).observe(menu, { attributes: true, attributeFilter: ['class'], subtree: true });
-})();
 // Masaüstü: kaydırma çubuğuna tıklanınca/sürüklenince mesaj kutusunun odağı kaybolmasın
 (function keepFocusOnScrollbar() {
   const input = document.getElementById('message-input');
@@ -13325,7 +12932,6 @@ function pfRender() {
   function open(m) {
     if (!canOpen(m)) return;
     fired = true; lpAt = Date.now(); openedAt = lpAt;
-    if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
     try { closeActs(null); } catch (e) {}
 
     ov = document.createElement('div');
