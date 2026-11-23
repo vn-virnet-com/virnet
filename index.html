@@ -233,7 +233,8 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
   box-shadow: 0 1px 3px rgba(var(--sh), 0.35);
   transition: background-color 0.4s ease, box-shadow 0.2s ease, min-width 0.32s cubic-bezier(.3, .8, .3, 1);
 }
-.bubble:has(> .msg-body.big-emoji) { padding: 8px; border-radius: 32px; }
+.bubble:has(> .msg-body.big-emoji) { padding: 8px; border-radius: 26px; }
+.bubble:has(> .msg-body.big-emoji) > .hdr-row { padding: 3px 10px 0; }
 .bubble:has(> .yt-card) { width: min(320px, 78vw); padding: 5px; }
 .bubble:has(> .yt-card) > .msg-body { padding: 2px 4px 0; }
 .msg.yt-only .bubble { padding: 3px; }
