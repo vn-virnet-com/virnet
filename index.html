@@ -1011,7 +1011,7 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 #codes-close { padding: 12px; font-size: 16px; border: 1px solid var(--c-33); border-radius: var(--r-md); cursor: pointer; font-weight: 700; background: var(--accent); color: var(--on-accent); }
 #reset-yes { background: var(--chip-no); color: var(--c-fff); }
 /* Gizli depolama penceresi: ayarlardaki "Kurulum" başlığına basılı tutunca açılır */
-#blk-setup > .set-title { -webkit-touch-callout: none; }
+#blk-setup .pf-st { -webkit-touch-callout: none; padding: 8px 0; margin-bottom: 0; }
 #stor-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 21000; background: var(--ov-85); display: none; align-items: center; justify-content: center; padding: 20px; }
 #stor-modal.show { display: flex; }
 #stor-box { background: var(--c-111); border: 1px solid var(--c-33); border-radius: var(--r-xl); padding: 16px; width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; align-items: stretch; box-sizing: border-box; }
@@ -1173,7 +1173,7 @@ body.live-on #input-wrapper::after {
 #nick-input { touch-action: manipulation; }
 /* Titreşim ayarı yalnızca mobil görünümde */
 #blk-haptic { display: none; }
-@media (max-width: 768px) { #blk-haptic { display: block; } }
+@media (max-width: 768px) { #blk-haptic { display: flex; } }
 #notes-btn { cursor: pointer; display: inline-flex; align-items: center; padding: 8px 0 8px 13px; margin: -8px 0; color: var(--c-88); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 /* Not tuşunun konumu duruma göre JS ile taşınır (data-pos): strip = renk şeridinin en sağı, trash = ayarlar simgesinin sağı (masaüstü + isim kutusu gizli), top = sağ üst (eski yer) */
 #typing-indicator #notes-btn { flex: 0 0 auto; pointer-events: auto; padding: 8px 0 8px 13px; margin: -8px 0; }
@@ -1639,40 +1639,23 @@ body.vt-on #leap-hud { opacity: 0 !important; pointer-events: none !important; t
 body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezier(.2,.9,.3,1.15), top .2s ease; }
 
 /* ===== Modern ayarlar ===== */
-#bp-page-set #settings-scroll { padding: 0 0 28px; scrollbar-width: none; -ms-overflow-style: none; }
+#bp-page-set #settings-scroll { padding: 14px 12px 28px; scrollbar-width: none; -ms-overflow-style: none; }
 #bp-page-set #settings-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
 .leap-num:not(.editing) { overflow: hidden; }
 .leap-num-t { display: inline-block; white-space: nowrap; will-change: transform; }
 
-#settings-scroll .set-block { background: var(--c-1a); border: 0; border-top: 1px solid var(--c-33); border-radius: 0; overflow: hidden; }
-#settings-scroll .set-block:last-of-type { border-bottom: 1px solid var(--c-33); }
-#settings-scroll .set-block + .set-block, #settings-scroll .set-block.collapsed + .set-block { margin-top: 0; }
-#settings-scroll .set-title { justify-content: flex-start; gap: 10px; min-height: 44px; box-sizing: border-box; margin: 0; padding: 8px 14px; background: transparent; border-radius: 0; font-size: 14px; font-weight: 700; color: var(--c-fff); transition: background .15s ease; }
-#settings-scroll .set-title::before { content: ""; flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; background-color: var(--c-44); background-repeat: no-repeat; background-position: center; background-size: 14px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
-#settings-scroll .set-title:active { background: var(--c-22); }
-#settings-scroll .set-title:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-#settings-scroll .set-title { cursor: default; }
-#settings-scroll .set-val { flex: 1 1 auto; text-align: right; font-size: 12.5px; font-weight: 300; color: var(--c-cc); opacity: .8; }
-#settings-scroll .set-arrow { margin-left: 0; font-size: 20px; opacity: .5; }
-#settings-scroll .set-body { background: transparent; border-radius: 0; padding: 0 14px 12px; }
-#settings-scroll #blk-live .set-title::before { background-color: #ec4899; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z%22/%3E%3C/svg%3E"); }
-#settings-scroll .sb-theme .set-title::before { background-color: #3b82f6; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%229%22/%3E%3Cpath d=%22M12 3a9 9 0 0 1 0 18z%22 fill=%22white%22/%3E%3C/svg%3E"); }
-#settings-scroll .sb-size .set-title::before { background-color: #8b5cf6; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%224 7 4 4 20 4 20 7%22/%3E%3Cline x1=%229%22 y1=%2220%22 x2=%2215%22 y2=%2220%22/%3E%3Cline x1=%2212%22 y1=%224%22 x2=%2212%22 y2=%2220%22/%3E%3C/svg%3E"); }
-#settings-scroll .sb-nick .set-title::before { background-color: #f59e0b; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2%22/%3E%3Ccircle cx=%2212%22 cy=%227%22 r=%224%22/%3E%3C/svg%3E"); }
-#settings-scroll .sb-time .set-title::before { background-color: #14b8a6; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222.2%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%229%22/%3E%3Cpolyline points=%2212 7 12 12 15 14%22/%3E%3C/svg%3E"); }
-#settings-scroll #blk-haptic .set-title::before { background-color: #22c55e; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Crect x=%228%22 y=%223%22 width=%228%22 height=%2218%22 rx=%222%22/%3E%3Cpath d=%22M4 8v8M20 8v8%22/%3E%3C/svg%3E"); }
-#settings-scroll #blk-setup .set-title::before { background-color: #64748b; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cline x1=%224%22 y1=%2221%22 x2=%224%22 y2=%2214%22/%3E%3Cline x1=%224%22 y1=%2210%22 x2=%224%22 y2=%223%22/%3E%3Cline x1=%2212%22 y1=%2221%22 x2=%2212%22 y2=%2212%22/%3E%3Cline x1=%2212%22 y1=%228%22 x2=%2212%22 y2=%223%22/%3E%3Cline x1=%2220%22 y1=%2221%22 x2=%2220%22 y2=%2216%22/%3E%3Cline x1=%2220%22 y1=%2212%22 x2=%2220%22 y2=%223%22/%3E%3Cline x1=%221%22 y1=%2214%22 x2=%227%22 y2=%2214%22/%3E%3Cline x1=%229%22 y1=%228%22 x2=%2215%22 y2=%228%22/%3E%3Cline x1=%2217%22 y1=%2216%22 x2=%2223%22 y2=%2216%22/%3E%3C/svg%3E"); }
-
-#settings-scroll .seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; padding: 2px; border: none; border-radius: 10px; overflow: visible; background: var(--c-000); }
+/* Ayarlar: profil sayfasındaki kutu (pf-card) tasarımı; iki seçenekli ayarlar sağda aç/kapa anahtarı (pf-sw) */
+#settings-scroll > .set-block { width: 100%; max-width: 440px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+#settings-scroll .pf-l { flex: 1 1 auto; width: auto; }
+#settings-scroll .pf-row.stk { flex-wrap: wrap; }
+#settings-scroll .pf-row.stk > :not(.pf-l) { flex: 1 0 100%; }
+#settings-scroll .seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 1px; width: 100%; border: 1px solid var(--c-33); border-radius: var(--r-md); overflow: hidden; background: var(--c-33); }
 #settings-scroll .seg.measure { display: flex !important; width: max-content; }
 #settings-scroll .seg.measure .seg-btn { flex: 0 0 auto !important; }
-#settings-scroll .set-val { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#settings-scroll .seg-btn { flex: 1 1 0; width: auto; min-width: 0; padding: 6px 4px; font-size: 12.5px; font-weight: 500; white-space: nowrap; border: none; border-radius: 8px; background: transparent; color: var(--c-88); box-shadow: none; transition: background .18s ease, color .18s ease, box-shadow .18s ease; }
-#settings-scroll .seg-btn + .seg-btn { border-top: none; }
-#settings-scroll .seg-btn.active { background: var(--c-33); color: var(--c-fff); box-shadow: 0 1px 4px rgba(var(--sh),0.5), inset 0 0 0 1px var(--c-44); }
+#settings-scroll .seg-btn { min-width: 0; padding: 7px 4px; font-size: 12.5px; font-weight: 400; white-space: nowrap; border: 0; border-radius: 0; background: var(--c-000); color: var(--c-88); box-shadow: none; }
+#settings-scroll .seg-btn.active { background: var(--c-1a); color: var(--c-fff); box-shadow: inset 0 0 0 2px var(--accent); }
 #settings-scroll .seg-btn.danger { background: var(--dng-bg); color: #fff; }
 #settings-scroll .seg-btn.danger:active { background: var(--dng-bg-a); }
-@media (hover: hover) and (pointer: fine) { #settings-scroll .seg-btn:not(.active):not(.danger):hover { color: var(--c-fff); background: var(--c-111); } }
 @media (prefers-reduced-motion: reduce) { #settings-scroll .set-title, #settings-scroll .seg-btn { transition: none; } }
 
 /* Masaüstü: yazma satırı (isim kutusu, metin kutusu, gönder tuşu ve sürükleyince açılan seçenekler) sağ panelin alt çubuğu gibi en alta yapışık, köşeleri düz;
@@ -2345,75 +2328,28 @@ body.gm-on #leap-hud { display: none !important; }
   </div>
   <div id="bp-page-set" class="bp-page">
 <div id="settings-scroll">
-  <div class="set-block" id="blk-live" style="display:none">
-    <div class="set-title"><span>Mesajlar</span><span class="set-val"></span></div>
-    <div class="set-collapse"><div class="set-clip"><div class="set-body">
-    <div class="seg" id="seg-live">
-      <button type="button" class="seg-btn active" data-val="static" aria-pressed="true">Statik</button>
-      <button type="button" class="seg-btn" data-val="dynamic" aria-pressed="false">Dinamik</button>
-    </div></div></div></div>
-  </div>
-  <div class="set-block sb-theme">
-    <div class="set-title"><span>Tema</span><span class="set-val"></span></div>
-    <div class="set-collapse"><div class="set-clip"><div class="set-body">
-    <div class="seg" id="seg-theme">
-      <button type="button" class="seg-btn active" data-val="black" aria-pressed="true">Siyah</button>
-      <button type="button" class="seg-btn" data-val="gray" aria-pressed="false">Gri</button>
-      <button type="button" class="seg-btn" data-val="blue" aria-pressed="false">Mavi</button>
-      <button type="button" class="seg-btn" data-val="purple" aria-pressed="false">Mor</button>
-    </div></div></div></div>
-  </div>
-  <div class="set-block sb-size">
-    <div class="set-title"><span>Boyut</span><span class="set-val"></span></div>
-    <div class="set-collapse"><div class="set-clip"><div class="set-body">
-    <div class="seg" id="seg-fs">
-      <button type="button" class="seg-btn" data-val="small" aria-pressed="false">Küçük</button>
-      <button type="button" class="seg-btn active" data-val="medium" aria-pressed="true">Orta</button>
-      <button type="button" class="seg-btn" data-val="large" aria-pressed="false">Büyük</button>
-    </div></div></div></div>
-  </div>
-  <div class="set-block sb-time">
-    <div class="set-title"><span>Saat</span><span class="set-val"></span></div>
-    <div class="set-collapse"><div class="set-clip"><div class="set-body">
-    <div class="seg" id="seg-time">
-      <button type="button" class="seg-btn active" data-val="show" aria-pressed="true">Göster</button>
-      <button type="button" class="seg-btn" data-val="hide" aria-pressed="false">Gösterme</button>
+  <div class="set-block" id="blk-live" style="display:none"><div class="seg" id="seg-live"><button type="button" class="seg-btn active" data-val="static" aria-pressed="true">Statik</button><button type="button" class="seg-btn" data-val="dynamic" aria-pressed="false">Dinamik</button></div></div>
+  <div class="set-block pf-sec">
+    <div class="pf-st">Görünüm</div>
+    <div class="pf-card">
+      <div class="pf-row stk"><span class="pf-l">Tema</span><div class="pf-v"><div class="seg" id="seg-theme"><button type="button" class="seg-btn active" data-val="black" aria-pressed="true">Siyah</button><button type="button" class="seg-btn" data-val="gray" aria-pressed="false">Gri</button><button type="button" class="seg-btn" data-val="blue" aria-pressed="false">Mavi</button><button type="button" class="seg-btn" data-val="purple" aria-pressed="false">Mor</button></div></div></div>
+      <div class="pf-row stk"><span class="pf-l">Boyut</span><div class="pf-v"><div class="seg" id="seg-fs"><button type="button" class="seg-btn" data-val="small" aria-pressed="false">Küçük</button><button type="button" class="seg-btn active" data-val="medium" aria-pressed="true">Orta</button><button type="button" class="seg-btn" data-val="large" aria-pressed="false">Büyük</button></div></div></div>
     </div>
-    </div></div></div>
   </div>
-  <div class="set-block sb-nick">
-    <div class="set-title"><span>İsimler</span><span class="set-val"></span></div>
-    <div class="set-collapse"><div class="set-clip"><div class="set-body">
-    <div class="seg" id="seg-nick">
-      <button type="button" class="seg-btn active" data-val="show" aria-pressed="true">Göster</button>
-      <button type="button" class="seg-btn" data-val="hide" aria-pressed="false">Gizle</button>
+  <div class="set-block pf-sec">
+    <div class="pf-st">Sohbet</div>
+    <div class="pf-card">
+      <div class="pf-row"><span class="pf-l">Saat</span><div class="pf-v"><button type="button" class="pf-sw on" role="switch" aria-checked="true" aria-label="Saat" data-seg="seg-time"></button><div class="seg" id="seg-time" style="display:none"><button type="button" class="seg-btn active" data-val="show" aria-pressed="true">Göster</button><button type="button" class="seg-btn" data-val="hide" aria-pressed="false">Gösterme</button></div></div></div>
+      <div class="pf-row sb-nick"><span class="pf-l">İsimler</span><div class="pf-v"><button type="button" class="pf-sw on" role="switch" aria-checked="true" aria-label="İsimler" data-seg="seg-nick"></button><div class="seg" id="seg-nick" style="display:none"><button type="button" class="seg-btn active" data-val="show" aria-pressed="true">Göster</button><button type="button" class="seg-btn" data-val="hide" aria-pressed="false">Gizle</button></div></div></div>
+      <div class="pf-row stk sb-nick sb-peernick" id="blk-peernick"><span class="pf-l">Karşı Tarafın İsmi</span><div class="peer-nick-row"><input id="peer-nick-input" type="text" maxlength="40" placeholder="İsim (boş = isimsiz)" autocomplete="off" autocorrect="off" spellcheck="false" name="peer-label" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><button type="button" id="peer-nick-save">Kaydet</button></div></div>
+      <div class="pf-row" id="blk-haptic"><span class="pf-l">Titreşim</span><div class="pf-v"><button type="button" class="pf-sw on" role="switch" aria-checked="true" aria-label="Titreşim" data-seg="seg-haptic"></button><div class="seg" id="seg-haptic" style="display:none"><button type="button" class="seg-btn active" data-val="on" aria-pressed="true">Açık</button><button type="button" class="seg-btn" data-val="off" aria-pressed="false">Kapalı</button></div></div></div>
     </div>
-    </div></div></div>
   </div>
-  <div class="set-block sb-nick sb-peernick" id="blk-peernick">
-    <div class="set-title"><span>Karşı Tarafın İsmi</span><span class="set-val"></span></div>
-    <div class="set-collapse"><div class="set-clip"><div class="set-body">
-    <div class="peer-nick-row">
-      <input id="peer-nick-input" type="text" maxlength="40" placeholder="İsim (boş = isimsiz)" autocomplete="off" autocorrect="off" spellcheck="false" name="peer-label" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
-      <button type="button" id="peer-nick-save">Kaydet</button>
+  <div class="set-block pf-sec" id="blk-setup">
+    <div class="pf-st">Kurulum</div>
+    <div class="pf-card">
+      <div class="pf-row stk"><div class="pf-v"><div class="seg" id="seg-setup"><button type="button" class="seg-btn" id="setup-show-btn">Göster</button><button type="button" class="seg-btn danger" id="setup-reset-btn">Sıfırla</button></div></div></div>
     </div>
-    </div></div></div>
-  </div>
-  <div class="set-block" id="blk-haptic">
-    <div class="set-title"><span>Titreşim</span><span class="set-val"></span></div>
-    <div class="set-collapse"><div class="set-clip"><div class="set-body">
-    <div class="seg" id="seg-haptic">
-      <button type="button" class="seg-btn active" data-val="on" aria-pressed="true">Açık</button>
-      <button type="button" class="seg-btn" data-val="off" aria-pressed="false">Kapalı</button>
-    </div></div></div></div>
-  </div>
-  <div class="set-block" id="blk-setup">
-    <div class="set-title"><span>Kurulum</span><span class="set-val"></span></div>
-    <div class="set-collapse"><div class="set-clip"><div class="set-body">
-    <div class="seg" id="seg-setup">
-      <button type="button" class="seg-btn" id="setup-show-btn">Göster</button>
-      <button type="button" class="seg-btn danger" id="setup-reset-btn">Sıfırla</button>
-    </div></div></div></div>
   </div>
 </div>
   </div>
@@ -3338,7 +3274,7 @@ codesModal.addEventListener('click', (e) => { if (e.target === codesModal) close
 (function initStorageModal() {
   const blk = document.getElementById('blk-setup'), modal = document.getElementById('stor-modal');
   if (!blk || !modal) return;
-  const title = blk.querySelector('.set-title');
+  const title = blk.querySelector('.pf-st');
   const QUOTA = 10 * 1024 * 1024; // Chromium (Chrome/Opera Android): origin başına 10 MiB, anahtar+değer UTF-16 bayt olarak sayılır
   const fmt = (b) => b < 1024 ? b + ' B' : (b / 1024 < 1024 ? (b / 1024).toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' KB' : (b / 1048576).toLocaleString('tr-TR', { maximumFractionDigits: 2 }) + ' MB');
   function fill() {
@@ -3383,7 +3319,7 @@ codesModal.addEventListener('click', (e) => { if (e.target === codesModal) close
   ['pointerup', 'pointercancel', 'pointerleave'].forEach((n) => title.addEventListener(n, cancel));
   title.addEventListener('contextmenu', (e) => e.preventDefault());
   // Uzun basış sonrası gelen "click" başlığı açıp kapatmasın: üst öğede yakalama aşamasında yutulur
-  blk.addEventListener('click', (e) => { if (fired && e.target.closest && e.target.closest('.set-title')) { fired = false; e.stopPropagation(); e.preventDefault(); } }, true);
+  blk.addEventListener('click', (e) => { if (fired && e.target.closest && e.target.closest('.pf-st')) { fired = false; e.stopPropagation(); e.preventDefault(); } }, true);
 })();
 resetCheck.addEventListener('change', () => { if (resetCheck.checked) resetErr.classList.remove('show'); });
 document.getElementById('reset-no').addEventListener('click', closeResetModal);
@@ -13302,17 +13238,14 @@ function pfRender() {
   try { sessionStorage.removeItem('keepSettingsState'); sessionStorage.removeItem('settingsCollapsed'); localStorage.removeItem('settingsCollapsed'); } catch (e) {}
   document.querySelectorAll('#settings-scroll .set-block').forEach((b) => b.classList.remove('collapsed'));
 })();
-/* ---- Grup başlığında seçili ayarın kısa adı ---- */
+/* ---- Aç/kapa anahtarları: gizli seçenek tuşlarının ilkini (Göster/Açık) izler; basınca diğerine basar ---- */
 (function () {
   const menu = document.getElementById('settings-scroll');
+  const bt = (s) => menu.querySelectorAll('#' + s.dataset.seg + ' .seg-btn');
   function update() {
-    menu.querySelectorAll('.set-block').forEach((b) => {
-      const v = b.querySelector('.set-val');
-      if (!v) return;
-      const a = b.querySelector('.seg-btn.active');
-      v.textContent = a ? (a.dataset.short || a.textContent.trim()) : '';
-    });
+    menu.querySelectorAll('.pf-sw[data-seg]').forEach((s) => { const on = bt(s)[0].classList.contains('active'); s.classList.toggle('on', on); s.setAttribute('aria-checked', on); });
   }
+  menu.addEventListener('click', (e) => { const s = e.target.closest('.pf-sw[data-seg]'); if (s) bt(s)[s.classList.contains('on') ? 1 : 0].click(); });
   update();
   new MutationObserver(update).observe(menu, { attributes: true, attributeFilter: ['class'], subtree: true });
 })();
