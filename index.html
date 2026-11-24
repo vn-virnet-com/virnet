@@ -9396,7 +9396,7 @@ sendBtn.addEventListener('pointerup', (event) => {
   sendBtn.classList.remove('pressed');
   if (event.pointerId !== sendPid) return;
   sendPid = null;
-  lastPointerAction = Date.now();
+  lastPointerAction = Date.now(); window.__sendAt = lastPointerAction;
   try { sendBtn.releasePointerCapture(event.pointerId); } catch (e) {}
   const r = sendBtn.getBoundingClientRect();
   const inside = event.clientX >= r.left - 12 && event.clientX <= r.right + 12 &&
@@ -9410,6 +9410,7 @@ sendBtn.addEventListener('pointercancel', () => { sendBtn.classList.remove('pres
 sendBtn.addEventListener('lostpointercapture', () => sendBtn.classList.remove('pressed'));
 sendBtn.addEventListener('contextmenu', (e) => e.preventDefault());
 sendBtn.addEventListener('click', () => {
+  window.__sendAt = Date.now();
   if (Date.now() - lastPointerAction < 700) return;
   if (recLocked && recMR) { stopRec(true); return; }
   sendMessage();
@@ -11713,7 +11714,7 @@ function goPanel(idx) {
     w.classList.toggle('mx-on', on); b.setAttribute('aria-expanded', on);
     if (on) fit(); else { b.style.width = ''; if (hadFocus) setTimeout(refocus, 120); else if (window.matchMedia('(pointer: coarse)').matches) setTimeout(silentFocus, 120); }
   }
-  b.addEventListener('click', () => set(!w.classList.contains('mx-on')));   // açıkken Leap satırına basınca da kapanır
+  b.addEventListener('click', () => { if (Date.now() - (window.__sendAt || 0) < 600) return; set(!w.classList.contains('mx-on')); });   // gönder tuşuna basınca altta beliren ··· tuşuna sahte tık düşmesin   // açıkken Leap satırına basınca da kapanır
   // Menüdeki tuşlardan biri kullanılınca menü kapanır, normal yazma satırı döner (not tuşu click üretmez, pointerup ile çalışır: kısa gecikmeyle kapanır)
   const KEYS = '#eye-btn, #notes-btn, #refresh-btn, #live-toggle';
   row.addEventListener('click', (e) => { if (e.target.closest(KEYS)) setTimeout(() => set(false), 0); }, true);
