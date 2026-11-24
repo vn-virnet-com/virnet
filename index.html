@@ -10662,23 +10662,8 @@ function setView(v) {
 }
 
 function noteIncomingMessage(info) {
-  /* APK: karşıdan mesaj geldi. Uygulama ekranda değilse yerel "Yeni mesaj" bildirimi gösterilir. Köprüye içerik/isim GÖNDERİLMEZ (sabit 'm'). */
-  try { if (window.VNApp && typeof window.VNApp.notify === 'function') window.VNApp.notify('m'); } catch (e) {}
   if (isMobileLayout() && view === 'notes') { unreadMsgs = true; updateBadges(); restartBadgeBlink(newMsgBadge); try { chatToastFor(info); } catch (e) {} }
 }
-
-/* APK: bildirime basılınca uygulama açılır ve odak mesaj kutusuna gelir. PIN kilidi / örtü / devre dışı kutu varsa dokunmaz; odaklandıysa true döner. */
-window.vnFocusInput = function () {
-  try {
-    if (document.documentElement.classList.contains('pin-locked')) return false;
-    var cv = document.getElementById('privacy-cover');
-    if (cv && cv.classList.contains('show')) return false;
-    if (isMobileLayout() && view !== 'chat') setView('chat');
-    if (!messageInput || messageInput.disabled) return false;
-    messageInput.focus();
-    return document.activeElement === messageInput;
-  } catch (e) { return false; }
-};
 
 function noteIncomingNotif() {
   if (isMobileLayout() && view === 'chat') { unreadNotes = true; updateBadges(); restartBadgeBlink(newNotesBadge); }
@@ -13769,18 +13754,6 @@ function pfRender() {
       if (document.documentElement.classList.contains('pin-locked')) return;
       var e = els();
       if (e.cover && !e.cover.classList.contains('show') && e.eye) e.eye.click();
-    } catch (err) {}
-  };
-  /* APK tamamen kapatılıp (son uygulamalardan kaydırılıp) yeniden açılınca WebView arka planda yaşamaya devam eder; eskiden olduğu gibi PIN yeniden sorulur */
-  window.__vnReopen = function () {
-    try {
-      var cv = document.getElementById('privacy-cover');
-      if (cv && cv.classList.contains('show')) return;   /* 3828: örtü zaten PIN bekliyor */
-      if (!(localStorage.getItem('myId') && localStorage.getItem('friendId'))) return;   /* kurulum ekranında PIN yok */
-      if (typeof window.pinAsk !== 'function') return;
-      sessionStorage.removeItem('pinOk'); sessionStorage.removeItem('pinLive');
-      try { window.dispatchEvent(new Event('pin-level')); } catch (e) {}
-      window.pinAsk();
     } catch (err) {}
   };
   window.__vnFg = function () {
