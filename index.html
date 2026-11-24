@@ -1606,6 +1606,7 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
 .pf-set .seg-btn { min-width: 0; padding: 7px 4px; font-size: 12.5px; font-weight: 400; white-space: nowrap; border: 0; border-radius: 0; background: var(--c-000); color: var(--c-88); box-shadow: none; }
 .pf-set .seg-btn.active { background: var(--c-1a); color: var(--c-fff); box-shadow: inset 0 0 0 2px var(--accent); }
 .pf-set .seg-btn.danger { background: var(--dng-bg); color: #fff; }
+.pf-set .seg-btn:disabled, .pf-set .seg-btn.disabled { opacity: .35; cursor: not-allowed; pointer-events: none; filter: grayscale(1); }
 .pf-set .seg-btn.danger:active { background: var(--dng-bg-a); }
 /* Köşe düzeltmesi: kapsayıcı (.seg) kenarlık içinden r-md - 1px ile kırpılıyor; uçtaki butonların dış köşeleri de aynı eğriyi almalı, yoksa aktif çerçeve köşede kesik görünür */
 .pf-set .seg-btn:first-child { border-top-left-radius: calc(var(--r-md) - 1px); border-bottom-left-radius: calc(var(--r-md) - 1px); }
@@ -2257,6 +2258,12 @@ body.gm-on #leap-hud { display: none !important; }
       <div class="pf-st">Görünüm</div>
       <div class="pf-card">
         <div class="pf-row stk"><span class="pf-l">Tema</span><div class="pf-v"><div class="seg" id="seg-theme"><button type="button" class="seg-btn active" data-val="black" aria-pressed="true">Siyah</button><button type="button" class="seg-btn" data-val="gray" aria-pressed="false">Gri</button><button type="button" class="seg-btn" data-val="blue" aria-pressed="false">Mavi</button><button type="button" class="seg-btn" data-val="purple" aria-pressed="false">Mor</button></div></div></div>
+      </div>
+    </div>
+    <div class="pf-sec pf-set" id="blk-content">
+      <div class="pf-st">İçerik</div>
+      <div class="pf-card">
+        <div class="pf-row stk"><span class="pf-l">+18</span><div class="pf-v"><div class="seg" id="seg-adult"><button type="button" class="seg-btn" data-val="none" aria-pressed="false">Yok</button><button type="button" class="seg-btn active" data-val="limited" aria-pressed="true">Kısıtlı</button><button type="button" class="seg-btn" data-val="free" aria-pressed="false" aria-disabled="true" disabled>Serbest</button></div></div></div>
       </div>
     </div>
     <div class="pf-sec pf-set" id="blk-setup">
@@ -3457,6 +3464,7 @@ function setupConnection(c) {
     adjustInputHeight();
     sendQNote('qnote-hello');
     sendLeap('leap-hello');
+    try { sendAdult('adult-hello'); } catch (e) {}
     try { pfHello(); } catch (e) {}
     flushNotifOutbox();
     flushOutbox(true);
@@ -3499,6 +3507,7 @@ function setupConnection(c) {
     if (data.type === 'rec')      { showRecIndicator(); return; }
     if (data.type === 'rec-stop') { hideRecIndicator(); return; }
     if (data.type === 'leap' || data.type === 'leap-hello') { receiveLeap(data); return; }
+    if (data.type === 'adult' || data.type === 'adult-hello') { receiveAdult(data); return; }
     if (data.type === 'prof' || data.type === 'prof-hello') { receiveProfile(data); return; }
     if (data.type === 'prof-photo') { receivePhoto(data); return; }
     if (data.type === 'prof-photo-meta') { receivePhotoMeta(data); return; }
@@ -11802,6 +11811,47 @@ function goPanel(idx) {
         try { document.dispatchEvent(new CustomEvent('themechange', { detail: val })); } catch (e) {}
       };
       commit();
+    });
+  });
+})();
+
+/* ---- İçerik > +18: Yok / Kısıtlı / Serbest. Serbest seçilemez. İki taraf ortaktır; en son seçenin ayarı iki tarafta da geçerli olur (Leap gibi rev + by) ---- */
+let adultVal = (lsGet('adultVal') === 'none') ? 'none' : 'limited';
+let adultRev = parseInt(lsGet('adultRev') || '0', 10) || 0;
+let adultBy = lsGet('adultBy') || '';
+const adultDevId = (() => { let v = lsGet('adultDevId'); if (!v) { v = 'a' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4); lsSet('adultDevId', v); } return v; })();
+function adultPersist() { lsSet('adultVal', adultVal); lsSet('adultRev', String(adultRev)); lsSet('adultBy', adultBy); }
+function adultRender() {
+  Array.prototype.slice.call(document.querySelectorAll('#seg-adult .seg-btn')).forEach((b) => {
+    const on = b.dataset.val === adultVal;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+function sendAdult(type) {
+  if (!isConnected()) return;
+  try { conn.send({ type: type, v: adultVal, rev: adultRev, by: adultBy }); } catch (e) {}
+}
+function receiveAdult(d) {
+  if (!d || (d.v !== 'none' && d.v !== 'limited')) return;
+  if (typeof d.rev !== 'number' || !isFinite(d.rev)) return;
+  const by = (typeof d.by === 'string') ? d.by : '';
+  const newer = d.rev > adultRev || (d.rev === adultRev && by > adultBy);
+  if (!newer) return;
+  adultVal = d.v; adultRev = d.rev; adultBy = by;
+  adultPersist(); adultRender();
+}
+(function initAdultSetting() {
+  if (!adultBy) adultBy = adultDevId;
+  adultRender();
+  Array.prototype.slice.call(document.querySelectorAll('#seg-adult .seg-btn')).forEach((b) => {
+    b.addEventListener('pointerdown', (e) => e.preventDefault());
+    b.addEventListener('click', () => {
+      const v = b.dataset.val;
+      if (v !== 'none' && v !== 'limited') return;   // Serbest seçilemez
+      if (v === adultVal) return;
+      adultVal = v; adultRev = Math.max(adultRev + 1, Date.now()); adultBy = adultDevId;
+      adultPersist(); adultRender(); sendAdult('adult');
     });
   });
 })();
