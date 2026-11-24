@@ -813,6 +813,9 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 #viewer-dl.busy { opacity: 0.45; pointer-events: none; }
 /* Arama kartı (sohbet balonunda) */
 .call-body { cursor: default; }
+/* Arama / çevirme kartları: tepki, yanıt, düzenleme, silme, kopyalama yok */
+.msg[data-callcard="1"] .msg-foot, .msg[data-callcard="1"] .react-slot { display: none !important; }
+.msg[data-callcard="1"], .msg[data-callcard="1"] .msg-body, .msg[data-callcard="1"] .call-card, .msg[data-callcard="1"] .dial-card { -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important; }
 .call-card { display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 170px; padding: 4px 2px 2px; }
 .call-title { font-weight: 700; text-align: center; overflow-wrap: anywhere; }
 .call-btns { display: flex; gap: 18px; justify-content: center; }
@@ -4180,7 +4183,7 @@ chatArea.addEventListener('pointerover', (e) => {
   if (e.pointerType !== 'mouse') return;
   const t = e.target;
   const m = t && t.closest ? t.closest('.msg') : null;
-  setHov(m && !m.classList.contains('typing-msg') && !m.classList.contains('live-msg') ? m : null);
+  setHov(m && m.dataset.callcard !== '1' && !m.classList.contains('typing-msg') && !m.classList.contains('live-msg') ? m : null);
 });
 chatArea.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') setHov(null); });
 function msgAtY(y) {
@@ -4206,7 +4209,7 @@ chatArea.addEventListener('click', (e) => {
     if (own) msg = own;
     else if (t === chatArea) msg = msgAtY(e.clientY);
   }
-  if (!msg || msg._deleting || msg.classList.contains('typing-msg') || msg.classList.contains('live-msg')) { closeActs(null); return; }
+  if (!msg || msg._deleting || msg.dataset.callcard === '1' || msg.classList.contains('typing-msg') || msg.classList.contains('live-msg')) { closeActs(null); return; }
   if (t.closest('button, a, input, textarea, select, audio, video, .yt-card')) return;
   try { if (window.getSelection && String(window.getSelection())) return; } catch (err) {}
   if (msg.classList.contains('acts-on')) closeActs(null);
@@ -6075,11 +6078,11 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
     textDiv.className = 'msg-body';
     const callName = callParse(text);
     if (callName !== null) {
-      msgDiv.dataset.call = '1';
+      msgDiv.dataset.call = '1'; msgDiv.dataset.callcard = '1';
       textDiv.classList.add('call-body');
       textDiv.appendChild(buildCallMsgCard(msgDiv, messageId, callName, !!isOwnMessage, persist !== false));
     } else if (dialParse(text) !== null) {
-      msgDiv.dataset.call = '1';
+      msgDiv.dataset.call = '1'; msgDiv.dataset.callcard = '1';
       textDiv.classList.add('call-body');
       textDiv.appendChild(buildDialMsgCard(msgDiv, messageId, dialParse(text), !!isOwnMessage));
     } else if (gameParse(text) !== null) {
@@ -6089,6 +6092,7 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
     } else setBodyContent(textDiv, text);
 
     msgDiv._doReply = () => {
+      if (msgDiv.dataset.callcard === '1') return;
       focusInputForReply(); // Mobilde klavye ancak kullanıcı hareketi içinde, ilk iş odaklanırsa açılır
       const activeNick = msgDiv._raw.nick;
       replyingTo = { text: gameParse(msgDiv._raw.text) !== null ? 'Oyun daveti' : (callParse(msgDiv._raw.text) !== null || dialParse(msgDiv._raw.text) !== null) ? 'Arama' : msgDiv._raw.text, nick: activeNick, targetId: messageId };
@@ -6108,7 +6112,7 @@ function appendMessage(text, senderNick, isOwnMessage, replyData = null, customI
   if (typingMsgEl && typingMsgEl.isConnected) chatArea.appendChild(typingMsgEl);
   { const ft = buildMsgFoot(msgDiv, messageId, !!isOwnMessage, 'msg'); if (ft) { msgDiv.appendChild(ft); msgDiv._foot = ft; } }
   buildReactSlot(msgDiv, !!isOwnMessage);
-  attachSwipeReply(msgDiv);
+  if (msgDiv.dataset.callcard !== '1') attachSwipeReply(msgDiv);
 
   let chMsgs;
   while ((chMsgs = chatArea.querySelectorAll('.msg:not(.live-msg):not(.typing-msg)')).length > 200) {
@@ -10328,7 +10332,7 @@ function removeMessageFromUI(id) {
 
 function deleteOwnMessage(id) {
   const el = document.getElementById(id);
-  if (!el || !el.classList.contains('own-msg')) return;
+  if (!el || el.dataset.callcard === '1' || !el.classList.contains('own-msg')) return;
   if (!isConnected()) { el.classList.remove('del-press'); setStatus('Bağlı değil, mesaj silinemedi', false); return; }
   try { conn.send({ type: 'delete', msgId: id }); } catch (e) {}
   outboxRemove(id);
@@ -10338,7 +10342,7 @@ function deleteOwnMessage(id) {
 function receiveDelete(d) {
   if (!d || typeof d.msgId !== 'string') return;
   const el = document.getElementById(d.msgId);
-  if (el && el.classList.contains('own-msg')) return;
+  if (el && (el.dataset.callcard === '1' || el.classList.contains('own-msg'))) return;
   removeMessageFromUI(d.msgId);
 }
 
@@ -10378,7 +10382,7 @@ function setReaction(el, kind, mine) {
 
 function addReaction(id, kind) {
   const el = document.getElementById(id);
-  if (!el || el.classList.contains('own-msg') || el._reaction || HEART_KINDS.indexOf(kind) === -1) return;
+  if (!el || el.dataset.callcard === '1' || el.classList.contains('own-msg') || el._reaction || HEART_KINDS.indexOf(kind) === -1) return;
   if (!isConnected()) { setStatus('Bağlı değil, tepki gönderilmedi', false); return; }
   try { conn.send({ type: 'react', msgId: id, kind: kind }); } catch (e) {}
   setReaction(el, kind, true);
@@ -10395,7 +10399,7 @@ function removeMyReaction(id) {
 function receiveReact(d) {
   if (!d || typeof d.msgId !== 'string' || HEART_KINDS.indexOf(d.kind) === -1) return;
   const el = document.getElementById(d.msgId);
-  if (!el || !el.classList.contains('own-msg') || el._reaction) return;
+  if (!el || el.dataset.callcard === '1' || !el.classList.contains('own-msg') || el._reaction) return;
   setReaction(el, d.kind, false);
 }
 
@@ -10410,14 +10414,14 @@ function findLastEditableOwn() {
   const msgs = chatArea.getElementsByClassName('msg');
   for (let i = msgs.length - 1; i >= 0; i--) {
     const m = msgs[i];
-    if (m.classList.contains('own-msg') && !m.dataset.mediaUrl) return m;
+    if (m.classList.contains('own-msg') && !m.dataset.mediaUrl && m.dataset.callcard !== '1') return m;
   }
   return null;
 }
 
 function startEdit(msgDiv) {
   if (messageInput.disabled) return;
-  if (!msgDiv || !msgDiv._raw || msgDiv.dataset.mediaUrl || msgDiv.dataset.call === '1') return;
+  if (!msgDiv || !msgDiv._raw || msgDiv.dataset.mediaUrl || msgDiv.dataset.call === '1' || msgDiv.dataset.callcard === '1') return;
   if (editingId) { if (editingId === msgDiv.id) return; endEdit(); }
   editingId = msgDiv.id;
   msgDiv.classList.add('editing');
