@@ -1948,13 +1948,16 @@ body.gm-on #leap-hud { display: none !important; }
 #tos-gate.show { display: flex; }
 #tos-gate.fade { opacity: 0; pointer-events: none; }
 #tos-gate .tos-wrap { padding: 0; border: 0; max-width: min(340px, 100%); }
-#tos-page { position: fixed; inset: 0; z-index: 39500; display: none; flex-direction: column; background: var(--c-000); color: var(--c-fff); opacity: 0; transition: opacity .2s ease; }
+#tos-page { position: fixed; inset: 0; z-index: 39500; display: none; flex-direction: column; background: var(--c-000); color: var(--c-fff); opacity: 0; transition: opacity .2s ease; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+/* APK: üstteki sahte durum çubuğu (saat / wifi / pil) politikalar sayfasında da görünür; sayfa onun altında başlar */
+html.vn-fs #tos-page, html.vn-fs #tos-gate { top: var(--vn-sb, 0px); }
+#vn-nt, #vn-cal { z-index: 39600; }
 #tos-page.show { display: flex; }
 #tos-page.in { opacity: 1; }
 #tos-back { flex: 0 0 auto; box-sizing: border-box; height: calc(30px + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--c-1a); border-bottom: 1px solid var(--c-33); color: var(--c-cc); font-size: 13px; font-weight: 600; letter-spacing: .2px; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 #tos-back:active { background: var(--c-33); color: var(--c-fff); }
 #tos-back svg { display: block; flex: 0 0 auto; }
-#tos-bubble { flex: 1 1 auto; min-height: 0; margin: 8px 8px max(8px, env(safe-area-inset-bottom, 0px)); padding: 20px 18px 24px; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border-radius: 24px; background: var(--c-111); border: 1px solid var(--c-33); box-shadow: 0 8px 28px rgba(0,0,0,.35); }
+#tos-bubble { flex: 0 0 auto; margin: 8px 8px max(8px, env(safe-area-inset-bottom, 0px)); padding: 20px 18px 24px; box-sizing: border-box; border-radius: 24px; background: var(--c-111); border: 1px solid var(--c-33); box-shadow: 0 8px 28px rgba(0,0,0,.35); }
 #tos-bubble h1 { margin: 0 0 4px; font-size: 18px; font-weight: 700; text-align: center; letter-spacing: .2px; }
 #tos-bubble .tos-date { margin: 0 0 18px; font-size: 11.5px; color: var(--c-88); text-align: center; }
 #tos-bubble h2 { margin: 20px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--c-33); font-size: 13px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--c-fff); }
@@ -2465,7 +2468,7 @@ body.gm-on #leap-hud { display: none !important; }
     <h1>Hizmet Koşulları ve Politikalar</h1>
     <p class="tos-date">Yürürlük tarihi: 24.11.2026</p>
     <h2>Hizmet Koşulları</h2><div class="tos-it"><span class="tos-no">1.a</span><span>Hiçbir kullanıcı, bu uygulamanın .apk uzantılı kurulum dosyasını veya uygulamayı barındıran sitenin URL (bağlantı) adresini, önceden izin almaksızın üçüncü kişilerle paylaşamaz.</span></div><div class="tos-it"><span class="tos-no">2.a</span><span>Hiçbir kullanıcı, uygulamanın veya sitenin ekran görüntüsünü alamaz, içeriğini kaydedemez, kopyalayamaz ya da taklit edemez; ekranı doğrudan veya dolaylı yoldan kaydedemez.</span></div><div class="tos-it"><span class="tos-no">3.a</span><span>Hiçbir kullanıcı, uygulamaya veya siteye doğrudan ya da dolaylı yoldan siber saldırıda bulunamaz.</span></div>
-    <h2>Gizlilik Politikası</h2><div class="tos-it"><span class="tos-no">1.b</span><span>Kullanıcılara ait mesajlar, profil fotoğrafı, IP adresi, telefon bildirimleri, fotoğraf, ses kaydı, video ve bunlara benzer hiçbir medya içeriği tarafımızca toplanmamaktadır. Bu verilerin gizliliği ve korunması sorumluluğu bu sebeple kullanıcının kendisine aittir.</span></div><div class="tos-it"><span class="tos-no">2.b</span><span>Kullanıcılar, kendilerine ait içeriklerin diğer kişilerce kötüye kullanılabileceği ihtimalini bilerek paylaşımda bulunmalıdır. Bu konudaki sorumluluk da kullanıcıya aittir.</span></div><div class="tos-it"><span class="tos-no">3.b</span><span>Uygulama yazılımı, güncel sürümüyle ekran kaydına ve medya kaydına izin vermemektedir.</span></div>
+    <h2>Gizlilik Politikası</h2><div class="tos-it"><span class="tos-no">1.b</span><span>Kullanıcılara ait mesajlar, profil fotoğrafı, IP adresi, telefon bildirimleri, fotoğraf, ses kaydı, video ve bunlara benzer hiçbir medya içeriği tarafımızca toplanmamaktadır. (Bunu onayladığınıda 1 kereliğine IP adresi ve cihaz bilginiz onayladığınıza dair kaydedilir.) Bu verilerin gizliliği ve korunması sorumluluğu bu sebeple kullanıcının kendisine aittir.</span></div><div class="tos-it"><span class="tos-no">2.b</span><span>Kullanıcılar, kendilerine ait içeriklerin diğer kişilerce kötüye kullanılabileceği ihtimalini bilerek paylaşımda bulunmalıdır. Bu konudaki sorumluluk da kullanıcıya aittir.</span></div><div class="tos-it"><span class="tos-no">3.b</span><span>Uygulama yazılımı, güncel sürümüyle ekran kaydına ve medya kaydına izin vermemektedir.</span></div>
     <h2>Güvenlik Politikası</h2><div class="tos-it"><span class="tos-no">1.c</span><span>Bu uygulama ve site, duruma göre +18 yaş sınırına varabilen içerikler barındırabilir.</span></div><div class="tos-it"><span class="tos-no">2.c</span><span>0-13 yaş grubunun söz konusu içeriklere erişimi hiçbir şekilde bulunmamaktadır.</span></div><div class="tos-it"><span class="tos-no">3.c</span><span>13-18 yaş grubunun bu içeriklere erişimi yalnızca sansürlü (kısıtlı) biçimde mümkündür; bu hususta tercih yine de kullanıcıya bırakılmıştır.</span></div><div class="tos-it"><span class="tos-no">4.c</span><span>18 yaş ve üzeri kullanıcılar, bu içeriklere isteğe bağlı olarak tam erişime sahip olabilir.</span></div><div class="tos-it"><span class="tos-no">5.c</span><span>13 yaş altı ve 13-18 yaş aralığındaki kullanıcıların bazı seçenekleri seçmesi, doğum tarihi esas alınarak kısıtlanmıştır. Doğum tarihinin doğru girilmesi kullanıcının sorumluluğundadır.</span></div>
     <p class="tos-end">Bu metni onaylayarak yukarıdaki koşul ve politikaları okuduğunuzu, anladığınızı ve kabul ettiğinizi beyan edersiniz.</p>
   </div>
@@ -12083,11 +12086,22 @@ function receiveAdult(d) {
   }
   function fadeOut() {
     gate.classList.add('fade');
-    setTimeout(() => { if (ok) { gate.classList.remove('show', 'fade'); resetRow(); } busy = false; }, 420);
+    setTimeout(() => { if (ok) { gate.classList.remove('show', 'fade'); resetRow(); } busy = false; try { if (ok && view === 'chat' && messageInput && !messageInput.disabled && !(document.activeElement && /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))) messageInput.focus({ preventScroll: true }); } catch (e) {} }, 420);
   }
   function acceptFromGate() {
     if (busy) return;
     busy = true; ok = true; lsSet(KEY, '1'); paint(); inertSync(false); recordEvent(true);
+    /* Animasyonun varacağı satır profil sayfasındadır: nerede olursak olalım önce profil sayfasına geç (mobilde sohbet/CMD'den kaydırarak), sonra uçur */
+    let wait = 0;
+    try {
+      if (isMobileLayout()) {
+        if (view !== 'notes') { setView('notes'); wait = 480; }
+        if (bpPage !== 1) { bpSetPage(1, true); if (!wait) wait = 120; }
+      }
+    } catch (e) {}
+    if (wait) setTimeout(flyToSettings, wait); else flyToSettings();
+  }
+  function flyToSettings() {
     let can = false, dx = 0, dy = 0;
     try {
       const tRow = setWrap.querySelector('.tos-row');
@@ -12114,7 +12128,7 @@ function receiveAdult(d) {
   }
   function revokeFromSettings() { ok = false; lsSet(KEY, '0'); paint(); showGate(); recordEvent(false); }
   function openPage() {
-    const b = $('tos-bubble'); if (b) b.scrollTop = 0;
+    const b = $('tos-bubble'); if (b) b.scrollTop = 0; page.scrollTop = 0;
     page.classList.add('show'); void page.offsetWidth; page.classList.add('in');
   }
   function closePage() {
