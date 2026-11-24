@@ -8698,6 +8698,7 @@ function buildDialMsgCard(msgDiv, id, name, own) {
   const card = buildDialCard(savedName || name, own);
   msgDiv._dialCard = card;
   if (!own) card._rename = (nn) => { if (card._state !== 'wait') { card._set(card._state); return; } dialSetName(id, nn, true); };
+  if (!own) card._set(card._state);   // _rename kart ilk çizildikten sonra atanıyordu; isim düzenlenebilsin diye yeniden çiz
   card._pick = (code, reason) => {
     if (own || card._state !== 'wait') return;
     if (Date.now() - menuOpenedAt < 600) return;
