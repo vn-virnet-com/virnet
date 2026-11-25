@@ -2195,6 +2195,7 @@ else { root.classList.add('pin-locked'); }
   <div id="bp-slider">
   <div id="bp-page-main" class="bp-page">
   <div id="bp-list"></div>
+  <div id="wx" data-ph="m" aria-label="Hava durumu"></div>
   <div id="bp-add" title="Bildirim gönder"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
   <div id="bp-compose">
     <input id="bp-title-in" type="text" placeholder="Başlık" maxlength="120" autocomplete="off" autocorrect="off" spellcheck="false">
@@ -13348,6 +13349,183 @@ guard();
 })();
 </script>
 
+<style id="wx-css">
+#bell-pop #bp-list { bottom: 50%; padding: 0 0 12px; }
+#bp-page-main #bp-add { bottom: calc(50% + 12px); }
+#wx { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; padding: 10px; color: #fff; border-top: 1px solid var(--c-33); -webkit-user-select: none; user-select: none; text-shadow: 0 1px 2px rgba(0,0,0,.25); }
+#wx .wx-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none; }
+#wx .wx-bg i { position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0; transition: opacity 1.2s ease; }
+#wx[data-ph="m"] .wx-bg .m, #wx[data-ph="n"] .wx-bg .n, #wx[data-ph="g"] .wx-bg .g { opacity: 1; }
+#wx .wx-bg .m { background: radial-gradient(circle at 82% 12%, rgba(255,240,180,.6) 0, rgba(255,240,180,0) 36%), linear-gradient(180deg, #2b78c2 0%, #59a6df 55%, #9dd0f0 100%); }
+#wx .wx-bg .n { background: radial-gradient(circle at 18% 104%, rgba(255,216,120,.75) 0, rgba(255,216,120,0) 55%), linear-gradient(180deg, #6d3a8c 0%, #d0553f 58%, #f2a24c 100%); }
+#wx .wx-bg .g { background: radial-gradient(1.6px 1.6px at 12% 16%, #fff 50%, transparent 55%), radial-gradient(1.2px 1.2px at 34% 9%, #dfe6ff 50%, transparent 55%), radial-gradient(1.6px 1.6px at 58% 20%, #fff 50%, transparent 55%), radial-gradient(1.2px 1.2px at 78% 8%, #dfe6ff 50%, transparent 55%), radial-gradient(1.4px 1.4px at 91% 24%, #fff 50%, transparent 55%), radial-gradient(1.2px 1.2px at 22% 34%, #dfe6ff 50%, transparent 55%), linear-gradient(180deg, #070b22 0%, #121b45 60%, #232d63 100%); }
+#wx .wx-top, #wx .wx-mid, #wx .wx-days { position: relative; z-index: 1; }
+#wx .wx-top { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; font-weight: 700; letter-spacing: .1px; }
+#wx .wx-tm { font-variant-numeric: tabular-nums; opacity: .95; }
+#wx .wx-mid { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+#wx .wx-ic { width: clamp(52px, 12vh, 88px); height: clamp(52px, 12vh, 88px); display: flex; align-items: center; justify-content: center; }
+#wx .wx-ic svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 3px 6px rgba(0,0,0,.25)); }
+#wx .wx-t { font-size: clamp(28px, 6.6vh, 44px); font-weight: 700; line-height: 1.05; min-height: 1em; }
+#wx .wx-d { font-size: 13px; font-weight: 600; opacity: .92; min-height: 1.2em; }
+#wx .wx-days { flex: 0 0 auto; display: flex; gap: 6px; }
+#wx .wx-day { flex: 1 1 0; min-width: 0; height: clamp(86px, 15vh, 112px); box-sizing: border-box; padding: 7px 2px 8px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; border-radius: 14px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.2); pointer-events: none; }
+#wx .wx-dn { font-size: 10.5px; font-weight: 700; opacity: .92; line-height: 1; }
+#wx .wx-di { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; }
+#wx .wx-di svg { display: block; width: 100%; height: 100%; }
+#wx .wx-dt { font-size: 10px; font-weight: 700; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; letter-spacing: -.2px; }
+.wx-sp { display: block; box-sizing: border-box; width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.28); border-top-color: #fff; animation: wxspin .9s linear infinite; }
+.wx-sp.wx-sp-l { width: 34px; height: 34px; border-width: 3.5px; }
+.wx-sp.wx-sp-s { width: 10px; height: 10px; border-width: 2px; }
+@keyframes wxspin { to { transform: rotate(360deg); } }
+#vn-sysbar .vs-lw .vs-l { height: auto; align-self: center; box-sizing: border-box; max-width: none; overflow: visible; margin: 0; padding: 1.5px 6px; gap: 4px; border-radius: 6px; font-weight: 700; color: #fff; background: #2f7fc4; transition: background-color 1s ease; pointer-events: none; cursor: default; }
+html[data-wxph="n"] #vn-sysbar .vs-lw .vs-l { background: #d2701c; }
+html[data-wxph="g"] #vn-sysbar .vs-lw .vs-l { background: #2b3070; }
+#vn-sysbar .vs-l svg { display: block; width: 12px; height: 12px; flex: 0 0 auto; }
+#vn-sysbar .vs-l .wx-l-i, #vn-sysbar .vs-l .wx-l-t { display: block; line-height: 1; }
+</style>
+<script>(function vnWeather() {
+'use strict';
+var root = document.getElementById('wx');
+if (!root) return;
+var URL_ = 'https://api.open-meteo.com/v1/forecast?latitude=41.0186&longitude=28.9397&hourly=temperature_2m,weather_code&timezone=Europe%2FIstanbul&past_days=1&forecast_days=6';
+var KEY = 'vnWxIstanbul', STALE = 20 * 60 * 1000, RETRY = 60 * 1000;
+var DN = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+var store = {}, nextTry = 0, busy = false, lastMin = '', lastKey = '', lastLabel = null, cache = {};
+function z(n) { return ('0' + n).slice(-2); }
+function nowIst() {
+var d = new Date();
+try {
+var o = {};
+new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Istanbul', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(d).forEach(function (x) { o[x.type] = x.value; });
+if (o.year && o.hour) return { key: o.year + '-' + o.month + '-' + o.day, h: (+o.hour) % 24, m: +o.minute };
+} catch (e) {}
+return { key: d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()), h: d.getHours(), m: d.getMinutes() };
+}
+function addDays(k, n) { var a = k.split('-'), d = new Date(Date.UTC(+a[0], +a[1] - 1, +a[2] + n)); return d.getUTCFullYear() + '-' + z(d.getUTCMonth() + 1) + '-' + z(d.getUTCDate()); }
+function dow(k) { var a = k.split('-'); return new Date(Date.UTC(+a[0], +a[1] - 1, +a[2])).getUTCDay(); }
+function phaseOf(h) {
+if (h >= 7 && h < 16) return { ph: 'm', slot: 's12', off: 0 };
+if (h >= 16 && h < 21) return { ph: 'n', slot: 's16', off: 0 };
+return { ph: 'g', slot: 's21', off: h < 7 ? -1 : 0 };
+}
+function kind(c) {
+if (c === 0 || c === 1) return 'clear';
+if (c === 2) return 'partly';
+if (c === 45 || c === 48) return 'fog';
+if (c >= 51 && c <= 57) return 'drizzle';
+if ((c >= 61 && c <= 67) || (c >= 80 && c <= 82)) return 'rain';
+if ((c >= 71 && c <= 77) || c === 85 || c === 86) return 'snow';
+if (c >= 95) return 'thunder';
+return 'cloud';
+}
+var DESC = { clear: 'Açık', partly: 'Parçalı bulutlu', cloud: 'Bulutlu', fog: 'Sisli', drizzle: 'Çisenti', rain: 'Yağmurlu', snow: 'Karlı', thunder: 'Gök gürültülü' };
+var CL = 'M15 37a9 9 0 0 1-1.4-17.9 12 12 0 0 1 23.2 2.9A7.5 7.5 0 0 1 36.5 37z';
+function cloud(f, t) { return '<path transform="' + t + '" fill="' + f + '" d="' + CL + '"/>'; }
+function sunP(cx, cy, r) {
+var s = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#FFC83D"/>', i, a;
+for (i = 0; i < 8; i++) {
+a = i * Math.PI / 4;
+s += '<line x1="' + (cx + Math.cos(a) * (r + 3)).toFixed(1) + '" y1="' + (cy + Math.sin(a) * (r + 3)).toFixed(1) + '" x2="' + (cx + Math.cos(a) * (r + 6.2)).toFixed(1) + '" y2="' + (cy + Math.sin(a) * (r + 6.2)).toFixed(1) + '" stroke="#FFC83D" stroke-width="2.6" stroke-linecap="round"/>';
+}
+return s;
+}
+function moonP(t) { return '<path transform="' + t + '" fill="#F6E7A8" d="M22.85 9.02A15 15 0 1 0 35.71 30.08A12.5 12.5 0 0 1 22.85 9.02z"/>'; }
+function icon(k, night) {
+var s;
+if (k === 'clear') s = night ? moonP('translate(1 0)') : sunP(24, 24, 9);
+else if (k === 'partly') s = (night ? moonP('translate(-6 -3) scale(.8)') : sunP(17, 17, 7)) + cloud('#E8EEF7', 'translate(5 8) scale(.82)');
+else if (k === 'cloud') s = cloud('#A9B8CE', 'translate(14 -1) scale(.66)') + cloud('#E8EEF7', 'translate(0 7) scale(.92)');
+else if (k === 'fog') s = cloud('#DCE4F0', 'translate(3 -5) scale(.86)') + '<g stroke="#CBD5E4" stroke-width="2.6" stroke-linecap="round"><line x1="9" y1="33" x2="39" y2="33"/><line x1="14" y1="38.5" x2="40" y2="38.5"/><line x1="9" y1="44" x2="33" y2="44"/></g>';
+else if (k === 'drizzle') s = cloud('#D5DEEB', 'translate(3 -3) scale(.88)') + '<g stroke="#7CC4FF" stroke-width="2.4" stroke-linecap="round"><line x1="16" y1="34" x2="14.6" y2="38"/><line x1="24" y1="36" x2="22.6" y2="40"/><line x1="32" y1="34" x2="30.6" y2="38"/></g>';
+else if (k === 'rain') s = cloud('#D5DEEB', 'translate(3 -3) scale(.88)') + '<g stroke="#4DB0FF" stroke-width="2.8" stroke-linecap="round"><line x1="16" y1="34" x2="13.6" y2="42"/><line x1="24" y1="34" x2="21.6" y2="42"/><line x1="32" y1="34" x2="29.6" y2="42"/></g>';
+else if (k === 'snow') s = cloud('#D5DEEB', 'translate(3 -3) scale(.88)') + '<g fill="#fff"><circle cx="16" cy="36" r="2.4"/><circle cx="24" cy="41" r="2.4"/><circle cx="32" cy="36" r="2.4"/></g>';
+else s = cloud('#9AA8BE', 'translate(3 -4) scale(.88)') + '<polygon fill="#FFD23F" points="26,26 18,38 24,38 21,47 32,33 26,33 30,26"/>';
+return '<svg viewBox="0 0 48 48" aria-hidden="true">' + s + '</svg>';
+}
+var SPIN = '<span class="wx-sp"></span>';
+try {
+var sv = JSON.parse(localStorage.getItem(KEY) || 'null');
+if (sv && sv.d && typeof sv.d === 'object') { store = sv.d; nextTry = (+sv.at || 0) + STALE; }
+} catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify({ at: Date.now(), d: store })); } catch (e) {} }
+function prune(n) {
+var min = n.h < 7 ? addDays(n.key, -1) : n.key, k, ch = false;
+for (k in store) if (store.hasOwnProperty(k) && k < min) { delete store[k]; ch = true; }
+return ch;
+}
+function cur() {
+var n = nowIst(), p = phaseOf(n.h), rec = store[addDays(n.key, p.off)];
+return { n: n, ph: p.ph, v: (rec && rec[p.slot]) || null };
+}
+root.innerHTML = '<div class="wx-bg"><i class="m"></i><i class="n"></i><i class="g"></i></div>'
++ '<div class="wx-top"><span class="wx-pl">İstanbul Geneli</span><span class="wx-tm"></span></div>'
++ '<div class="wx-mid"><div class="wx-ic"></div><div class="wx-t"></div><div class="wx-d"></div></div>'
++ '<div class="wx-days">' + [0, 1, 2, 3, 4].map(function () { return '<div class="wx-day"><span class="wx-dn"></span><span class="wx-di"></span><span class="wx-dt"></span></div>'; }).join('') + '</div>';
+var elTm = root.querySelector('.wx-tm'), elIc = root.querySelector('.wx-ic'), elT = root.querySelector('.wx-t'), elD = root.querySelector('.wx-d');
+var cards = Array.prototype.slice.call(root.querySelectorAll('.wx-day')).map(function (c) { return { n: c.querySelector('.wx-dn'), i: c.querySelector('.wx-di'), t: c.querySelector('.wx-dt') }; });
+function put(k, el, v, html) { if (cache[k] === v) return; cache[k] = v; if (html) el.innerHTML = v; else el.textContent = v; }
+function render() {
+var c = cur(), n = c.n, i, k, rec, ic, a, b, s;
+if (prune(n)) save();
+if (cache.ph !== c.ph) { cache.ph = c.ph; root.setAttribute('data-ph', c.ph); document.documentElement.setAttribute('data-wxph', c.ph); }
+put('tm', elTm, z(n.h) + ':' + z(n.m));
+if (c.v) { k = kind(c.v[1]); put('ic', elIc, icon(k, c.ph === 'g'), true); put('t', elT, c.v[0] + '°C'); put('d', elD, (c.v[1] === 1 ? 'Az bulutlu' : DESC[k])); }
+else { put('ic', elIc, '<span class="wx-sp wx-sp-l"></span>', true); put('t', elT, ''); put('d', elD, ''); }
+for (i = 0; i < 5; i++) {
+var key = addDays(n.key, i); rec = store[key];
+put('dn' + i, cards[i].n, i === 0 ? 'Bugün' : (i === 1 ? 'Yarın' : DN[dow(key)]));
+s = rec && (rec.s12 || rec.s16 || rec.s21);
+if (s) {
+a = rec.s12 ? rec.s12[0] + '°C' : '–'; b = rec.s21 ? rec.s21[0] + '°C' : '–';
+put('di' + i, cards[i].i, icon(kind(s[1]), false), true); put('dt' + i, cards[i].t, a + '/' + b);
+} else { put('di' + i, cards[i].i, SPIN, true); put('dt' + i, cards[i].t, '–'); }
+}
+}
+function sbPing() { try { if (window.__vnSbTick) window.__vnSbTick(); } catch (e) {} }
+window.__wxLabel = function () {
+var c = cur(), s = '<span class="wx-l-i">İ</span>';
+if (document.documentElement.getAttribute('data-wxph') !== c.ph) document.documentElement.setAttribute('data-wxph', c.ph);
+if (c.v) s += icon(kind(c.v[1]), c.ph === 'g') + '<span class="wx-l-t">' + c.v[0] + '°C</span>';
+else s += '<span class="wx-sp wx-sp-s"></span>';
+return s;
+};
+function parse(j) {
+var h = j && j.hourly, i, t, hr, key, tp, cd, ok = false;
+if (!h || !h.time || !h.temperature_2m || !h.weather_code) return false;
+for (i = 0; i < h.time.length; i++) {
+t = String(h.time[i]); hr = +t.slice(11, 13); key = t.slice(0, 10);
+if (hr !== 12 && hr !== 16 && hr !== 21) continue;
+tp = h.temperature_2m[i]; cd = h.weather_code[i];
+if (tp == null || cd == null) continue;
+(store[key] = store[key] || {})['s' + hr] = [Math.round(tp), cd | 0]; ok = true;
+}
+return ok;
+}
+function fetchWx(force) {
+if (busy || (!force && Date.now() < nextTry)) return;
+busy = true;
+var ctl = window.AbortController ? new AbortController() : null, to = setTimeout(function () { try { if (ctl) ctl.abort(); } catch (e) {} }, 15000);
+fetch(URL_, ctl ? { signal: ctl.signal, cache: 'no-store' } : { cache: 'no-store' })
+.then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+.then(function (j) { if (parse(j)) { prune(nowIst()); save(); nextTry = Date.now() + STALE; } else nextTry = Date.now() + RETRY; })
+.catch(function () { nextTry = Date.now() + RETRY; })
+.then(function () { clearTimeout(to); busy = false; render(); sbPing(); });
+}
+function step() {
+var n = nowIst(), m = n.key + ' ' + n.h + ':' + n.m;
+if (n.key !== lastKey) { lastKey = n.key; lastMin = m; render(); fetchWx(true); sbPing(); return; }
+if (m !== lastMin) { lastMin = m; render(); sbPing(); }
+fetchWx(false);
+}
+render();
+lastKey = nowIst().key;
+fetchWx(false);
+setInterval(step, 1000);
+window.addEventListener('online', function () { fetchWx(true); });
+window.addEventListener('focus', step);
+window.addEventListener('pageshow', step);
+document.addEventListener('visibilitychange', function () { if (!document.hidden) step(); });
+})();</script>
 <script>(function vnSysbar() {
 var V = window.VNApp;
 if (!V || typeof V.sys !== 'function' || typeof V.barDp !== 'function') return;
@@ -13575,12 +13753,12 @@ setH();
 if (!curH) return;
 if (!elL || !bar.contains(elL)) build();
 var o = {}; try { o = JSON.parse(V.sys()) || {}; } catch (e) {}
-var tray = ''; try { if (typeof pfData !== 'undefined' && pfData && pfData.tray) tray = String(pfData.tray); } catch (e) {}
+var wxl = ''; try { if (window.__wxLabel) wxl = window.__wxLabel(); } catch (e) {}
 var net = o.net === 'wifi' || o.net === 'eth' ? wifi(o.net === 'eth' ? -1 : (o.lvl == null ? -1 : o.lvl))
 : o.net === 'cell' ? cell(o.lvl == null ? -1 : o.lvl)
 : o.net === 'other' ? wifi(-1) : off();
 var b = (typeof o.bat === 'number' && o.bat >= 0) ? batt(o.bat, !!o.chg) : '';
-put('l', elL, tray || 'Menü');
+put('l', elL, wxl, true);
 put('bt', elBt, o.bt ? btIcon() : '', true);
 put('n', elN, net, true);
 put('b', elB, b, true);
@@ -13601,6 +13779,7 @@ clearTimeout(clkTm);
 var n = new Date();
 clkTm = setTimeout(function () { clockNow(); clockSched(); }, 60000 - (n.getSeconds() * 1000 + n.getMilliseconds()) + 15);
 }
+window.__vnSbTick = tick;
 function resync() { tick(); clockNow(); clockSched(); }
 tick();
 clockSched();
