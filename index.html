@@ -1890,6 +1890,64 @@ html.vn-fs #tos-page, html.vn-fs #tos-gate { top: var(--vn-sb, 0px); }
 #tos-peer b.n { color: var(--warn); }
 #tos-peer span { display: block; }
 @media (prefers-reduced-motion: reduce) { #tos-gate, #tos-page { transition: none; } }
+/* ===== Düz / sade tasarım (cam efektleri kaldırıldı, mesaj kutusu stili) ===== */
+#yt-dock, #auto-chip, #leap-hud, #vn-toast, .vc-pill, .call-card, .dial-card {
+background: var(--c-111); border: 1px solid var(--accent); box-shadow: none; text-shadow: none;
+-webkit-backdrop-filter: none; backdrop-filter: none; }
+#yt-dock::before, #yt-dock::after, #auto-chip::before, #auto-chip::after, #leap-hud::before, #leap-hud::after, #vn-toast::before,
+.call-card::before, .call-card::after, .dial-card::before, .dial-card::after { display: none; }
+#leap-hud { border-color: color-mix(in srgb, var(--warn) 60%, transparent); color: var(--warn); }
+#leap-hud.pinned { background: color-mix(in srgb, var(--warn) 20%, var(--c-111)); border-color: var(--warn); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+#vn-toast .vt-ic { box-shadow: none; }
+.vc-fx i { display: none; }
+.vc-g { background: color-mix(in srgb, var(--ok) 24%, transparent); box-shadow: none; }
+.vc-r { background: color-mix(in srgb, var(--bad) 28%, transparent); box-shadow: none; }
+.vc-pill.vc-static { box-shadow: none; }
+.vc-pill .vc-game svg, .vc-pill .vc-endbtn svg { filter: none; }
+.vc-slot { background: var(--c-000); border: 1px solid var(--c-33); box-shadow: none; }
+.call-card, .dial-card { transition: border-color .25s ease; }
+.call-card[data-tone="g"], .dial-card[data-tone="g"] { border-color: var(--ok); }
+.call-card[data-tone="r"], .dial-card[data-tone="r"] { border-color: var(--bad); }
+.call-card[data-tone="o"], .dial-card[data-tone="o"] { border-color: #ffb21e; }
+.call-name, .dial-name { text-shadow: none; }
+.call-btn { border: 0; box-shadow: none; }
+.call-acc { background: var(--ok); }
+.call-rej { background: var(--bad); }
+.dial-opt { background: var(--c-22); border: 1px solid var(--c-33); box-shadow: none; }
+.dial-opt:active { background: var(--c-33); transform: scale(.97); }
+.dial-opt.dial-cancel { color: var(--dng); border-color: color-mix(in srgb, var(--bad) 50%, transparent); background: var(--c-22); }
+.dial-name-in { background: var(--c-22); border-color: var(--c-44); }
+/* dock ve oto-oynat butonları: gönder tuşu stili */
+#yt-dock .ytd-b, #auto-chip-x { background: var(--c-33); color: var(--c-fff); border: 0; box-shadow: none; }
+#yt-dock .ytd-b::before, #yt-dock .ytd-b::after, #auto-chip-x::before, #auto-chip-x::after { display: none; }
+#yt-dock .ytd-b:active { background: var(--c-44); transform: scale(.92); }
+#yt-dock .ytd-b.ytd-play, #yt-dock .ytd-b.on, #auto-chip-x { background: var(--send-bg); color: var(--send-ico); box-shadow: none; }
+#yt-dock .ytd-b.ytd-play:active, #yt-dock .ytd-b.on:active, #auto-chip-x:active { background: color-mix(in srgb, var(--send-bg) 66%, #000); transform: scale(.92); }
+#yt-dock .ytd-track, .yt-track { background: var(--c-33); }
+.ytd-t, .ytd-info, .yt-seek, .yt-artist { color: var(--c-88); }
+.ytd-ly { color: var(--c-66); } .ytd-ly.cur { color: var(--c-fff); } .ytd-ly.plain { color: var(--c-cc); } .ytd-ly.msg { color: var(--c-88); }
+#yt-dock .ytd-info { padding: 0 26px 5px; }
+/* küçültme oku */
+#yt-dock .ytd-fold { position: absolute; top: 4px; right: 8px; z-index: 2; width: 22px; height: 20px; padding: 0; border: 0; background: transparent; color: var(--c-88); display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+#yt-dock .ytd-fold svg { display: block; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s ease; pointer-events: none; }
+#yt-dock .ytd-fold:active { color: var(--c-fff); }
+#ytsearch-box > #yt-dock .ytd-fold { display: none; }
+#yt-dock.folded { padding: 4px 34px 4px 12px; border-radius: 999px; }
+#yt-dock.folded .ytd-main, #yt-dock.folded .ytd-lyr, #yt-dock.folded .ytd-up { display: none; }
+#yt-dock.folded .ytd-info { padding: 0; }
+#yt-dock.folded .ytd-fold { top: 50%; transform: translateY(-50%); }
+#yt-dock.folded .ytd-fold svg { transform: rotate(180deg); }
+/* sohbetteki şarkı / oyun kartları */
+.yt-card, .gm-card { background: var(--c-111); border: 1px solid var(--c-33); box-shadow: none; transition: border-color .2s ease; }
+.yt-card.is-playing, .yt-card.is-synced { border-color: var(--accent); }
+.yt-bg, .gm-bg { display: none; }
+.yt-cover, .gm-cover { box-shadow: none; }
+.yt-play { background: var(--send-bg); color: var(--send-ico); }
+.yt-join, .gm-join { background: var(--send-bg); color: var(--send-ico); box-shadow: none; }
+.yt-card.is-synced .yt-join, .yt-card.is-ready.me-ready .yt-join, .yt-card .yt-join.yt-done, .gm-join.me-in, .gm-join.gm-done { background: var(--c-33); color: var(--c-fff); border-color: var(--c-44); box-shadow: none; }
+/* tam ekran bulanık katmanlar (fps) */
+#lp-overlay { background: rgba(0,0,0,.6); -webkit-backdrop-filter: none; backdrop-filter: none; }
+#gm-picker { background: rgba(0,0,0,.6); -webkit-backdrop-filter: none; backdrop-filter: none; }
 </style>
 </head>
 <body>
@@ -4485,6 +4543,7 @@ const YTD_LYR = YTD_SVG('<rect x="9" y="3" width="6" height="11" rx="3"/><path d
 const YTD_GOTO = YTD_SVG('<path d="M21 15a2 2 0 0 1-2 2H8l-5 4.5V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" transform="translate(0 -.75)"/>');
 const YTD_NEXT = YTD_SVG('<path d="M6 5.5v13l9-6.5z"/><path d="M18.5 5.5v13"/>');
 const YTD_X = YTD_SVG('<path d="M6 6l12 12M18 6L6 18"/>');
+let ytDockFolded = false;
 let ytDockLyrOpen = false, ytDockLyrUserAt = 0, ytDockLyrCard = null, ytDockLyrLines = null, ytDockLyrState = '', ytDockLyrIdx = -1, ytDockLyrEls = [], ytDockLyrAsked = null;
 function ytDockSetLyr(on) {
 ytDockLyrOpen = !!on;
@@ -4602,6 +4661,7 @@ const el = document.createElement('div');
 el.id = 'yt-dock';
 el.innerHTML =
 '<div class="ytd-up" role="button" aria-label="Büyük görünüm"><svg viewBox="0 0 48 10" aria-hidden="true"><path d="M3 8.5 24 2l21 6.5"/></svg></div>' +
+'<button type="button" class="ytd-fold" aria-label="Küçült"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>' +
 '<div class="ytd-info"></div>' +
 '<div class="ytd-main">' +
 '<div class="ytd-cover"></div>' +
@@ -4627,6 +4687,7 @@ try { if (c._pause) c._pause(); } catch (e) {}
 }
 ytDockHide();
 });
+bindYtTap(el.querySelector('.ytd-fold'), () => { ytDockFolded = !ytDockFolded; el.classList.toggle('folded', ytDockFolded); try { ytDockFitInfo(); } catch (e) {} });
 bindYtTap(el._d.next, () => { try { if (ytPl) ytPlNext(); } catch (e) {} });
 bindYtTap(el._d.tog, () => { ytDockSetLyr(!ytDockLyrOpen); });
 ['touchstart', 'wheel', 'mousedown'].forEach((ev) => el._d.lyr.addEventListener(ev, () => { ytDockLyrUserAt = Date.now(); }, { passive: true }));
@@ -4751,6 +4812,7 @@ el.classList.toggle('is-synced', card.classList.contains('is-synced'));
 const it = (aa ? aa + ' — ' : '') + tt + ' — ' + (card.classList.contains('is-synced') ? 'Birlikte Dinliyorsunuz' : 'Tek Dinliyorsunuz');
 if (d.info.textContent !== it) d.info.textContent = it;
 el.classList.toggle('lyr-open', ytDockLyrOpen);
+el.classList.toggle('folded', ytDockFolded && !!el.parentNode && el.parentNode.id === 'chat-wrap');
 try { ytDockLyrSync(card, st.cur); } catch (e) {}
 el.classList.add('show');
 try { ytDockFitInfo(); } catch (e) {}
