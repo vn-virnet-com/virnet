@@ -931,6 +931,12 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 .yts-fav.on { color: #ff4d6d; }
 .yts-fav.on svg { fill: currentColor; }
 #yts-slots { grid-template-rows: 1fr 1fr auto; }
+.yts-slot { position: relative; }
+.yts-slot-hint { padding: 0 12px; text-align: center; font-size: 10.5px; line-height: 1.4; font-weight: 500; color: var(--c-88); pointer-events: none; }
+.yts-slot-cv.has .yts-slot-hint { display: none; }
+.yts-slot-ch { position: absolute; top: 10px; right: 10px; z-index: 2; box-sizing: border-box; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.55); color: #fff; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.yts-slot-ch svg { display: block; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.yts-slot-ch:active { transform: scale(.92); }
 .ytd-up { display: flex; align-items: center; justify-content: center; height: 16px; margin: -5px 0 1px; cursor: pointer; color: var(--yt-a72); -webkit-tap-highlight-color: transparent; }
 .ytd-up svg { display: block; width: 40px; height: 9px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 .ytd-up:active { color: var(--c-fff); }
@@ -8961,7 +8967,7 @@ function ytsArtistApi(q) {
 }
 function ytsArtistSongs(id) {
   const tasks = [], enc = encodeURIComponent(id);
-  YTS_PIPED.slice(0, 6).forEach((b) => tasks.push((async () => {
+  YTS_PIPED.forEach((b) => tasks.push((async () => {
     let j = await ytsFetch(b + '/channel/' + enc);
     const out = [];
     const add = (arr) => (arr || []).forEach((it) => {
@@ -8969,19 +8975,23 @@ function ytsArtistSongs(id) {
       if (m && !it.isShort) out.push({ id: m[1], title: it.title || '', artist: it.uploaderName || '' });
     });
     add(j.relatedStreams);
-    let np = j.nextpage, n = 0;
-    while (np && n++ < 5) { j = await ytsFetch(b + '/nextpage/channel/' + enc + '?nextpage=' + encodeURIComponent(np)); add(j.relatedStreams); np = j.nextpage; }
+    try { // sonraki sayfalar gelmezse ilk sayfadakiler yine gösterilir
+      let np = j.nextpage, n = 0;
+      while (np && n++ < 3) { j = await ytsFetch(b + '/nextpage/channel/' + enc + '?nextpage=' + encodeURIComponent(np)); add(j.relatedStreams); np = j.nextpage; }
+    } catch (e) {}
     if (!out.length) throw new Error('empty');
     return out;
   })()));
-  YTS_INV.slice(0, 2).forEach((b) => tasks.push((async () => {
+  YTS_INV.forEach((b) => tasks.push((async () => {
     const out = []; let cont = '';
-    for (let pg = 0; pg < 5; pg++) {
-      const j = await ytsFetch(b + '/api/v1/channels/' + enc + '/videos?sort_by=popular' + (cont ? '&continuation=' + encodeURIComponent(cont) : ''));
-      (Array.isArray(j) ? j : (j && j.videos) || []).forEach((it) => { if (it && it.videoId) out.push({ id: it.videoId, title: it.title || '', artist: it.author || '' }); });
-      cont = (j && j.continuation) || '';
-      if (!cont) break;
-    }
+    try {
+      for (let pg = 0; pg < 3; pg++) {
+        const j = await ytsFetch(b + '/api/v1/channels/' + enc + '/videos?sort_by=popular' + (cont ? '&continuation=' + encodeURIComponent(cont) : ''));
+        (Array.isArray(j) ? j : (j && j.videos) || []).forEach((it) => { if (it && it.videoId) out.push({ id: it.videoId, title: it.title || '', artist: it.author || '' }); });
+        cont = (j && j.continuation) || '';
+        if (!cont) break;
+      }
+    } catch (e) {}
     if (!out.length) throw new Error('empty');
     return out;
   })()));
@@ -9010,7 +9020,10 @@ function ytsShowArtist(a) {
   };
   if (ytsArtCache[a.id]) { ytsRender(ytsArtCache[a.id], 500); head(); return; }
   ytsMsg('Şarkılar yükleniyor...'); head();
-  ytsArtistSongs(a.id).then((items) => { ytsArtCache[a.id] = items; if (my === ytsToken) { ytsRender(items, 500); head(); } })
+  ytsArtistSongs(a.id).catch(() => ytsSearchApi(a.name).then((items) => { // kanal alınamazsa: sanatçı adıyla aranan şarkılar
+    const n = ytsNorm(a.name), f = items.filter((x) => ytsNorm(x.artist) === n);
+    return f.length >= 3 ? f : items;
+  })).then((items) => { ytsArtCache[a.id] = items; if (my === ytsToken) { ytsRender(items, 500); head(); } })
     .catch(() => { if (my === ytsToken) { ytsMsg('Sanatçının şarkıları alınamadı; biraz sonra tekrar dene.'); head(); } });
 }
 
@@ -9296,13 +9309,12 @@ function ytsShowSlots() {
   for (let i = 0; i < 4; i++) {
     const slot = document.createElement('div'); slot.className = 'yts-slot';
     const cv = document.createElement('div'); cv.className = 'yts-slot-cv';
-    cv.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+    cv.innerHTML = '<div class="yts-slot-hint">Bir liste linki kopyala ve dönen oka bas.</div>';
     const img = document.createElement('img'); img.alt = ''; cv.appendChild(img);
-    const nm = document.createElement('div'); nm.className = 'yts-slot-nm empty'; nm.textContent = 'İsim';
-    const inp = document.createElement('input');
-    inp.type = 'text'; inp.className = 'yts-slot-in'; inp.placeholder = 'Link yapıştır';
-    inp.setAttribute('autocomplete', 'off'); inp.setAttribute('autocorrect', 'off'); inp.setAttribute('autocapitalize', 'off'); inp.spellcheck = false;
-    inp.setAttribute('aria-label', 'Liste linki');
+    const nm = document.createElement('div'); nm.className = 'yts-slot-nm empty'; nm.textContent = 'Yok';
+    const ch = document.createElement('button'); ch.type = 'button'; ch.className = 'yts-slot-ch';
+    ch.setAttribute('aria-label', 'Panodaki liste linkiyle değiştir');
+    ch.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-3M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4"/></svg>';
     const paint = (d, msg) => {
       if (d) {
         img.onerror = () => { img.onerror = null; if (d.fb) img.src = d.fb; };
@@ -9311,22 +9323,20 @@ function ytsShowSlots() {
         nm.textContent = d.name || 'Oynatma listesi'; nm.classList.remove('empty');
       } else {
         img.removeAttribute('src'); cv.classList.remove('has');
-        nm.textContent = msg || 'İsim'; nm.classList.add('empty');
+        nm.textContent = msg || 'Yok'; nm.classList.add('empty');
       }
     };
     const pick = () => {
       const d = ytsSlots[i];
-      if (!d) { try { inp.focus(); } catch (e) {} return; }
+      if (!d) return;
       ytsIn.value = d.link; syncYtsClear(); ytsSetMode('search', true); // link arama kutusuna yapışır, liste açılır
     };
     cv.addEventListener('click', pick); nm.addEventListener('click', pick);
-    let timer = null;
-    const handle = () => {
-      const v = inp.value.trim(), my = ++ytsSlotTok[i];
-      if (!v) { ytsSlots[i] = null; ytsSlotsSave(); paint(null); return; }
-      const id = ytsListIdOf(v);
-      if (!id) { ytsSlots[i] = null; ytsSlotsSave(); paint(null, 'Liste linki değil'); return; }
-      if (ytsSlots[i] && ytsSlots[i].id === id && ytsSlots[i].link === v) return;
+    // Panodaki linki alıp bu kutudaki listeyle değiştirir
+    const load = (raw) => {
+      const v = String(raw || '').trim(), id = ytsListIdOf(v), prev = ytsSlots[i];
+      if (!id) { flashStatus('Panoda liste linki yok'); return; }
+      const my = ++ytsSlotTok[i];
       paint(null, 'Yükleniyor...');
       const done = (items) => {
         if (my !== ytsSlotTok[i]) return;
@@ -9337,12 +9347,16 @@ function ytsShowSlots() {
       };
       if (ytsPlCache[id]) { done(ytsPlCache[id]); return; }
       ytsPlaylistApi(id).then((items) => { ytsPlCache[id] = items; done(items); })
-        .catch(() => { if (my !== ytsSlotTok[i]) return; ytsSlots[i] = null; ytsSlotsSave(); paint(null, 'Liste alınamadı'); });
+        .catch(() => { if (my !== ytsSlotTok[i]) return; paint(prev); flashStatus('Liste alınamadı'); });
     };
-    inp.addEventListener('input', () => { if (timer) clearTimeout(timer); timer = setTimeout(handle, 250); });
-    inp.addEventListener('change', handle);
-    paint(ytsSlots[i]); inp.value = ytsSlots[i] ? ytsSlots[i].link : '';
-    slot.appendChild(cv); slot.appendChild(nm); slot.appendChild(inp);
+    ch.addEventListener('click', (e) => {
+      e.stopPropagation();
+      let p = null;
+      try { if (navigator.clipboard && navigator.clipboard.readText) p = navigator.clipboard.readText(); } catch (x) {}
+      (p || Promise.reject(new Error('noclip'))).then(load).catch(() => { const v = window.prompt('Liste linkini yapıştır'); if (v) load(v); });
+    });
+    paint(ytsSlots[i]);
+    slot.appendChild(cv); slot.appendChild(nm); slot.appendChild(ch);
     grid.appendChild(slot);
   }
   ytsList.appendChild(grid);
@@ -9765,6 +9779,14 @@ function ytNpLyr(c, cur) {
     try { box.scrollTo({ top: top, behavior: force ? 'auto' : 'smooth' }); } catch (e) { box.scrollTop = top; }
   }
 }
+
+/* Masaüstü: şarkı paneli / şerit / büyük görünüm tuşlarına basınca odak metin kutusundan kaçmaz, klavye ekstradan açılmaz */
+document.addEventListener('mousedown', (e) => {
+  if (isMobileLayout()) return;
+  const t = e.target;
+  if (!t || !t.closest || t.closest('input, textarea, [contenteditable="true"]')) return;
+  if (t.closest('#ytsearch-modal button, #ytsearch-modal .yts-tag, #ytsearch-modal .yts-row, #ytsearch-modal .yts-slot, #ytsearch-modal .yts-artist, #ytsearch-modal .yts-favtile, #ytsearch-modal .yts-sec, #yt-dock, #yt-np')) { if (e.cancelable) e.preventDefault(); }
+}, true);
 
 // Sayfa yenilenince / açılınca: karışık oturum kaldığı şarkı ve saniyeden devam eder
 (function ytPlRestore() {
