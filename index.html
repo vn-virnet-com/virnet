@@ -13370,11 +13370,11 @@ guard();
 #wx .wx-sb.on { color: var(--on-accent); border-color: transparent; }
 #wx .wx-top { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; font-weight: 700; letter-spacing: .1px; }
 #wx .wx-tm { font-variant-numeric: tabular-nums; opacity: .95; }
-#wx .wx-mid { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
-#wx .wx-ic { width: clamp(52px, 12vh, 88px); height: clamp(52px, 12vh, 88px); display: flex; align-items: center; justify-content: center; }
+#wx .wx-mid { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px 0 12px; }
+#wx .wx-ic { width: clamp(38px, 8.5vh, 62px); height: clamp(38px, 8.5vh, 62px); display: flex; align-items: center; justify-content: center; }
 #wx .wx-ic svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 3px 6px rgba(0,0,0,.25)); }
-#wx .wx-t { font-size: clamp(28px, 6.6vh, 44px); font-weight: 700; line-height: 1.05; min-height: 1em; }
-#wx .wx-d { font-size: 13px; font-weight: 600; opacity: .92; min-height: 1.2em; }
+#wx .wx-t { font-size: clamp(22px, 4.8vh, 32px); font-weight: 700; line-height: 1.05; min-height: 1em; }
+#wx .wx-d { font-size: 12px; font-weight: 600; opacity: .92; min-height: 1.2em; }
 #wx .wx-days { flex: 0 0 auto; display: flex; gap: 6px; }
 #wx .wx-day { flex: 1 1 0; min-width: 0; height: clamp(110px, 19vh, 134px); box-sizing: border-box; padding: 7px 2px 8px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; border-radius: 14px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.2); pointer-events: none; }
 #wx .wx-dn { font-size: 10.5px; font-weight: 700; opacity: .92; line-height: 1; }
@@ -13460,7 +13460,7 @@ if ((c >= 71 && c <= 77) || c === 85 || c === 86) return 'snow';
 if (c >= 95) return 'thunder';
 return 'cloud';
 }
-var DESC = { clear: 'Açık', partly: 'Parçalı bulutlu', cloud: 'Bulutlu', fog: 'Sisli', drizzle: 'Çisenti', rain: 'Yağmurlu', snow: 'Karlı', thunder: 'Gök gürültülü' };
+var DESC = { clear: 'Açık Hava', partly: 'Parçalı bulutlu', cloud: 'Bulutlu', fog: 'Sisli', drizzle: 'Çisenti', rain: 'Yağmurlu', snow: 'Karlı', thunder: 'Gök gürültülü' };
 var CL = 'M15 37a9 9 0 0 1-1.4-17.9 12 12 0 0 1 23.2 2.9A7.5 7.5 0 0 1 36.5 37z';
 function cloud(f, t) { return '<path transform="' + t + '" fill="' + f + '" d="' + CL + '"/>'; }
 function sunP(cx, cy, r) {
@@ -13569,7 +13569,7 @@ if (wxOnline()) { try { conn.send({ type: 'wx-ack', v: ovState.v }); } catch (e)
 };
 function canEdit() { try { return sessionStorage.getItem('pinLive') === '1'; } catch (e) { return false; } }
 var btnEd = root.querySelector('#wx-edit'), ed = null, edHad = false, edTab = 'ist';
-function syncEdBtn() { btnEd.classList.toggle('can', canEdit()); }
+function syncEdBtn() { btnEd.classList.toggle('can', canEdit() && activeTab === 'eitin'); }
 syncEdBtn();
 window.addEventListener('pin-level', syncEdBtn);
 btnEd.addEventListener('mousedown', function (e) { var m = document.getElementById('message-input'); edHad = !!(m && document.activeElement === m); if (e.cancelable) e.preventDefault(); });
@@ -13609,7 +13609,7 @@ Array.prototype.forEach.call(d.querySelectorAll('.wxe-r'), function (r) { fn(d.g
 });
 }
 function openEd() {
-if (!canEdit()) return;
+if (!canEdit() || activeTab !== 'eitin') return;
 if (!ed) buildEd();
 edTab = activeTab;
 var n = nowIst(), h = '', i;
@@ -13663,6 +13663,7 @@ closeEd();
 btnEd.addEventListener('click', openEd);
 function put(k, el, v, html) { if (cache[k] === v) return; cache[k] = v; if (html) el.innerHTML = v; else el.textContent = v; }
 function render() {
+if (btnEd) syncEdBtn();
 var c = cur(activeTab), n = c.n, i, k, rec, ic, a, b, s;
 if (prune(n)) save();
 if (cache.ph !== c.ph) { cache.ph = c.ph; root.setAttribute('data-ph', c.ph); document.documentElement.setAttribute('data-wxph', c.ph); }
