@@ -13412,7 +13412,9 @@ guard();
 #wx-ed .wxe-f button { flex: 1 1 0; height: 38px; border: 1px solid var(--c-33); border-radius: var(--r-lg); background: var(--c-1a); color: var(--c-fff); font-family: 'Lexend', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #wx-ed .wxe-f button:active { background: var(--c-22); }
 #wx-ed .wxe-f button.pri { background: var(--accent); color: var(--on-accent); border-color: transparent; }
-#vn-sysbar .vs-lw .vs-l { height: auto; align-self: center; box-sizing: border-box; max-width: none; overflow: visible; margin: 0; padding: 1.5px 6px; gap: 4px; border-radius: 6px; font-weight: 700; color: #fff; background: #2f7fc4; transition: background-color 1s ease, opacity .25s ease; pointer-events: none; cursor: default; }
+#vn-sysbar .vs-lw .vs-l { height: auto; align-self: center; box-sizing: border-box; max-width: none; overflow: visible; margin: 0; padding: 1.5px 6px; gap: 4px; border-radius: 6px; font-weight: 700; color: #fff; background: #2f7fc4; transition: background-color 1s ease, width .26s ease; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#vn-sysbar .vs-l > * { transition: opacity .12s ease; }
+#vn-sysbar .vs-l.wx-out > * { opacity: 0; }
 html[data-wxph="n"] #vn-sysbar .vs-lw .vs-l { background: #d2701c; }
 html[data-wxph="g"] #vn-sysbar .vs-lw .vs-l { background: #2b3070; }
 #vn-sysbar .vs-l svg { display: block; width: 12px; height: 12px; flex: 0 0 auto; }
@@ -13694,12 +13696,38 @@ else s += '<span class="wx-sp wx-sp-s"></span>';
 return s;
 }
 window.__wxLabel = function () { return lblOf(sbTab); };
-setInterval(function () {
+var swapBusy = false;
+function flip() {
 var el = document.querySelector('#vn-sysbar .vs-l');
+if (swapBusy) return;
 if (!el || document.hidden) { sbTab = sbTab === 'ist' ? 'eitin' : 'ist'; return; }
-el.style.opacity = '0';
-setTimeout(function () { sbTab = sbTab === 'ist' ? 'eitin' : 'ist'; sbPing(); el = document.querySelector('#vn-sysbar .vs-l') || el; el.style.opacity = ''; }, 250);
-}, 10000);
+swapBusy = true;
+el.classList.add('wx-out');
+setTimeout(function () {
+try {
+var oldW = el.getBoundingClientRect().width, newW;
+el.style.width = oldW + 'px';
+sbTab = sbTab === 'ist' ? 'eitin' : 'ist';
+sbPing();
+el.style.width = 'auto';
+newW = el.getBoundingClientRect().width;
+el.style.width = oldW + 'px';
+void el.offsetWidth;
+el.style.width = newW + 'px';
+} catch (e) {}
+setTimeout(function () {
+el.style.width = '';
+el.classList.remove('wx-out');
+swapBusy = false;
+}, 270);
+}, 120);
+}
+setInterval(flip, 10000);
+window.__wxGo = function () {
+var i = sbTab === 'eitin' ? 1 : 0, b = root.querySelector('.wx-sb[data-i="' + i + '"]');
+if (b) b.click();
+try { if (typeof goPanel === 'function') goPanel(1); } catch (e) {}
+};
 function parse(j) {
 var h = j && j.hourly, i, t, hr, key, tp, cd, ok = false;
 if (!h || !h.time || !h.temperature_2m || !h.weather_code) return false;
@@ -13818,6 +13846,15 @@ try { if (document.body.classList.contains('desk')) return; } catch (x) {}
 try { if (nt.classList.contains('show')) ntClose(); } catch (x) {}
 try { if (cal.classList.contains('show')) calClose(); } catch (x) {}
 try { if (typeof openYtSearch === 'function') openYtSearch(); else if (typeof goPanel === 'function') goPanel(3); } catch (x) {}
+return;
+}
+var lb = e.target.closest ? e.target.closest('.vs-l') : null;
+if (lb) {
+e.stopPropagation();
+try { if (!(typeof isMobileLayout === 'function' && isMobileLayout())) return; } catch (x) {}
+try { if (nt.classList.contains('show')) ntClose(); } catch (x) {}
+try { if (cal.classList.contains('show')) calClose(); } catch (x) {}
+try { if (window.__wxGo) window.__wxGo(); } catch (x) {}
 return;
 }
 var nb = e.target.closest ? e.target.closest('.vs-n') : null;
