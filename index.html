@@ -1955,13 +1955,15 @@ background: var(--c-111); border: 1px solid var(--accent); box-shadow: none; tex
 #vol-pill .vp-fill { position: absolute; inset: 0; z-index: 0; background: var(--send-bg); transform-origin: 0 50%; transform: scaleX(0); transition: transform .28s cubic-bezier(.2,.9,.3,1), background-color .3s ease; will-change: transform; }
 #vol-pill.drag .vp-fill { transition: background-color .3s ease; }
 #vol-pill.warn .vp-fill { background: #ff8f8f; }
-#vol-pill .vp-ic { position: absolute; left: 11px; top: 0; bottom: 0; z-index: 1; display: flex; align-items: center; color: var(--c-fff); transition: color .15s ease; }
+#vol-pill .vp-l { position: absolute; inset: 0; z-index: 1; pointer-events: none; color: #fff; }
+#vol-pill .vp-t { color: var(--send-ico); clip-path: inset(0 100% 0 0); -webkit-clip-path: inset(0 100% 0 0); transition: clip-path .28s cubic-bezier(.2,.9,.3,1), -webkit-clip-path .28s cubic-bezier(.2,.9,.3,1), color .3s ease; will-change: clip-path; }
+#vol-pill.drag .vp-t { transition: color .3s ease; }
+#vol-pill .vp-ic { position: absolute; left: 11px; top: 0; bottom: 0; display: flex; align-items: center; }
 #vol-pill .vp-ic svg { display: block; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-#vol-pill .vp-pct { position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 2; display: flex; align-items: center; justify-content: center; font: 700 13px/1 'Lexend', sans-serif; font-variant-numeric: tabular-nums; color: var(--c-fff); transition: transform .2s ease, color .15s ease; }
+#vol-pill .vp-pct { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font: 700 13px/1 'Lexend', sans-serif; font-variant-numeric: tabular-nums; transition: transform .2s ease; }
 #vol-pill .vp-pct b { font: inherit; }
-#vol-pill .vp-warn { position: absolute; left: 0; right: 0; top: 22px; z-index: 2; text-align: center; font: 700 8.5px/1 'Lexend', sans-serif; color: var(--c-000); white-space: nowrap; opacity: 0; transition: opacity .2s ease; }
-#vol-pill .vp-ic.ic-dark, #vol-pill .vp-pct.pct-dark { color: var(--send-ico); }
-#vol-pill.warn .vp-ic, #vol-pill.warn .vp-pct { color: var(--c-000); }
+#vol-pill .vp-warn { position: absolute; left: 0; right: 0; top: 22px; text-align: center; font: 700 8.5px/1 'Lexend', sans-serif; white-space: nowrap; opacity: 0; transition: opacity .2s ease; }
+#vol-pill.warn .vp-t { color: var(--c-000); }
 #vol-pill.warn .vp-pct { transform: translateY(-5px); }
 #vol-pill.warn .vp-warn { opacity: 1; }
 </style>
@@ -6423,7 +6425,7 @@ vcClearLocal(); vcOffSince = 0;
 }
 setInterval(function () { if (vcLive) vcStamp(); }, 1000);
 (function () {
-var el = null, fill = null, ic = null, pct = null, pctW = null, tm = 0, lastP = null, lastMx = 15, lastHp = 0, lastLv = -1, dragging = false;
+var el = null, fill = null, topL = null, lics = [], lpcts = [], tm = 0, lastP = null, lastMx = 15, lastHp = 0, lastLv = -1, dragging = false;
 var SVG = function (w) { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/>' + w + '</svg>'; };
 var IC_OFF = SVG('<path d="M16 9.5l5 5M21 9.5l-5 5"/>'), IC_LOW = SVG('<path d="M15.5 9.5a3.5 3.5 0 0 1 0 5"/>'), IC_HI = SVG('<path d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/>');
 function canSet() { try { return !!(window.VNApp && typeof VNApp.setVol === 'function'); } catch (e) { return false; } }
@@ -6434,18 +6436,34 @@ if ((h && (h.classList.contains('show') || h.classList.contains('pinned'))) || (
 el.style.setProperty('--vp-off', o + 'px');
 }
 function fracOf(e) { var r = el.getBoundingClientRect(); return r.width ? Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) : 0; }
+function clipOf(p) { return 'inset(0 ' + ((1 - p) * 100) + '% 0 0)'; }
+function setClip(p) { var c = clipOf(p); topL.style.clipPath = c; topL.style.webkitClipPath = c; }
+function paint(p, warn) {
+fill.style.transform = 'scaleX(' + p + ')';
+setClip(p);
+lastP = p;
+var t = Math.round(p * 100) + '%';
+var k = p === 0 ? 'o' : (p < 0.5 ? 'l' : 'h');
+for (var i = 0; i < lpcts.length; i++) {
+if (lpcts[i].textContent !== t) lpcts[i].textContent = t;
+if (lics[i].dataset.k !== k) { lics[i].dataset.k = k; lics[i].innerHTML = k === 'o' ? IC_OFF : (k === 'l' ? IC_LOW : IC_HI); }
+}
+el.classList.toggle('warn', warn);
+}
 function setFrom(e) {
-var lv = Math.round(fracOf(e) * lastMx);
-if (lv === lastLv) return;
-lastLv = lv;
-try { VNApp.setVol(lv); } catch (x) {}
-window.vnVol(lv, lastMx, lastHp);
+var f = fracOf(e);
+var lv = Math.round(f * lastMx);
+if (lv !== lastLv) { lastLv = lv; try { VNApp.setVol(lv); } catch (x) {} }
+paint(f, !!lastHp && f > 0.6);
+el.classList.add('show');
 }
 function build() {
 el = document.createElement('div'); el.id = 'vol-pill'; el.setAttribute('role', 'status');
-el.innerHTML = '<i class="vp-fill"></i><span class="vp-ic"></span><span class="vp-pct"><b>0%</b></span><span class="vp-warn">Kulak sa\u011fl\u0131\u011f\u0131n\u0131za dikkat edin.</span>';
+var layer = function (c) { return '<div class="vp-l ' + c + '"><span class="vp-ic"></span><span class="vp-pct"><b>0%</b></span><span class="vp-warn">Kulak sa\u011fl\u0131\u011f\u0131n\u0131za dikkat edin.</span></div>'; };
+el.innerHTML = '<i class="vp-fill"></i>' + layer('vp-b') + layer('vp-t');
 document.body.appendChild(el);
-fill = el.querySelector('.vp-fill'); ic = el.querySelector('.vp-ic'); pctW = el.querySelector('.vp-pct'); pct = pctW.querySelector('b');
+fill = el.querySelector('.vp-fill'); topL = el.querySelector('.vp-t');
+lics = [].slice.call(el.querySelectorAll('.vp-ic')); lpcts = [].slice.call(el.querySelectorAll('.vp-pct b'));
 el.addEventListener('pointerdown', function (e) {
 if (!canSet()) return;
 dragging = true; lastLv = -1; el.classList.add('drag'); clearTimeout(tm);
@@ -6461,25 +6479,20 @@ window.vnVol = function (v, mx, hp) {
 try {
 if (!el || !el.isConnected) build();
 lastMx = mx > 0 ? mx : 15; lastHp = hp ? 1 : 0;
+if (dragging) return;
 var p = mx > 0 ? Math.max(0, Math.min(1, v / mx)) : 0;
 var warn = !!hp && p > 0.6;
 if (!el.classList.contains('show')) {
 offs();
-fill.style.transition = 'none';
-fill.style.transform = 'scaleX(' + (lastP === null ? p : lastP) + ')';
+var from = (lastP === null ? p : lastP);
+fill.style.transition = 'none'; topL.style.transition = 'none';
+fill.style.transform = 'scaleX(' + from + ')'; setClip(from);
 void fill.offsetWidth;
-fill.style.transition = '';
+fill.style.transition = ''; topL.style.transition = '';
 }
-fill.style.transform = 'scaleX(' + p + ')';
-lastP = p;
-var t = (Math.round(p * 20) * 5) + '%';
-if (pct.textContent !== t) pct.textContent = t;
-var k = p === 0 ? 'o' : (p < 0.5 ? 'l' : 'h');
-if (ic.dataset.k !== k) { ic.dataset.k = k; ic.innerHTML = k === 'o' ? IC_OFF : (k === 'l' ? IC_LOW : IC_HI); }
-ic.classList.toggle('ic-dark', p > 0.14); pctW.classList.toggle('pct-dark', p > 0.5);
-el.classList.toggle('warn', warn);
+paint(p, warn);
 el.classList.add('show');
-if (!dragging) arm(warn ? 2800 : 1600);
+arm(warn ? 2800 : 1600);
 } catch (e) {}
 };
 })();
