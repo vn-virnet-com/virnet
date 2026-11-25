@@ -133,11 +133,13 @@ html.vn-fs #vn-sysbar { display: flex; position: relative; }
 }
 @media (prefers-reduced-motion: reduce) { #vn-sysbar .vs-n.on i { animation: none; } }
 /* Şarkı paneli tuşu: sağ uçta, saatle sağ boşluk arasında; soldaki bildirim rozetinin aynası (16px yuvarlak, koyu mor, içinde nota). Masaüstünde gizli */
-#vn-sysbar .vs-m { position: absolute; right: 0; top: 0; width: 38px; height: 100%; box-sizing: border-box; padding-left: 7px; z-index: 2; display: flex; align-items: center; justify-content: flex-start; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#vn-sysbar .vs-m { position: absolute; right: 0; top: 0; width: 38px; height: 100%; box-sizing: border-box; padding-left: 7px; z-index: 2; display: none; align-items: center; justify-content: flex-start; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 #vn-sysbar .vs-m i { display: flex; align-items: center; justify-content: center; flex: 0 0 auto; box-sizing: border-box; width: 16px; height: 16px; border-radius: 50%; background: #4c1d95; color: #fff; transition: transform .1s ease, background-color .12s ease; }
 #vn-sysbar .vs-m:active i { transform: scale(.88); background: #3b1577; }
 #vn-sysbar .vs-m svg { display: block; width: 10px; height: 10px; flex: 0 0 auto; fill: currentColor; transform: none !important; }
 body.desk #vn-sysbar .vs-m { display: none; }
+/* Sadece şarkı çalarken görünür (html.song-on: aşağıdaki vnSongBtnSync ayarlar) */
+html.song-on body:not(.desk) #vn-sysbar .vs-m { display: flex; }
 #vn-nt { position: fixed; z-index: 12650; top: calc(var(--vn-sb, 0px) + 4px); left: 8px; right: 8px; max-width: 360px; max-height: min(70vh, 460px); box-sizing: border-box; display: none; flex-direction: column; background: var(--c-111); color: var(--c-fff); border: 1px solid var(--c-33); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.55); overflow: hidden; font-size: 12.5px; font-weight: 400; letter-spacing: 0; line-height: 1.3; }
 #vn-nt.show { display: flex; animation: vnCalIn .14s ease-out; }
 #vn-nt .nt-h { display: flex; align-items: center; justify-content: space-between; padding: 8px 8px 8px 14px; font-weight: 700; font-size: 13.5px; border-bottom: 1px solid var(--c-33); }
@@ -9715,6 +9717,16 @@ function vnMediaPush() {
   } catch (e) {}
 }
 setInterval(vnMediaPush, 1000);
+// Durum çubuğundaki mor nota tuşu: yalnızca bir şarkı çalıyorsa (duraklatılmış / bitmiş / kapatılmışsa değil) görünür
+function vnSongBtnSync() {
+  let on = false;
+  try {
+    const c = vnMediaCard();
+    on = !!c && !c._ended && ytDockDismissed !== c && !!c._getState().playing;
+  } catch (e) {}
+  try { document.documentElement.classList.toggle('song-on', on); } catch (e) {}
+}
+setInterval(vnSongBtnSync, 400);
 window.vnMedia = function (a, v) {
   try {
     const c = vnMediaCard();
