@@ -563,13 +563,13 @@ body #typing-indicator { display: none !important; }
 #tool-in { min-height: 0; overflow: hidden; }
 #tool-pad { --tb-h: 18px; display: flex; justify-content: space-evenly; align-items: center; padding-top: 4px; }   /* tuşlar baştan dikeyde dar: 4+18 = 22px = 2. satırın kutuya kattığı yükseklik, 2. satıra geçince toplam boy hiç değişmez */
 #tool-pad .tb svg { width: 16px; height: 16px; }   /* 18px'lik hapın içinde simge ucu ile hap kenarı arasında ~1-2px boşluk kalacak şekilde büyütüldü; simgelerin 24'lük çizim alanındaki doluluğu farklı olduğu için tek tek ayarlı */
-#tool-pad #tb-photo svg, #tool-pad #tb-song svg { width: 17px; height: 17px; }
+#tool-pad #tb-photo svg { width: 17px; height: 17px; }
 #tool-pad #tb-cam svg { width: 19px; height: 19px; }
 /* Masaüstü: alt hap tuşları dikeyde daha geniş (22px), simgeler biraz büyük. Kutunun 1. satırdaki toplam boyu ile 2. satırdaki boyu JS'te (adjustInputHeight) ölçülerek eşitlenir */
 @media (min-width: 769px) {
   #tool-pad { --tb-h: 26px; --tb-w: 52px; }
   #tool-pad .tb svg { width: 21px; height: 21px; }
-  #tool-pad #tb-photo svg, #tool-pad #tb-song svg { width: 22px; height: 22px; }
+  #tool-pad #tb-photo svg { width: 22px; height: 22px; }
   #tool-pad #tb-cam svg { width: 24px; height: 24px; }
   #tool-pad #mic-btn .sp-ico { width: 20px; height: 20px; }
   #input-wrapper.mx-on #tool-pad #tb-more { height: calc(var(--tb-h) + 6px); }   /* sonraki genel mx-on kuralını (24px) geçsin diye daha özel seçici */
@@ -920,6 +920,52 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 #ytpl-sub { font-size: 11px; color: var(--c-88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 #ytpl-strip .yts-b.on { background: var(--accent); color: var(--on-accent); }
 #ytpl-strip .yts-b:disabled { opacity: .4; }
+
+/* Son aramalar etiketleri, favori kalp, ana sayfa kutusu, büyük "şimdi çalıyor" görünümü */
+#yts-recent { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; flex: 0 0 auto; margin-top: -8px; max-height: 0; overflow: hidden; opacity: 0; pointer-events: none; transition: transform .3s cubic-bezier(.22,.8,.3,1), opacity .2s; }
+#ytsearch-box.yts-center #yts-recent { max-height: none; margin-top: 0; opacity: 1; pointer-events: auto; transform: translateY(var(--yts-cy, 0px)); }
+#ytsearch-box:not([data-mode="search"]) #yts-recent { display: none; }
+.yts-tag { display: inline-flex; align-items: center; gap: 2px; max-width: 46%; height: 26px; padding: 0 3px 0 10px; border-radius: 13px; background: var(--c-1a); border: 1px solid var(--c-33); color: var(--c-fff); font: 600 11.5px/1 'Lexend', sans-serif; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.yts-tag span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.yts-tag i { font-style: normal; flex: 0 0 18px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; color: var(--c-88); font-size: 14px; }
+.yts-fav.on { color: #ff4d6d; }
+.yts-fav.on svg { fill: currentColor; }
+#yts-slots { grid-template-rows: 1fr 1fr auto; }
+.yts-artist { display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: var(--r-lg); background: var(--c-1a); border: 1px solid var(--accent); cursor: pointer; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+.yts-artist img { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 50%; object-fit: cover; background: var(--c-33); }
+.yts-artist > svg { width: 18px; height: 18px; flex: 0 0 18px; margin-right: 6px; fill: none; stroke: var(--c-88); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.yts-favtile { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: var(--r-lg); background: var(--c-1a); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.yts-favcv { width: 44px; height: 44px; flex: 0 0 44px; border-radius: var(--r-md); background: var(--c-33); display: flex; align-items: center; justify-content: center; color: #ff4d6d; }
+.yts-favcv svg { width: 22px; height: 22px; fill: currentColor; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.yts-sec { flex: 0 0 auto; padding: 10px 4px 2px; font-size: 12px; font-weight: 700; color: var(--c-88); }
+.yts-back { cursor: pointer; color: var(--c-fff); }
+#yt-np { position: fixed; inset: 0; z-index: 22000; display: none; flex-direction: column; align-items: center; box-sizing: border-box; padding: calc(env(safe-area-inset-top, 0px) + 12px) 18px calc(env(safe-area-inset-bottom, 0px) + 14px); background: var(--c-000); color: var(--c-fff); font-family: 'Lexend', sans-serif; overflow: hidden; }
+#yt-np.show { display: flex; animation: npIn .25s ease-out; }
+@keyframes npIn { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+#yt-np .np-bg { position: absolute; inset: -30px; z-index: -1; background: center / cover no-repeat; filter: blur(40px) brightness(.45); }
+#yt-np .np-top { align-self: stretch; flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; }
+#yt-np .np-top b { font-size: 12px; font-weight: 600; color: var(--c-88); }
+#yt-np button { flex: 0 0 auto; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--c-fff) 12%, transparent); color: var(--c-fff); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+#yt-np button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+#yt-np .np-fav.on { color: #ff4d6d; }
+#yt-np .np-fav.on svg { fill: currentColor; }
+#yt-np .np-prev svg { transform: scaleX(-1); }
+#yt-np .np-cover { flex: 0 0 auto; width: min(62vw, 31vh); aspect-ratio: 1; margin: 8px 0 12px; border-radius: var(--r-lg); background: var(--c-33) center / cover no-repeat; box-shadow: 0 14px 40px rgba(0,0,0,.5); }
+#yt-np .np-t, #yt-np .np-a { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+#yt-np .np-t { font-size: 17px; font-weight: 700; }
+#yt-np .np-a { font-size: 13px; margin-top: 3px; color: var(--c-88); }
+#yt-np .np-prog { position: relative; align-self: stretch; flex: 0 0 34px; margin-top: 6px; touch-action: none; cursor: pointer; }
+#yt-np .np-track { position: absolute; left: 0; right: 0; top: 12px; height: 4px; margin-top: -2px; border-radius: 2px; background: color-mix(in srgb, var(--c-fff) 22%, transparent); }
+#yt-np .np-track > i { display: block; height: 100%; width: 0; border-radius: 2px; background: var(--c-fff); }
+#yt-np .np-tm { position: absolute; top: 19px; font-size: 10px; line-height: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--c-88); pointer-events: none; }
+#yt-np .np-ctl { flex: 0 0 auto; display: flex; align-items: center; gap: 18px; margin: 0 0 8px; }
+#yt-np .np-ctl .np-play { width: 58px; height: 58px; background: var(--accent); color: var(--on-accent); }
+#yt-np .np-lyr { flex: 1 1 0; min-height: 110px; align-self: stretch; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; scrollbar-width: none; padding: 40px 0; box-sizing: border-box; border-radius: var(--r-lg); background: color-mix(in srgb, var(--c-000) 38%, transparent); -webkit-mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent); }
+#yt-np .np-lyr::-webkit-scrollbar { display: none; }
+.np-ly { padding: 6px 12px; text-align: center; font-size: 18px; line-height: 24px; font-weight: 700; overflow-wrap: anywhere; color: color-mix(in srgb, var(--c-fff) 40%, transparent); }
+.np-ly.cur { color: var(--c-fff); }
+.np-ly.plain { font-weight: 400; color: color-mix(in srgb, var(--c-fff) 82%, transparent); }
+.np-ly.msg { font-size: 13px; font-weight: 400; }
 #photo-src-modal {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 21000;
   background: var(--ov-85); display: none; align-items: flex-end; justify-content: center; padding: 16px;
@@ -1075,7 +1121,7 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 }
 .new-badge svg { display: block; stroke: currentColor; }
 #new-notes-badge { right: 8px; }
-#new-msg-badge { left: 8px; }
+#new-msg-badge { left: 8px; z-index: 30; }
 @keyframes new-badge-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 @media (max-width: 768px) { .new-badge.show { display: flex; animation: new-badge-blink 1s ease-in-out infinite; } }
 @media (prefers-reduced-motion: reduce) { .new-badge.show { animation: none; } }
@@ -1199,7 +1245,7 @@ body.np-open #app > #bp-tabs { display: none !important; }
 #bp-clip { position: absolute; top: 0; left: 0; right: 0; bottom: var(--bp-tabs-h, 44px); overflow: hidden; border-radius: var(--r-md) var(--r-md) 0 0; }
 #bp-tabs { position: absolute; left: 0; right: 0; bottom: 0; height: var(--bp-tabs-h, 44px); padding: 4px 5px; box-sizing: border-box; border-top: 1px solid var(--c-33); border-radius: 0 0 var(--r-md) var(--r-md); background: var(--c-111); z-index: 3; }
 #bp-tabs-in { --bp-page: 0; position: relative; display: flex; height: 100%; padding: 2px; box-sizing: border-box; background: var(--c-1a); border: 1px solid var(--c-33); border-radius: var(--r-lg); }
-#bp-pill { position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc((100% - 4px) / 3); border-radius: var(--r-md); background: var(--accent); box-shadow: 0 1px 4px rgba(var(--sh),0.4); transform: translateX(calc(var(--bp-pill, var(--bp-page)) * 100%)); transition: transform .25s ease; will-change: transform; pointer-events: none; }
+#bp-pill { position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc((100% - 4px) / 4); border-radius: var(--r-md); background: var(--accent); box-shadow: 0 1px 4px rgba(var(--sh),0.4); transform: translateX(calc(var(--bp-pill, var(--bp-page)) * 100%)); transition: transform .25s ease; will-change: transform; pointer-events: none; }
 #bell-pop.no-anim #bp-pill { transition: none; }
 .bp-tab { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; flex: 1 1 0; min-width: 0; padding: 0 2px; border: 0; background: transparent; color: var(--c-88); font-size: 12px; font-weight: 400; font-family: inherit; line-height: 1; cursor: pointer; white-space: nowrap; transition: color .25s ease; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .bp-tab.on { color: var(--on-accent); font-weight: 700; }
@@ -1207,10 +1253,10 @@ body.np-open #app > #bp-tabs { display: none !important; }
 #bell-pop.composing #bp-clip { bottom: 0; border-radius: inherit; }
 .bp-tab .bp-dot { display: none; position: absolute; top: calc(50% - 15px); right: calc(50% - 18px); width: 9px; height: 9px; border-radius: 50%; background: var(--bad); border: 1.5px solid var(--c-111); box-sizing: content-box; }
 .bp-tab.new .bp-dot { display: block; }
-#bp-slider { --bp-page: 0; position: absolute; top: 0; bottom: 0; left: 0; width: 200%; display: flex; touch-action: pan-y; transition: transform .25s ease; will-change: transform; }
-#bp-slider { transform: translateX(calc(var(--bp-page) * -50%)); }
+#bp-slider { --bp-page: 0; position: absolute; top: 0; bottom: 0; left: 0; width: 300%; display: flex; touch-action: pan-y; transition: transform .25s ease; will-change: transform; }
+#bp-slider { transform: translateX(calc(var(--bp-page) * -33.3333%)); }
 #bell-pop.no-anim #bp-slider { transition: none; }
-.bp-page { position: relative; flex: 0 0 50%; width: 50%; height: 100%; overflow: hidden; }
+.bp-page { position: relative; flex: 0 0 33.3333%; width: 33.3333%; height: 100%; overflow: hidden; }
 /* ===== Profil sayfası (Bildirim | Profil): ortalı kart düzeni; yalnızca 6687 düzenler, 3828 görüntüler ===== */
 #bp-page-prof { background: var(--c-000); }
 #pf-scroll { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 0 12px 28px; scrollbar-width: none; -ms-overflow-style: none; font-family: 'Lexend', sans-serif; }
@@ -1648,8 +1694,41 @@ body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezi
   #app > #panes[style*="display: block"] ~ #bp-tabs { display: block; }
   body.kb-open #app > #panes ~ #bp-tabs { display: none; }
   #app > #bp-tabs #bp-tabs-in { border: 0; border-radius: 0; }
-  #app > #bp-tabs #bp-pill { width: calc((100% - 4px) / 3); border-radius: var(--r-sm); }
+  #app > #bp-tabs #bp-pill { width: calc((100% - 4px) / 4); border-radius: var(--r-sm); }
   #bell-pop #bp-clip, #bell-pop.composing #bp-clip { bottom: 0; }
+}
+
+/* Şarkı sayfası üst barı: Ana sayfa (kayıtlı listeler) | Ara | Balina (oynatma listesi). Arama çubuğu boşken ortada durur, basınca / yazılırken yukarı çıkar */
+#yts-top { display: flex; gap: 6px; flex: 0 0 auto; }
+.yts-tab { flex: 1 1 0; min-width: 0; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0; border: 1px solid var(--c-33); border-radius: var(--r-lg); background: var(--c-1a); color: var(--c-fff); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: background .2s, color .2s; }
+.yts-tab.on { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.yts-tab svg { display: block; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+#ytsearch-box:not([data-mode="search"]) #ytsearch-bar { display: none; }
+#ytsearch-bar { transition: transform .3s cubic-bezier(.22,.8,.3,1); }
+#ytsearch-list, #ytpl-strip { transition: opacity .2s ease; }
+#ytsearch-box.yts-center #ytsearch-bar { transform: translateY(var(--yts-cy, 0px)); }
+#ytsearch-box.yts-center #ytsearch-list, #ytsearch-box.yts-center #ytpl-strip { opacity: 0; pointer-events: none; }
+/* Çalan şarkı şeridi şarkı sayfasında en altta durur; liste (flex:1) şerit uzadıkça / sözler açılınca küçülür ve kaydırılır */
+#ytsearch-box > #yt-dock { position: relative; top: auto; left: auto; right: auto; margin: 0; flex: 0 0 auto; z-index: 1; }
+#ytsearch-box > #yt-dock.show { animation: ytdInB .2s ease-out; }
+#ytsearch-box > #yt-dock.hide { transform: translateY(8px); }
+@keyframes ytdInB { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+/* ===== Şarkı sayfası: alt çubuğun en sağ sekmesi (mobil), masaüstünde profil panelinin alt çubuğundaki 2. sekme. Eski ortadaki pencere artık tam sayfa ===== */
+#ytsearch-modal.bp-page { position: relative; top: auto; left: auto; z-index: auto; width: auto; height: 100%; padding: 0; background: var(--c-000); display: flex; align-items: stretch; justify-content: stretch; }
+#ytsearch-modal.bp-page #ytsearch-box { width: 100%; height: 100%; max-height: none; aspect-ratio: auto; border: 0; border-radius: 0; background: var(--c-000); padding: 10px; }
+#ytsearch-modal.bp-page #ytsearch-x { display: none; }
+#dk-tabs { display: none; }
+@media (min-width: 769px) {
+  #pane-notes > #bp-page-prof, #pane-notes > #ytsearch-modal { flex: 1 1 0; min-height: 0; width: 100%; height: auto; }
+  #pane-notes > #ytsearch-modal { display: none; }
+  body.dk-song #pane-notes > #ytsearch-modal { display: flex; }
+  body.dk-song #pane-notes > #bp-page-prof { display: none; }
+  #dk-tabs { display: block; position: relative; z-index: 3; flex: 0 0 auto; height: var(--bp-tabs-h, 80px); padding: var(--dock-gap, 15px); box-sizing: border-box; background: var(--c-000); }
+  #dk-tabs-in { --dk-i: 0; position: relative; display: flex; height: 100%; padding: 2px; box-sizing: border-box; background: var(--c-1a); border: 1px solid var(--c-33); border-radius: var(--r-lg); }
+  #dk-pill { position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc((100% - 4px) / 2); border-radius: var(--r-md); background: var(--accent); box-shadow: 0 1px 4px rgba(var(--sh),0.4); transform: translateX(calc(var(--dk-i) * 100%)); transition: transform .25s ease; pointer-events: none; }
+  .dk-tab { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; flex: 1 1 0; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--c-88); cursor: pointer; transition: color .25s ease; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  .dk-tab.on { color: var(--on-accent); }
+  .dk-tab svg { display: block; width: 22px; height: 22px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 }
 
 /* ===== Liquid glass baloncuklar: Oto. Oynat / Leap / bildirim / arama baloncuğu aynı cam diliyle ===== */
@@ -2208,7 +2287,6 @@ html.vn-fs #tos-page, html.vn-fs #tos-gate { top: var(--vn-sb, 0px); }
           <div id="rec-ext"><button type="button" class="rx" id="rec-trash" aria-label="Kaydı sil"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button><span class="rx" id="rec-lock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>
           <button type="button" class="tb" id="mic-btn" aria-label="Ses kaydet (basılı tut)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></button>
         </div>
-        <button type="button" class="tb" id="tb-song" aria-label="Şarkı ara"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
         <button type="button" class="tb" id="tb-more" aria-label="Menü" aria-expanded="false"><span class="mx-d">· · ·</span><span class="mx-l"><svg class="mx-coin" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="#ffb938" stroke="#b86100" stroke-width="1"/><circle cx="8" cy="8" r="4.9" fill="none" stroke="#fff4bf" stroke-opacity=".85" stroke-width="1"/><path d="M6.7 5.4v5.1h3.2" fill="none" stroke="#8a4600" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Leap</b><i>·</i><span id="mx-leap-num">0</span></span></button>
       </div>
     </div></div></div>
@@ -2335,9 +2413,35 @@ html.vn-fs #tos-page, html.vn-fs #tos-gate { top: var(--vn-sb, 0px); }
   </div>
   </div>
   </div>
+  <div id="ytsearch-modal" class="bp-page">
+  <div id="ytsearch-box">
+    <div id="yts-top">
+      <button type="button" class="yts-tab" id="yts-tab-home" aria-label="Ana sayfa" title="Ana sayfa"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg></button>
+      <button type="button" class="yts-tab on" id="yts-tab-search" aria-label="Ara" title="Ara"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <button type="button" class="yts-tab" id="yts-tab-whale" aria-label="Oynatma listesi" title="Oynatma listesi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14.5C2 10.9 5 8.5 9 8.5c3 0 5.2 1.3 6.6 3.2L19 8c.6 2.2.2 4-1 5.4 1.1.5 2.2.5 3.4.1-.5 2.6-2.5 4.5-5.4 4.5H8c-3.4 0-6-1.7-6-3.5z"/><circle cx="6" cy="13" r=".7" fill="currentColor" stroke="none"/><path d="M9.5 6V4M9.5 4c0-1 .8-1.6 1.7-2M9.5 4c0-1-.8-1.6-1.7-2"/></svg></button>
+    </div>
+    <div id="ytsearch-bar">
+      <div id="ytsearch-field">
+        <input id="ytsearch-in" type="text" placeholder="YouTube Music'te ara" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false">
+        <button id="ytsearch-clear" aria-label="Temizle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+      </div>
+      <button id="ytsearch-x" aria-label="Kapat">✕</button>
+    </div>
+    <div id="yts-recent"></div>
+    <div id="ytpl-strip">
+      <img id="ytpl-cover" alt="">
+      <div id="ytpl-txt"><div id="ytpl-name"></div><div id="ytpl-sub"></div></div>
+      <div class="yts-acts">
+        <button type="button" id="ytpl-next" class="yts-b" aria-label="Sonraki şarkı" style="display:none"><svg viewBox="0 0 24 24"><path d="M6 5.5v13l9-6.5z"/><path d="M18.5 5.5v13"/></svg></button>
+        <button type="button" id="ytpl-shuf" class="yts-b" aria-label="Karışık çal"><svg viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></button>
+      </div>
+    </div>
+    <div id="ytsearch-list"></div>
+  </div>
+</div>
   </div>
   </div>
-  <div id="bp-tabs"><div id="bp-tabs-in"><div id="bp-pill"></div><button type="button" class="bp-tab on" data-p="0" aria-label="Bildirim" title="Bildirim"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="1" aria-label="Profil" title="Profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab bp-cmd" data-p="chat" aria-label="CMD (sohbet)" title="CMD"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor" stroke="none" font-family="Lexend,Arial,sans-serif">CMD</text></svg><span class="bp-dot"></span></button></div></div>
+  <div id="bp-tabs"><div id="bp-tabs-in"><div id="bp-pill"></div><button type="button" class="bp-tab on" data-p="0" aria-label="Bildirim" title="Bildirim"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="1" aria-label="Profil" title="Profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab" data-p="2" aria-label="Şarkı" title="Şarkı"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span class="bp-dot"></span></button><button type="button" class="bp-tab bp-cmd" data-p="chat" aria-label="CMD (sohbet)" title="CMD"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor" stroke="none" font-family="Lexend,Arial,sans-serif">CMD</text></svg><span class="bp-dot"></span></button></div></div>
 </div>
   <div id="new-msg-badge" class="new-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg><span>Yeni</span></div>
 </div>
@@ -2353,28 +2457,6 @@ html.vn-fs #tos-page, html.vn-fs #tos-gate { top: var(--vn-sb, 0px); }
     <div id="call-prev"></div>
     <input id="call-name" type="text" maxlength="40" placeholder="İsim" enterkeyhint="send" autocomplete="off" autocorrect="off" spellcheck="false">
     <div id="call-actions"><button type="button" id="call-cancel">Vazgeç</button><button type="button" id="call-send">Gönder</button></div>
-  </div>
-</div>
-<div id="ytsearch-modal">
-  <div id="ytsearch-box">
-    <div id="ytsearch-bar">
-      <div id="ytsearch-field">
-        <input id="ytsearch-in" type="text" placeholder="YouTube Music'te ara" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false">
-        <button id="ytsearch-clear" aria-label="Temizle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
-      </div>
-      <button id="ytsearch-whale" aria-label="Oynatma listesi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14.5C2 10.9 5 8.5 9 8.5c3 0 5.2 1.3 6.6 3.2L19 8c.6 2.2.2 4-1 5.4 1.1.5 2.2.5 3.4.1-.5 2.6-2.5 4.5-5.4 4.5H8c-3.4 0-6-1.7-6-3.5z"/><circle cx="6" cy="13" r=".7" fill="currentColor" stroke="none"/><path d="M9.5 6V4M9.5 4c0-1 .8-1.6 1.7-2M9.5 4c0-1-.8-1.6-1.7-2"/></svg></button>
-      <button id="ytsearch-slots" aria-label="Kayıtlı listeler"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></button>
-      <button id="ytsearch-x" aria-label="Kapat">✕</button>
-    </div>
-    <div id="ytpl-strip">
-      <img id="ytpl-cover" alt="">
-      <div id="ytpl-txt"><div id="ytpl-name"></div><div id="ytpl-sub"></div></div>
-      <div class="yts-acts">
-        <button type="button" id="ytpl-next" class="yts-b" aria-label="Sonraki şarkı" style="display:none"><svg viewBox="0 0 24 24"><path d="M6 5.5v13l9-6.5z"/><path d="M18.5 5.5v13"/></svg></button>
-        <button type="button" id="ytpl-shuf" class="yts-b" aria-label="Karışık çal"><svg viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></button>
-      </div>
-    </div>
-    <div id="ytsearch-list"></div>
   </div>
 </div>
 <div id="photo-src-modal">
@@ -2566,6 +2648,8 @@ let menuRestoreFocus = false;
 let view = 'chat';
 let unreadMsgs = false;
 let unreadNotes = false;
+let unreadBell = false; // şarkı sayfasındayken başka bildirim sayfasına gelen yeni gönderi
+function ytBellOnSong() { try { return bpPage === 2; } catch (e) { return false; } }
 let popEditing = false;
 let notesUnseen = lsGet('qnoteUnseen') === '1';
 let qText = lsGet('qnoteText') || '';
@@ -4840,6 +4924,18 @@ function saveSoloSong() {
     } catch (e) {}
   }
 }
+// Şerit tek parça: şarkı sayfası açıkken sayfanın en altına (müzik uygulamalarındaki gibi) taşınır, kapanınca sohbetin üstüne döner
+function ytDockPlace() {
+  const el = ytDockEl; if (!el) return;
+  const modal = document.getElementById('ytsearch-modal'), box = document.getElementById('ytsearch-box');
+  const inPage = !!(modal && box && modal.classList.contains('on'));
+  const want = inPage ? box : document.getElementById('chat-wrap');
+  if (want && el.parentNode !== want) want.appendChild(el);
+  if (inPage) {
+    const h = el.classList.contains('show') ? el.offsetHeight : 0;
+    if (h !== ytDockPlace._h) { ytDockPlace._h = h; try { ytsLayout(); } catch (e) {} }   // ortadaki arama çubuğu kalan alana göre ortalanır
+  } else ytDockPlace._h = -1;
+}
 function ytDockHide() {
   const el = ytDockEl;
   if (!el || !el.classList.contains('show') || ytDockHideTimer) return;
@@ -4908,6 +5004,7 @@ function ytDockBuild() {
     const ln = L.lines[parseInt(row.dataset.i, 10)];
     if (ln && c._seekSec) { ytDockLyrUserAt = 0; c._seekSec(ln.t); }
   });
+  el.addEventListener('click', (e) => { if (!e.target.closest('.ytd-b, .ytd-prog, .ytd-lyr')) { try { ytNpOpen(); } catch (x) {} } });
   const dd = el._d;
   // Sarma: çubuğun herhangi bir yerine dokunmak ya da sürüklemek sarar
   const dSeek = (x) => {
@@ -5000,6 +5097,7 @@ function ytDockUpdate() {
   if (show && ytDockDismissed === card) show = false;
   if (!show) { if (card && (card._ended || !card.isConnected)) ytDockHideNow(); else ytDockHide(); return; }
   if (!ytDockEl) { ytDockEl = ytDockBuild(); if (!ytDockEl) return; }
+  try { ytDockPlace(); } catch (e) {}
   if (ytDockHideTimer) { clearTimeout(ytDockHideTimer); ytDockHideTimer = null; }
   ytDockEl.classList.remove('hide');
   const el = ytDockEl, d = el._d, m = card._meta;
@@ -5038,7 +5136,7 @@ setInterval(ytDockUpdate, 300);
    Şerit sözlerle uzayınca ya da kapanınca baloncuk CSS geçişiyle aşağı / yukarı kayar; Leap ve bildirim baloncuğu da bu hedefe göre hesaplanır. */
 function ytChipTop() {
   const d = document.getElementById('yt-dock');
-  if (d && d.classList.contains('show') && !d.classList.contains('hide') && d.offsetHeight) return d.offsetTop + d.offsetHeight + 6;
+  if (d && d.classList.contains('show') && !d.classList.contains('hide') && d.offsetHeight && d.parentNode && d.parentNode.id === 'chat-wrap') return d.offsetTop + d.offsetHeight + 6;
   return 6;
 }
 // Oto. Oynat + arama baloncuğu birlikte görünüyorsa 450 ms alt alta durur, sonra yan yana geçer (ytPairOn)
@@ -5079,7 +5177,7 @@ function ytStripRelBottom() {
 function ytStripRelBottomBase() {
   let rel = 0;
   const d = document.getElementById('yt-dock');
-  if (d && d.classList.contains('show') && !d.classList.contains('hide') && d.offsetHeight) rel = d.offsetTop + d.offsetHeight;
+  if (d && d.classList.contains('show') && !d.classList.contains('hide') && d.offsetHeight && d.parentNode && d.parentNode.id === 'chat-wrap') rel = d.offsetTop + d.offsetHeight;
   const c = document.getElementById('auto-chip');
   if (c && c.classList.contains('show') && c.offsetHeight) rel = Math.max(rel, ytChipTop() + c.offsetHeight);
   return rel;
@@ -8769,6 +8867,149 @@ const YTS_PIPED = ['https://pipedapi.kavin.rocks', 'https://pipedapi.adminforge.
 const YTS_INV = ['https://inv.nadeko.net', 'https://yewtu.be', 'https://invidious.nerdvpn.de'];
 let ytsDynPiped = null; // Piped'ın kendi güncel sunucu listesinden çekilenler (sabit liste ölürse yedek)
 
+/* ===== Son aramalar / favoriler / son çalınanlar (yalnızca bu cihazda, localStorage) ===== */
+const YTS_REC_KEY = 'ytsRecent', YTS_FAV_KEY = 'ytsFavs', YTS_PLAYED_KEY = 'ytsPlayed';
+const ytsRecEl = document.getElementById('yts-recent');
+const ytsMeta = {};
+const YTS_HEART = '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/>';
+function ytsJ(key) { try { const a = JSON.parse(lsGet(key) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+let ytsRecent = ytsJ(YTS_REC_KEY).filter((x) => typeof x === 'string'), ytsFavs = ytsJ(YTS_FAV_KEY).filter((x) => x && x.id), ytsPlayed = ytsJ(YTS_PLAYED_KEY).filter((x) => x && x.id);
+function ytsRecRender() {
+  ytsRecEl.innerHTML = '';
+  ytsRecent.forEach((q) => {
+    const t = document.createElement('div'); t.className = 'yts-tag'; t.setAttribute('role', 'button');
+    const s = document.createElement('span'); s.textContent = q;
+    const x = document.createElement('i'); x.textContent = '\u00d7'; x.setAttribute('aria-label', 'Sil');
+    x.addEventListener('click', (e) => { e.stopPropagation(); ytsRecent = ytsRecent.filter((v) => v !== q); lsSet(YTS_REC_KEY, JSON.stringify(ytsRecent)); ytsRecRender(); ytsLayout(); });
+    t.addEventListener('click', () => { ytsIn.value = q; syncYtsClear(); runYtSearch(); try { ytsIn.blur(); } catch (e) {} ytsLayout(); });
+    t.appendChild(s); t.appendChild(x); ytsRecEl.appendChild(t);
+  });
+}
+function ytsRecAdd(q) {
+  q = (q || '').trim();
+  if (!q || ytsListIdOf(q)) return;
+  ytsRecent = [q].concat(ytsRecent.filter((v) => v.toLowerCase() !== q.toLowerCase())).slice(0, 8);
+  lsSet(YTS_REC_KEY, JSON.stringify(ytsRecent)); ytsRecRender();
+}
+ytsRecRender();
+function ytsIsFav(id) { return ytsFavs.some((x) => x.id === id); }
+function ytsFavToggle(it) {
+  const i = ytsFavs.findIndex((x) => x.id === it.id), m = ytsMeta[it.id] || {};
+  if (i >= 0) ytsFavs.splice(i, 1); else ytsFavs.unshift({ id: it.id, title: it.title || m.title || '', artist: it.artist || m.artist || '' });
+  lsSet(YTS_FAV_KEY, JSON.stringify(ytsFavs));
+  document.querySelectorAll('.yts-fav').forEach((b) => b.classList.toggle('on', ytsIsFav(b.dataset.id)));
+  const sub = document.getElementById('yts-fav-sub'); if (sub) sub.textContent = ytsFavs.length + ' şarkı';
+}
+function ytsRecPlayed(id, it) {
+  const m = it || ytsMeta[id]; if (!m) return;
+  ytsPlayed = [{ id: id, title: m.title || '', artist: m.artist || '' }].concat(ytsPlayed.filter((x) => x.id !== id)).slice(0, 20);
+  lsSet(YTS_PLAYED_KEY, JSON.stringify(ytsPlayed));
+}
+function ytsHomeExtra(grid) {
+  const f = document.createElement('div'); f.className = 'yts-favtile';
+  f.innerHTML = '<div class="yts-favcv"><svg viewBox="0 0 24 24" aria-hidden="true">' + YTS_HEART + '</svg></div><div class="yts-txt"><div class="yts-t">Favori şarkılar</div><div class="yts-a" id="yts-fav-sub"></div></div>';
+  f.querySelector('#yts-fav-sub').textContent = ytsFavs.length + ' şarkı';
+  f.addEventListener('click', ytsShowFavs);
+  grid.appendChild(f);
+  if (ytsPlayed.length) {
+    const h = document.createElement('div'); h.className = 'yts-sec'; h.textContent = 'Son çalınanlar'; ytsList.appendChild(h);
+    const ctx = ytsPlayed.slice(0, 10);
+    ctx.forEach((it) => ytsList.appendChild(ytsRow(it, ctx)));
+    ytsSyncIcons();
+  }
+}
+function ytsShowFavs() {
+  ++ytsToken;
+  ytsRender(ytsFavs, 500);
+  if (!ytsFavs.length) ytsMsg('Henüz favori şarkı yok. Bir şarkıdaki kalbe dokun.');
+  const h = document.createElement('div'); h.className = 'yts-sec yts-back'; h.textContent = '\u2039 Favori şarkılar';
+  h.addEventListener('click', () => ytsSetMode('home', true));
+  ytsList.insertBefore(h, ytsList.firstChild);
+}
+
+/* ===== Sanatçı kartı: aranan isim tam olarak ünlü (onaylı / kalabalık) bir sanatçı kanalının adıysa sonuçların başına gelir ===== */
+const ytsArtCache = {};
+function ytsNorm(t) {
+  return String(t || '').replace(/İ/g, 'i').replace(/ı/g, 'i').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/\s*-\s*topic$/, '').replace(/\s*(vevo|official|resmi)$/, '').replace(/[^a-z0-9]/g, '');
+}
+function ytsArtistPick(q, list) {
+  const nq = ytsNorm(q); if (nq.length < 2) throw new Error('short');
+  const ok = list.filter((c) => c.id && ytsNorm(c.name) === nq && (c.verified || c.subs >= 100000));
+  if (!ok.length) throw new Error('none');
+  ok.sort((a, b) => ((b.verified ? 1e12 : 0) + b.subs) - ((a.verified ? 1e12 : 0) + a.subs));
+  return ok[0];
+}
+function ytsArtistApi(q) {
+  q = q.trim();
+  if (ytsListIdOf(q) || q.length > 40 || q.split(/\s+/).length > 4) return Promise.reject(new Error('skip'));
+  const enc = encodeURIComponent(q), tasks = [];
+  const abs = (u, b) => (u ? (u.indexOf('//') === 0 ? 'https:' + u : (u.charAt(0) === '/' ? b + u : u)) : '');
+  YTS_PIPED.slice(0, 6).forEach((b) => tasks.push(ytsFetch(b + '/search?q=' + enc + '&filter=channels').then((j) => ytsArtistPick(q, ((j && j.items) || []).map((it) => {
+    const m = /\/channel\/([A-Za-z0-9_-]{20,})/.exec(it.url || '');
+    return { id: m ? m[1] : '', name: it.name || '', thumb: abs(it.thumbnail, b), subs: it.subscribers > 0 ? it.subscribers : 0, verified: !!it.verified };
+  })))));
+  YTS_INV.slice(0, 2).forEach((b) => tasks.push(ytsFetch(b + '/api/v1/search?type=channel&q=' + enc).then((j) => ytsArtistPick(q, (Array.isArray(j) ? j : []).map((it) => {
+    const th = (it.authorThumbnails || []).slice(-1)[0];
+    return { id: it.authorId || '', name: it.author || '', thumb: abs(th && th.url, b), subs: it.subCount > 0 ? it.subCount : 0, verified: !!it.authorVerified };
+  })))));
+  return ytAny(tasks);
+}
+function ytsArtistSongs(id) {
+  const tasks = [], enc = encodeURIComponent(id);
+  YTS_PIPED.slice(0, 6).forEach((b) => tasks.push((async () => {
+    let j = await ytsFetch(b + '/channel/' + enc);
+    const out = [];
+    const add = (arr) => (arr || []).forEach((it) => {
+      const m = /[?&]v=([A-Za-z0-9_-]{11})/.exec(it.url || '');
+      if (m && !it.isShort) out.push({ id: m[1], title: it.title || '', artist: it.uploaderName || '' });
+    });
+    add(j.relatedStreams);
+    let np = j.nextpage, n = 0;
+    while (np && n++ < 5) { j = await ytsFetch(b + '/nextpage/channel/' + enc + '?nextpage=' + encodeURIComponent(np)); add(j.relatedStreams); np = j.nextpage; }
+    if (!out.length) throw new Error('empty');
+    return out;
+  })()));
+  YTS_INV.slice(0, 2).forEach((b) => tasks.push((async () => {
+    const out = []; let cont = '';
+    for (let pg = 0; pg < 5; pg++) {
+      const j = await ytsFetch(b + '/api/v1/channels/' + enc + '/videos?sort_by=popular' + (cont ? '&continuation=' + encodeURIComponent(cont) : ''));
+      (Array.isArray(j) ? j : (j && j.videos) || []).forEach((it) => { if (it && it.videoId) out.push({ id: it.videoId, title: it.title || '', artist: it.author || '' }); });
+      cont = (j && j.continuation) || '';
+      if (!cont) break;
+    }
+    if (!out.length) throw new Error('empty');
+    return out;
+  })()));
+  return Promise.any(tasks);
+}
+function ytsArtistCard(a) {
+  if (ytsList.querySelector('.yts-artist')) return;
+  const c = document.createElement('div'); c.className = 'yts-artist';
+  const img = document.createElement('img'); img.alt = ''; if (/^https?:\/\//i.test(a.thumb || '')) img.src = a.thumb;
+  const tx = document.createElement('div'); tx.className = 'yts-txt';
+  const t = document.createElement('div'); t.className = 'yts-t'; t.textContent = a.name;
+  const d = document.createElement('div'); d.className = 'yts-a';
+  d.textContent = 'Sanatçı' + (a.subs >= 1e6 ? ' · ' + (a.subs / 1e6).toFixed(1).replace('.', ',') + ' Mn abone' : a.subs >= 1e3 ? ' · ' + Math.round(a.subs / 1e3) + ' B abone' : '');
+  tx.appendChild(t); tx.appendChild(d);
+  c.appendChild(img); c.appendChild(tx);
+  c.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>');
+  c.addEventListener('click', () => ytsShowArtist(a));
+  ytsList.insertBefore(c, ytsList.firstChild);
+}
+function ytsShowArtist(a) {
+  const my = ++ytsToken;
+  const head = () => {
+    const h = document.createElement('div'); h.className = 'yts-sec yts-back'; h.textContent = '\u2039 ' + a.name;
+    h.addEventListener('click', () => runYtSearch());
+    ytsList.insertBefore(h, ytsList.firstChild);
+  };
+  if (ytsArtCache[a.id]) { ytsRender(ytsArtCache[a.id], 500); head(); return; }
+  ytsMsg('Şarkılar yükleniyor...'); head();
+  ytsArtistSongs(a.id).then((items) => { ytsArtCache[a.id] = items; if (my === ytsToken) { ytsRender(items, 500); head(); } })
+    .catch(() => { if (my === ytsToken) { ytsMsg('Sanatçının şarkıları alınamadı; biraz sonra tekrar dene.'); head(); } });
+}
+
 function ytsMsg(t) { ytsList.innerHTML = ''; const d = document.createElement('div'); d.className = 'yts-msg'; d.textContent = t; ytsList.appendChild(d); }
 function ytsFetch(url) {
   const ctl = new AbortController();
@@ -8822,42 +9063,49 @@ function ytsSearchApi(q) {
     return ytAny(list.map((b) => ytsTryPiped(b, enc)));
   }));
 }
+function ytsRow(it, ctx) {
+  ytsMeta[it.id] = { title: it.title, artist: it.artist };
+  const row = document.createElement('div');
+  row.className = 'yts-row';
+  const img = document.createElement('img');
+  img.alt = ''; img.loading = 'lazy';
+  img.src = 'https://i.ytimg.com/vi/' + it.id + '/mqdefault.jpg';
+  const tx = document.createElement('div'); tx.className = 'yts-txt';
+  const t = document.createElement('div'); t.className = 'yts-t'; t.textContent = it.title;
+  const a = document.createElement('div'); a.className = 'yts-a'; a.textContent = it.artist;
+  tx.appendChild(t); tx.appendChild(a);
+  const acts = document.createElement('div'); acts.className = 'yts-acts';
+  const fav = document.createElement('button');
+  fav.type = 'button'; fav.className = 'yts-b yts-fav' + (ytsIsFav(it.id) ? ' on' : ''); fav.dataset.id = it.id;
+  fav.setAttribute('aria-label', 'Favori'); fav.innerHTML = YTD_SVG(YTS_HEART);
+  fav.addEventListener('click', (e) => { e.stopPropagation(); ytsFavToggle(it); });
+  const play = document.createElement('button');
+  play.type = 'button'; play.className = 'yts-b yts-play'; play.dataset.id = it.id;
+  play.setAttribute('aria-label', 'Oynat'); play.innerHTML = YTD_PLAY;
+  play.addEventListener('click', (e) => { e.stopPropagation(); if (ytsMode === 'search') ytsRecAdd(ytsIn.value); ytsPlay(it, ctx); });
+  const send = document.createElement('button');
+  send.type = 'button'; send.className = 'yts-b yts-send';
+  send.setAttribute('aria-label', 'Sohbete gönder'); send.innerHTML = YTD_SVG('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/>');
+  send.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const link = 'https://music.youtube.com/watch?v=' + it.id;
+    if (!isConnected()) { flashStatus('Bağlı değil, link gönderilmedi'); return; }
+    closeYtSearch();
+    sendTextNow(link);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  });
+  acts.appendChild(fav); acts.appendChild(play); acts.appendChild(send);
+  row.appendChild(img); row.appendChild(tx); row.appendChild(acts);
+  return row;
+}
 function ytsRender(items, limit) {
   ytsList.innerHTML = '';
-  items.slice(0, limit || 20).forEach((it) => {
-    const row = document.createElement('div');
-    row.className = 'yts-row';
-    const img = document.createElement('img');
-    img.alt = ''; img.loading = 'lazy';
-    img.src = 'https://i.ytimg.com/vi/' + it.id + '/mqdefault.jpg';
-    const tx = document.createElement('div'); tx.className = 'yts-txt';
-    const t = document.createElement('div'); t.className = 'yts-t'; t.textContent = it.title;
-    const a = document.createElement('div'); a.className = 'yts-a'; a.textContent = it.artist;
-    tx.appendChild(t); tx.appendChild(a);
-    const acts = document.createElement('div'); acts.className = 'yts-acts';
-    const play = document.createElement('button');
-    play.type = 'button'; play.className = 'yts-b yts-play'; play.dataset.id = it.id;
-    play.setAttribute('aria-label', 'Oynat'); play.innerHTML = YTD_PLAY;
-    play.addEventListener('click', (e) => { e.stopPropagation(); ytsPlay(it); });
-    const send = document.createElement('button');
-    send.type = 'button'; send.className = 'yts-b yts-send';
-    send.setAttribute('aria-label', 'Sohbete gönder'); send.innerHTML = YTD_SVG('<path d="M5 12h14M13 6l6 6-6 6"/>');
-    send.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const link = 'https://music.youtube.com/watch?v=' + it.id;
-      if (!isConnected()) { flashStatus('Bağlı değil, link gönderilmedi'); return; }
-      closeYtSearch();
-      sendTextNow(link);
-      chatArea.scrollTop = chatArea.scrollHeight;
-    });
-    acts.appendChild(play); acts.appendChild(send);
-    row.appendChild(img); row.appendChild(tx); row.appendChild(acts);
-    ytsList.appendChild(row);
-  });
+  const ctx = items.slice(0, limit || 20);
+  ctx.forEach((it) => ytsList.appendChild(ytsRow(it, ctx)));
   ytsSyncIcons();
 }
 // Oynat: link sohbete gitmeden, sohbetteki "tek başına dinleme" ile aynı kart + üst şerit kullanılır
-function ytsPlay(it) {
+function ytsPlay(it, ctx) {
   let engaged = false;
   chatArea.querySelectorAll('.yt-card').forEach((c) => { try { if (c._engaged && c._engaged()) engaged = true; } catch (e) {} });
   if (engaged) { flashStatus('Birlikte dinleme sürerken tek başına çalınamaz'); return; }
@@ -8868,7 +9116,16 @@ function ytsPlay(it) {
     g._toggle();
     if (playing) { setTimeout(ytsSyncIcons, 150); return; } // çalıyordu: duraklat, liste açık kalsın
   } else {
-    try { ytPlStop(); } catch (e) {} // listeden elle şarkı seçilince karışık çalma sona erer
+    // Listeden başlatılan şarkı: karışık çalma seçili değilse o şarkıdan aşağı sırayla çalar (liste sonunda durur)
+    const ids = ctx ? Array.from(new Set(ctx.map((x) => x.id))) : [], k = ids.indexOf(it.id);
+    if (ids.length > 1 && k >= 0) {
+      ytPl = { listId: 'seq', seq: true, order: ids, pos: k, t: 0, playing: true, at: Date.now() };
+      ytPlFails = 0; ytPlPersist(); ytPlPlayCurrent(0, false);
+      try { ytsIn.blur(); } catch (e) {}
+      return;
+    }
+    try { ytPlStop(); } catch (e) {} // tek şarkı: karışık / sıralı oturum sona erer
+    ytsRecPlayed(it.id, it);
     if (g) {
       try { g._pause(); } catch (e) {}
       try { g._destroy(); } catch (e) {}
@@ -8885,11 +9142,11 @@ function ytsPlay(it) {
     ytDockDismissed = null;
     g._toggle();
   }
-  closeYtSearch();
+  try { ytsIn.blur(); } catch (e) {}   // yalnızca bizim dinlememiz: sohbete gitmez, sayfada kalır
 }
 // Listede çalan şarkının düğmesi duraklat simgesi gösterir
 function ytsSyncIcons() {
-  if (!ytsModal.classList.contains('show')) return;
+  if (!ytsModal.classList.contains('on')) return;
   let pid = null;
   try { if (ytsGhost && ytsGhost.isConnected && ytsGhost._getState().playing) pid = ytsGhost._ytId; } catch (e) {}
   ytsList.querySelectorAll('.yts-play').forEach((b) => {
@@ -8910,27 +9167,47 @@ function runYtSearch() {
   if (listId) { ytsLoadPlaylist(listId, my); return; }
   ytPlStripFor(null);
   ytsMsg('Aranıyor...');
-  ytsSearchApi(q).then((items) => { if (my === ytsToken) ytsRender(items); })
+  const ap = ytsArtistApi(q).catch(() => null);
+  ytsSearchApi(q).then((items) => { if (my !== ytsToken) return; ytsRender(items); ap.then((a) => { if (a && my === ytsToken) ytsArtistCard(a); }); })
     .catch(() => { if (my === ytsToken) ytsMsg('Sonuç alınamadı. Arama sunucularına ulaşılamıyor olabilir; biraz sonra tekrar dene.'); });
 }
-function openYtSearch() {
-  ytsModal.classList.add('show');
-  ytsSyncIcons();
-  try { ytPlUI(); } catch (e) {}
-  const onlyMsg = !ytsList.firstChild || ytsList.firstChild.classList.contains('yts-msg');
-  if (onlyMsg) { if (ytsIn.value.trim()) runYtSearch(); else ytsMsg('Şarkı veya sanatçı adı yaz'); } // kayıtlı aramayı geri getirir
-  setTimeout(() => { try { ytsIn.focus(); } catch (e) {} }, 60);
+// Şarkı sayfası görünür mü: mobilde bildirim paneli + 3. sayfa, masaüstünde profil panelinin Şarkı sekmesi
+function ytsActiveNow() {
+  if (isMobileLayout()) return view === 'notes' && bpPage === 2;
+  return document.body.classList.contains('dk-song');
 }
+function ytsSyncActive() {
+  const a = ytsActiveNow();
+  if (a === ytsModal.classList.contains('on')) return;
+  ytsModal.classList.toggle('on', a);
+  try { ytDockPlace(); } catch (e) {}
+  if (a) {
+    ytsSyncIcons();
+    try { ytPlUI(); } catch (e) {}
+    const onlyMsg = !ytsList.firstChild || ytsList.firstChild.classList.contains('yts-msg');
+    if (onlyMsg) ytsSetMode(ytsMode, true);   // kayıtlı aramayı geri getirir
+    ytsLayout();
+  } else {
+    try { ytsIn.blur(); } catch (e) {}
+    ytsLayout();
+  }
+}
+window.addEventListener('vn-view', () => { try { ytsSyncActive(); } catch (e) {} });
+function openYtSearch() {
+  if (isMobileLayout()) { try { goPanel(3); } catch (e) {} }
+  else { try { dkSetPage('song'); } catch (e) {} }
+  try { ytsSyncActive(); } catch (e) {}
+}
+// Şarkı çalınınca ya da linki sohbete gönderilince: mobilde sohbete döner; masaüstünde sohbet zaten yanında görünür, sayfa açık kalır
 function closeYtSearch() {
-  ytsModal.classList.remove('show');
   ytsToken++;
   try { ytsIn.blur(); } catch (e) {}
+  if (isMobileLayout() && ytsModal.classList.contains('on')) { try { goPanel(0); } catch (e) {} }
   setTimeout(() => { try { if (!messageInput.disabled) messageInput.focus(); } catch (e) {} }, 10);
 }
-ytsIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); runYtSearch(); ytsIn.blur(); } });
+ytsIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); ytsRecAdd(ytsIn.value); runYtSearch(); ytsIn.blur(); } });
 ytsIn.addEventListener('input', () => { if (ytsTimer) clearTimeout(ytsTimer); ytsTimer = setTimeout(runYtSearch, 200); });
 document.getElementById('ytsearch-x').addEventListener('click', closeYtSearch);
-ytsModal.addEventListener('click', (e) => { if (e.target === ytsModal) closeYtSearch(); });
 
 const YTS_PLAYLIST_ID = 'PLZHA2l3zqODc';
 const ytsPlCache = {};
@@ -8990,8 +9267,7 @@ try { const sv = lsGet('ytsQuery'); if (sv) ytsIn.value = sv; } catch (e) {}
 ytsClear.classList.toggle('show', ytsIn.value.length > 0);
 ytsIn.addEventListener('input', syncYtsClear);
 ytsClear.addEventListener('pointerdown', (e) => e.preventDefault());
-ytsClear.addEventListener('click', () => { ytsIn.value = ''; syncYtsClear(); runYtSearch(); try { ytsIn.focus(); } catch (e) {} });
-document.getElementById('ytsearch-whale').addEventListener('click', showYtPlaylist);
+ytsClear.addEventListener('click', () => { ytsIn.value = ''; syncYtsClear(); ytsStash = null; runYtSearch(); try { ytsIn.blur(); } catch (e) {} ytsLayout(); });
 
 /* ===== Kayıtlı liste kutucukları (4 adet): link yapıştır -> kapak + isim gelir, kapağa / isme basınca link arama kutusuna yapışır ===== */
 const YTS_SLOTS_KEY = 'ytsSlots';
@@ -9037,7 +9313,7 @@ function ytsShowSlots() {
     const pick = () => {
       const d = ytsSlots[i];
       if (!d) { try { inp.focus(); } catch (e) {} return; }
-      ytsIn.value = d.link; syncYtsClear(); runYtSearch(); // link arama kutusuna yapışır, liste açılır
+      ytsIn.value = d.link; syncYtsClear(); ytsSetMode('search', true); // link arama kutusuna yapışır, liste açılır
     };
     cv.addEventListener('click', pick); nm.addEventListener('click', pick);
     let timer = null;
@@ -9066,9 +9342,64 @@ function ytsShowSlots() {
     grid.appendChild(slot);
   }
   ytsList.appendChild(grid);
+  ytsHomeExtra(grid);
 }
-document.getElementById('ytsearch-slots').addEventListener('click', ytsShowSlots);
 
+
+/* ===== Şarkı sayfası modları: home (kayıtlı listeler) | search (arama) | whale (oynatma listesi) ===== */
+const ytsBox = document.getElementById('ytsearch-box');
+const ytsBar = document.getElementById('ytsearch-bar');
+const ytsTop = document.getElementById('yts-top');
+let ytsMode = 'search', ytsStash = null, ytsStashQ = '';
+function ytsCenterCalc() {
+  try {
+    const cs = getComputedStyle(ytsBox);
+    const pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+    const dk = document.getElementById('yt-dock');
+    const dh = (dk && dk.parentNode === ytsBox && dk.classList.contains('show')) ? dk.offsetHeight + 8 : 0;
+    const free = ytsBox.clientHeight - pad - ytsTop.offsetHeight - 8 - ytsBar.offsetHeight - (ytsRecEl.scrollHeight || 0) - dh;
+    ytsBox.style.setProperty('--yts-cy', Math.max(0, Math.round(free / 2)) + 'px');
+  } catch (e) {}
+}
+// Arama çubuğu: arama modunda, kutu boşsa ve klavye kapalıysa (odak yok) ortada; basılınca / yazı varken üstte
+function ytsLayout() {
+  const center = ytsMode === 'search' && !ytsIn.value.trim() && document.activeElement !== ytsIn;
+  ytsBox.dataset.mode = ytsMode;
+  if (center) ytsCenterCalc();
+  ytsBox.classList.toggle('yts-center', center);
+}
+function ytsSetMode(m, force) {
+  const prev = ytsMode;
+  if (m === prev && !force) { ytsLayout(); return; }
+  if (prev === 'search' && m !== 'search') {
+    const f = ytsList.firstChild;
+    const q = ytsIn.value.trim();
+    ytsStash = (q && !ytsListIdOf(q) && f && !f.classList.contains('yts-msg')) ? Array.prototype.slice.call(ytsList.childNodes) : null;
+    ytsStashQ = ytsIn.value;
+  }
+  ytsMode = m;
+  ytsTop.querySelectorAll('.yts-tab').forEach((b) => b.classList.toggle('on', b.id === 'yts-tab-' + m));
+  if (m === 'home') ytsShowSlots();
+  else if (m === 'whale') showYtPlaylist();
+  else {
+    try { ytPlStripFor(null); } catch (e) {}
+    if (ytsStash && ytsStashQ === ytsIn.value && ytsIn.value.trim()) {
+      ++ytsToken;
+      ytsList.innerHTML = '';
+      ytsStash.forEach((n) => ytsList.appendChild(n));
+      ytsSyncIcons();
+    } else runYtSearch();
+    ytsStash = null;
+  }
+  ytsLayout();
+}
+document.getElementById('yts-tab-home').addEventListener('click', () => ytsSetMode('home'));
+document.getElementById('yts-tab-search').addEventListener('click', () => ytsSetMode('search'));
+document.getElementById('yts-tab-whale').addEventListener('click', () => ytsSetMode('whale', true));
+ytsIn.addEventListener('focus', ytsLayout);
+ytsIn.addEventListener('blur', () => setTimeout(ytsLayout, 150));
+ytsIn.addEventListener('input', ytsLayout);
+if (window.ResizeObserver) new ResizeObserver(() => { if (ytsBox.classList.contains('yts-center')) ytsCenterCalc(); }).observe(ytsBox);
 
 /* ===== Oynatma listesi: karışık çalma (tek başına dinleme) ===== */
 const YTPL_KEY = 'ytShuffle';
@@ -9157,6 +9488,7 @@ function ytPlEngaged() {
 function ytPlPlayCurrent(t, resume, play) {
   if (!ytPl) return;
   const id = ytPl.order[ytPl.pos];
+  if (!resume) ytsRecPlayed(id);
   const old = ytsGhost;
   if (old) {
     try { old._pause(); } catch (e) {}
@@ -9184,11 +9516,12 @@ function ytPlStart(listId) {
   ytPlFails = 0;
   ytPlPersist();
   ytPlPlayCurrent(0, false);
-  closeYtSearch();
+  try { ytsIn.blur(); } catch (e) {}   // karışık çalma da yalnızca bizim dinlememiz: sohbete gitmez
 }
 function ytPlNext() {
   if (!ytPl) return;
   ytPl.pos++;
+  if (ytPl.seq && ytPl.pos >= ytPl.order.length) { ytPlStop(); return; } // sıralı çalma liste sonunda biter
   if (ytPl.pos >= ytPl.order.length) {
     // Listedeki tüm şarkılar bir kez çalındı: aynı listeden yeni bir karışık sıra
     const last = ytPl.order[ytPl.order.length - 1];
@@ -9254,7 +9587,7 @@ function ytMsSync() {
       try { navigator.mediaSession.setActionHandler('previoustrack', null); } catch (e) {}
     }
     if (ytPl) {
-      try { navigator.mediaSession.metadata = new MediaMetadata({ title: 'Karışık çalma', artist: 'VN' }); } catch (e) {}
+      try { navigator.mediaSession.metadata = new MediaMetadata({ title: (ytPl.seq ? 'Liste' : 'Karışık çalma'), artist: 'VN' }); } catch (e) {}
       const p = ytMsAudio.play(); if (p && p.catch) p.catch(() => {});
       navigator.mediaSession.playbackState = 'playing';
     } else {
@@ -9274,7 +9607,7 @@ window.addEventListener('keydown', (e) => {
 function ytPlPrev() {
   if (!ytPl) return;
   ytPl.pos--;
-  if (ytPl.pos < 0) ytPl.pos = ytPl.order.length - 1;
+  if (ytPl.pos < 0) ytPl.pos = ytPl.seq ? 0 : ytPl.order.length - 1;
   ytPl.t = 0; ytPl.playing = true; ytPl.at = Date.now();
   ytPlPersist();
   ytPlPlayCurrent(0, false);
@@ -9327,6 +9660,106 @@ function vnSaveBlob(blob, name, mime) {
       fr.readAsDataURL(blob);
     } catch (e) { resolve(false); }
   });
+}
+
+/* ===== Büyük "şimdi çalıyor" görünümü: alttaki şeride basınca büyük kapak + geniş şarkı sözleri ===== */
+let ytNpEl = null, ytNpTimer = null, ytNpSeek = false, ytNpUserAt = 0;
+const ytNpLy = { card: null, ask: null, lines: null, st: '', idx: -2, els: [] };
+function ytNpCard() { return (ytDockCard && ytDockCard.isConnected && ytDockCard._getState) ? ytDockCard : vnMediaCard(); }
+function ytNpBuild() {
+  const el = ytNpEl = document.createElement('div');
+  el.id = 'yt-np';
+  el.innerHTML = '<div class="np-bg"></div><div class="np-top"><button type="button" class="np-x" aria-label="Küçült">' + YTD_SVG('<path d="M6 9l6 6 6-6"/>') + '</button><b>Şimdi çalıyor</b><button type="button" class="np-fav" aria-label="Favori">' + YTD_SVG(YTS_HEART) + '</button></div>' +
+    '<div class="np-cover"></div><div class="np-t"></div><div class="np-a"></div>' +
+    '<div class="np-prog"><div class="np-track"><i></i></div><span class="np-tm np-tc" style="left:0">0:00</span><span class="np-tm np-td" style="right:0">0:00</span></div>' +
+    '<div class="np-ctl"><button type="button" class="np-prev" aria-label="Önceki">' + YTD_NEXT + '</button><button type="button" class="np-play" aria-label="Oynat">' + YTD_PLAY + '</button><button type="button" class="np-next" aria-label="Sonraki">' + YTD_NEXT + '</button></div>' +
+    '<div class="np-lyr"></div>';
+  document.body.appendChild(el);
+  const q = (x) => el.querySelector(x);
+  bindYtTap(q('.np-x'), ytNpClose);
+  bindYtTap(q('.np-play'), () => { const c = ytNpCard(); if (c && c._toggle) c._toggle(); });
+  bindYtTap(q('.np-next'), () => { try { if (ytPl) ytPlNext(); } catch (e) {} });
+  bindYtTap(q('.np-prev'), () => { try { if (ytPl) ytPlPrev(); } catch (e) {} });
+  bindYtTap(q('.np-fav'), () => { const c = ytNpCard(); if (!c || !c._ytId) return; const m = c._meta || {}; ytsFavToggle({ id: c._ytId, title: m.title, artist: m.artist }); });
+  const prog = q('.np-prog'); let fr = 0, d0 = 0;
+  const mv = (x) => { const r = prog.getBoundingClientRect(); fr = r.width ? Math.max(0, Math.min(1, (x - r.left) / r.width)) : 0; q('.np-track > i').style.width = (fr * 100) + '%'; q('.np-tc').textContent = ytFmt(fr * d0); };
+  bindYtSeek(prog, {
+    start: (x) => { const c = ytNpCard(); if (!c) return false; const st = c._getState(); if (!st.dur) return false; d0 = st.dur; ytNpSeek = true; mv(x); return true; },
+    move: mv,
+    end: (commit) => { ytNpSeek = false; const c = ytNpCard(); if (commit && c && c._seekSec) c._seekSec(fr * d0); }
+  });
+  const lyr = q('.np-lyr');
+  ['touchstart', 'wheel', 'mousedown'].forEach((ev) => lyr.addEventListener(ev, () => { ytNpUserAt = Date.now(); }, { passive: true }));
+  lyr.addEventListener('click', (e) => {
+    const c = ytNpCard(), row = e.target.closest('.np-ly');
+    if (!c || !row || row.dataset.i === undefined || !c._lyrData) return;
+    const L = c._lyrData();
+    if (!L || L.state !== 'ok' || !L.synced) return;
+    const ln = L.lines[parseInt(row.dataset.i, 10)];
+    if (ln && c._seekSec) { ytNpUserAt = 0; c._seekSec(ln.t); }
+  });
+  ['touchstart', 'touchmove', 'wheel'].forEach((ev) => el.addEventListener(ev, (e) => e.stopPropagation(), { passive: true }));
+}
+function ytNpOpen() {
+  if (!ytNpCard()) return;
+  if (!ytNpEl) ytNpBuild();
+  ytNpLy.card = null; ytNpLy.ask = null; ytNpLy.idx = -2;
+  ytNpEl.classList.add('show');
+  clearInterval(ytNpTimer); ytNpTimer = setInterval(ytNpTick, 250); ytNpTick();
+}
+function ytNpClose() { if (ytNpEl) ytNpEl.classList.remove('show'); clearInterval(ytNpTimer); ytNpTimer = null; }
+function ytNpTick() {
+  const c = ytNpCard(), el = ytNpEl;
+  if (!el || !c || c._ended) { ytNpClose(); return; }
+  let s; try { s = c._getState(); } catch (e) { ytNpClose(); return; }
+  const m = c._meta || {}, q = (x) => el.querySelector(x);
+  if (c._cover && el.dataset.cv !== c._cover) { el.dataset.cv = c._cover; const u = 'url(' + c._cover + ')'; q('.np-cover').style.backgroundImage = u; q('.np-bg').style.backgroundImage = u; }
+  q('.np-t').textContent = m.title || 'Şarkı'; q('.np-a').textContent = m.artist || '';
+  const pb = q('.np-play'), k = s.playing ? 'p' : 'q';
+  if (pb.dataset.i !== k) { pb.dataset.i = k; pb.innerHTML = s.playing ? YTD_PAUSE : YTD_PLAY; }
+  const pl = !!ytPl && !!c._ghost;
+  q('.np-prev').style.display = pl ? '' : 'none'; q('.np-next').style.display = pl ? '' : 'none';
+  q('.np-fav').classList.toggle('on', ytsIsFav(c._ytId));
+  if (!ytNpSeek) { q('.np-track > i').style.width = s.dur ? Math.min(100, s.cur / s.dur * 100) + '%' : '0'; q('.np-tc').textContent = ytFmt(s.cur); }
+  q('.np-td').textContent = ytFmt(s.dur);
+  try { ytNpLyr(c, s.cur); } catch (e) {}
+}
+function ytNpLyr(c, cur) {
+  const box = ytNpEl.querySelector('.np-lyr'), S = ytNpLy;
+  const L0 = c._lyrData ? c._lyrData() : null;
+  if (S.ask !== c || (L0 && L0.state === 'idle' && Date.now() >= (L0.retryAt || 0))) { S.ask = c; try { if (c._ensureLyrics) c._ensureLyrics(); } catch (e) {} }
+  const L = c._lyrData ? c._lyrData() : null; if (!L) return;
+  if (S.card !== c) { S.card = c; S.lines = null; S.st = ''; S.idx = -2; }
+  if (L.state !== 'ok') {
+    if (S.st === L.state && S.lines === null) return;
+    S.st = L.state; S.lines = null; S.els = []; S.idx = -2;
+    box.innerHTML = '';
+    const d = document.createElement('div'); d.className = 'np-ly msg';
+    d.textContent = L.state === 'none' ? 'Bu şarkı için söz bulunamadı' : (L.state === 'loading' ? 'Sözler aranıyor...' : 'Sözler yüklenemedi, tekrar deneniyor...');
+    box.appendChild(d);
+    return;
+  }
+  if (S.lines !== L.lines || S.st !== 'ok') {
+    S.lines = L.lines; S.st = 'ok'; S.els = []; S.idx = -2; box.innerHTML = ''; box.scrollTop = 0;
+    L.lines.forEach((ln, i) => {
+      const text = ln.text || (L.synced ? '\u266a' : '');
+      if (!text) return;
+      const d = document.createElement('div'); d.className = 'np-ly' + (L.synced ? '' : ' plain'); d.textContent = text; d.dataset.i = String(i);
+      box.appendChild(d); S.els[i] = d;
+    });
+  }
+  if (!L.synced) return;
+  const i = c._lyrIdx ? c._lyrIdx(cur) : -1;
+  if (i === S.idx) return;
+  const force = S.idx === -2;
+  if (S.els[S.idx]) S.els[S.idx].classList.remove('cur');
+  S.idx = i;
+  const cel = S.els[i];
+  if (cel) cel.classList.add('cur');
+  if (force || Date.now() - ytNpUserAt > 3500) {
+    const top = cel ? Math.max(0, cel.offsetTop + cel.offsetHeight / 2 - box.clientHeight / 2) : 0;
+    try { box.scrollTo({ top: top, behavior: force ? 'auto' : 'smooth' }); } catch (e) { box.scrollTop = top; }
+  }
 }
 
 // Sayfa yenilenince / açılınca: karışık oturum kaldığı şarkı ve saniyeden devam eder
@@ -9475,7 +9908,6 @@ micBtn.addEventListener('contextmenu', (e) => e.preventDefault());
 /* Alt satırdaki tuşlar */
 document.getElementById('tb-photo').addEventListener('click', () => { if (editingId) return; if (window.__kbPicker) window.__kbPicker.start(); fileInput.click(); });
 document.getElementById('tb-cam').addEventListener('click', () => { if (editingId) return; if (window.__kbPicker) window.__kbPicker.start(); cameraInput.click(); });
-document.getElementById('tb-song').addEventListener('click', () => { openYtSearch(); });
 document.getElementById('tb-call').addEventListener('click', () => { if (editingId) return; if (notifCanSend()) openCallCompose(); else if (thirdCanSend()) openDialPick(); });
 
 /* Kutu boşken alt satır görünür, yazı başlayınca kapanır (value programla değişse de) */
@@ -10633,7 +11065,7 @@ function restartBadgeBlink(el) {
 function updateBadges() {
   const mob = isMobileLayout();
   newNotesBadge.classList.toggle('show', mob && view === 'chat' && unreadNotes);
-  newMsgBadge.classList.toggle('show', mob && view === 'notes' && unreadMsgs);
+  newMsgBadge.classList.toggle('show', mob && view === 'notes' && (unreadMsgs || (unreadBell && ytBellOnSong())));
   { const cb = document.querySelector('.bp-cmd'); if (cb) cb.classList.toggle('new', mob && view === 'notes' && unreadMsgs); }
   try { updatePageBadges(); } catch (e) {}
 }
@@ -10645,7 +11077,7 @@ function setView(v) {
   view = v;
   slider.classList.remove('dragging');
   slider.style.transform = (v === 'notes') ? 'translateX(-50%)' : 'translateX(0px)';
-  if (v !== 'notes') unreadMsgs = false;
+  if (v !== 'notes') { unreadMsgs = false; unreadBell = false; }
   if (v === 'notes') unreadNotes = false;
   if (isMobileLayout() && changed) {
     kbGuard = false; menuRestoreFocus = false;
@@ -10671,10 +11103,16 @@ function noteIncomingMessage(info) {
   if (isMobileLayout() && view === 'notes') { unreadMsgs = true; updateBadges(); restartBadgeBlink(newMsgBadge); try { chatToastFor(info); } catch (e) {} }
 }
 
-function noteIncomingNotif() {
+function noteIncomingNotif(i) {
   if (isMobileLayout() && view === 'chat') { unreadNotes = true; updateBadges(); restartBadgeBlink(newNotesBadge); }
+  else if (isMobileLayout() && view === 'notes' && ytBellOnSong() && i !== 2) { unreadBell = true; updateBadges(); restartBadgeBlink(newMsgBadge); }
 }
-newMsgBadge.addEventListener('click', () => setView('chat'));
+newMsgBadge.addEventListener('click', () => {
+  if (unreadMsgs || !unreadBell) { setView('chat'); return; }
+  const j = (typeof bpLastNew !== 'undefined' && bpLastNew) ? bpLastNew : null;
+  unreadBell = false; updateBadges();
+  bpGoTo(j ? j.page : 0, j ? j.tgt : null);
+});
 newNotesBadge.addEventListener('click', () => {
   let j = null;
   try { j = bpJumpInfo(); } catch (e) {}
@@ -10687,7 +11125,7 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
   const innerSlider = document.getElementById('bp-slider');
   const tabsIn = document.getElementById('bp-tabs-in');
   let st = null;
-  // Paneller: 0 = CMD (sohbet), 1 = Bildirim, 2 = Profil
+  // Paneller: 0 = CMD (sohbet), 1 = Bildirim, 2 = Profil, 3 = Şarkı
   panes.addEventListener('touchstart', (e) => {
     st = null;
     if (!isMobileLayout() || e.touches.length !== 1) return;
@@ -10707,7 +11145,7 @@ else if (mqMobile.addListener) mqMobile.addListener(updateBadges);
       if (Math.abs(dx) > Math.abs(dy) * 1.2) {
         const idx = st.idx;
         // CMD'de sağa kaydırma mesaj yanıtı; sonda sola yok; bildirim kartında sağa kaydırma kartı siler
-        if ((dx > 0 && idx === 0) || (dx < 0 && idx === 2) || (dx > 0 && idx === 1 && st.card)) { st = null; return; }
+        if ((dx > 0 && idx === 0) || (dx < 0 && idx === BP_PAGES) || (dx > 0 && idx === 1 && st.card)) { st = null; return; }
         st.mode = 'h';
         st.dir = dx < 0 ? 1 : -1;
         st.target = idx + st.dir;
@@ -11152,10 +11590,10 @@ function syncBellPanel() {
 }
 
 /* Bildirim penceresi: mobilde altta Bildirim | Profil sekmeleri; son seçilen sayfa hatırlanır. Masaüstünde bildirim solda, profil sağda, ikisi de hep açık */
-let bpPage = (() => { const v = parseInt(lsGet('bpPage') || '0', 10); return (v >= 0 && v <= 1) ? v : 0; })();
-const BP_PAGES = 2;
+let bpPage = (() => { const v = parseInt(lsGet('bpPage') || '0', 10); return (v >= 0 && v <= 2) ? v : 0; })();
+const BP_PAGES = 3;
 ['cardFire','cardOutbox','cardState','cdAnimState','tagStrip','thirdCard','thirdOwnId'].forEach(lsRemove); // eski kalıntıları temizle
-const bpUnread = [false, false];
+const bpUnread = [false, false, false];
 let bpLastNew = null; // en son gelen yeni şey: {page, tgt}
 function bpDots() { document.querySelectorAll('.bp-tab').forEach((b, i) => { if (b.classList.contains('bp-cmd')) return; b.classList.toggle('new', !!bpUnread[i]); });}
 /* ===== Üstten inen bildirim kutusu (yalnızca mobil) ===== */
@@ -11272,12 +11710,13 @@ function bpGoTo(page, tgt) {
   setTimeout(() => { const l = document.getElementById('bp-list'); if (l) { try { l.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { l.scrollTop = 0; } } }, wasChat ? 420 : 300);
 }
 // Seçili olmayan sayfaya yeni gönderi gelirse o sekmenin köşesinde kırmızı nokta çıkar
-function bpMarkUnread(i, tgt) { try { noteIncomingNotif(); } catch (e) {} bpLastNew = { page: i, tgt: tgt || null }; try { bpToastFor(i, tgt || null); } catch (e) {} if (i === bpPage) return; bpUnread[i] = true; bpDots(); }
+function bpMarkUnread(i, tgt) { try { noteIncomingNotif(i); } catch (e) {} bpLastNew = { page: i, tgt: tgt || null }; try { bpToastFor(i, tgt || null); } catch (e) {} if (i === bpPage) return; bpUnread[i] = true; bpDots(); }
 function bpSetPage(p, instant) {
   if (!isMobileLayout()) return;   // masaüstünde sayfa geçişi yok: bildirim solda, profil sağda, ikisi de hep açık
   p = Math.max(0, Math.min(BP_PAGES - 1, p));
   if (instant) bellPop.classList.add('no-anim');
   bpPage = p;
+  if (unreadBell) { unreadBell = false; try { updateBadges(); } catch (e) {} }
   document.getElementById('bp-slider').style.setProperty('--bp-page', String(p));
   document.getElementById('bp-tabs-in').style.setProperty('--bp-page', String(p));
   if (instant) { void bellPop.offsetWidth; bellPop.classList.remove('no-anim'); }
@@ -11288,6 +11727,7 @@ function bpSetPage(p, instant) {
   bpDots();
   try { lsSet('bpPage', String(p)); } catch (e) {}
   try { syncMobileBar(); } catch (e) {}
+  try { ytsSyncActive(); } catch (e) {}
 }
 // Yazma (oluşturma) ekranı açıkken sekmeler gizlenir, ekran panelin tamamını kaplar
 (function initBellComposeWatch() {
@@ -11383,22 +11823,62 @@ function goPanel(idx) {
   bpSetPage(bpPage, true);
 })();
 // Masaüstünde bildirim paneli solda (eski ayar paneli alanında), profil sağ panelde durur; mobilde ikisi de eski yerine (sağ panelin sayfaları) döner
+let dkPage = (lsGet('dkPage') === 'song') ? 'song' : 'prof';   // masaüstünde profil panelinin açık sayfası
+function dkSetPage(which) {
+  if (isMobileLayout()) return;
+  const song = (which === 'song');
+  dkPage = song ? 'song' : 'prof';
+  document.body.classList.toggle('dk-song', song);
+  const dk = document.getElementById('dk-tabs');
+  if (dk) {
+    const inn = dk.firstElementChild;
+    if (inn) inn.style.setProperty('--dk-i', song ? '1' : '0');
+    dk.querySelectorAll('.dk-tab').forEach((b) => b.classList.toggle('on', b.dataset.d === dkPage));
+  }
+  if (song) { try { pfSetEdit(false); } catch (e) {} }
+  else { try { pfRender(); } catch (e) {} }
+  try { ytsSyncActive(); } catch (e) {}
+  try { lsSet('dkPage', dkPage); } catch (e) {}
+}
 (function initDeskPanes() {
   const left = document.getElementById('pane-settings');
   const right = document.getElementById('pane-notes');
   const prof = document.getElementById('bp-page-prof');
+  const song = document.getElementById('ytsearch-modal');
   const sl = document.getElementById('bp-slider');
-  if (!left || !right || !prof || !sl) return;
+  if (!left || !right || !prof || !sl || !song) return;
+  // Masaüstü alt çubuğu: yalnızca Profil <-> Şarkı geçişi (mobildeki çubukla aynı görünüm)
+  const dk = document.createElement('div');
+  dk.id = 'dk-tabs';
+  dk.innerHTML = '<div id="dk-tabs-in"><div id="dk-pill"></div>' +
+    '<button type="button" class="dk-tab on" data-d="prof" aria-label="Profil" title="Profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></button>' +
+    '<button type="button" class="dk-tab" data-d="song" aria-label="Şarkı" title="Şarkı"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button></div>';
+  dk.querySelectorAll('.dk-tab').forEach((b) => {
+    b.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
+    b.addEventListener('mousedown', (e) => e.preventDefault());
+    b.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      if (isMobileLayout()) return;
+      dkSetPage(b.dataset.d);
+    });
+  });
+  right.appendChild(dk);
   function place() {
     const desk = !mqMobile.matches;
     document.body.classList.toggle('desk-split', desk);
     if (desk) {
       if (bellPop.parentNode !== left) left.appendChild(bellPop);
       if (prof.parentNode !== right) right.appendChild(prof);
+      if (song.parentNode !== right) right.appendChild(song);
+      right.appendChild(dk);   // çubuk her zaman en altta
+      dkSetPage(dkPage);
     } else {
       if (prof.parentNode !== sl) sl.appendChild(prof);
+      if (song.parentNode !== sl) sl.appendChild(song);
       if (bellPop.parentNode !== right) right.insertBefore(bellPop, right.firstChild);
+      document.body.classList.remove('dk-song');
     }
+    try { ytsSyncActive(); } catch (e) {}
   }
   place();
   if (mqMobile.addEventListener) mqMobile.addEventListener('change', place);
