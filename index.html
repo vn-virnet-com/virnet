@@ -742,7 +742,7 @@ body:not(.lv-admin):not(.pin-third) #tb-call { display: none; }
 .yt-card .yt-join, .yt-card .yt-play { transition: opacity .25s, transform .1s; }
 .yt-card.yt-locked .yt-join, .yt-card.yt-locked:not(.is-playing) .yt-play { opacity: .3; filter: saturate(0); cursor: default; animation: none !important; }
 @keyframes ytJoinPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
-.yt-lyrics { display: none; width: 100%; height: 138px; overflow-y: auto; position: relative; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border-radius: var(--r-lg); background: color-mix(in srgb, var(--c-000) 32%, transparent); touch-action: pan-y; -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); scrollbar-width: none; }
+.yt-lyrics { display: none; width: 100%; height: 138px; overflow-y: auto; position: relative; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border-radius: var(--r-lg); background: none; touch-action: pan-y; -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); scrollbar-width: none; }
 .yt-lyrics::-webkit-scrollbar { display: none; }
 .yt-card .yt-lyrics { display: none !important; }
 .yt-lyr-in { padding: 24px 10px; }
@@ -782,7 +782,7 @@ body:not(.lv-admin):not(.pin-third) #tb-call { display: none; }
 .ytd-prog.seeking .ytd-track > i::after { transform: scale(1.3); }
 .ytd-info { font-size: 11px; line-height: 14px; font-weight: 600; text-align: center; color: var(--yt-a72); white-space: nowrap; overflow: hidden; padding: 0 2px 5px; }
 .ytd-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.ytd-lyr { display: none; position: relative; box-sizing: border-box; height: 84px; padding: 28px 0; margin-top: 6px; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; scroll-snap-type: y mandatory; scrollbar-width: none; border-radius: var(--r-lg); background: color-mix(in srgb, var(--c-000) 32%, transparent); }
+.ytd-lyr { display: none; position: relative; box-sizing: border-box; height: 84px; padding: 28px 0; margin-top: 6px; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; scroll-snap-type: y mandatory; scrollbar-width: none; border-radius: var(--r-lg); background: none; -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); }
 .ytd-lyr::-webkit-scrollbar { display: none; }
 #yt-dock.lyr-open .ytd-lyr { display: block; }
 .ytd-ly { box-sizing: border-box; min-height: 28px; display: flex; align-items: center; justify-content: center; line-height: 17px; padding: 4px 10px; text-align: center; white-space: normal; overflow-wrap: anywhere; scroll-snap-align: center; font-size: 13px; font-weight: 700; color: var(--yt-a50); }
@@ -944,6 +944,9 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 .yts-slot-ch { position: absolute; top: 10px; right: 10px; z-index: 2; box-sizing: border-box; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.55); color: #fff; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .yts-slot-ch svg { display: block; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 .yts-slot-ch:active { transform: scale(.92); }
+/* Ana sayfadaki liste kapakları kare: kutu genişliği kadar, yüksekliği kendisi belirler */
+#yts-slots { min-height: 0; grid-template-rows: none; grid-auto-rows: auto; align-content: start; }
+.yts-slot-cv { flex: 0 0 auto; width: 100%; aspect-ratio: 1 / 1; min-height: 0; }
 .ytd-up { display: none; align-items: center; justify-content: center; height: 16px; margin: -5px 0 1px; cursor: pointer; color: var(--yt-a72); -webkit-tap-highlight-color: transparent; }
 .ytd-up svg { display: block; width: 40px; height: 9px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 .ytd-up:active { color: var(--c-fff); }
@@ -979,7 +982,7 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 #yt-np .np-tm { position: absolute; top: 19px; font-size: 10px; line-height: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--c-88); pointer-events: none; }
 #yt-np .np-ctl { flex: 0 0 auto; display: flex; align-items: center; gap: 18px; margin: 0 0 8px; }
 #yt-np .np-ctl .np-play { width: 58px; height: 58px; background: var(--accent); color: var(--on-accent); }
-#yt-np .np-lyr { position: relative; flex: 1 1 0; min-height: 110px; align-self: stretch; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; scrollbar-width: none; padding: 40px 0; box-sizing: border-box; border-radius: var(--r-lg); background: color-mix(in srgb, var(--c-000) 38%, transparent); -webkit-mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent); }
+#yt-np .np-lyr { position: relative; flex: 1 1 0; min-height: 110px; align-self: stretch; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; scrollbar-width: none; padding: 40px 0; box-sizing: border-box; border-radius: var(--r-lg); background: none; -webkit-mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent); }
 #yt-np .np-lyr::-webkit-scrollbar { display: none; }
 .np-ly { padding: 6px 12px; text-align: center; font-size: 18px; line-height: 24px; font-weight: 700; overflow-wrap: anywhere; color: color-mix(in srgb, var(--c-fff) 40%, transparent); }
 .np-ly.cur { color: var(--c-fff); }
@@ -9410,8 +9413,9 @@ function ytsShowSlots() {
     ch.addEventListener('click', (e) => {
       e.stopPropagation();
       let p = null;
-      try { if (navigator.clipboard && navigator.clipboard.readText) p = navigator.clipboard.readText(); } catch (x) {}
-      (p || Promise.reject(new Error('noclip'))).then(load).catch(() => { const v = window.prompt('Liste linkini yapıştır'); if (v) load(v); });
+      try { if (window.VNApp && typeof VNApp.clip === 'function') p = Promise.resolve(VNApp.clip()); } catch (x) {}   // APK: doğrudan telefonun panosu
+      try { if (!p && navigator.clipboard && navigator.clipboard.readText) p = navigator.clipboard.readText(); } catch (x) {}
+      (p || Promise.reject(new Error('noclip'))).then(load).catch(() => { flashStatus('Pano okunamadı'); });
     });
     paint(ytsSlots[i]);
     slot.appendChild(cv); slot.appendChild(nm); slot.appendChild(ch);
