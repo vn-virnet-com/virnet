@@ -931,6 +931,9 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 .yts-fav.on { color: #ff4d6d; }
 .yts-fav.on svg { fill: currentColor; }
 #yts-slots { grid-template-rows: 1fr 1fr auto; }
+.ytd-up { display: flex; align-items: center; justify-content: center; height: 16px; margin: -5px 0 1px; cursor: pointer; color: var(--yt-a72); -webkit-tap-highlight-color: transparent; }
+.ytd-up svg { display: block; width: 40px; height: 9px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.ytd-up:active { color: var(--c-fff); }
 .yts-artist { display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: var(--r-lg); background: var(--c-1a); border: 1px solid var(--accent); cursor: pointer; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
 .yts-artist img { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 50%; object-fit: cover; background: var(--c-33); }
 .yts-artist > svg { width: 18px; height: 18px; flex: 0 0 18px; margin-right: 6px; fill: none; stroke: var(--c-88); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
@@ -960,7 +963,7 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 #yt-np .np-tm { position: absolute; top: 19px; font-size: 10px; line-height: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--c-88); pointer-events: none; }
 #yt-np .np-ctl { flex: 0 0 auto; display: flex; align-items: center; gap: 18px; margin: 0 0 8px; }
 #yt-np .np-ctl .np-play { width: 58px; height: 58px; background: var(--accent); color: var(--on-accent); }
-#yt-np .np-lyr { flex: 1 1 0; min-height: 110px; align-self: stretch; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; scrollbar-width: none; padding: 40px 0; box-sizing: border-box; border-radius: var(--r-lg); background: color-mix(in srgb, var(--c-000) 38%, transparent); -webkit-mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent); }
+#yt-np .np-lyr { position: relative; flex: 1 1 0; min-height: 110px; align-self: stretch; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; scrollbar-width: none; padding: 40px 0; box-sizing: border-box; border-radius: var(--r-lg); background: color-mix(in srgb, var(--c-000) 38%, transparent); -webkit-mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent); }
 #yt-np .np-lyr::-webkit-scrollbar { display: none; }
 .np-ly { padding: 6px 12px; text-align: center; font-size: 18px; line-height: 24px; font-weight: 700; overflow-wrap: anywhere; color: color-mix(in srgb, var(--c-fff) 40%, transparent); }
 .np-ly.cur { color: var(--c-fff); }
@@ -4965,6 +4968,7 @@ function ytDockBuild() {
   const el = document.createElement('div');
   el.id = 'yt-dock';
   el.innerHTML =
+    '<div class="ytd-up" role="button" aria-label="Büyük görünüm"><svg viewBox="0 0 48 10" aria-hidden="true"><path d="M3 8.5 24 2l21 6.5"/></svg></div>' +
     '<div class="ytd-info"></div>' +
     '<div class="ytd-main">' +
       '<div class="ytd-cover"></div>' +
@@ -9757,7 +9761,7 @@ function ytNpLyr(c, cur) {
   const cel = S.els[i];
   if (cel) cel.classList.add('cur');
   if (force || Date.now() - ytNpUserAt > 3500) {
-    const top = cel ? Math.max(0, cel.offsetTop + cel.offsetHeight / 2 - box.clientHeight / 2) : 0;
+    const top = cel ? Math.max(0, box.scrollTop + cel.getBoundingClientRect().top - box.getBoundingClientRect().top + cel.offsetHeight / 2 - box.clientHeight / 2) : 0;
     try { box.scrollTo({ top: top, behavior: force ? 'auto' : 'smooth' }); } catch (e) { box.scrollTop = top; }
   }
 }
