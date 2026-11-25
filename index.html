@@ -1959,8 +1959,8 @@ background: var(--c-111); border: 1px solid var(--accent); box-shadow: none; tex
 #vol-pill .vp-ic svg { display: block; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 #vol-pill .vp-pct { position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 2; display: flex; align-items: center; justify-content: center; font: 700 13px/1 'Lexend', sans-serif; font-variant-numeric: tabular-nums; color: #fff; mix-blend-mode: difference; transition: transform .2s ease; }
 #vol-pill .vp-pct b { font: inherit; }
-#vol-pill .vp-warn { position: absolute; left: 0; right: 0; top: 22px; z-index: 2; text-align: center; font: 700 8.5px/1 'Lexend', sans-serif; color: #000; white-space: nowrap; opacity: 0; transition: opacity .2s ease; }
-#vol-pill.warn .vp-ic, #vol-pill.warn .vp-pct { mix-blend-mode: normal; color: #000; }
+#vol-pill .vp-warn { position: absolute; left: 0; right: 0; top: 22px; z-index: 2; text-align: center; font: 700 8.5px/1 'Lexend', sans-serif; color: var(--c-000); white-space: nowrap; opacity: 0; transition: opacity .2s ease; }
+#vol-pill.warn .vp-ic, #vol-pill.warn .vp-pct { mix-blend-mode: normal; color: var(--c-000); }
 #vol-pill.warn .vp-pct { transform: translateY(-5px); }
 #vol-pill.warn .vp-warn { opacity: 1; }
 </style>
@@ -6461,7 +6461,7 @@ try {
 if (!el || !el.isConnected) build();
 lastMx = mx > 0 ? mx : 15; lastHp = hp ? 1 : 0;
 var p = mx > 0 ? Math.max(0, Math.min(1, v / mx)) : 0;
-var warn = !!hp && p > 0.7;
+var warn = !!hp && p > 0.6;
 if (!el.classList.contains('show')) {
 offs();
 fill.style.transition = 'none';
@@ -6471,7 +6471,7 @@ fill.style.transition = '';
 }
 fill.style.transform = 'scaleX(' + p + ')';
 lastP = p;
-var t = Math.round(p * 100) + '%';
+var t = (Math.round(p * 20) * 5) + '%';
 if (pct.textContent !== t) pct.textContent = t;
 var k = p === 0 ? 'o' : (p < 0.5 ? 'l' : 'h');
 if (ic.dataset.k !== k) { ic.dataset.k = k; ic.innerHTML = k === 'o' ? IC_OFF : (k === 'l' ? IC_LOW : IC_HI); }
