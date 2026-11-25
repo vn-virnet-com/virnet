@@ -13401,7 +13401,7 @@ guard();
 #wx .wx-e { position: absolute; left: 0; top: 50%; margin-top: 8px; font-size: 6.5px; font-weight: 700; line-height: 1; letter-spacing: .2px; white-space: nowrap; font-variant-numeric: tabular-nums; color: #fff; opacity: 0; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
 #wx .wx-e.on { opacity: .75; }
 #wx .wx-gc { fill: none; stroke-width: 3; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-#wx .wx-gc[data-c="0"] { stroke: #2EE6D6; }
+#wx .wx-gc[data-c="0"] { stroke: #4FC3F7; }
 #wx .wx-gc[data-c="1"] { stroke: #FFD23F; }
 #wx .wx-gc[data-c="2"] { stroke: #3B5BDB; }
 #wx .wx-ax { position: absolute; left: 4px; width: 22px; top: 4px; bottom: 25px; pointer-events: none; }
@@ -13562,10 +13562,10 @@ clearTimeout(phTimer);
 phTimer = setTimeout(function () { L.forEach(function (el) { if (!el.classList.contains('on')) el.classList.remove('prev'); }); }, 2900);
 }
 function xOfT(t) {
-var A = [[7, 0], [12, 1 / 6], [16, 1 / 2], [21, 5 / 6], [31, 1]], k;
-if (t <= 7) return 0;
+var A = [[7, 1 / 6], [15, 1 / 2], [19, 5 / 6], [31, 1]], k;
+if (t <= 7) return 1 / 6;
 if (t >= 31) return 1;
-for (k = 0; k < 4; k++) if (t <= A[k + 1][0]) return A[k][1] + (t - A[k][0]) / (A[k + 1][0] - A[k][0]) * (A[k + 1][1] - A[k][1]);
+for (k = 0; k < 3; k++) if (t <= A[k + 1][0]) return A[k][1] + (t - A[k][0]) / (A[k + 1][0] - A[k][0]) * (A[k + 1][1] - A[k][1]);
 return 1;
 }
 function mono(xs, ys) {
@@ -13605,7 +13605,7 @@ gh += '<i class="wx-gh" style="top:' + yy + '"></i>';
 });
 u.forEach(function (v, m) { ah += '<span style="top:' + (LV[m] / 40 * 100).toFixed(2) + '%">' + v + '°</span>'; });
 put('gd', elGd, gh, true); put('ax', elAx, ah, true);
-xs = [7, 12, 16, 21, 31].map(xOfT);
+xs = [0, 1 / 6, 1 / 2, 5 / 6, 1];
 f = mono(xs, ys);
 for (i = 0; i <= 72; i++) { x = i / 72; path += (i ? 'L' : 'M') + (x * 100).toFixed(2) + ' ' + f(x).toFixed(2); }
 if (cache.gp !== path) { cache.gp = path; elG.setAttribute('d', path); }
@@ -13626,7 +13626,7 @@ put('dl', elDl, z(n.h) + ':' + z(n.m));
 var y0 = (f(0) / 40 * 100).toFixed(2) + '%', y1 = (f(1) / 40 * 100).toFixed(2) + '%';
 if (cache.y0 !== y0) { cache.y0 = y0; elE0.style.top = y0; }
 if (cache.y1 !== y1) { cache.y1 = y1; elE1.style.top = y1; }
-elE0.classList.add('on'); elE1.classList.add('on');
+elE0.classList.remove('on'); elE1.classList.add('on');
 if (!dotInit) { dotInit = true; setTimeout(function () { elDot.classList.add('sm'); }, 80); }
 }
 (function wxSeg() {
