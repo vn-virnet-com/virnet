@@ -13398,7 +13398,7 @@ guard();
 #wx .wx-dot { position: absolute; left: 0; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.28), 0 1px 4px rgba(0,0,0,.35); opacity: 0; }
 #wx .wx-dot.on { opacity: 1; }
 #wx .wx-dl { position: absolute; left: 50%; bottom: 100%; margin-bottom: 5px; transform: translateX(-50%); font-size: 7px; font-weight: 700; line-height: 1; letter-spacing: .2px; white-space: nowrap; font-variant-numeric: tabular-nums; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.45); pointer-events: none; }
-#wx .wx-e { position: absolute; left: 0; top: 50%; margin-top: -14px; font-size: 6.5px; font-weight: 700; line-height: 1; letter-spacing: .2px; white-space: nowrap; font-variant-numeric: tabular-nums; color: #fff; opacity: 0; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+#wx .wx-e { position: absolute; left: 0; top: 50%; margin-top: 8px; font-size: 6.5px; font-weight: 700; line-height: 1; letter-spacing: .2px; white-space: nowrap; font-variant-numeric: tabular-nums; color: #fff; opacity: 0; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
 #wx .wx-e.on { opacity: .75; }
 #wx .wx-e0 { transform: translateX(-50%); }
 #wx .wx-e1 { left: auto; right: 0; transform: translateX(50%); }
@@ -13551,18 +13551,12 @@ else if (el.classList.contains('on')) { el.classList.remove('on'); el.classList.
 clearTimeout(phTimer);
 phTimer = setTimeout(function () { L.forEach(function (el) { if (!el.classList.contains('on')) el.classList.remove('prev'); }); }, 2900);
 }
-function xOfT(t, X) {
-if (t <= 7) return X[0];
-if (t <= 15) return X[0] + (t - 7) / 8 * (X[1] - X[0]);
-if (t <= 19) return X[1] + (t - 15) / 4 * (X[2] - X[1]);
-if (t <= 31) return X[2] + (t - 19) / 12 * (1 - X[2]);
+function xOfT(t) {
+if (t <= 7) return 0;
+if (t <= 15) return (t - 7) / 8 * 0.5;
+if (t <= 19) return 0.5 + (t - 15) / 4 * 0.36;
+if (t <= 31) return 0.86 + (t - 19) / 12 * 0.14;
 return 1;
-}
-function colX() {
-var g = elG.parentNode, st = g.parentNode, gw = g.offsetWidth, sw = st.clientWidth, gl = g.offsetLeft, k, X = [];
-if (!(gw > 0 && sw > 0)) return { X: [1 / 6, 1 / 2, 5 / 6], gw: 0 };
-for (k = 0; k < 3; k++) X.push(((k + .5) * sw / 3 - gl) / gw);
-return { X: X, gw: gw };
 }
 function mono(xs, ys) {
 var n = xs.length, d = [], m = [], k;
@@ -13581,16 +13575,16 @@ var p = phaseOf(n.h), sk = addDays(n.key, p.off), r = recOf(tb, sk) || {}, d = r
 if (!(d || e || g)) { put('sv', elSv, '', true); if (cache.gp) { cache.gp = ''; elG.setAttribute('d', ''); } elDot.classList.remove('on'); elE0.classList.remove('on'); elE1.classList.remove('on'); return; }
 d = d || e || g; e = e || d || g; g = g || e || d;
 put('sv', elSv, '<span class="wx-ss"><em>GÜN</em>' + d[0] + '°C' + mini(d, false) + '</span><span class="wx-ss"><em>AKŞ</em>' + e[0] + '°C' + mini(e, false) + '</span><span class="wx-ss"><em>GEC</em>' + g[0] + '°C' + mini(g, true) + '</span>', true);
-var cx = colX(), X = cx.X, gw = cx.gw;
-ts = [d[0], e[0], g[0], g[0]];
+pr = recOf(tb, addDays(sk, -1)); pv = pr && pr.s21 ? pr.s21[0] : g[0];
+ts = [pv, d[0], e[0], g[0], g[0]];
 lo = Math.min.apply(null, ts); hi = Math.max.apply(null, ts); span = Math.max(hi - lo, 6); mid = (hi + lo) / 2;
 ys = ts.map(function (T) { return 6 + (1 - (T - (mid - span / 2)) / span) * 28; });
-xs = [X[0], X[1], X[2], 1];
+xs = [7, 12, 16, 21, 31].map(xOfT);
 f = mono(xs, ys);
-for (i = 0; i <= 72; i++) { x = X[0] + (1 - X[0]) * i / 72; path += (i ? 'L' : 'M') + (x * 100).toFixed(2) + ' ' + f(x).toFixed(2); }
+for (i = 0; i <= 72; i++) { x = i / 72; path += (i ? 'L' : 'M') + (x * 100).toFixed(2) + ' ' + f(x).toFixed(2); }
 if (cache.gp !== path) { cache.gp = path; elG.setAttribute('d', path); }
-t = n.h + n.m / 60 + (n.h < 7 ? 24 : 0);
-x = xOfT(t, X); dx = (x * 100).toFixed(2) + '%'; dy = (f(x) / 40 * 100).toFixed(2) + '%';
+t = n.h + n.m / 60; if (p.off === -1 || n.h < 7) t = n.h + n.m / 60 + (n.h < 7 ? 24 : 0);
+x = xOfT(t); dx = (x * 100).toFixed(2) + '%'; dy = (f(x) / 40 * 100).toFixed(2) + '%';
 var snap = snapDot && dotInit; snapDot = false;
 if (snap) elDot.classList.remove('sm');
 if (cache.dx !== dx) { cache.dx = dx; elDot.style.left = dx; }
@@ -13598,17 +13592,12 @@ if (cache.dy !== dy) { cache.dy = dy; elDot.style.top = dy; }
 if (snap) { void elDot.offsetWidth; elDot.classList.add('sm'); }
 elDot.classList.add('on');
 put('dl', elDl, z(n.h) + ':' + z(n.m));
-var y0 = (f(X[0]) / 40 * 100).toFixed(2) + '%', y1 = (f(1) / 40 * 100).toFixed(2) + '%', l0 = (X[0] * 100).toFixed(2) + '%';
-if (cache.l0 !== l0) { cache.l0 = l0; elE0.style.left = l0; }
+var y0 = (f(0) / 40 * 100).toFixed(2) + '%', y1 = (f(1) / 40 * 100).toFixed(2) + '%';
 if (cache.y0 !== y0) { cache.y0 = y0; elE0.style.top = y0; }
 if (cache.y1 !== y1) { cache.y1 = y1; elE1.style.top = y1; }
-elE0.classList.toggle('on', !gw || Math.abs(x - X[0]) * gw > 22); elE1.classList.toggle('on', !gw || Math.abs(x - 1) * gw > 22);
+elE0.classList.add('on'); elE1.classList.add('on');
 if (!dotInit) { dotInit = true; setTimeout(function () { elDot.classList.add('sm'); }, 80); }
 }
-(function wxRo() {
-var st = root.querySelector('.wx-strip');
-if (st && window.ResizeObserver) { try { new ResizeObserver(function () { snapDot = true; render(); }).observe(st); } catch (e) {} }
-})();
 (function wxSeg() {
 var seg = root.querySelector('.wx-seg'), btns = Array.prototype.slice.call(seg.querySelectorAll('.wx-sb')), had = false;
 function mi() { return document.getElementById('message-input'); }
