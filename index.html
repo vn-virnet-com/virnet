@@ -949,7 +949,9 @@ body.once-viewing #status-bar, body.once-viewing #typing-indicator, body.once-vi
 .yts-favcv { width: 44px; height: 44px; flex: 0 0 44px; border-radius: var(--r-md); background: var(--c-33); display: flex; align-items: center; justify-content: center; color: #ff4d6d; }
 .yts-favcv svg { width: 22px; height: 22px; fill: currentColor; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .yts-sec { flex: 0 0 auto; padding: 10px 4px 2px; font-size: 12px; font-weight: 700; color: var(--c-88); }
-.yts-back { cursor: pointer; color: var(--c-fff); }
+.yts-back { flex: 0 0 auto; align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; box-sizing: border-box; height: 36px; margin: 6px 0 4px; padding: 0 16px 0 10px; border-radius: 18px; background: var(--c-22); color: var(--c-fff); font-size: 14px; font-weight: 600; line-height: 1; cursor: pointer; -webkit-user-select: none; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: background-color .12s ease, transform .1s ease; }
+.yts-back svg { display: block; flex: 0 0 auto; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.yts-back:active { background: var(--c-33); transform: scale(.96); }
 #yt-np { position: fixed; inset: 0; z-index: 22000; display: none; flex-direction: column; align-items: center; box-sizing: border-box; padding: calc(env(safe-area-inset-top, 0px) + 12px) 18px calc(env(safe-area-inset-bottom, 0px) + 14px); background: var(--c-000); color: var(--c-fff); font-family: 'Lexend', sans-serif; overflow: hidden; }
 #yt-np.show { display: flex; animation: npIn .25s ease-out; }
 @keyframes npIn { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -8934,7 +8936,7 @@ function ytsShowFavs() {
   ++ytsToken;
   ytsRender(ytsFavs, 500);
   if (!ytsFavs.length) ytsMsg('Henüz favori şarkı yok. Bir şarkıdaki kalbe dokun.');
-  const h = document.createElement('div'); h.className = 'yts-sec yts-back'; h.textContent = '\u2039 Favori şarkılar';
+  const h = document.createElement('div'); h.className = 'yts-back'; h.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span>Geri</span>';
   h.addEventListener('click', () => ytsSetMode('home', true));
   ytsList.insertBefore(h, ytsList.firstChild);
 }
@@ -9032,7 +9034,7 @@ function ytsArtistCard(a) {
 function ytsShowArtist(a) {
   const my = ++ytsToken;
   const head = () => {
-    const h = document.createElement('div'); h.className = 'yts-sec yts-back'; h.textContent = '\u2039 ' + a.name;
+    const h = document.createElement('div'); h.className = 'yts-back'; h.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span>Geri</span>';
     h.addEventListener('click', () => runYtSearch());
     ytsList.insertBefore(h, ytsList.firstChild);
   };
