@@ -13397,6 +13397,11 @@ guard();
 #wx .wx-gl { fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
 #wx .wx-dot { position: absolute; left: 0; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.28), 0 1px 4px rgba(0,0,0,.35); opacity: 0; }
 #wx .wx-dot.on { opacity: 1; }
+#wx .wx-dl { position: absolute; left: 50%; bottom: 100%; margin-bottom: 5px; transform: translateX(-50%); font-size: 7px; font-weight: 700; line-height: 1; letter-spacing: .2px; white-space: nowrap; font-variant-numeric: tabular-nums; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.45); pointer-events: none; }
+#wx .wx-e { position: absolute; left: 0; top: 50%; margin-top: -14px; font-size: 6.5px; font-weight: 700; line-height: 1; letter-spacing: .2px; white-space: nowrap; font-variant-numeric: tabular-nums; color: #fff; opacity: 0; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+#wx .wx-e.on { opacity: .75; }
+#wx .wx-e0 { transform: translateX(-50%); }
+#wx .wx-e1 { left: auto; right: 0; transform: translateX(50%); }
 #wx .wx-dot.sm { transition: left 1.2s ease, top 1.2s ease, opacity .3s ease; }
 #wx .wx-sv { position: absolute; left: 0; right: 0; bottom: 3px; height: 22px; display: flex; }
 #wx .wx-ss { flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 700; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -13524,11 +13529,11 @@ root.innerHTML = '<div class="wx-bg"><i class="m"></i><i class="n"></i><i class=
 + '<div class="wx-seg"><div class="wx-seg-pill"></div><button type="button" class="wx-sb on" data-i="0"><span>İstanbul</span></button><button type="button" class="wx-sb" data-i="1"><span>Eitin</span></button></div>'
 + '<div class="wx-top"><span class="wx-pl">İstanbul Geneli</span><span class="wx-rt"><span class="wx-tm"></span><button type="button" class="pf-ib" id="wx-edit" aria-label="Düzenle" title="Düzenle"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button></span></div>'
 + '<div class="wx-mid"><div class="wx-ic"></div><div class="wx-txt"><div class="wx-t"></div><div class="wx-d"></div></div></div>'
-+ '<div class="wx-strip"><div class="wx-g"><svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path class="wx-gl" d=""/></svg><i class="wx-dot"></i></div><div class="wx-sv"></div></div>'
++ '<div class="wx-strip"><div class="wx-g"><svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path class="wx-gl" d=""/></svg><span class="wx-e wx-e0">07:00</span><span class="wx-e wx-e1">07:00</span><i class="wx-dot"><b class="wx-dl"></b></i></div><div class="wx-sv"></div></div>'
 + '<div class="wx-days">' + [0, 1, 2, 3, 4].map(function () { return '<div class="wx-day"><span class="wx-dn"></span><span class="wx-di"></span><span class="wx-dt"></span></div>'; }).join('') + '</div>';
 var elPl = root.querySelector('.wx-pl'), elTm = root.querySelector('.wx-tm'), elIc = root.querySelector('.wx-ic'), elT = root.querySelector('.wx-t'), elD = root.querySelector('.wx-d');
 var cards = Array.prototype.slice.call(root.querySelectorAll('.wx-day')).map(function (c) { return { n: c.querySelector('.wx-dn'), i: c.querySelector('.wx-di'), t: c.querySelector('.wx-dt') }; });
-var elG = root.querySelector('.wx-gl'), elDot = root.querySelector('.wx-dot'), elSv = root.querySelector('.wx-sv'), dotInit = false, phInit = false, phTimer = 0;
+var elG = root.querySelector('.wx-gl'), elDot = root.querySelector('.wx-dot'), elDl = root.querySelector('.wx-dl'), elE0 = root.querySelector('.wx-e0'), elE1 = root.querySelector('.wx-e1'), snapDot = false, elSv = root.querySelector('.wx-sv'), dotInit = false, phInit = false, phTimer = 0;
 function setPhase(ph) {
 cache.ph = ph; root.setAttribute('data-ph', ph); document.documentElement.setAttribute('data-wxph', ph);
 var L = Array.prototype.slice.call(root.querySelectorAll('.wx-bg i'));
@@ -13546,12 +13551,18 @@ else if (el.classList.contains('on')) { el.classList.remove('on'); el.classList.
 clearTimeout(phTimer);
 phTimer = setTimeout(function () { L.forEach(function (el) { if (!el.classList.contains('on')) el.classList.remove('prev'); }); }, 2900);
 }
-function xOfT(t) {
-if (t <= 7) return 0;
-if (t <= 15) return (t - 7) / 8 * 0.5;
-if (t <= 19) return 0.5 + (t - 15) / 4 * 0.36;
-if (t <= 31) return 0.86 + (t - 19) / 12 * 0.14;
+function xOfT(t, X) {
+if (t <= 7) return X[0];
+if (t <= 15) return X[0] + (t - 7) / 8 * (X[1] - X[0]);
+if (t <= 19) return X[1] + (t - 15) / 4 * (X[2] - X[1]);
+if (t <= 31) return X[2] + (t - 19) / 12 * (1 - X[2]);
 return 1;
+}
+function colX() {
+var g = elG.parentNode, st = g.parentNode, gw = g.offsetWidth, sw = st.clientWidth, gl = g.offsetLeft, k, X = [];
+if (!(gw > 0 && sw > 0)) return { X: [1 / 6, 1 / 2, 5 / 6], gw: 0 };
+for (k = 0; k < 3; k++) X.push(((k + .5) * sw / 3 - gl) / gw);
+return { X: X, gw: gw };
 }
 function mono(xs, ys) {
 var n = xs.length, d = [], m = [], k;
@@ -13567,24 +13578,37 @@ return (2 * t3 - 3 * t2 + 1) * ys[i] + (t3 - 2 * t2 + t) * h * m[i] + (-2 * t3 +
 }
 function renderStrip(tb, n) {
 var p = phaseOf(n.h), sk = addDays(n.key, p.off), r = recOf(tb, sk) || {}, d = r.s12, e = r.s16, g = r.s21, pr, pv, ts, lo, hi, span, mid, ys, xs, f, i, path = '', x, t, dx, dy;
-if (!(d || e || g)) { put('sv', elSv, '', true); if (cache.gp) { cache.gp = ''; elG.setAttribute('d', ''); } elDot.classList.remove('on'); return; }
+if (!(d || e || g)) { put('sv', elSv, '', true); if (cache.gp) { cache.gp = ''; elG.setAttribute('d', ''); } elDot.classList.remove('on'); elE0.classList.remove('on'); elE1.classList.remove('on'); return; }
 d = d || e || g; e = e || d || g; g = g || e || d;
 put('sv', elSv, '<span class="wx-ss"><em>GÜN</em>' + d[0] + '°C' + mini(d, false) + '</span><span class="wx-ss"><em>AKŞ</em>' + e[0] + '°C' + mini(e, false) + '</span><span class="wx-ss"><em>GEC</em>' + g[0] + '°C' + mini(g, true) + '</span>', true);
-pr = recOf(tb, addDays(sk, -1)); pv = pr && pr.s21 ? pr.s21[0] : g[0];
-ts = [pv, d[0], e[0], g[0], g[0]];
+var cx = colX(), X = cx.X, gw = cx.gw;
+ts = [d[0], e[0], g[0], g[0]];
 lo = Math.min.apply(null, ts); hi = Math.max.apply(null, ts); span = Math.max(hi - lo, 6); mid = (hi + lo) / 2;
 ys = ts.map(function (T) { return 6 + (1 - (T - (mid - span / 2)) / span) * 28; });
-xs = [7, 12, 16, 21, 31].map(xOfT);
+xs = [X[0], X[1], X[2], 1];
 f = mono(xs, ys);
-for (i = 0; i <= 72; i++) { x = i / 72; path += (i ? 'L' : 'M') + (x * 100).toFixed(2) + ' ' + f(x).toFixed(2); }
+for (i = 0; i <= 72; i++) { x = X[0] + (1 - X[0]) * i / 72; path += (i ? 'L' : 'M') + (x * 100).toFixed(2) + ' ' + f(x).toFixed(2); }
 if (cache.gp !== path) { cache.gp = path; elG.setAttribute('d', path); }
-t = n.h + n.m / 60; if (p.off === -1 || n.h < 7) t = n.h + n.m / 60 + (n.h < 7 ? 24 : 0);
-x = xOfT(t); dx = (x * 100).toFixed(2) + '%'; dy = (f(x) / 40 * 100).toFixed(2) + '%';
+t = n.h + n.m / 60 + (n.h < 7 ? 24 : 0);
+x = xOfT(t, X); dx = (x * 100).toFixed(2) + '%'; dy = (f(x) / 40 * 100).toFixed(2) + '%';
+var snap = snapDot && dotInit; snapDot = false;
+if (snap) elDot.classList.remove('sm');
 if (cache.dx !== dx) { cache.dx = dx; elDot.style.left = dx; }
 if (cache.dy !== dy) { cache.dy = dy; elDot.style.top = dy; }
+if (snap) { void elDot.offsetWidth; elDot.classList.add('sm'); }
 elDot.classList.add('on');
+put('dl', elDl, z(n.h) + ':' + z(n.m));
+var y0 = (f(X[0]) / 40 * 100).toFixed(2) + '%', y1 = (f(1) / 40 * 100).toFixed(2) + '%', l0 = (X[0] * 100).toFixed(2) + '%';
+if (cache.l0 !== l0) { cache.l0 = l0; elE0.style.left = l0; }
+if (cache.y0 !== y0) { cache.y0 = y0; elE0.style.top = y0; }
+if (cache.y1 !== y1) { cache.y1 = y1; elE1.style.top = y1; }
+elE0.classList.toggle('on', !gw || Math.abs(x - X[0]) * gw > 22); elE1.classList.toggle('on', !gw || Math.abs(x - 1) * gw > 22);
 if (!dotInit) { dotInit = true; setTimeout(function () { elDot.classList.add('sm'); }, 80); }
 }
+(function wxRo() {
+var st = root.querySelector('.wx-strip');
+if (st && window.ResizeObserver) { try { new ResizeObserver(function () { snapDot = true; render(); }).observe(st); } catch (e) {} }
+})();
 (function wxSeg() {
 var seg = root.querySelector('.wx-seg'), btns = Array.prototype.slice.call(seg.querySelectorAll('.wx-sb')), had = false;
 function mi() { return document.getElementById('message-input'); }
@@ -13595,7 +13619,7 @@ btns.forEach(function (b) {
 b.addEventListener('click', function () {
 var i = +b.getAttribute('data-i');
 seg.style.setProperty('--wx-i', String(i));
-activeTab = i === 1 ? 'eitin' : 'ist'; render();
+activeTab = i === 1 ? 'eitin' : 'ist'; snapDot = true; render();
 btns.forEach(function (x) { x.classList.toggle('on', x === b); });
 var m = mi();
 if (had && m && !m.disabled && document.activeElement !== m) { try { m.focus({ preventScroll: true }); } catch (e) {} }
