@@ -13368,7 +13368,7 @@ guard();
 #wx .wx-sb { flex: 1 1 0; min-width: 0; height: 32px; display: flex; align-items: center; justify-content: center; padding: 0; border: 1px solid var(--c-33); border-radius: var(--r-lg); background: var(--c-1a); color: var(--c-fff); font-family: 'Lexend', sans-serif; font-size: 12.5px; font-weight: 600; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; transition: color .25s ease; }
 #wx .wx-sb span { position: relative; z-index: 2; pointer-events: none; }
 #wx .wx-sb.on { color: var(--on-accent); border-color: transparent; }
-#wx .wx-top { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; font-weight: 700; letter-spacing: .1px; }
+#wx .wx-top { flex: 0 0 auto; height: 26px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; font-weight: 700; letter-spacing: .1px; }
 #wx .wx-tm { font-variant-numeric: tabular-nums; opacity: .95; }
 #wx .wx-mid { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px 0 12px; }
 #wx .wx-ic { width: clamp(38px, 8.5vh, 62px); height: clamp(38px, 8.5vh, 62px); display: flex; align-items: center; justify-content: center; }
@@ -13382,6 +13382,8 @@ guard();
 #wx .wx-di svg { display: block; width: 100%; height: 100%; }
 #wx .wx-dt { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; font-weight: 700; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; letter-spacing: -.2px; }
 #wx .wx-tr { display: flex; align-items: baseline; justify-content: center; gap: 3px; }
+#wx .wx-tr .wx-mi { display: flex; align-self: center; width: 11px; height: 11px; }
+#wx .wx-tr .wx-mi svg { display: block; width: 100%; height: 100%; filter: none; }
 #wx .wx-tr em { font-style: normal; font-size: 6.5px; font-weight: 600; letter-spacing: .3px; opacity: .5; }
 .wx-sp { display: block; box-sizing: border-box; width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.28); border-top-color: #fff; animation: wxspin .9s linear infinite; }
 .wx-sp.wx-sp-l { width: 34px; height: 34px; border-width: 3.5px; }
@@ -13481,7 +13483,7 @@ else if (k === 'fog') s = cloud('#DCE4F0', 'translate(3 -5) scale(.86)') + '<g s
 else if (k === 'drizzle') s = cloud('#D5DEEB', 'translate(3 -3) scale(.88)') + '<g stroke="#7CC4FF" stroke-width="2.4" stroke-linecap="round"><line x1="16" y1="34" x2="14.6" y2="38"/><line x1="24" y1="36" x2="22.6" y2="40"/><line x1="32" y1="34" x2="30.6" y2="38"/></g>';
 else if (k === 'rain') s = cloud('#D5DEEB', 'translate(3 -3) scale(.88)') + '<g stroke="#4DB0FF" stroke-width="2.8" stroke-linecap="round"><line x1="16" y1="34" x2="13.6" y2="42"/><line x1="24" y1="34" x2="21.6" y2="42"/><line x1="32" y1="34" x2="29.6" y2="42"/></g>';
 else if (k === 'snow') s = cloud('#D5DEEB', 'translate(3 -3) scale(.88)') + '<g fill="#fff"><circle cx="16" cy="36" r="2.4"/><circle cx="24" cy="41" r="2.4"/><circle cx="32" cy="36" r="2.4"/></g>';
-else s = cloud('#9AA8BE', 'translate(3 -4) scale(.88)') + '<polygon fill="#FFD23F" points="26,26 18,38 24,38 21,47 32,33 26,33 30,26"/>';
+else s = cloud('#9AA8BE', 'translate(3 -4) scale(.88)') + '<g stroke="#4DB0FF" stroke-width="2.4" stroke-linecap="round"><line x1="14" y1="33" x2="12.8" y2="37"/><line x1="37" y1="33" x2="35.8" y2="37"/><line x1="13.5" y1="41" x2="12.3" y2="45"/><line x1="37.5" y1="41" x2="36.3" y2="45"/></g><polygon fill="#FFD23F" points="26,26 18,38 24,38 21,47 32,33 26,33 30,26"/>';
 return '<svg viewBox="0 0 48 48" aria-hidden="true">' + s + '</svg>';
 }
 var SPIN = '<span class="wx-sp"></span>';
@@ -13661,6 +13663,7 @@ render();
 closeEd();
 }
 btnEd.addEventListener('click', openEd);
+function mini(v, night) { return v ? '<span class="wx-mi">' + icon(kind(v[1]), night) + '</span>' : ''; }
 function put(k, el, v, html) { if (cache[k] === v) return; cache[k] = v; if (html) el.innerHTML = v; else el.textContent = v; }
 function render() {
 if (btnEd) syncEdBtn();
@@ -13677,7 +13680,7 @@ put('dn' + i, cards[i].n, i === 0 ? 'Bugün' : (i === 1 ? 'Yarın' : DN[dow(key)
 s = rec && (rec.s12 || rec.s16 || rec.s21);
 if (s) {
 a = rec.s12 ? rec.s12[0] + '°C' : '–'; b = rec.s21 ? rec.s21[0] + '°C' : '–'; var ev = rec.s16 ? rec.s16[0] + '°C' : '–';
-put('di' + i, cards[i].i, icon(kind(s[1]), false), true); put('dt' + i, cards[i].t, '<span class="wx-tr"><em>GÜN</em>' + a + '</span><span class="wx-tr"><em>AKŞ</em>' + ev + '</span><span class="wx-tr"><em>GEC</em>' + b + '</span>', true);
+put('di' + i, cards[i].i, icon(kind(s[1]), false), true); put('dt' + i, cards[i].t, '<span class="wx-tr"><em>GÜN</em>' + a + mini(rec.s12, false) + '</span><span class="wx-tr"><em>AKŞ</em>' + ev + mini(rec.s16, false) + '</span><span class="wx-tr"><em>GEC</em>' + b + mini(rec.s21, true) + '</span>', true);
 } else { put('di' + i, cards[i].i, SPIN, true); put('dt' + i, cards[i].t, '–'); }
 }
 }
