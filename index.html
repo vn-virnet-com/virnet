@@ -14574,7 +14574,7 @@ var calY = 0, calM = 0;
 var MN = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 var DN = ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'];
 var CC = ['#ff8a8a', '#ffb877', '#ffe680', '#8ec9ff', '#c9a8ff', '#e8b4c6'];
-var CKEY = 'vnCalEv1', EV = {}, calMode = 'grid', calTag = '', calSel = 0, calEditKey = '';
+var CKEY = 'vnCalEv1', EV = {}, calMode = 'grid', calPast = false, calTag = '', calSel = 0, calEditKey = '';
 function evPad(n) { return n < 10 ? '0' + n : '' + n; }
 function evClean(src) {
 var out = {};
@@ -14693,20 +14693,22 @@ function evDays(k) { var p = k.split('-'), a = new Date(parseInt(p[0], 10), pars
 function calListRender() {
 calMode = 'list'; calHideTag(); cal.classList.remove('edit'); cal.style.height = '';
 var items = [], ks = Object.keys(EV), i, thisY = new Date().getFullYear();
-for (i = 0; i < ks.length; i++) { var r = EV[ks[i]]; if (!r || r.x) continue; var dd = evDays(ks[i]); if (dd < 0) continue; items.push({ k: ks[i], r: r, dd: dd }); }
-items.sort(function (a, b) { return a.dd - b.dd; });
-var s = '<div class="cal-h"><button type="button" class="cal-nav" data-l="back" aria-label="Takvime dön">&#8249;</button>'
-+ '<button type="button" class="cal-t" data-l="back">Etkinlikler</button><span class="cal-sp"></span></div><div class="cal-l">';
-if (!items.length) s += '<div class="cal-le">Kayıtlı etkinlik yok</div>';
+for (i = 0; i < ks.length; i++) { var r = EV[ks[i]]; if (!r || r.x) continue; var dd = evDays(ks[i]); if (calPast ? dd >= 0 : dd < 0) continue; items.push({ k: ks[i], r: r, dd: dd }); }
+items.sort(function (a, b) { return calPast ? b.dd - a.dd : a.dd - b.dd; });
+var s = '<div class="cal-h"><button type="button" class="cal-nav" data-l="' + (calPast ? 'list' : 'back') + '" aria-label="' + (calPast ? 'Yaklaşan etkinlikler' : 'Takvime dön') + '">&#8249;</button>'
++ '<button type="button" class="cal-t" data-l="' + (calPast ? 'list' : 'back') + '">' + (calPast ? 'Geçmiş etkinlikler' : 'Etkinlikler') + '</button>'
++ (calPast ? '<span class="cal-sp"></span>' : '<button type="button" class="cal-nav" data-l="past" aria-label="Geçmiş etkinlikler"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></button>')
++ '</div><div class="cal-l">';
+if (!items.length) s += '<div class="cal-le">' + (calPast ? 'Geçmiş etkinlik yok' : 'Kayıtlı etkinlik yok') + '</div>';
 items.forEach(function (it) {
 var p = it.k.split('-'), y = parseInt(p[0], 10), dt = parseInt(p[2], 10) + ' ' + MN[parseInt(p[1], 10) - 1] + (y !== thisY ? ' ' + y : '');
-var kal = it.dd === 0 ? 'Bugün' : (it.dd === 1 ? 'Yarın' : it.dd + ' gün kaldı');
+var kal = calPast ? (it.dd === -1 ? 'Dün' : -it.dd + ' gün önce') : (it.dd === 0 ? 'Bugün' : (it.dd === 1 ? 'Yarın' : it.dd + ' gün kaldı'));
 s += '<div class="cal-li" data-k="' + it.k + '" style="background:' + CC[it.r.c] + '"><div class="cal-ln"><b>' + evEsc(dt) + '</b> · ' + evEsc(it.r.n) + '</div><div class="cal-lk">' + kal + '</div></div>';
 });
 cal.innerHTML = s + '</div>';
 }
-function calOpen() { ntClose(); var n = new Date(); calY = n.getFullYear(); calM = n.getMonth(); calRender(); cal.classList.add('show'); }
-function calClose() { cal.classList.remove('show'); cal.classList.remove('edit'); cal.style.height = ''; calMode = 'grid'; calTag = ''; }
+function calOpen() { calPast = false; ntClose(); var n = new Date(); calY = n.getFullYear(); calM = n.getMonth(); calRender(); cal.classList.add('show'); }
+function calClose() { calPast = false; cal.classList.remove('show'); cal.classList.remove('edit'); cal.style.height = ''; calMode = 'grid'; calTag = ''; }
 window.__vnCalClose = calClose;
 cal.addEventListener('click', function (e) {
 e.stopPropagation();
@@ -14715,7 +14717,7 @@ if (tg) {
 var xb = tg.closest('button[data-x]');
 if (xb) { var xk = xb.getAttribute('data-x'); calHideTag(); evChange(xk, { x: 1, t: Date.now() }); calRender(); return; }
 var lbt = tg.closest('button[data-l]');
-if (lbt) { if (lbt.getAttribute('data-l') === 'list') calListRender(); else calRender(); return; }
+if (lbt) { var lv = lbt.getAttribute('data-l'); if (lv === 'list' || lv === 'past') { calPast = lv === 'past'; calListRender(); } else { calPast = false; calRender(); } return; }
 if (calMode === 'list') {
 var li = tg.closest('.cal-li[data-k]');
 if (li) { var lk = li.getAttribute('data-k'), lp = lk.split('-'); calY = parseInt(lp[0], 10); calM = parseInt(lp[1], 10) - 1; calRender(); calShowTag(lk); }
