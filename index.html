@@ -1957,48 +1957,52 @@ background: var(--c-111); border: 1px solid var(--accent); box-shadow: none; tex
 #tb-call.dialing { pointer-events: none; cursor: not-allowed; }
 #tb-call.dialing svg { stroke: var(--warn); }
 #tb-call.live svg { stroke: #ff8a80; transform: rotate(135deg) scale(.88); }
-/* ===== Üst şeritler: arama / şarkı / oto. oynat =====
-   Sahte durum çubuğuyla aynı yükseklikte, düz, kenardan kenara. Sıra (yukarıdan aşağı): arama, şarkı, oto. oynat. */
+/* ===== Üst şerit: arama | oto. oynat | şarkı adı (+ genişletme oku) tek satırı paylaşır =====
+   Satır yüksekliği sahte durum çubuğuyla aynı. Şarkı detay kartı (sarma, tuşlar, sözler) oka basınca satırın ALTINA eklenir. */
 html { --sth: max(var(--vn-sb, 0px), 24px); }
-#strip-stack { position: absolute; top: 0; left: 0; right: 0; z-index: 6; display: flex; flex-direction: column; pointer-events: none; }
+#strip-stack { position: absolute; top: 0; left: 0; right: 0; z-index: 6; display: flex; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; background: var(--c-111); box-shadow: inset 0 -1px 0 var(--c-33); pointer-events: none; }
 #strip-stack > * { pointer-events: auto; }
-#strip-stack > #vc-pill { order: 1; }
-#strip-stack > #yt-dock { order: 2; }
-#strip-stack > #auto-chip { order: 3; }
-#strip-stack > #vc-pill, #strip-stack > #auto-chip, #strip-stack > #yt-dock {
-position: relative; top: auto; left: auto; right: auto; z-index: auto; margin: 0; translate: none; transform: none;
-flex: 0 0 auto; box-sizing: border-box; width: 100%; max-width: none; align-items: center; gap: 8px;
-border: 0; border-radius: 0; overflow: hidden; isolation: isolate; background: var(--c-111); box-shadow: inset 0 -1px 0 var(--c-33);
+@keyframes stIn { from { opacity: 0; } to { opacity: 1; } }
+#strip-stack > #vc-pill, #strip-stack > #auto-chip {
+display: none; position: relative; top: auto; left: auto; right: auto; z-index: auto; margin: 0; translate: none; transform: none;
+flex: 0 0 auto; width: auto; max-width: none; height: var(--sth); box-sizing: border-box; padding: 0 10px; gap: 6px;
+align-items: center; justify-content: flex-start; white-space: nowrap; overflow: hidden; isolation: isolate;
+border: 0; border-radius: 0; background: none; box-shadow: inset -1px 0 0 var(--c-33);
 -webkit-backdrop-filter: none; backdrop-filter: none; text-shadow: none; transition: none;
 font-family: 'Lexend', sans-serif; font-size: 11.5px; font-weight: 600; line-height: 1; letter-spacing: 0;
 color: color-mix(in srgb, var(--c-fff) 82%, transparent);
 }
-@keyframes stIn { from { opacity: 0; } to { opacity: 1; } }
-#strip-stack > #vc-pill, #strip-stack > #auto-chip { display: none; height: var(--sth); padding: 0 10px; justify-content: flex-start; }
 #strip-stack > #vc-pill.show, #strip-stack > #auto-chip.show { display: flex; animation: stIn .18s ease-out; }
+#strip-stack > #vc-pill { order: 1; max-width: 60%; }
+#strip-stack > #auto-chip { order: 2; }
+/* şarkı yokken arama / oto. oynat satırı doldursun */
+#strip-stack:not(:has(#yt-dock.show)) > #vc-pill, #strip-stack:not(:has(#yt-dock.show)) > #auto-chip { flex: 1 1 auto; max-width: none; }
 /* arama */
 #strip-stack > #vc-pill .vc-n { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 700; color: var(--c-fff); }
 #strip-stack > #vc-pill .vc-sep { opacity: .6; }
 #strip-stack > #vc-pill .vc-t { flex: 0 0 auto; font-size: 11.5px; }
-#strip-stack > #vc-pill .vc-game { height: 100%; width: 32px; margin: 0 -9px 0 auto; }
+#strip-stack > #vc-pill .vc-game { height: 100%; width: 28px; margin: 0 -8px 0 auto; }
 #strip-stack > #vc-pill .vc-game svg { width: 15px; height: 15px; }
-/* oto. oynat */
+/* oto. oynat: sade, çarpı sadece ikon */
 #strip-stack > #auto-chip > svg { width: 14px; height: 14px; }
-#strip-stack > #auto-chip .ac-txt { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#strip-stack > #auto-chip #auto-chip-x { flex: 0 0 calc(var(--sth) - 6px); width: calc(var(--sth) - 6px); height: calc(var(--sth) - 6px); margin: 0 -3px 0 0; overflow: visible; }
-#strip-stack > #auto-chip #auto-chip-x::before { display: block; content: ''; position: absolute; inset: -6px; left: -10px; right: -10px; top: -6px; bottom: -6px; height: auto; border-radius: 0; background: none; opacity: 1; }
+#strip-stack > #auto-chip .ac-txt { flex: 1 1 auto; min-width: 0; overflow: visible; text-overflow: clip; white-space: nowrap; }
+#strip-stack > #auto-chip #auto-chip-x { flex: 0 0 24px; width: 24px; height: 100%; margin: 0 -8px 0 0; border: 0; border-radius: 0; overflow: visible; background: none; box-shadow: none; color: var(--c-88); }
+#strip-stack > #auto-chip #auto-chip-x:active { background: none; color: var(--c-fff); transform: none; }
 #strip-stack > #auto-chip #auto-chip-x svg { width: 12px; height: 12px; }
-/* şarkı: varsayılan daraltılmış (şerit yüksekliği), genişletince 3 katı */
-#strip-stack > #yt-dock { display: none; flex-direction: column; justify-content: center; align-items: stretch; gap: 0; padding: 0; }
-#strip-stack > #yt-dock.show { display: flex; animation: stIn .18s ease-out; }
+/* şarkı: kutunun kendisi kutu üretmez, parçaları satıra / altına dizilir */
+#strip-stack > #yt-dock { display: none; }
+#strip-stack > #yt-dock.show { display: contents; }
 #strip-stack > #yt-dock.hide { display: none; }
-#strip-stack > #yt-dock.folded { height: var(--sth); padding: 0; }
-#strip-stack > #yt-dock:not(.folded) { height: calc(var(--sth) * 3); padding: 0 12px; gap: 4px; }
-#strip-stack > #yt-dock:not(.folded).lyr-open { height: auto; min-height: calc(var(--sth) * 3); padding: 6px 12px 8px; }
-#strip-stack > #yt-dock .ytd-info { color: color-mix(in srgb, var(--c-fff) 82%, transparent); padding: 0 38px; font-size: 11.5px; line-height: 14px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#strip-stack > #yt-dock .ytd-fold { top: 0; right: 0; width: 40px; height: var(--sth); transform: none; }
-#strip-stack > #yt-dock.folded .ytd-fold { top: 0; transform: none; }
+#strip-stack > #yt-dock .ytd-info { order: 3; flex: 1 1 0; min-width: 0; height: var(--sth); box-sizing: border-box; padding: 0 6px 0 10px; display: flex; align-items: center; justify-content: flex-start; overflow: hidden; text-align: left; white-space: nowrap; font-size: 11.5px; line-height: 1; font-weight: 600; color: color-mix(in srgb, var(--c-fff) 82%, transparent); }
+#strip-stack > #yt-dock .ytd-fold { order: 4; position: static; flex: 0 0 36px; width: 36px; height: var(--sth); top: auto; right: auto; transform: none; }
+#strip-stack > #yt-dock.folded .ytd-fold { top: auto; transform: none; }
 #strip-stack > #yt-dock .ytd-fold svg { width: 18px; height: 18px; }
+#strip-stack > #yt-dock .ytd-main { order: 5; flex: 0 0 100%; box-sizing: border-box; padding: 5px 12px; background: var(--c-111); box-shadow: inset 0 1px 0 var(--c-33); }
+#strip-stack > #yt-dock .ytd-lyr { order: 6; flex: 0 0 100%; box-sizing: border-box; margin: 0; background: var(--c-111); }
+.ytd-nm { display: inline-block; flex: 0 0 auto; white-space: nowrap; }
+#strip-stack .ytd-nm.mq { animation: ytMq var(--mq-t, 8s) linear infinite; will-change: transform; }
+@keyframes ytMq { 0%, 18% { transform: translateX(0); } 68%, 84% { transform: translateX(var(--mq-x, 0px)); } 100% { transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) { #strip-stack .ytd-nm.mq { animation: none; } #strip-stack .ytd-nm { max-width: 100%; overflow: hidden; text-overflow: ellipsis; } }
 /* ses seviyesi baloncuğu */
 #vol-pill { position: fixed; left: 50%; top: calc(max(calc(env(safe-area-inset-top, 0px) + 10px), calc(var(--vn-sb, 0px) + 8px), calc(var(--strip-b, 0px) + 8px)) + var(--vp-off, 0px)); z-index: 12700; box-sizing: border-box; width: min(220px, calc(100% - 28px)); height: 36px; border-radius: 999px; overflow: hidden; isolation: isolate; background: var(--c-111); border: 1px solid var(--accent); pointer-events: none; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; opacity: 0; transform: translate(-50%, -10px); transition: opacity .18s ease, transform .22s cubic-bezier(.2,.9,.3,1.15); }
 #vol-pill.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
@@ -4717,6 +4721,21 @@ const el = ytDockEl;
 if (ytDockHideTimer) { clearTimeout(ytDockHideTimer); ytDockHideTimer = null; }
 if (el) el.classList.remove('show', 'hide');
 }
+function ytDockMarquee() {
+const el = ytDockEl; if (!el || !el._d) return;
+const i = el._d.info, nm = i.firstChild;
+if (!nm || nm.nodeType !== 1) return;
+const w = i.clientWidth;
+if (!(el.parentNode && el.parentNode.id === 'strip-stack') || !w) { if (nm.classList.contains('mq')) nm.classList.remove('mq'); i.dataset.mq = ''; return; }
+const cs = getComputedStyle(i);
+const avail = w - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+const key = Math.round(avail) + '|' + nm.textContent;
+if (i.dataset.mq === key) return;
+i.dataset.mq = key;
+const over = nm.offsetWidth - avail;
+if (over > 1) { nm.style.setProperty('--mq-x', '-' + Math.ceil(over + 4) + 'px'); nm.style.setProperty('--mq-t', Math.max(6, Math.round(over / 28 * 2 + 3)) + 's'); nm.classList.add('mq'); }
+else nm.classList.remove('mq');
+}
 function ytDockFitInfo() {
 const el = ytDockEl; if (!el || !el._d || !el.classList.contains('show')) return;
 const i = el._d.info, w = i.clientWidth; if (!w) return;
@@ -4885,8 +4904,9 @@ const tds = ytFmt(st.dur);
 if (d.td.textContent !== tds) d.td.textContent = tds;
 el.classList.toggle('can-join', card.classList.contains('can-join'));
 el.classList.toggle('is-synced', card.classList.contains('is-synced'));
-const it = (aa ? aa + ' — ' : '') + tt + ' — ' + (card.classList.contains('is-synced') ? 'Birlikte Dinliyorsunuz' : 'Tek Dinliyorsunuz');
-if (d.info.textContent !== it) d.info.textContent = it;
+const it = (aa ? aa + ' — ' : '') + tt;
+if (d.info.textContent !== it) { d.info.textContent = ''; const nm = document.createElement('span'); nm.className = 'ytd-nm'; nm.textContent = it; d.info.appendChild(nm); d.info.dataset.mq = ''; }
+try { ytDockMarquee(); } catch (e) {}
 el.classList.toggle('lyr-open', ytDockLyrOpen);
 if (!el.classList.contains('show')) ytDockFolded = true;
 el.classList.toggle('folded', ytDockFolded && !!el.parentNode && el.parentNode.id === 'strip-stack');
@@ -4929,6 +4949,7 @@ area.style.paddingTop = want + 'px';
 area.scrollTop = Math.max(0, area.scrollHeight - area.clientHeight - dist);
 }
 setInterval(ytTopInsetSync, 150);
+try { const st0 = document.getElementById('strip-stack'); if (st0 && window.ResizeObserver) new ResizeObserver(() => { try { ytTopInsetSync(); } catch (e) {} }).observe(st0); } catch (e) {}
 window.addEventListener('resize', () => { try { ytTopInsetSync(); } catch (e) {} });
 let ytSweepRaf = 0;
 function ytSweepLocksSoon() {
