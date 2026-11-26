@@ -510,7 +510,7 @@ background: var(--accent); color: var(--on-accent); border-left: 1px solid var(-
 #send-btn.rec { background: #d33; animation: recp 1s ease-in-out infinite; }
 @keyframes recp { 50% { opacity: .6; } }
 #top-row { position: relative; }
-#rec-ph { display: none; position: absolute; left: 0; right: 0; top: 0; bottom: 0; box-sizing: border-box; background: var(--c-111); z-index: 6; pointer-events: none; flex-direction: column; align-items: center; justify-content: center; gap: 1px; overflow: hidden; white-space: nowrap; }
+#rec-ph { display: none; position: absolute; left: 0; right: 0; top: 0; bottom: 0; box-sizing: border-box; background: var(--c-111); border-radius: calc(var(--cmp-h) / 2); z-index: 6; pointer-events: none; flex-direction: column; align-items: center; justify-content: center; gap: 1px; overflow: hidden; white-space: nowrap; }
 #rec-ph .rp-main { display: flex; align-items: center; justify-content: center; gap: 8px; line-height: 20px; }
 #rec-ph .rp-dot { width: 9px; height: 9px; border-radius: 50%; background: #ff3b30; box-shadow: 0 0 0 3px color-mix(in srgb, #ff3b30 22%, transparent); animation: recblink 1s ease-in-out infinite; flex: 0 0 auto; }
 #rec-ph .rp-t { color: var(--c-fff); font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .5px; }
