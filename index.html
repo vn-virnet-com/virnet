@@ -4941,9 +4941,23 @@ const d = el && el._d; if (!d || !d.bar) return;
 on = !!on;
 if (!!el._lyrMode === on) return;
 el._lyrMode = on;
+if (el._lyrMsgT) { clearTimeout(el._lyrMsgT); el._lyrMsgT = 0; }
+el._lyrMsg = false;
 d.bar.classList.toggle('lyr-mode', on);
 d.ltKey = ''; d.ltn.style.animation = ''; d.ltn.textContent = '';
 if (on) { d.barSeeking = false; d.bar.classList.remove('seeking'); }
+}
+function ytLyrMsgText(L) {
+return (L && (L.state === 'none' || (L.state === 'ok' && !L.synced))) ? 'Bu şarkının sözleri yok' : 'Sözler aranıyor...';
+}
+function ytBarNoLyr(el, L) {
+const d = el && el._d; if (!d || !d.bar) return;
+ytBarSetLyr(el, true);
+el._lyrMsg = true;
+d.lt.classList.remove('ov');
+d.ltn.style.animation = 'none';
+d.ltn.textContent = ytLyrMsgText(L);
+el._lyrMsgT = setTimeout(() => { el._lyrMsgT = 0; if (el._lyrMsg) ytBarSetLyr(el, false); }, 2000);
 }
 function ytBarLyr(el, card, st) {
 const d = el._d; if (!d || !d.lt) return;
@@ -4954,6 +4968,7 @@ try { L = card._lyrData ? card._lyrData() : L; } catch (e) {}
 }
 d.lyrOk = !!(L && L.state === 'ok' && L.synced);
 if (!el._lyrMode) return;
+if (el._lyrMsg) { const mt = ytLyrMsgText(L); if (d.ltn.textContent !== mt) d.ltn.textContent = mt; return; }
 if (!L || L.state === 'none' || (L.state === 'ok' && !L.synced)) { ytBarSetLyr(el, false); return; }
 if (!d.lyrOk) { if (d.ltKey !== 'x') { d.ltKey = 'x'; d.ltn.style.animation = ''; d.ltn.textContent = ''; } return; }
 const i = card._lyrIdx ? card._lyrIdx(st.cur) : -1;
@@ -4986,8 +5001,10 @@ lpClear(); lpFired = false; lp0 = { x: x, y: y };
 lpT = setTimeout(() => {
 lpT = 0;
 if (drag) return;
+st = null;
 if (el._lyrMode) { lpFired = true; ytBarSetLyr(el, false); }
 else if (d.lyrOk) { lpFired = true; ytBarSetLyr(el, true); try { const c = ytDockCard; if (c && c._getState) ytBarLyr(el, c, c._getState()); } catch (e) {} }
+else { lpFired = true; let L1 = null; try { const c = ytDockCard; L1 = c && c._lyrData ? c._lyrData() : null; } catch (e) {} ytBarNoLyr(el, L1); }
 if (lpFired) { try { if (navigator.vibrate) navigator.vibrate(15); } catch (e) {} }
 }, 500);
 };
