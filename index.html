@@ -2136,6 +2136,28 @@ height: 0; border-top-width: 0; border-bottom-width: 0; transition: max-width .3
 #strip-stack > #yt-dock .ytd-cover { border-radius: 0; }
 #strip-stack .ytd-clip.ov { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%); }
 @media (prefers-reduced-motion: reduce) { #strip-stack > #vc-pill, #strip-stack > #auto-chip, #strip-stack > #yt-dock .ytd-bar { transition: none; animation: none !important; } }
+
+/* şarkı hapı: ilerleme dolgusu (açık lila) + altından geçen ikonlar koyu mor + sürükleyerek sarma */
+#strip-stack > #yt-dock .ytd-fillw { position: absolute; inset: 0; z-index: 0; border-radius: calc(6px + var(--chip-bw)) / 6px; overflow: hidden; pointer-events: none; }
+#strip-stack > #yt-dock .ytd-fill { position: absolute; inset: 0; background: #efe6ff; transform-origin: 0 50%; transform: scaleX(0); transition: transform .3s linear; will-change: transform; }
+#strip-stack > #yt-dock .ytd-vis { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; gap: 4px; padding: 0 6px; box-sizing: border-box; pointer-events: none; transition: clip-path .3s linear, -webkit-clip-path .3s linear; will-change: clip-path; }
+#strip-stack > #yt-dock .ytd-vl { color: #fff; clip-path: inset(0 0 0 0); -webkit-clip-path: inset(0 0 0 0); }
+#strip-stack > #yt-dock .ytd-vd { color: #1a0533; clip-path: inset(0 100% 0 0); -webkit-clip-path: inset(0 100% 0 0); }
+#strip-stack > #yt-dock .ytd-vd .ytd-sync { color: #1a0533; }
+#strip-stack > #yt-dock .ytd-vis .ytb { pointer-events: none; }
+#strip-stack > #yt-dock .ytd-bar > .ytb { position: relative; z-index: 2; }
+#strip-stack > #yt-dock .ytd-bar > .ytb svg, #strip-stack > #yt-dock .ytd-bar > .ytd-sync svg { opacity: 0; }
+#strip-stack > #yt-dock .ytd-bar { touch-action: pan-y; -webkit-user-select: none; user-select: none; }
+#strip-stack > #yt-dock .ytd-bar.seeking .ytd-fill, #strip-stack > #yt-dock .ytd-bar.seeking .ytd-vis { transition: none; }
+@media (prefers-reduced-motion: reduce) { #strip-stack > #yt-dock .ytd-fill, #strip-stack > #yt-dock .ytd-vis { transition: none; } }
+
+/* şarkı hapı: söz modu (0.5 sn basılı tut) */
+#strip-stack > #yt-dock .ytd-lt { display: none; position: relative; z-index: 2; flex: 1 1 0; min-width: 0; overflow: hidden; text-align: center; font-size: 10.5px; line-height: 1; font-weight: 700; pointer-events: none; }
+#strip-stack > #yt-dock .ytd-lt.ov { text-align: left; }
+#strip-stack > #yt-dock .ytd-ltn { display: inline-block; white-space: nowrap; will-change: transform; }
+@keyframes ytLt { from { transform: translateX(0); } to { transform: translateX(var(--lx, 0px)); } }
+#strip-stack > #yt-dock .ytd-bar.lyr-mode .ytd-lt { display: block; }
+#strip-stack > #yt-dock .ytd-bar.lyr-mode > .ytb, #strip-stack > #yt-dock .ytd-bar.lyr-mode > .ytd-sync, #strip-stack > #yt-dock .ytd-bar.lyr-mode > .ytd-fillw, #strip-stack > #yt-dock .ytd-bar.lyr-mode > .ytd-vis { display: none !important; }
 /* ses seviyesi baloncuğu */
 #vol-pill { position: fixed; left: 50%; top: calc(max(calc(env(safe-area-inset-top, 0px) + 10px), calc(var(--vn-sb, 0px) + 8px), calc(var(--strip-b, 0px) + 8px)) + var(--vp-off, 0px)); z-index: 12700; box-sizing: border-box; width: min(220px, calc(100% - 28px)); height: 36px; border-radius: 999px; overflow: hidden; isolation: isolate; background: var(--c-111); border: 1px solid var(--accent); pointer-events: none; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; opacity: 0; transform: translate(-50%, -10px); transition: opacity .18s ease, transform .22s cubic-bezier(.2,.9,.3,1.15); }
 #vol-pill.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
@@ -4856,12 +4878,12 @@ function ytDockHide() {
 const el = ytDockEl;
 if (!el || !el.classList.contains('show') || ytDockHideTimer) return;
 el.classList.add('hide');
-ytDockHideTimer = setTimeout(() => { ytDockHideTimer = null; el.classList.remove('show', 'hide'); }, 210);
+ytDockHideTimer = setTimeout(() => { ytDockHideTimer = null; el.classList.remove('show', 'hide'); try { ytBarSetLyr(el, false); } catch (e) {} }, 210);
 }
 function ytDockHideNow() {
 const el = ytDockEl;
 if (ytDockHideTimer) { clearTimeout(ytDockHideTimer); ytDockHideTimer = null; }
-if (el) el.classList.remove('show', 'hide');
+if (el) { el.classList.remove('show', 'hide'); try { ytBarSetLyr(el, false); } catch (e) {} }
 }
 function ytDockMarquee() {
 const el = ytDockEl; if (!el || !el._d) return;
@@ -4890,6 +4912,141 @@ if (need > avail && need > 0) i.style.fontSize = Math.max(5, Math.floor(11 * ava
 i.dataset.fit = key;
 }
 window.addEventListener('resize', () => { try { ytDockFitInfo(); } catch (e) {} });
+function ytBarFrac(d, f) {
+const p = Math.max(0, Math.min(1, f || 0));
+d.barFill.style.transform = 'scaleX(' + p + ')';
+const a = 'inset(0 0 0 ' + (p * 100) + '%)', b = 'inset(0 ' + ((1 - p) * 100) + '% 0 0)';
+d.vl.style.clipPath = a; d.vl.style.webkitClipPath = a;
+d.vd.style.clipPath = b; d.vd.style.webkitClipPath = b;
+}
+function ytBarSync(el, st) {
+const d = el._d; if (!d || !d.bar) return;
+let html = '';
+for (let i = 0; i < d.bar.children.length; i++) {
+const c = d.bar.children[i];
+if (c.classList.contains('ytd-fillw') || c.classList.contains('ytd-vis') || c.classList.contains('ytd-lt')) continue;
+html += c.outerHTML;
+}
+if (d.visKey !== html) { d.visKey = html; d.vl.innerHTML = html; d.vd.innerHTML = html; }
+if (d.barSeeking) return;
+let f = st.dur ? Math.min(1, st.cur / st.dur) : 0;
+if (d.barHold) {
+if (Date.now() - d.barHold.t < 1500 && Math.abs(f - d.barHold.f) > 0.02) f = d.barHold.f;
+else d.barHold = null;
+}
+ytBarFrac(d, f);
+}
+function ytBarSetLyr(el, on) {
+const d = el && el._d; if (!d || !d.bar) return;
+on = !!on;
+if (!!el._lyrMode === on) return;
+el._lyrMode = on;
+d.bar.classList.toggle('lyr-mode', on);
+d.ltKey = ''; d.ltn.style.animation = ''; d.ltn.textContent = '';
+if (on) { d.barSeeking = false; d.bar.classList.remove('seeking'); }
+}
+function ytBarLyr(el, card, st) {
+const d = el._d; if (!d || !d.lt) return;
+let L = null; try { L = card._lyrData ? card._lyrData() : null; } catch (e) {}
+if (d.lyrAsk !== card || (L && L.state === 'idle' && Date.now() >= (L.retryAt || 0))) {
+d.lyrAsk = card; try { if (card._ensureLyrics) card._ensureLyrics(); } catch (e) {}
+try { L = card._lyrData ? card._lyrData() : L; } catch (e) {}
+}
+d.lyrOk = !!(L && L.state === 'ok' && L.synced);
+if (!el._lyrMode) return;
+if (!L || L.state === 'none' || (L.state === 'ok' && !L.synced)) { ytBarSetLyr(el, false); return; }
+if (!d.lyrOk) { if (d.ltKey !== 'x') { d.ltKey = 'x'; d.ltn.style.animation = ''; d.ltn.textContent = ''; } return; }
+const i = card._lyrIdx ? card._lyrIdx(st.cur) : -1;
+const ln = i >= 0 ? L.lines[i] : null, nxt = i >= 0 ? L.lines[i + 1] : L.lines[0];
+const text = ln ? (ln.text || '♪') : '';
+const key = i + '|' + text + '|' + Math.round(d.lt.clientWidth);
+if (d.ltKey !== key) {
+d.ltKey = key;
+d.ltn.style.animation = 'none';
+d.ltn.textContent = text;
+const w = d.lt.clientWidth, over = d.ltn.offsetWidth - w;
+d.lt.classList.toggle('ov', over > 1);
+if (over > 1 && ln) {
+const gap = nxt ? Math.max(0.8, nxt.t - ln.t) : 4;
+const dur = Math.max(0.8, gap * 0.85 - 0.3);
+const el0 = Math.max(0, st.cur - ln.t);
+d.ltn.style.setProperty('--lx', '-' + Math.ceil(over + 2) + 'px');
+void d.ltn.offsetWidth;
+d.ltn.style.animation = 'ytLt ' + dur.toFixed(2) + 's linear ' + (0.3 - el0).toFixed(2) + 's both';
+} else { d.ltn.style.animation = ''; }
+}
+d.ltn.style.animationPlayState = st.playing ? 'running' : 'paused';
+}
+function ytBarBindSeek(el) {
+const d = el._d, bar = d.bar;
+let st = null, drag = false, supClick = false, lpT = 0, lpFired = false, lp0 = null;
+const lpClear = () => { if (lpT) { clearTimeout(lpT); lpT = 0; } };
+const lpStart = (x, y) => {
+lpClear(); lpFired = false; lp0 = { x: x, y: y };
+lpT = setTimeout(() => {
+lpT = 0;
+if (drag) return;
+if (el._lyrMode) { lpFired = true; ytBarSetLyr(el, false); }
+else if (d.lyrOk) { lpFired = true; ytBarSetLyr(el, true); try { const c = ytDockCard; if (c && c._getState) ytBarLyr(el, c, c._getState()); } catch (e) {} }
+if (lpFired) { try { if (navigator.vibrate) navigator.vibrate(15); } catch (e) {} }
+}, 500);
+};
+const begin = (x, y) => {
+st = null;
+if (el._lyrMode) return;
+const c = ytDockCard; if (!c || !c._getState) return;
+const s = c._getState(); if (!s.dur) return;
+st = { x: x, y: y, dur: s.dur, f0: Math.max(0, Math.min(1, s.cur / s.dur)), f: 0 };
+};
+const move = (x, y) => {
+if (lp0 && (Math.abs(x - lp0.x) > 8 || Math.abs(y - lp0.y) > 8)) lpClear();
+if (!st) return false;
+if (!drag) {
+if (Math.abs(x - st.x) < 8) return false;
+drag = true; st.x = x; d.barSeeking = true; bar.classList.add('seeking');
+}
+const w = bar.getBoundingClientRect().width || 1;
+st.f = Math.max(0, Math.min(1, st.f0 + (x - st.x) / w));
+ytBarFrac(d, st.f);
+const t = ytFmt(st.f * st.dur);
+if (d.tc.textContent !== t) d.tc.textContent = t;
+return true;
+};
+const end = (commit) => {
+lpClear();
+const was = drag, s0 = st;
+drag = false; st = null;
+if (!was) return false;
+d.barSeeking = false; bar.classList.remove('seeking');
+if (commit && s0) {
+d.barHold = { f: s0.f, t: Date.now() };
+const c = ytDockCard; if (c && c._seekSec) c._seekSec(s0.f * s0.dur);
+}
+return true;
+};
+bar.addEventListener('touchstart', (e) => { const t = e.touches[0]; if (t && e.touches.length === 1) { begin(t.clientX, t.clientY); lpStart(t.clientX, t.clientY); } else { st = null; lpClear(); } }, { capture: true, passive: true });
+bar.addEventListener('touchmove', (e) => {
+const t = e.touches[0]; if (!t) return;
+if (move(t.clientX, t.clientY)) { if (e.cancelable) e.preventDefault(); e.stopPropagation(); }
+}, { capture: true, passive: false });
+bar.addEventListener('touchend', (e) => {
+const dragged = end(true);
+if (dragged || lpFired) { lpFired = false; if (e.cancelable) e.preventDefault(); e.stopPropagation(); }
+}, { capture: true, passive: false });
+bar.addEventListener('touchcancel', () => { end(false); lpFired = false; }, { capture: true });
+bar.addEventListener('mousedown', (e) => {
+if (e.button !== 0) return;
+begin(e.clientX, e.clientY); lpStart(e.clientX, e.clientY);
+const mv = (ev) => { move(ev.clientX, ev.clientY); };
+const up = () => {
+window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up);
+const fired = lpFired; lpFired = false;
+if (end(true) || fired) { supClick = true; setTimeout(() => { supClick = false; }, 0); }
+};
+window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+}, true);
+bar.addEventListener('click', (e) => { if (supClick) { supClick = false; e.stopPropagation(); e.preventDefault(); } }, true);
+}
 function ytDockBuild() {
 const wrap = document.getElementById('strip-stack');
 if (!wrap) return null;
@@ -4899,7 +5056,7 @@ el.innerHTML =
 '<div class="ytd-up" role="button" aria-label="Büyük görünüm"><svg viewBox="0 0 48 10" aria-hidden="true"><path d="M3 8.5 24 2l21 6.5"/></svg></div>' +
 '<button type="button" class="ytd-fold" aria-label="Genişlet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>' +
 '<div class="ytd-info"></div>' +
-'<div class="ytd-bar">' +
+'<div class="ytd-bar"><div class="ytd-fillw"><i class="ytd-fill"></i></div><div class="ytd-vis ytd-vl" inert aria-hidden="true"></div><div class="ytd-vis ytd-vd" inert aria-hidden="true"></div><span class="ytd-lt"><span class="ytd-ltn"></span></span>' +
 '<span class="ytd-note" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>' +
 '<span class="ytd-sync" aria-label="Birlikte dinleniyor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>' +
 '<button type="button" class="ytb ytb-prev" aria-label="Önceki şarkı">' + YTD_NEXT + '</button>' +
@@ -4924,7 +5081,7 @@ wrap.appendChild(el);
 try { if (window.ResizeObserver) new ResizeObserver(() => { try { ytTopInsetSync(); } catch (e) {} }).observe(el); } catch (e) {}
 try { new MutationObserver(() => { try { ytTopInsetSync(); } catch (e) {} }).observe(el, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}
 const q = (s) => el.querySelector(s);
-el._d = { cover: q('.ytd-cover'), info: q('.ytd-info'), ex: q('.ytd-ex'), lp: q('.ytd-lp'), bPrev: q('.ytb-prev'), bPlay: q('.ytb-play'), bNext: q('.ytb-next'), bX: q('.ytb-x'), bExp: q('.ytb-exp'), play: q('.ytd-play'), prev: q('.ytd-prev'), next: q('.ytd-next'), x: q('.ytd-x'), lyr: q('.ytd-lyr'), track: q('.ytd-track'), tip: q('.ytd-tip'), prog: q('.ytd-prog'), fill: q('.ytd-track > i'), tc: q('.ytd-tc'), td: q('.ytd-td'), seeking: false, frac: 0, dur0: 0 };
+el._d = { cover: q('.ytd-cover'), info: q('.ytd-info'), ex: q('.ytd-ex'), lp: q('.ytd-lp'), bPrev: q('.ytb-prev'), bPlay: q('.ytb-play'), bNext: q('.ytb-next'), bX: q('.ytb-x'), bExp: q('.ytb-exp'), play: q('.ytd-play'), prev: q('.ytd-prev'), next: q('.ytd-next'), x: q('.ytd-x'), lyr: q('.ytd-lyr'), track: q('.ytd-track'), tip: q('.ytd-tip'), prog: q('.ytd-prog'), fill: q('.ytd-track > i'), tc: q('.ytd-tc'), td: q('.ytd-td'), seeking: false, frac: 0, dur0: 0, bar: q('.ytd-bar'), barFill: q('.ytd-fill'), vl: q('.ytd-vl'), vd: q('.ytd-vd'), barSeeking: false, barHold: null, visKey: '', lt: q('.ytd-lt'), ltn: q('.ytd-ltn'), lyrAsk: null, lyrOk: false, ltKey: '' };
 bindYtTap(el._d.play, () => { if (ytDockCard && ytDockCard._toggle) ytDockCard._toggle(); });
 const doClose = () => {
 const c = ytDockCard;
@@ -4988,6 +5145,7 @@ dd.prog.classList.remove('seeking');
 if (commit && ytDockCard && ytDockCard._seekSec) ytDockCard._seekSec(dd.frac * dd.dur0);
 }
 });
+try { ytBarBindSeek(el); } catch (e) {}
 ['touchstart', 'touchmove', 'wheel'].forEach((ev) => el.addEventListener(ev, (e) => e.stopPropagation(), { passive: true }));
 return el;
 }
@@ -5063,7 +5221,7 @@ const st = card._getState();
 const k = st.playing ? 'p' : 'q';
 if (d.play.dataset.i !== k) { d.play.dataset.i = k; d.play.innerHTML = st.playing ? YTD_PAUSE : YTD_PLAY; }
 d.play.setAttribute('aria-label', st.playing ? 'Duraklat' : 'Oynat');
-if (!d.seeking) {
+if (!d.seeking && !d.barSeeking) {
 d.fill.style.width = st.dur ? Math.min(100, st.cur / st.dur * 100) + '%' : '0';
 const tcs = ytFmt(st.cur);
 if (d.tc.textContent !== tcs) d.tc.textContent = tcs;
@@ -5081,6 +5239,8 @@ if (d.bPlay.dataset.i !== pk) { d.bPlay.dataset.i = pk; d.bPlay.innerHTML = st.p
 d.bPlay.setAttribute('aria-label', st.playing ? 'Duraklat' : 'Oynat');
 d.bNext.classList.toggle('dis', !plOn);
 }
+try { ytBarSync(el, st); } catch (e) {}
+try { ytBarLyr(el, card, st); } catch (e) {}
 try { ytDockMarquee(); } catch (e) {}
 el.classList.toggle('lyr-open', ytDockLyrOpen);
 if (!el.classList.contains('show')) ytDockFolded = true;
