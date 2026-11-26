@@ -13671,6 +13671,17 @@ body.dk-wx #pane-notes > #bp-page-prof, body.dk-wx #pane-notes > #ytsearch-modal
 #wx .wx-day { overflow: hidden; }
 #wx .wx-days, #wx .wx-seg, #wx .wx-strip { min-width: 0; }
 #wx .wx-ss { overflow: hidden; }
+
+@media (min-width: 769px) {
+#pane-notes > #wx .wx-days { gap: 4px; }
+#pane-notes > #wx .wx-day { padding: 6px 1px 7px; }
+#pane-notes > #wx .wx-dn { font-size: clamp(7px, 2.5cqw, 9.5px); letter-spacing: -.2px; }
+#pane-notes > #wx .wx-di { width: clamp(16px, 5.8cqw, 26px); height: clamp(16px, 5.8cqw, 26px); }
+#pane-notes > #wx .wx-dt { font-size: clamp(7px, 2.4cqw, 9.5px); gap: 3px; letter-spacing: -.3px; max-width: 100%; }
+#pane-notes > #wx .wx-tr { gap: 1.5px; max-width: 100%; }
+#pane-notes > #wx .wx-tr em { font-size: clamp(4.5px, 1.5cqw, 6px); letter-spacing: 0; }
+#pane-notes > #wx .wx-tr .wx-mi { width: clamp(7px, 2.4cqw, 10px); height: clamp(7px, 2.4cqw, 10px); }
+}
 </style>
 <script>(function vnWeather() {
 'use strict';
