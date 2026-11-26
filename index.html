@@ -1366,7 +1366,8 @@ button.pf-di:active { background: var(--c-22); }
 #bp-add.can { display: flex; }
 #bp-add svg { display: block; }
 #bp-compose { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--c-111); padding: 8px; flex-direction: column; gap: 6px; }
-#bp-compose.show { display: flex; }
+#bp-compose.show { display: flex; z-index: 5; }
+#bp-page-main #bp-add { z-index: 4; }
 #bp-title-in, #bp-body-in { width: 100%; border: 1px solid var(--c-33); border-radius: var(--r-md); background: var(--c-000); color: var(--c-fff); outline: none; font-size: 16px; padding: 7px 9px; caret-color: var(--accent); font-family: 'Lexend', sans-serif; }
 #bp-title-in { font-weight: 700; flex: 0 0 auto; }
 #bp-body-in { flex: 1 1 auto; min-height: 0; resize: none; font-weight: 300; line-height: 1.3; }
@@ -1749,6 +1750,40 @@ html.vn-fs .gm-bar { height: 46px; padding-top: 0; }
 .gp-dnow svg { width: 50px; height: 50px; }
 .gp-row { gap: 18px !important; }
 .gp-card { padding-left: 18px !important; padding-right: 18px !important; }
+.gp-tkm { font-size: 34px; line-height: 1; background: linear-gradient(145deg, #ffe6a8, #ff9eb5); }
+@media (max-width: 440px) { .gp-row { display: grid !important; grid-template-columns: repeat(2, 78px); justify-content: center; gap: 16px 22px !important; } }
+.tkm-card { position: relative; box-sizing: border-box; display: block; width: min(240px, 100%); height: 142px; border-radius: 22px; background: var(--c-111); border: 1px solid var(--accent); color: var(--c-fff); font-family: 'Lexend', sans-serif; line-height: 1.25; text-align: center; white-space: normal; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; transition: border-color .5s ease; }
+.tkm-card.gold { border-color: transparent; }
+.tkm-half { position: absolute; top: 0; bottom: 0; width: 50%; transition: background-color .6s ease; }
+.tkm-l { left: 0; border-radius: 21px 0 0 21px; background: rgba(0,0,0,.5); }
+.tkm-r { right: 0; border-radius: 0 21px 21px 0; }
+.tkm-sep { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; margin-left: -.5px; background: var(--c-33); transition: opacity .6s ease; }
+.tkm-card.flat .tkm-l { background-color: transparent; }
+.tkm-card.flat .tkm-sep { opacity: 0; }
+.tkm-q { position: absolute; left: 25%; top: 50%; transform: translate(-50%, -50%); font-size: 40px; font-weight: 700; line-height: 1; opacity: .5; transition: opacity .3s ease; pointer-events: none; }
+.tkm-q.cd { opacity: 1; }
+.tkm-q.bump { animation: tkmBump .4s ease-out both; }
+.tkm-q.gone { opacity: 0; }
+@keyframes tkmBump { from { transform: translate(-50%, -50%) scale(1.45); } to { transform: translate(-50%, -50%) scale(1); } }
+.tkm-opts { position: absolute; right: 0; top: 0; bottom: 0; width: 50%; box-sizing: border-box; padding: 0 9px; display: flex; flex-direction: column; justify-content: center; gap: 6px; transition: opacity .2s ease; }
+.tkm-opts.gone { opacity: 0; visibility: hidden; pointer-events: none; }
+.tkm-opt { display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; height: 30px; padding: 0 4px; border: 1px solid var(--c-33); border-radius: 12px; background: var(--c-1a); color: var(--c-fff); font: 600 12.5px/1 'Lexend', sans-serif; white-space: nowrap; cursor: pointer; touch-action: manipulation; transition: transform .1s ease, background-color .15s ease; }
+.tkm-opt:active { transform: scale(.95); background: var(--c-22); }
+.tkm-sym { position: absolute; top: 50%; left: 75%; font-size: 46px; line-height: 1; opacity: 0; transform: translate(-50%, -50%) scale(.5); pointer-events: none; transition: left .75s cubic-bezier(.4,0,.2,1), top .75s cubic-bezier(.4,0,.2,1), opacity .5s ease, transform .35s cubic-bezier(.3,1.4,.5,1); }
+.tkm-sym.tkm-op { left: 25%; }
+.tkm-sym.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.tkm-sym.out { opacity: 0; transform: translate(-50%, -50%) scale(.6); transition: opacity .5s ease, transform .5s ease; }
+.tkm-sym.mid { left: 50%; top: 40%; }
+.tkm-name { position: absolute; left: 0; right: 0; bottom: 20px; padding: 0 12px; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0; transition: opacity .5s ease; pointer-events: none; }
+.tkm-name.show { opacity: 1; }
+.tkm-card.nt, .tkm-card.nt * { transition: none !important; animation: none !important; }
+.tkm-card::after { content: ''; position: absolute; inset: -1px; z-index: 3; pointer-events: none; box-sizing: border-box; border-radius: inherit; padding: 2px; opacity: 0; transition: opacity .7s ease;
+background: conic-gradient(from var(--live-a), #fff 0deg, color-mix(in srgb, #fff 55%, var(--warn)) 22deg, var(--warn) 85deg, var(--warn) 275deg, color-mix(in srgb, #fff 55%, var(--warn)) 338deg, #fff 360deg);
+-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude;
+animation: liveRingSpin 3.4s linear infinite; }
+.tkm-card.gold::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .tkm-card::after { animation: none; } .tkm-q.bump { animation: none; } }
 .gm-cover.dnow { background: linear-gradient(145deg, #d9f1ff, #b9a8ff); }
 .gm-card.dnow .gm-bg { background: radial-gradient(60% 70% at 20% 30%, #7fe0c3, transparent 70%), radial-gradient(60% 70% at 85% 80%, #8f7bff, transparent 70%); }
 .dn-wrap { position: absolute; top: 0; bottom: 0; left: 50%; width: min(100%, calc((100vh - 46px - var(--vn-top, 0px)) * .5625)); width: min(100%, calc((100dvh - 46px - var(--vn-top, 0px)) * .5625)); transform: translateX(-50%); display: flex; flex-direction: column; background: #1b1b1f; overflow: hidden; }
@@ -1948,7 +1983,10 @@ background: var(--c-111); border: 1px solid var(--accent); box-shadow: none; tex
 /* tam ekran bulanık katmanlar (fps) */
 #lp-overlay { background: rgba(0,0,0,.6); -webkit-backdrop-filter: none; backdrop-filter: none; }
 #gm-picker { background: rgba(0,0,0,.6); -webkit-backdrop-filter: none; backdrop-filter: none; }
-#tb-call.call-busy { opacity: .3; cursor: not-allowed; }
+#tb-call svg { transition: transform .5s cubic-bezier(.4, 0, .2, 1), stroke .5s ease; }
+#tb-call.dialing { pointer-events: none; cursor: not-allowed; }
+#tb-call.dialing svg { stroke: var(--warn); }
+#tb-call.live svg { stroke: #ff8a80; transform: rotate(135deg) scale(.88); }
 /* ses seviyesi baloncuğu */
 #vol-pill { position: fixed; left: 50%; top: calc(max(calc(env(safe-area-inset-top, 0px) + 10px), calc(var(--vn-sb, 0px) + 8px), calc(var(--strip-b, 0px) + 8px)) + var(--vp-off, 0px)); z-index: 12700; box-sizing: border-box; width: min(220px, calc(100% - 28px)); height: 36px; border-radius: 999px; overflow: hidden; isolation: isolate; background: var(--c-111); border: 1px solid var(--accent); pointer-events: none; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; opacity: 0; transform: translate(-50%, -10px); transition: opacity .18s ease, transform .22s cubic-bezier(.2,.9,.3,1.15); }
 #vol-pill.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
@@ -3433,6 +3471,7 @@ flushOutbox(true);
 try { callResendStates(); } catch (e) {}
 try { dialResendStates(); } catch (e) {}
 try { gameResend(); } catch (e) {}
+try { tkmResend(); } catch (e) {}
 try { vcSendSync(); } catch (e) {}
 try { if (ytCurrent && ytCurrent._announce) ytCurrent._announce(); } catch (e) {}
 if (pingInterval) clearInterval(pingInterval);
@@ -3491,6 +3530,7 @@ if (data.type === 'game-st') { receiveGameSt(data); return; }
 if (data.type === 'game-act') { receiveGameAct(data); return; }
 if (data.type === 'game-col') { receiveGameCol(data); return; }
 if (data.type === 'game-timeout') { receiveGameTimeout(data); return; }
+if (data.type === 'tkm-pick') { receiveTkmPick(data); return; }
 if (data.type === 'paint-s') { receivePaintS(data); return; }
 if (data.type === 'paint-hello') { receivePaintHello(data); return; }
 if (data.type === 'paint-clr') { receivePaintClr(data); return; }
@@ -6308,7 +6348,7 @@ function vcBuildPill(cls, id) {
 const el = document.createElement('div');
 el.className = 'vc-pill' + (cls ? ' ' + cls : '');
 if (id) el.id = id;
-el.innerHTML = '<span class="vc-fx vc-g"><i></i><i></i></span><span class="vc-fx vc-r"><i></i><i></i></span><span class="vc-n"></span><span class="vc-sep">\u2022</span><span class="vc-t"></span>' + (id === 'vc-pill' ? '<button type="button" class="vc-game" aria-label="Kuks Feva oyun daveti gönder">' + GAME_PAD_SVG + '</button><button type="button" class="vc-endbtn" aria-label="Aramayı sonlandır">' + VC_END_SVG + '</button>' : '');
+el.innerHTML = '<span class="vc-fx vc-g"><i></i><i></i></span><span class="vc-fx vc-r"><i></i><i></i></span><span class="vc-n"></span><span class="vc-sep">\u2022</span><span class="vc-t"></span>' + (id === 'vc-pill' ? '<button type="button" class="vc-game" aria-label="Kuks Feva oyun daveti gönder">' + GAME_PAD_SVG + '</button>' : '');
 el._g = el.querySelector('.vc-g');
 if (id === 'vc-pill') {
 const gb = el.querySelector('.vc-game');
@@ -6316,20 +6356,6 @@ if (gb) {
 gb.addEventListener('click', (e) => { e.stopPropagation(); if (Date.now() - menuOpenedAt < 600) return; gameOpenPicker(); });
 gb.addEventListener('pointerdown', (e) => e.stopPropagation());
 gb.addEventListener('mousedown', (e) => e.preventDefault());
-}
-const eb = el.querySelector('.vc-endbtn');
-if (eb) {
-eb.addEventListener('click', (e) => {
-e.stopPropagation();
-if (Date.now() - menuOpenedAt < 600) return;
-if (!vcLive) return;
-if (!isConnected()) return;
-const en = callCleanName(vcLive.name) || 'Arama';
-const by = callCleanName(fullNick());
-sendTextNow(CALL_PREFIX + CALL_END_MARK + en + (by ? CALL_END_BY + by : ''));
-});
-eb.addEventListener('pointerdown', (e) => e.stopPropagation());
-eb.addEventListener('mousedown', (e) => e.preventDefault());
 }
 } el._r = el.querySelector('.vc-r');
 el._n = el.querySelector('.vc-n'); el._t = el.querySelector('.vc-t');
@@ -6354,8 +6380,6 @@ const el = document.getElementById('vc-pill');
 if (!el || !el._t) return;
 const t = vcFmt((Date.now() - vcLive.t0) / 1000);
 if (el._t.textContent !== t) el._t.textContent = t;
-const eb = el.querySelector('.vc-endbtn');
-if (eb) { const off = !isConnected(); if (eb.disabled !== off) eb.disabled = off; }
 }
 function vcShow() {
 if (!vcLive) return;
@@ -6500,7 +6524,24 @@ arm(warn ? 2800 : 1600);
 };
 })();
 
-setInterval(function () { const b = document.getElementById('tb-call'); if (b) { const on = !!vcLive; if (b.classList.contains('call-busy') !== on) { b.classList.toggle('call-busy', on); b.setAttribute('aria-disabled', on ? 'true' : 'false'); } } }, 400);
+function callBtnState() {
+if (vcLive) return 'live';
+const ms = chatArea.querySelectorAll('.msg[data-call="1"]'), now = Date.now();
+for (let i = 0; i < ms.length; i++) {
+const m = ms[i]; if (m._deleting || !m.id) continue;
+const cc = m._callCard; if (cc && cc._state === 'ringing') return 'dial';
+const dc = m._dialCard;
+if (dc) { const st = dc._state || ''; if (st.indexOf('call_') === 0) return 'dial'; if (st === 'wait') { const ts = msgTsOfId(m.id); if (ts && now - ts < 60000) return 'dial'; } }
+}
+return 'idle';
+}
+function vcEndByButton() {
+if (!vcLive || !isConnected()) return;
+const en = callCleanName(vcLive.name) || 'Arama';
+const by = callCleanName(fullNick());
+sendTextNow(CALL_PREFIX + CALL_END_MARK + en + (by ? CALL_END_BY + by : ''));
+}
+setInterval(function () { const b = document.getElementById('tb-call'); if (!b) return; const s = callBtnState(); if (b.dataset.cs === s) return; b.dataset.cs = s; b.classList.toggle('dialing', s === 'dial'); b.classList.toggle('live', s === 'live'); b.setAttribute('aria-disabled', s === 'dial' ? 'true' : 'false'); b.setAttribute('aria-label', s === 'live' ? 'Aramayı sonlandır' : 'Ara'); }, 250);
 window.addEventListener('pagehide', vcStamp);
 document.addEventListener('visibilitychange', function () { if (document.hidden) vcStamp(); });
 function vcHideLive() {
@@ -6582,6 +6623,7 @@ else if (o) lsRemove(VC_KEY);
 })();
 var PNT_MARK = '\u2062PAINT\u2062';
 var DN_MARK = '\u2062DNOW\u2062';
+var TKM_MARK = '\u2062TKM\u2062', TKM_KEY = 'tkmResults', TKM_WAIT = 30000;
 var DN_ICON_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 6h32a5 5 0 0 1 5 5v19a5 5 0 0 1-5 5H25l-9 8v-8H8a5 5 0 0 1-5-5V11a5 5 0 0 1 5-5z" fill="#fff" stroke="#5b6b8a" stroke-width="2" stroke-linejoin="round"/><path d="M32 10l5 5-14 14-5-5z" fill="#c98f4a" stroke="#7a4e1d" stroke-width="1.4" stroke-linejoin="round"/><path d="M18 24l5 5c-1 3-4 5-9 4 1-3 0-6 4-9z" fill="#1e88e5"/><circle cx="34" cy="26" r="2.7" fill="#e53935"/><circle cx="13" cy="14" r="2.7" fill="#fdd835"/><circle cx="39" cy="20" r="2.2" fill="#43a047"/></svg>';
 var PNT_ICON_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5C12.4 5 4 13 4 23.5 4 33 11.5 39 18 39h3c2.2 0 3.2 1.6 3.2 3 0 1.5 1.1 2.8 3.2 2.8C36 44.8 44 36 44 25.5 44 13.8 35.5 5 24 5z" fill="#f3e2c4" stroke="#8a6a3a" stroke-width="2" stroke-linejoin="round"/><circle cx="15" cy="22" r="3.6" fill="#e53935"/><circle cx="21.5" cy="13.5" r="3.6" fill="#fdd835"/><circle cx="32" cy="14" r="3.6" fill="#43a047"/><circle cx="37.5" cy="23.5" r="3.6" fill="#1e88e5"/></svg>';
 var GAME_KEY = 'gameStates', GAME_PLAY_KEY = 'gamePlay', GAME_PLAY_MAX = 6 * 3600 * 1000;
@@ -6635,6 +6677,7 @@ bd.innerHTML = '<div class="gp-card" role="dialog" aria-label="Oyun seç"><div c
 '<button type="button" class="gp-app" data-k="kuks" aria-label="Kuks Feva"><span class="gp-ic gp-kuks">' + GAME_BURGER_SVG + '</span><span class="gp-lab">Kuks Feva</span></button>' +
 '<button type="button" class="gp-app" data-k="paint" aria-label="Paint"><span class="gp-ic gp-paint">' + PNT_ICON_SVG + '</span><span class="gp-lab">Paint</span></button>' +
 '<button type=\"button\" class=\"gp-app\" data-k=\"dnow\" aria-label=\"Dnow\"><span class=\"gp-ic gp-dnow\">' + DN_ICON_SVG + '</span><span class=\"gp-lab\">Dnow</span></button>' +
+'<button type="button" class="gp-app" data-k="tkm" aria-label="TKM"><span class="gp-ic gp-tkm">✊</span><span class="gp-lab">TKM</span></button>' +
 '</div></div>';
 const close = () => { document.removeEventListener('keydown', onKey, true); try { bd.remove(); } catch (e) {} };
 const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); close(); } };
@@ -6645,14 +6688,162 @@ bd.addEventListener('click', (e) => {
 e.stopPropagation();
 const b = e.target && e.target.closest ? e.target.closest('.gp-app') : null;
 if (!b) { if (e.target === bd) close(); return; }
-const k = b.getAttribute('data-k') === 'paint' ? 'paint' : b.getAttribute('data-k') === 'dnow' ? 'dnow' : 'kuks';
+const k = b.getAttribute('data-k') === 'paint' ? 'paint' : b.getAttribute('data-k') === 'dnow' ? 'dnow' : b.getAttribute('data-k') === 'tkm' ? 'tkm' : 'kuks';
 close();
 gameSendInvite(k);
 });
 document.addEventListener('keydown', onKey, true);
 document.body.appendChild(bd);
 }
+var TKM_SYM = { r: '🪨', p: '📄', s: '✂️' }, TKM_LAB = { r: 'Taş', p: 'Kağıt', s: 'Makas' };
+var tkmRounds = {}, tkmCards = {}, tkmExpired = {};
+function tkmBeats(a, b) { return (a === 'r' && b === 's') || (a === 's' && b === 'p') || (a === 'p' && b === 'r'); }
+function tkmReadRes() { try { const o = JSON.parse(lsGet(TKM_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; } catch (e) { return {}; } }
+function tkmWriteRes(o) { const k = Object.keys(o); while (k.length > 100) delete o[k.shift()]; try { lsSet(TKM_KEY, JSON.stringify(o)); } catch (e) {} }
+function tkmR(id) { return tkmRounds[id] || (tkmRounds[id] = { me: null, peer: null, myName: '', peerName: '', run: false, done: false }); }
+function tkmSync(id) { const c = tkmCards[id]; if (c && c._sync) { try { c._sync(); } catch (e) {} } }
+function tkmExpire(id) {
+if (tkmExpired[id]) return;
+tkmExpired[id] = true;
+const c = tkmCards[id]; if (c && c._to) clearTimeout(c._to);
+delete tkmRounds[id]; delete tkmCards[id];
+try { outboxRemove(id); } catch (e) {}
+try { removeMessageFromUI(id); } catch (e) {}
+}
+function tkmPick(id, k) {
+if (!TKM_SYM[k] || tkmExpired[id]) return;
+const r = tkmR(id);
+if (r.me || r.done) return;
+if (!isConnected()) { flashStatus('Bağlantı yok, seçim gönderilemedi'); return; }
+r.me = k; r.myName = gameClean(fullNick()) || 'Biri';
+try { conn.send({ type: 'tkm-pick', msgId: id, c: k, n: r.myName }); } catch (e) {}
+tkmSync(id);
+}
+function receiveTkmPick(d) {
+if (!d || typeof d.msgId !== 'string' || !TKM_SYM[d.c]) return;
+const id = d.msgId.slice(0, 80);
+if (tkmExpired[id]) return;
+const r = tkmR(id);
+if (r.done || r.peer) return;
+r.peer = d.c; r.peerName = gameClean(d.n) || 'Biri';
+tkmSync(id);
+}
+function tkmResend() {
+if (!isConnected()) return;
+Object.keys(tkmRounds).forEach((id) => {
+const r = tkmRounds[id];
+if (r && r.me && !r.done) { try { conn.send({ type: 'tkm-pick', msgId: id, c: r.me, n: r.myName }); } catch (e) {} }
+});
+}
+function tkmBuildCard(msgDiv, id, name, own, fresh) {
+const el = document.createElement('div');
+el.className = 'tkm-card';
+el._kind = 'tkm'; el._id = id;
+el.innerHTML = '<div class="tkm-half tkm-l"></div><div class="tkm-half tkm-r"></div><div class="tkm-sep"></div><div class="tkm-q">?</div><div class="tkm-opts"></div><div class="tkm-sym tkm-op"></div><div class="tkm-sym tkm-me"></div><div class="tkm-name"></div>';
+const q = el.querySelector('.tkm-q'), opts = el.querySelector('.tkm-opts'), sOp = el.querySelector('.tkm-op'), sMe = el.querySelector('.tkm-me'), nm = el.querySelector('.tkm-name');
+['r', 'p', 's'].forEach((k) => {
+const b = document.createElement('button');
+b.type = 'button'; b.className = 'tkm-opt'; b.setAttribute('data-k', k);
+b.innerHTML = '<span>' + TKM_SYM[k] + '</span><span>' + TKM_LAB[k] + '</span>';
+opts.appendChild(b);
+});
+opts.addEventListener('mousedown', (e) => e.preventDefault());
+opts.addEventListener('click', (e) => {
+e.stopPropagation();
+if (Date.now() - menuOpenedAt < 600) return;
+const b = e.target && e.target.closest ? e.target.closest('.tkm-opt') : null;
+if (b) tkmPick(id, b.getAttribute('data-k'));
+});
+const tmr = [];
+const later = (fn, ms) => { tmr.push(setTimeout(fn, ms)); };
+el._ts = fresh ? Date.now() : (msgTsOfId(id) || Date.now());
+let shownMe = false;
+const setSym = (node, k) => { node.textContent = TKM_SYM[k]; };
+const final = (res, instant) => {
+if (instant) el.classList.add('nt');
+opts.classList.add('gone'); q.classList.add('gone');
+el.classList.add('flat');
+setSym(sMe, res.m); setSym(sOp, res.o);
+sMe.classList.add('show'); sOp.classList.add('show');
+if (res.w === 'dr') {
+sMe.classList.add('mid'); sOp.classList.add('mid');
+nm.textContent = 'Berabere!';
+} else {
+const win = res.w === 'me' ? sMe : sOp, lose = res.w === 'me' ? sOp : sMe;
+lose.classList.remove('show'); lose.classList.add('out');
+win.classList.add('mid');
+nm.textContent = 'Kazanan: ' + (res.n || 'Biri');
+}
+nm.classList.add('show');
+if (res.w !== 'dr') el.classList.add('gold');
+if (instant) { void el.offsetHeight; el.classList.remove('nt'); }
+};
+const finish = () => {
+const r = tkmR(id);
+const w = r.me === r.peer ? 'dr' : (tkmBeats(r.me, r.peer) ? 'me' : 'op');
+const res = { m: r.me, o: r.peer, w: w, n: w === 'me' ? r.myName : r.peerName };
+r.done = true;
+const all = tkmReadRes(); all[id] = res; tkmWriteRes(all);
+if (w === 'dr') {
+later(() => { el.classList.add('flat'); }, 500);
+later(() => { sMe.classList.add('mid'); sOp.classList.add('mid'); }, 900);
+later(() => { nm.textContent = 'Berabere!'; nm.classList.add('show'); }, 1600);
+return;
+}
+const win = w === 'me' ? sMe : sOp, lose = w === 'me' ? sOp : sMe;
+lose.classList.remove('show'); lose.classList.add('out');
+later(() => { el.classList.add('flat'); }, 500);
+later(() => { win.classList.add('mid'); }, 900);
+later(() => { nm.textContent = 'Kazanan: ' + res.n; nm.classList.add('show'); }, 1650);
+later(() => { el.classList.add('gold'); }, 2100);
+};
+const run = () => {
+const r = tkmR(id);
+r.run = true;
+if (el._to) { clearTimeout(el._to); el._to = 0; }
+let n = 5;
+const tick = () => { q.textContent = String(n); q.classList.add('cd'); q.classList.remove('bump'); void q.offsetWidth; q.classList.add('bump'); };
+tick();
+const iv = setInterval(() => {
+n--;
+if (n > 0) { tick(); return; }
+clearInterval(iv);
+q.classList.remove('cd', 'bump'); q.classList.add('gone');
+setSym(sOp, r.peer); sOp.classList.add('show');
+later(finish, 1000);
+}, 1000);
+tmr.push(iv);
+};
+el._sync = () => {
+const r = tkmR(id);
+if (r.me && !shownMe) {
+shownMe = true;
+opts.classList.add('gone');
+setSym(sMe, r.me); sMe.classList.add('show');
+}
+if (r.me && r.peer && !r.run && !r.done) run();
+};
+tkmCards[id] = el;
+const res0 = tkmReadRes()[id];
+if (res0 && TKM_SYM[res0.m] && TKM_SYM[res0.o]) {
+tkmR(id).done = true;
+final(res0, true);
+return el;
+}
+setTimeout(() => {
+try {
+const r = tkmR(id);
+if (r.done || r.run) return;
+const left = el._ts + TKM_WAIT - Date.now();
+if (left <= 0) { if (!(r.me && r.peer)) tkmExpire(id); return; }
+el._to = setTimeout(() => { el._to = 0; const r2 = tkmR(id); if (r2.me && r2.peer) return; tkmExpire(id); }, left);
+el._sync();
+} catch (e) {}
+}, 0);
+return el;
+}
 function gameBuildCard(msgDiv, id, name, own, fresh) {
+if (typeof name === 'string' && name.indexOf(TKM_MARK) === 0) return tkmBuildCard(msgDiv, id, name.slice(TKM_MARK.length), own, fresh);
 const el = document.createElement('div');
 const kind = (typeof name === 'string' && name.indexOf(PNT_MARK) === 0) ? 'paint' : (typeof name === 'string' && name.indexOf(DN_MARK) === 0) ? 'dnow' : 'kuks';
 if (kind === 'paint') name = name.slice(PNT_MARK.length);
@@ -6735,7 +6926,7 @@ if (Date.now() - gameInvAt < 1500) return;
 if (!isConnected()) { flashStatus('Bağlantı yok, oyun daveti gönderilemedi'); return; }
 gameInvAt = Date.now();
 try { gmAuUnlock(); } catch (e) {}
-sendTextNow(GAME_PREFIX + (kind === 'paint' ? PNT_MARK : kind === 'dnow' ? DN_MARK : '') + (gameClean(fullNick()) || 'Biri'));
+sendTextNow(GAME_PREFIX + (kind === 'paint' ? PNT_MARK : kind === 'dnow' ? DN_MARK : kind === 'tkm' ? TKM_MARK : '') + (gameClean(fullNick()) || 'Biri'));
 }
 function gameJoin(id) {
 if (gameIsClosed(id) || gameIsTimeout(id) || gameMine[id] || gameActive) return;
@@ -9543,7 +9734,7 @@ stopRec(false); pressActive = false; clearPress();
 micBtn.addEventListener('contextmenu', (e) => e.preventDefault());
 document.getElementById('tb-photo').addEventListener('click', () => { if (editingId) return; if (window.__kbPicker) window.__kbPicker.start(); fileInput.click(); });
 document.getElementById('tb-cam').addEventListener('click', () => { if (editingId) return; if (window.__kbPicker) window.__kbPicker.start(); cameraInput.click(); });
-document.getElementById('tb-call').addEventListener('click', () => { if (editingId) return; if (vcLive) { try { flashStatus('Arama sürüyor'); } catch (e) {} return; } if (notifCanSend()) openCallCompose(); else if (thirdCanSend()) openDialPick(); });
+document.getElementById('tb-call').addEventListener('click', () => { if (editingId) return; if (vcLive) { vcEndByButton(); return; } if (callBtnState() === 'dial') return; if (notifCanSend()) openCallCompose(); else if (thirdCanSend()) openDialPick(); });
 const inputWrapper = document.getElementById('input-wrapper');
 function syncComposer() {
 const v = messageInput.value;
@@ -13354,7 +13545,7 @@ guard();
 <style id="wx-css">
 #bell-pop #bp-list { bottom: 50%; padding: 0 0 12px; }
 #bp-page-main #bp-add { bottom: calc(50% + 12px); }
-#wx { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; padding: 10px; color: #fff; border-top: 1px solid var(--c-33); -webkit-user-select: none; user-select: none; text-shadow: 0 1px 2px rgba(0,0,0,.25); }
+#wx { position: absolute; z-index: 0; isolation: isolate; left: 0; right: 0; bottom: 0; height: 50%; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; padding: 10px; color: #fff; border-top: 1px solid var(--c-33); -webkit-user-select: none; user-select: none; text-shadow: 0 1px 2px rgba(0,0,0,.25); }
 #wx .wx-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none; }
 #wx .wx-bg i { position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0; z-index: 0; transition: none; }
 #wx .wx-bg i.prev { opacity: 1; z-index: 1; }
