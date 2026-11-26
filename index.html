@@ -11530,19 +11530,20 @@ if (isMobileLayout()) goPanel(b.dataset.p === 'chat' ? 0 : parseInt(b.dataset.p,
 });
 bpSetPage(bpPage, true);
 })();
-let dkPage = (lsGet('dkPage') === 'song') ? 'song' : 'prof';
+let dkPage = (lsGet('dkPage') === 'song') ? 'song' : (lsGet('dkPage') === 'wx') ? 'wx' : 'prof';
 function dkSetPage(which) {
 if (isMobileLayout()) return;
-const song = (which === 'song');
-dkPage = song ? 'song' : 'prof';
+const song = (which === 'song'), wxp = (which === 'wx');
+dkPage = song ? 'song' : wxp ? 'wx' : 'prof';
 document.body.classList.toggle('dk-song', song);
+document.body.classList.toggle('dk-wx', wxp);
 const dk = document.getElementById('dk-tabs');
 if (dk) {
 const inn = dk.firstElementChild;
-if (inn) inn.style.setProperty('--dk-i', song ? '1' : '0');
+if (inn) inn.style.setProperty('--dk-i', song ? '2' : wxp ? '1' : '0');
 dk.querySelectorAll('.dk-tab').forEach((b) => b.classList.toggle('on', b.dataset.d === dkPage));
 }
-if (song) { try { pfSetEdit(false); } catch (e) {} }
+if (song || wxp) { try { pfSetEdit(false); } catch (e) {} }
 else { try { pfRender(); } catch (e) {} }
 try { ytsSyncActive(); } catch (e) {}
 try { lsSet('dkPage', dkPage); } catch (e) {}
@@ -11553,11 +11554,13 @@ const right = document.getElementById('pane-notes');
 const prof = document.getElementById('bp-page-prof');
 const song = document.getElementById('ytsearch-modal');
 const sl = document.getElementById('bp-slider');
+const wxEl = document.getElementById('wx');
 if (!left || !right || !prof || !sl || !song) return;
 const dk = document.createElement('div');
 dk.id = 'dk-tabs';
 dk.innerHTML = '<div id="dk-tabs-in"><div id="dk-pill"></div>' +
 '<button type="button" class="dk-tab on" data-d="prof" aria-label="Profil" title="Profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></button>' +
+'<button type="button" class="dk-tab" data-d="wx" aria-label="Hava durumu" title="Hava durumu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg></button>' +
 '<button type="button" class="dk-tab" data-d="song" aria-label="Şarkı" title="Şarkı"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button></div>';
 dk.querySelectorAll('.dk-tab').forEach((b) => {
 b.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
@@ -11576,11 +11579,14 @@ if (desk) {
 if (bellPop.parentNode !== left) left.appendChild(bellPop);
 if (prof.parentNode !== right) right.appendChild(prof);
 if (song.parentNode !== right) right.appendChild(song);
+if (wxEl && wxEl.parentNode !== right) right.appendChild(wxEl);
 right.appendChild(dk);
 dkSetPage(dkPage);
 } else {
 if (prof.parentNode !== sl) sl.appendChild(prof);
 if (song.parentNode !== sl) sl.appendChild(song);
+if (wxEl) { const pm = document.getElementById('bp-page-main'), ad = document.getElementById('bp-add'); if (pm && wxEl.parentNode !== pm) pm.insertBefore(wxEl, ad && ad.parentNode === pm ? ad : null); }
+document.body.classList.remove('dk-wx');
 if (bellPop.parentNode !== right) right.insertBefore(bellPop, right.firstChild);
 document.body.classList.remove('dk-song');
 }
@@ -13639,6 +13645,32 @@ html[data-wxph="n"] #vn-sysbar .vs-lw .vs-l { background: #d2701c; }
 html[data-wxph="g"] #vn-sysbar .vs-lw .vs-l { background: #2b3070; }
 #vn-sysbar .vs-l svg { display: block; width: 12px; height: 12px; flex: 0 0 auto; }
 #vn-sysbar .vs-l .wx-l-i, #vn-sysbar .vs-l .wx-l-t { display: block; line-height: 1; }
+
+@media (min-width: 769px) {
+body.desk-split #bell-pop #bp-list { bottom: 0; }
+body.desk-split #bp-page-main #bp-add { bottom: 12px; }
+#pane-notes > #wx { display: none; position: relative; left: auto; right: auto; bottom: auto; flex: 1 1 0; min-height: 0; width: 100%; height: auto; border-top: 0; padding: 12px; container-type: inline-size; }
+body.dk-wx #pane-notes > #wx { display: flex; }
+body.dk-wx #pane-notes > #bp-page-prof, body.dk-wx #pane-notes > #ytsearch-modal { display: none; }
+#dk-pill { width: calc((100% - 4px) / 3); }
+#pane-notes > #wx .wx-mid { --ic: clamp(44px, min(11vh, 20cqw), 84px); }
+#pane-notes > #wx .wx-strip { height: clamp(60px, 12vh, 110px); }
+#pane-notes > #wx .wx-day { height: clamp(96px, 18vh, 160px); }
+#pane-notes > #wx .wx-sb { font-size: clamp(10px, 3.6cqw, 12.5px); }
+#pane-notes > #wx .wx-top { font-size: clamp(10px, 3.6cqw, 12.5px); }
+#pane-notes > #wx .wx-dn { font-size: clamp(8px, 3cqw, 10.5px); }
+#pane-notes > #wx .wx-dt { font-size: clamp(8px, 2.9cqw, 10px); }
+#pane-notes > #wx .wx-di { width: clamp(20px, 7.5cqw, 30px); height: clamp(20px, 7.5cqw, 30px); }
+#pane-notes > #wx .wx-ss { font-size: clamp(8px, 3cqw, 11px); }
+}
+#wx .wx-sb span, #wx .wx-pl, #wx .wx-d, #wx .wx-t, #wx .wx-dn, #wx .wx-dt, #wx .wx-ss { max-width: 100%; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box; }
+#wx .wx-top { gap: 8px; min-width: 0; }
+#wx .wx-pl { flex: 1 1 auto; min-width: 0; white-space: nowrap; }
+#wx .wx-rt { flex: 0 0 auto; }
+#wx .wx-txt { overflow: hidden; max-width: calc(100% - var(--ic) - 14px); }
+#wx .wx-day { overflow: hidden; }
+#wx .wx-days, #wx .wx-seg, #wx .wx-strip { min-width: 0; }
+#wx .wx-ss { overflow: hidden; }
 </style>
 <script>(function vnWeather() {
 'use strict';
