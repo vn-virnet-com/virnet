@@ -9349,17 +9349,17 @@ ytsIn.addEventListener('input', () => { if (ytsTimer) clearTimeout(ytsTimer); yt
 document.getElementById('ytsearch-x').addEventListener('click', closeYtSearch);
 const YTS_PLAYLIST_ID = 'PLZHA2l3zqODc';
 const ytsPlCache = {};
-function ytsHq(u) { const m = /^https?:\/\/i\d?\.ytimg\.com\/vi(?:_webp)?\/([\w-]{11})\/[a-z0-9]*default[^?]*/i.exec(u || ''); return m ? 'https://i.ytimg.com/vi/' + m[1] + '/hqdefault.jpg' : (u || ''); }
+function ytsHq(u) { const m = /^https?:\/\/[^\/]+\/vi(?:_webp)?\/([\w-]{11})\/[^?#]*/i.exec(u || ''); return m ? 'https://i.ytimg.com/vi/' + m[1] + '/hqdefault.jpg' : (u || ''); }
 function ytsPlaylistApi(listId, onProg, firstOnly) {
 const id = encodeURIComponent(listId), tasks = [], st = { won: false };
 const claim = () => { if (st.won) throw new Error('late'); st.won = true; };
 YTS_PIPED.forEach((b) => tasks.push((async () => {
 let j = await ytsFetch(b + '/playlists/' + id);
-const out = [];
+const out = [], seen = new Set();
 out.meta = { name: j.name || '', cover: j.thumbnailUrl || '' };
 const add = (arr) => (arr || []).forEach((it) => {
 const m = /[?&]v=([A-Za-z0-9_-]{11})/.exec(it.url || '');
-if (m) out.push({ id: m[1], title: it.title || '', artist: it.uploaderName || '' });
+if (m && !seen.has(m[1])) { seen.add(m[1]); out.push({ id: m[1], title: it.title || '', artist: it.uploaderName || '' }); }
 });
 add(j.relatedStreams);
 if (!out.length) throw new Error('empty');
@@ -9373,14 +9373,14 @@ while (np && n++ < 8) { j = await ytsFetch(b + '/nextpage/playlists/' + id + '?n
 return out;
 })()));
 YTS_INV.forEach((b) => tasks.push((async () => {
-const out = [];
+const out = [], seen = new Set();
 for (let pg = 1; pg <= 8; pg++) {
 let j;
 if (pg === 1) j = await ytsFetch(b + '/api/v1/playlists/' + id + '?page=1');
 else { try { j = await ytsFetch(b + '/api/v1/playlists/' + id + '?page=' + pg); } catch (e) { out.partial = true; break; } }
 if (pg === 1) out.meta = { name: (j && j.title) || '', cover: (j && j.playlistThumbnail) || '' };
 const vs = (j && j.videos) || [];
-vs.forEach((it) => { if (it && it.videoId) out.push({ id: it.videoId, title: it.title || '', artist: it.author || '' }); });
+vs.forEach((it) => { if (it && it.videoId && !seen.has(it.videoId)) { seen.add(it.videoId); out.push({ id: it.videoId, title: it.title || '', artist: it.author || '' }); } });
 if (pg === 1) { if (!out.length) throw new Error('empty'); claim(); if (firstOnly) { if (onProg) onProg(out); return out; } }
 if (onProg) onProg(out);
 if (vs.length < 100) break;
@@ -9441,6 +9441,18 @@ return [null, null, null, null];
 let ytsSlots = ytsSlotsLoad();
 const ytsSlotTok = [0, 0, 0, 0];
 function ytsSlotsSave() { lsSet(YTS_SLOTS_KEY, JSON.stringify(ytsSlots)); }
+const ytsCovChecked = new Set();
+function ytsCoverRefresh(d) {
+return ytsPlaylistApi(d.id, null, true).then((items) => {
+const m = items.meta || {};
+const fb = items.length ? 'https://i.ytimg.com/vi/' + items[0].id + '/hqdefault.jpg' : (d.fb || '');
+const c = /^https?:\/\//i.test(m.cover || '') ? ytsHq(m.cover) : '';
+if (!c || c === ytsHq(fb)) return null;
+d.cover = c; if (fb) d.fb = fb; if (m.name && !d.name) d.name = m.name;
+ytsSlotsSave();
+return c;
+}).catch(() => null);
+}
 function ytsShowSlots() {
 ++ytsToken;
 if (ytsTimer) { clearTimeout(ytsTimer); ytsTimer = null; }
@@ -9460,8 +9472,10 @@ ch.setAttribute('aria-label', 'Panodaki liste linkiyle değiştir');
 ch.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-3M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4"/></svg>';
 const paint = (d, msg) => {
 if (d) {
-img.onerror = () => { img.onerror = () => { img.onerror = null; if (d.fb) img.src = d.fb; }; if (d.cover) img.src = d.cover; else if (d.fb) img.src = d.fb; };
+const fbOnly = () => { img.onerror = null; if (d.fb) img.src = d.fb; };
+img.onerror = () => { img.onerror = fbOnly; ytsCoverRefresh(d).then((u) => { if (u) img.src = u; else fbOnly(); }); };
 img.src = ytsHq(d.cover) || ytsHq(d.fb) || '';
+if (d.id && !ytsCovChecked.has(d.id) && ytsHq(d.cover) === ytsHq(d.fb)) { ytsCovChecked.add(d.id); ytsCoverRefresh(d).then((u) => { if (u) { cv.classList.add('has'); img.src = u; } }); }
 cv.classList.add('has');
 nm.textContent = d.name || 'Oynatma listesi'; nm.classList.remove('empty');
 } else {
@@ -9484,7 +9498,7 @@ const done = (items) => {
 if (my !== ytsSlotTok[i]) return;
 const m = items.meta || {};
 const fb = items.length ? 'https://i.ytimg.com/vi/' + items[0].id + '/hqdefault.jpg' : '';
-const d = { id: id, link: v, name: m.name || '', cover: /^https?:\/\//i.test(m.cover || '') ? m.cover : fb, fb: fb };
+const d = { id: id, link: v, name: m.name || '', cover: /^https?:\/\//i.test(m.cover || '') ? ytsHq(m.cover) : fb, fb: fb };
 ytsSlots[i] = d; ytsSlotsSave(); paint(d);
 };
 if (ytsPlCache[id]) { done(ytsPlCache[id]); return; }
@@ -9622,7 +9636,8 @@ ytPlEl.name.textContent = m.name || 'Oynatma listesi';
 ytPlEl.sub.textContent = items.length + ' şarkı';
 const fb = items.length ? 'https://i.ytimg.com/vi/' + items[0].id + '/hqdefault.jpg' : '';
 const img = ytPlEl.cover;
-const cv0 = /^https?:\/\//i.test(m.cover || '') ? m.cover : fb;
+let cv0 = /^https?:\/\//i.test(m.cover || '') ? m.cover : fb;
+try { const sl = ytsSlots.find((x) => x && x.id === listId); if (sl && sl.cover && ytsHq(sl.cover) !== ytsHq(sl.fb) && (!m.cover || ytsHq(m.cover) === ytsHq(fb))) cv0 = sl.cover; } catch (e) {}
 img.onerror = () => { img.onerror = () => { img.onerror = null; if (fb) img.src = fb; }; img.src = cv0; };
 img.src = ytsHq(cv0);
 ytPlEl.shuf.disabled = !items.length;
