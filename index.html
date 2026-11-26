@@ -509,9 +509,13 @@ background: var(--accent); color: var(--on-accent); border-left: 1px solid var(-
 #send-btn.longpress { background: var(--ok); }
 #send-btn.rec { background: #d33; animation: recp 1s ease-in-out infinite; }
 @keyframes recp { 50% { opacity: .6; } }
-#rec-ph { display: none; position: absolute; left: 0; right: 0; top: 0; bottom: 0; box-sizing: border-box; padding: calc((var(--cmp-h) - 22px) / 2) 6px 0; background: var(--c-111); z-index: 4; pointer-events: none; font-size: 16px; line-height: 22px; white-space: nowrap; overflow: hidden; }
-#rec-ph span { color: #ff3b30; font-weight: 700; animation: recblink 1s ease-in-out infinite; }
-#msg-wrap.recording #rec-ph { display: block; }
+#top-row { position: relative; }
+#rec-ph { display: none; position: absolute; left: 0; right: 0; top: 0; bottom: 0; box-sizing: border-box; background: var(--c-111); z-index: 6; pointer-events: none; flex-direction: column; align-items: center; justify-content: center; gap: 1px; overflow: hidden; white-space: nowrap; }
+#rec-ph .rp-main { display: flex; align-items: center; justify-content: center; gap: 8px; line-height: 20px; }
+#rec-ph .rp-dot { width: 9px; height: 9px; border-radius: 50%; background: #ff3b30; box-shadow: 0 0 0 3px color-mix(in srgb, #ff3b30 22%, transparent); animation: recblink 1s ease-in-out infinite; flex: 0 0 auto; }
+#rec-ph .rp-t { color: var(--c-fff); font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+#rec-ph .rp-h { color: var(--c-88); font-size: 11px; line-height: 13px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+#input-wrapper.rec-on #rec-ph { display: flex; }
 @keyframes recblink { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
 #tool-row { display: grid; grid-template-rows: 1fr; transition: none; }
 #tool-in { min-height: 0; overflow: hidden; }
@@ -2407,8 +2411,9 @@ else { root.classList.add('pin-locked'); }
     <div id="top-row">
       <div id="msg-line">
         <textarea id="nick-input" rows="1" wrap="off" name="chat-label" placeholder="İsim" tabindex="1" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"></textarea><span id="nick-dot" aria-hidden="true">·</span>
-        <div id="msg-wrap"><textarea id="message-input" placeholder="Bağlanıyor..." tabindex="2"></textarea><div id="ph-overlay" aria-hidden="true"><span id="ph-text">Bağlanıyor...</span></div><div id="rec-ph" aria-hidden="true"><span>Ses kaydediliyor...</span></div></div>
+        <div id="msg-wrap"><textarea id="message-input" placeholder="Bağlanıyor..." tabindex="2"></textarea><div id="ph-overlay" aria-hidden="true"><span id="ph-text">Bağlanıyor...</span></div></div>
       </div>
+      <div id="rec-ph" aria-hidden="true"><div class="rp-main"><i class="rp-dot"></i><span class="rp-t">0:00</span></div><span class="rp-h"></span></div>
       <button id="send-btn" type="button" aria-label="Gönder" disabled><svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.25 12L3.75 20.5L6.25 14.5L14.25 12L6.25 9.5L3.75 3.5Z"/></svg></button>
     </div>
     <div id="mx-row"><button type="button" class="tb" id="mx-x" aria-label="Kapat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
@@ -10493,7 +10498,8 @@ showRecUi();
 recAuto = setTimeout(() => stopRec(true), 120000);
 } catch (e) { setAudSess('playback'); relRecHold(); flashStatus('Mikrofon izni gerekli'); }
 }
-const recPhSpan = document.querySelector('#rec-ph span');
+const recPhSpan = document.querySelector('#rec-ph .rp-t');
+const recPhHint = document.querySelector('#rec-ph .rp-h');
 const recExt = document.getElementById('rec-ext');
 const recTrashEl = document.getElementById('rec-trash');
 const recLockEl = document.getElementById('rec-lock');
@@ -10507,7 +10513,8 @@ let recPhBase = '', recPhTimer = null;
 function recPhRender() {
 if (!recPhSpan) return;
 const e = recT0 ? Math.max(0, Math.floor((Date.now() - recT0) / 1000)) : 0;
-recPhSpan.textContent = recPhBase + ' · ' + fmtAud(e);
+recPhSpan.textContent = fmtAud(e);
+if (recPhHint) recPhHint.textContent = recPhBase;
 }
 function recPhSet(t) { recPhBase = t; recPhRender(); }
 function recPhTimerStop() { if (recPhTimer) { clearInterval(recPhTimer); recPhTimer = null; } }
