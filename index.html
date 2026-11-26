@@ -1752,7 +1752,7 @@ html.vn-fs .gm-bar { height: 46px; padding-top: 0; }
 .gp-card { padding-left: 18px !important; padding-right: 18px !important; }
 .gp-tkm { font-size: 34px; line-height: 1; background: linear-gradient(145deg, #ffe6a8, #ff9eb5); }
 @media (max-width: 440px) { .gp-row { display: grid !important; grid-template-columns: repeat(2, 78px); justify-content: center; gap: 16px 22px !important; } }
-.tkm-card { position: relative; box-sizing: border-box; display: block; width: min(240px, 100%); height: 142px; border-radius: 22px; background: var(--c-111); border: 1px solid var(--accent); color: var(--c-fff); font-family: 'Lexend', sans-serif; line-height: 1.25; text-align: center; white-space: normal; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; transition: border-color .5s ease; }
+.tkm-card { position: relative; box-sizing: border-box; display: block; width: 240px; max-width: 100%; height: 142px; border-radius: 22px; background: var(--c-111); border: 1px solid var(--accent); color: var(--c-fff); font-family: 'Lexend', sans-serif; line-height: 1.25; text-align: center; white-space: normal; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; transition: border-color .5s ease; }
 .tkm-card.gold { border-color: transparent; }
 .tkm-half { position: absolute; top: 0; bottom: 0; width: 50%; transition: background-color .6s ease; }
 .tkm-l { left: 0; border-radius: 21px 0 0 21px; background: rgba(0,0,0,.5); }
@@ -5840,6 +5840,7 @@ textDiv.classList.add('call-body');
 textDiv.appendChild(buildDialMsgCard(msgDiv, messageId, dialParse(text), !!isOwnMessage));
 } else if (gameParse(text) !== null) {
 msgDiv.dataset.call = '1';
+if (gameParse(text).indexOf(TKM_MARK) === 0) msgDiv.dataset.callcard = '1';
 textDiv.classList.add('call-body');
 textDiv.appendChild(gameBuildCard(msgDiv, messageId, gameParse(text), !!isOwnMessage, persist !== false));
 } else setBodyContent(textDiv, text);
