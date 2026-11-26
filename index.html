@@ -2158,6 +2158,9 @@ height: 0; border-top-width: 0; border-bottom-width: 0; transition: max-width .3
 @keyframes ytLt { from { transform: translateX(0); } to { transform: translateX(var(--lx, 0px)); } }
 #strip-stack > #yt-dock .ytd-bar.lyr-mode .ytd-lt { display: block; }
 #strip-stack > #yt-dock .ytd-bar.lyr-mode > .ytb, #strip-stack > #yt-dock .ytd-bar.lyr-mode > .ytd-sync, #strip-stack > #yt-dock .ytd-bar.lyr-mode > .ytd-fillw, #strip-stack > #yt-dock .ytd-bar.lyr-mode > .ytd-vis { display: none !important; }
+/* şerit, şarkı paneli ve arama satırları: basılı tutunca metin seçilmesin (mavi seçim yok) */
+#strip-stack, #strip-stack *, #yt-dock, #yt-dock *, #auto-chip, #auto-chip *, #vc-pill, #vc-pill *, #ytsearch-box .yts-row, #ytsearch-box .yts-row *, #ytsearch-box .yts-slot, #ytsearch-box .yts-slot * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+#strip-stack ::selection, #yt-dock ::selection, #ytsearch-box .yts-row ::selection { background: transparent; }
 /* ses seviyesi baloncuğu */
 #vol-pill { position: fixed; left: 50%; top: calc(max(calc(env(safe-area-inset-top, 0px) + 10px), calc(var(--vn-sb, 0px) + 8px), calc(var(--strip-b, 0px) + 8px)) + var(--vp-off, 0px)); z-index: 12700; box-sizing: border-box; width: min(220px, calc(100% - 28px)); height: 36px; border-radius: 999px; overflow: hidden; isolation: isolate; background: var(--c-111); border: 1px solid var(--accent); pointer-events: none; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; opacity: 0; transform: translate(-50%, -10px); transition: opacity .18s ease, transform .22s cubic-bezier(.2,.9,.3,1.15); }
 #vol-pill.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
