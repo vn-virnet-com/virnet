@@ -2152,9 +2152,9 @@ height: 0; border-top-width: 0; border-bottom-width: 0; transition: max-width .3
 @media (prefers-reduced-motion: reduce) { #strip-stack > #yt-dock .ytd-fill, #strip-stack > #yt-dock .ytd-vis { transition: none; } }
 
 /* şarkı hapı: söz modu (0.5 sn basılı tut) */
-#strip-stack > #yt-dock .ytd-lt { display: none; position: relative; z-index: 2; flex: 1 1 0; min-width: 0; overflow: hidden; text-align: center; font-size: 10.5px; line-height: 1; font-weight: 700; pointer-events: none; }
+#strip-stack > #yt-dock .ytd-lt { display: none; position: relative; z-index: 2; flex: 1 1 0; min-width: 0; overflow: hidden; text-align: center; font-size: 10.5px; line-height: 16px; height: 16px; font-weight: 700; pointer-events: none; }
 #strip-stack > #yt-dock .ytd-lt.ov { text-align: left; }
-#strip-stack > #yt-dock .ytd-ltn { display: inline-block; white-space: nowrap; will-change: transform; }
+#strip-stack > #yt-dock .ytd-ltn { display: inline-block; line-height: 16px; vertical-align: top; white-space: nowrap; will-change: transform; }
 @keyframes ytLt { from { transform: translateX(0); } to { transform: translateX(var(--lx, 0px)); } }
 #strip-stack > #yt-dock .ytd-bar.lyr-mode .ytd-lt { display: block; }
 #strip-stack > #yt-dock .ytd-bar.lyr-mode > .ytb, #strip-stack > #yt-dock .ytd-bar.lyr-mode > .ytd-sync, #strip-stack > #yt-dock .ytd-bar.lyr-mode > .ytd-fillw, #strip-stack > #yt-dock .ytd-bar.lyr-mode > .ytd-vis { display: none !important; }
