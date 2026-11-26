@@ -3790,7 +3790,7 @@ if (data.type === 'audio') {
 hideRecIndicator();
 if (!data.buffer || typeof data.mime !== 'string' || data.mime.indexOf('audio/') !== 0) return;
 if (data.msgId && document.getElementById(data.msgId)) return;
-appendMessage('', data.senderNick, false, (data.reply && typeof data.reply === 'object') ? data.reply : null, data.msgId, true, { url: URL.createObjectURL(new Blob([data.buffer], { type: data.mime })), audio: true, once: data.once === true, dur: Number(data.dur) || 0 });
+appendMessage('', data.senderNick, false, (data.reply && typeof data.reply === 'object') ? data.reply : null, data.msgId, true, { url: URL.createObjectURL(new Blob([data.buffer], { type: data.mime })), audio: true, once: data.once === true, dur: Number(data.dur) || 0, wf: audWfNorm(data.wf, 26) });
 noteIncomingMessage({ nick: data.senderNick, kind: 'a', id: data.msgId });
 return;
 }
@@ -10341,11 +10341,11 @@ function closeConfirm(doSend) {
 confirmModal.classList.remove('show');
 if (pendingAudio) {
 clearAudioPreview();
-const ab = pendingAudio, ao = !!confirmOnce.checked, ad = pendingAudioDur;
-pendingAudio = null; confirmOnce.checked = false;
+const ab = pendingAudio, ao = !!confirmOnce.checked, ad = pendingAudioDur, aw = pendingAudioWf;
+pendingAudio = null; pendingAudioWf = null; confirmOnce.checked = false;
 confirmPreview.style.display = '';
 document.getElementById('confirm-text').textContent = 'Fotoğraf gönderilsin mi?';
-if (doSend) sendAudio(ab, ao, ad);
+if (doSend) sendAudio(ab, ao, ad, aw);
 return;
 }
 confirmPreview.removeAttribute('src');
@@ -10361,6 +10361,59 @@ confirmYes.addEventListener('click', () => closeConfirm(true));
 confirmNo.addEventListener('click', () => closeConfirm(false));
 let recLocked = false, recLockTapId = null;
 let recMR = null, recChunks = [], recSend = false, recStream = null, recAuto = null, recBeat = null, recT0 = 0;
+let recCtx = null, recLvTimer = null, recLv = [];
+function recLvStart(st) {
+recLvStop();
+recLv = [];
+try {
+const AC = window.AudioContext || window.webkitAudioContext;
+if (!AC) return;
+const ctx = new AC();
+recCtx = ctx;
+try { if (ctx.state === 'suspended') ctx.resume(); } catch (e) {}
+const src = ctx.createMediaStreamSource(st);
+const an = ctx.createAnalyser();
+an.fftSize = 1024;
+src.connect(an);
+const buf = new Uint8Array(an.fftSize);
+recLvTimer = setInterval(() => {
+try {
+an.getByteTimeDomainData(buf);
+let sum = 0;
+for (let i = 0; i < buf.length; i++) { const v = (buf[i] - 128) / 128; sum += v * v; }
+recLv.push(Math.sqrt(sum / buf.length));
+} catch (e) {}
+}, 50);
+} catch (e) { recLvStop(); }
+}
+function recLvStop() {
+if (recLvTimer) { clearInterval(recLvTimer); recLvTimer = null; }
+if (recCtx) { try { recCtx.close(); } catch (e) {} recCtx = null; }
+}
+function recLvToWf(lv, N) {
+const n = lv ? lv.length : 0;
+if (!n) return null;
+const out = [];
+let mx = 0;
+for (let i = 0; i < N; i++) {
+const a = Math.floor(i * n / N), b = Math.max(a + 1, Math.floor((i + 1) * n / N));
+let s = 0, c = 0;
+for (let j = a; j < b && j < n; j++) { s += lv[j]; c++; }
+const v = c ? s / c : 0;
+out.push(v); if (v > mx) mx = v;
+}
+mx = Math.max(mx, 0.05);
+return out.map((v) => Math.max(0, Math.min(100, Math.round(Math.pow(v / mx, 0.7) * 100))));
+}
+function audWfNorm(w, N) {
+if (!Array.isArray(w) || !w.length || w.length > 256) return null;
+const a = [];
+for (let i = 0; i < w.length; i++) { const v = Number(w[i]); if (!isFinite(v)) return null; a.push(Math.max(0, Math.min(100, v))); }
+if (a.length === N) return a;
+const out = [];
+for (let i = 0; i < N; i++) out.push(a[Math.min(a.length - 1, Math.floor(i * a.length / N))]);
+return out;
+}
 function sendRec(t) { try { if (conn && conn.open) conn.send({ type: t }); } catch (e) {} }
 function setAudSess(t) { try { if (navigator.audioSession) navigator.audioSession.type = t; } catch (e) {} }
 async function pickInternalMic() {
@@ -10386,7 +10439,7 @@ function recGuardStart() {
 clearInterval(recGuard);
 recGuard = setInterval(() => {
 if (!recMR || !recHeld) { clearInterval(recGuard); recGuard = null; return; }
-ytPauseAllPlaying();
+ytPauseAllPlaying(); audPauseAll();
 }, 100);
 }
 async function startRec() {
@@ -10394,7 +10447,7 @@ if (recMR) return;
 if (!window.MediaRecorder) { flashStatus('Bu tarayıcı ses kaydını desteklemiyor'); return; }
 if (!isConnected()) { flashStatus('Bağlı değil'); return; }
 try {
-recHeld = true; songPauseForAudio();
+recHeld = true; songPauseForAudio(); audPauseAll();
 setAudSess('play-and-record');
 const micId = await pickInternalMic();
 const audC = { echoCancellation: false, noiseSuppression: false, autoGainControl: true, channelCount: 1, sampleRate: 48000 };
@@ -10422,14 +10475,17 @@ recMR = null;
 if (recBeat) { clearInterval(recBeat); recBeat = null; }
 sendRec('rec-stop');
 const recLen = (Date.now() - recT0) / 1000;
+recLvStop();
+const recWf = recLvToWf(recLv, 26); recLv = [];
 setAudSess('playback');
 setTimeout(relRecHold, 450);
 if (ok && recChunks.length) {
 if (recLen < 1) flashStatus('Ses çok kısa, gönderilmedi');
-else askAudio(new Blob(recChunks, { type: mime }), recLen);
+else askAudio(new Blob(recChunks, { type: mime }), recLen, recWf);
 }
 };
 mr.start();
+recLvStart(st);
 recT0 = Date.now(); sendRec('rec'); recBeat = setInterval(() => sendRec('rec'), 2000);
 recGuardStart();
 micBtn.classList.add('rec');
@@ -10447,18 +10503,35 @@ if (!recLocked || !recMR) return;
 flashStatus('Ses kaydı iptal edildi');
 stopRec(false);
 });
+let recPhBase = '', recPhTimer = null;
+function recPhRender() {
+if (!recPhSpan) return;
+const e = recT0 ? Math.max(0, Math.floor((Date.now() - recT0) / 1000)) : 0;
+recPhSpan.textContent = recPhBase + ' · ' + fmtAud(e);
+}
+function recPhSet(t) { recPhBase = t; recPhRender(); }
+function recPhTimerStop() { if (recPhTimer) { clearInterval(recPhTimer); recPhTimer = null; } }
+function recPhTimerStart() {
+recPhTimerStop();
+recPhTimer = setInterval(() => { if (!recMR) { recPhTimerStop(); return; } recPhRender(); }, 250);
+}
+function audPauseAll() {
+try { if (curAud && !curAud.paused) curAud.pause(); } catch (e) {}
+try { document.querySelectorAll('.aud-pl').forEach((p) => { const a = p._audio; if (a && !a.paused) { try { a.pause(); } catch (e) {} } }); } catch (e) {}
+}
 function showRecUi() {
 const wrap = document.getElementById('msg-wrap');
 if (wrap) wrap.classList.add('recording');
 document.getElementById('input-wrapper').classList.add('rec-on');
 recLocked = false; recLockTapId = null;
-if (recPhSpan) recPhSpan.textContent = REC_TXT;
+recPhSet(REC_TXT); recPhTimerStart();
 recExt.classList.remove('hot', 'locked');
 recLockEl.classList.remove('hot');
 micBtn.innerHTML = MIC_ICON_HTML;
 }
 function placeRecUi() {}
 function hideRecUi() {
+recPhTimerStop();
 const wrap = document.getElementById('msg-wrap');
 if (wrap) wrap.classList.remove('recording');
 document.getElementById('input-wrapper').classList.remove('rec-on');
@@ -10482,12 +10555,12 @@ return REC_TXT;
 function setRecTrashHot(on) {
 if (recExt.classList.contains('hot') === !!on) return;
 recExt.classList.toggle('hot', !!on);
-if (recPhSpan) recPhSpan.textContent = recPhText();
+recPhSet(recPhText());
 }
 function setRecLockHot(on) {
 if (recLockEl.classList.contains('hot') === !!on) return;
 recLockEl.classList.toggle('hot', !!on);
-if (recPhSpan) recPhSpan.textContent = recPhText();
+recPhSet(recPhText());
 }
 function lockRec() {
 if (!recMR || recLocked) return;
@@ -10496,7 +10569,7 @@ recExt.classList.remove('hot');
 recLockEl.classList.remove('hot');
 recExt.classList.add('locked');
 micBtn.innerHTML = SEND_ICON;
-if (recPhSpan) recPhSpan.textContent = REC_TXT_LOCKED;
+recPhSet(REC_TXT_LOCKED);
 }
 document.addEventListener('visibilitychange', () => {
 if (document.hidden && recMR) { stopRec(false); pressActive = false; clearPress(); }
@@ -10512,6 +10585,7 @@ try { if (recMR.state !== 'inactive') recMR.stop(); } catch (e) {}
 }
 let audHold = 0, audPausedCard = null, curAud = null;
 function audAdvance(a) {
+if (recMR || recHeld) return;
 if (!a._fromOther || !a._msgDiv) return;
 if (curAud && curAud !== a && !curAud.paused) return;
 let n = a._msgDiv.nextElementSibling;
@@ -10565,6 +10639,7 @@ try { if (c.isConnected && !c._ended && c._resume) c._resume(); } catch (e) {}
 function bindAudSong(el) {
 let on = false;
 el.addEventListener('play', () => {
+if (recMR || recHeld) { try { el.pause(); } catch (e) {} return; }
 if (curAud && curAud !== el) { try { curAud.pause(); } catch (e) {} }
 curAud = el;
 if (!on) { on = true; songPauseForAudio(); }
@@ -10590,13 +10665,14 @@ function fmtAud(t) { t = Math.max(0, Math.round(t || 0)); return Math.floor(t / 
 function buildAudioPlayer(media, isOwn, id, msgDiv) {
 const N = 26, once = !!media.once, lock = once && !isOwn;
 const dur = Number(media.dur) || 0;
+const wfv = audWfNorm(media.wf, N);
 let used = false, done = false;
 const pl = document.createElement('div'); pl.className = 'aud-pl';
 const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'aud-play'; btn.innerHTML = AUD_PLAY; btn.setAttribute('aria-label', 'Oynat');
 const bars = document.createElement('div'); bars.className = 'aud-bars';
 let seed = 0; for (let i = 0; i < id.length; i++) seed = (seed * 31 + id.charCodeAt(i)) >>> 0;
 const bs = [];
-for (let i = 0; i < N; i++) { seed = (seed * 1664525 + 1013904223) >>> 0; const b = document.createElement('i'); b.style.height = (25 + (seed >>> 8) % 75) + '%'; bars.appendChild(b); bs.push(b); }
+for (let i = 0; i < N; i++) { seed = (seed * 1664525 + 1013904223) >>> 0; const b = document.createElement('i'); b.style.height = (wfv ? Math.max(15, wfv[i]) : (25 + (seed >>> 8) % 75)) + '%'; bars.appendChild(b); bs.push(b); }
 const tm = document.createElement('span'); tm.className = 'aud-t'; tm.textContent = fmtAud(dur);
 const row = document.createElement('div'); row.className = 'aud-row';
 const spd = document.createElement('button'); spd.type = 'button'; spd.className = 'aud-spd'; spd.setAttribute('aria-label', 'Oynatma hızı');
@@ -10654,6 +10730,7 @@ btn.addEventListener('click', (e) => {
 e.stopPropagation();
 if (done) return;
 if (!a.paused) { a.pause(); return; }
+if (recMR || recHeld) { flashStatus('Kayıt sırasında ses oynatılamaz'); return; }
 if (lock && !used) {
 used = true; msgDiv.dataset.onceUsed = '1';
 if (isConnected()) { try { conn.send({ type: 'once-opened', msgId: id }); } catch (er) {} }
@@ -10671,7 +10748,7 @@ paint();
 pl._audio = a;
 return pl;
 }
-let pendingAudio = null, pendingAudioDur = 0;
+let pendingAudio = null, pendingAudioDur = 0, pendingAudioWf = null;
 let audPrevEl = null, audPrevUrl = null;
 function clearAudioPreview() {
 if (audPrevEl && audPrevEl._audio) { try { audPrevEl._audio.pause(); } catch (e) {} }
@@ -10680,13 +10757,13 @@ if (audPrevUrl) { try { URL.revokeObjectURL(audPrevUrl); } catch (e) {} audPrevU
 const box = document.getElementById('confirm-audio');
 if (box) { box.innerHTML = ''; box.style.display = 'none'; }
 }
-function askAudio(blob, dur) {
-pendingAudio = blob; pendingAudioDur = dur || 0;
+function askAudio(blob, dur, wf) {
+pendingAudio = blob; pendingAudioDur = dur || 0; pendingAudioWf = wf || null;
 confirmPreview.removeAttribute('src');
 confirmPreview.style.display = 'none';
 clearAudioPreview();
 audPrevUrl = URL.createObjectURL(blob);
-audPrevEl = buildAudioPlayer({ url: audPrevUrl, once: false, dur: dur || 0 }, true, 'prev-' + Date.now(), document.createElement('div'));
+audPrevEl = buildAudioPlayer({ url: audPrevUrl, once: false, dur: dur || 0, wf: wf || null }, true, 'prev-' + Date.now(), document.createElement('div'));
 const abox = document.getElementById('confirm-audio');
 abox.appendChild(audPrevEl); abox.style.display = 'flex';
 document.getElementById('confirm-text').textContent = 'Ses gönderilsin mi?';
@@ -10694,7 +10771,7 @@ confirmOnce.checked = false;
 confirmSize.textContent = (blob.size / 1024).toFixed(0) + ' KB';
 confirmModal.classList.add('show');
 }
-async function sendAudio(blob, once, dur) {
+async function sendAudio(blob, once, dur, wf) {
 if (!isConnected()) {
 flashStatus('Bağlı değil, ses gönderilmedi');
 return;
@@ -10704,8 +10781,8 @@ const buf = await blob.arrayBuffer();
 const id = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
 const nick = fullNick();
 const rep = replyingTo ? JSON.parse(JSON.stringify(replyingTo)) : null;
-conn.send({ type: 'audio', buffer: buf, mime: blob.type, senderNick: nick, msgId: id, once: !!once, dur: dur || 0, reply: rep });
-appendMessage('', nick, true, rep, id, true, { url: URL.createObjectURL(blob), audio: true, once: !!once, dur: dur || 0 });
+conn.send({ type: 'audio', buffer: buf, mime: blob.type, senderNick: nick, msgId: id, once: !!once, dur: dur || 0, wf: wf || null, reply: rep });
+appendMessage('', nick, true, rep, id, true, { url: URL.createObjectURL(blob), audio: true, once: !!once, dur: dur || 0, wf: wf || null });
 if (rep) { closeReplyBar(); rearmViewerReply(); }
 } catch (e) { flashStatus('Ses gönderilemedi'); }
 }
