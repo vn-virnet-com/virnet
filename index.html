@@ -10171,12 +10171,14 @@ longReady = false;
 const micBtn = document.getElementById('mic-btn');
 const MIC_ICON_HTML = micBtn.innerHTML;
 const MIC_HOLD_MS = 250;
-let sendPid = null;
+let micX0 = 0, micY0 = 0;
+let sendPid = null, sendX0 = 0, sendY0 = 0;
 sendBtn.addEventListener('pointerdown', (event) => {
 if (event.pointerType === 'mouse' && event.button !== 0) return;
 event.preventDefault();
 sendBtn.classList.add('pressed');
 sendPid = event.pointerId;
+sendX0 = event.clientX; sendY0 = event.clientY;
 try { sendBtn.setPointerCapture(event.pointerId); } catch (e) {}
 });
 sendBtn.addEventListener('pointerup', (event) => {
@@ -10189,6 +10191,7 @@ const r = sendBtn.getBoundingClientRect();
 const inside = event.clientX >= r.left - 12 && event.clientX <= r.right + 12 &&
 event.clientY >= r.top - 12 && event.clientY <= r.bottom + 12;
 if (!inside) return;
+{ const sdx = event.clientX - sendX0, sdy = event.clientY - sendY0; if (document.body.classList.contains('lv-admin') && Math.abs(sdx) > 24 && Math.abs(sdx) > Math.abs(sdy) * 1.2) return; }
 if (recLocked && recMR) { stopRec(true); return; }
 sendMessage();
 setTimeout(() => { if (!nolinkModal.classList.contains('show')) messageInput.focus(); }, 10);
@@ -10210,6 +10213,7 @@ recKbWas = (document.activeElement === messageInput);
 clearPress();
 pressActive = true;
 pressId = event.pointerId;
+micX0 = event.clientX; micY0 = event.clientY;
 try { micBtn.setPointerCapture(event.pointerId); } catch (e) {}
 pressTimer = setTimeout(() => {
 pressTimer = null;
@@ -10218,6 +10222,10 @@ if (!editingId) startRec();
 }, MIC_HOLD_MS);
 });
 micBtn.addEventListener('pointermove', (event) => {
+if (pressActive && event.pointerId === pressId && !longReady && document.body.classList.contains('lv-admin')) {
+const mdx = event.clientX - micX0, mdy = event.clientY - micY0;
+if (Math.abs(mdx) > 12 && Math.abs(mdx) > Math.abs(mdy) * 1.2) { pressActive = false; clearPress(); try { micBtn.releasePointerCapture(event.pointerId); } catch (e) {} return; }
+}
 if (!pressActive || event.pointerId !== pressId || !longReady || !recMR || recLocked) return;
 const z = recZoneAt(event.clientX, event.clientY);
 setRecTrashHot(z === 'trash');
@@ -11505,6 +11513,7 @@ st = null;
 if (!isMobileLayout() || e.touches.length !== 1) return;
 const tg = e.target;
 if (tg && tg.closest && tg.closest('#fab, #live-toggle, #notes-btn, #send-btn, #mic-btn, input, textarea, #cancel-reply-btn')) return;
+if (tg && tg.closest && tg.closest('#input-area') && document.body.classList.contains('lv-admin')) return;
 if (bellPop.classList.contains('composing')) return;
 const t = e.touches[0];
 st = { x: t.clientX, y: t.clientY, t0: Date.now(), mode: null, dx: 0, idx: curPanelIdx(), dir: 0, target: 0, kind: '', card: !!(tg && tg.closest && tg.closest('#bp-list .bp-card')) };
@@ -12588,18 +12597,34 @@ window.addEventListener('pin-level', nickLockSync);
 setInterval(nickLockSync, 1500);
 })();
 (function initNickSwipe() {
+const area = document.getElementById('input-area') || document.getElementById('input-wrapper');
 const line = document.getElementById('input-wrapper'), nk = document.getElementById('nick-input'), ms = document.getElementById('message-input');
-if (!line || !nk || !ms) return;
-let x0 = 0, y0 = 0, on = false;
-line.addEventListener('touchstart', (e) => { const t = e.touches[0]; on = e.touches.length === 1 && document.body.classList.contains('lv-admin') && !e.target.closest('#mic-btn, #rec-ext') && !line.classList.contains('rec-on'); x0 = t.clientX; y0 = t.clientY; }, { passive: true });
-line.addEventListener('touchend', (e) => {
+if (!area || !line || !nk || !ms) return;
+let x0 = 0, y0 = 0, lx = 0, ly = 0, on = false;
+const recOn = () => line.classList.contains('rec-on');
+area.addEventListener('touchstart', (e) => {
+const t = e.touches[0];
+on = !!t && e.touches.length === 1 && document.body.classList.contains('lv-admin') && !recOn() && !(e.target.closest && e.target.closest('#rec-ext'));
+if (!on) return;
+x0 = lx = t.clientX; y0 = ly = t.clientY;
+}, { passive: true });
+area.addEventListener('touchmove', (e) => {
+if (!on) return;
+if (e.touches.length !== 1 || recOn()) { on = false; return; }
+const t = e.touches[0]; lx = t.clientX; ly = t.clientY;
+}, { passive: true });
+const fin = (e) => {
 if (!on) return; on = false;
-const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
-if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+if (recOn()) return;
+const t = e.changedTouches && e.changedTouches[0];
+const dx = (t ? t.clientX : lx) - x0, dy = (t ? t.clientY : ly) - y0;
+if (Math.abs(dx) < 28 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
 const to = dx < 0 ? nk : ms;
 if (to.disabled || to.readOnly || to.offsetParent === null || document.activeElement === to) return;
-to.focus();
-}, { passive: true });
+try { to.focus({ preventScroll: true }); } catch (er) { to.focus(); }
+};
+area.addEventListener('touchend', fin, { passive: true });
+area.addEventListener('touchcancel', fin, { passive: true });
 })();
 (function initThemeSetting() {
 const KEY = 'theme';
