@@ -846,7 +846,6 @@ display: flex; align-items: center; justify-content: center; font-size: 16px; fo
 .ytd-up { display: none; align-items: center; justify-content: center; height: 16px; margin: -5px 0 1px; cursor: pointer; color: var(--yt-a72); -webkit-tap-highlight-color: transparent; }
 .ytd-up svg { display: block; width: 40px; height: 9px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 .ytd-up:active { color: var(--c-fff); }
-#ytsearch-box > #yt-dock .ytd-up { display: flex; }
 .yts-artist { display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: var(--r-lg); background: var(--c-1a); border: 1px solid var(--accent); cursor: pointer; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
 .yts-artist img { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 50%; object-fit: cover; background: var(--c-33); }
 .yts-artist > svg { width: 18px; height: 18px; flex: 0 0 18px; margin-right: 6px; fill: none; stroke: var(--c-88); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
@@ -2075,23 +2074,59 @@ height: 0; border-top-width: 0; border-bottom-width: 0; transition: max-width .3
 #strip-stack > #yt-dock .ytd-mid .ytd-prog { flex: 0 0 24px; height: 24px; margin-top: 2px; }
 #strip-stack > #yt-dock .ytd-track { top: 5px; }
 #strip-stack > #yt-dock .ytd-t { top: 11px; }
-/* sarma çubuğu: şeridin direkt alt kenarı. süreler sol/sağ alt köşede, çubuk ikisinin arasında */
-#strip-stack > #yt-dock .ytd-prog { order: 6; display: block; position: relative; flex: 0 0 calc(100% + 13px); width: auto; min-width: 0; height: 17px; margin: 0 -6.5px; padding: 0; box-sizing: border-box; background: var(--c-111); }
+/* sarma çubuğu: süreler sol/sağ köşede, çubuk ikisinin arasında; hepsi dikey ortalı */
+#strip-stack > #yt-dock .ytd-prog { order: 6; display: block; position: relative; flex: 0 0 calc(100% + 13px); width: auto; min-width: 0; height: 26px; margin: 0 -6.5px; padding: 0; box-sizing: border-box; background: var(--c-111); }
 #strip-stack > #yt-dock.folded .ytd-prog { display: none; }
-#strip-stack > #yt-dock .ytd-prog .ytd-t { position: absolute; top: auto; bottom: 2px; width: 38px; font-size: 10px; line-height: 12px; color: var(--c-88); }
-#strip-stack > #yt-dock .ytd-prog .ytd-tc { left: 10px; text-align: left; }
-#strip-stack > #yt-dock .ytd-prog .ytd-td { right: 10px; text-align: right; }
-#strip-stack > #yt-dock .ytd-prog .ytd-track { position: absolute; left: 54px; right: 54px; bottom: 0; top: auto; height: 3px; margin: 0; border-radius: 0; background: color-mix(in srgb, var(--c-fff) 18%, transparent); }
-#strip-stack > #yt-dock .ytd-prog .ytd-track > i { border-radius: 0; }
-#strip-stack > #yt-dock .ytd-prog .ytd-track::before { content: ''; position: absolute; left: -54px; right: -54px; top: -14px; bottom: 0; }
-#strip-stack > #yt-dock .ytd-prog.seeking .ytd-track { height: 5px; margin: 0; }
+#strip-stack > #yt-dock .ytd-prog .ytd-t { position: absolute; top: 50%; bottom: auto; transform: translateY(-50%); width: 38px; font-size: 10px; line-height: 12px; height: 12px; color: var(--c-88); }
+#strip-stack > #yt-dock .ytd-prog .ytd-tc { left: 12px; text-align: left; }
+#strip-stack > #yt-dock .ytd-prog .ytd-td { right: 12px; text-align: right; }
+#strip-stack > #yt-dock .ytd-prog .ytd-track { position: absolute; left: 58px; right: 58px; top: 50%; bottom: auto; height: 3px; margin: -1.5px 0 0; border-radius: 2px; background: color-mix(in srgb, var(--c-fff) 18%, transparent); }
+#strip-stack > #yt-dock .ytd-prog .ytd-track > i { border-radius: 2px; }
+#strip-stack > #yt-dock .ytd-prog .ytd-track::before { content: ''; position: absolute; left: -58px; right: -58px; top: -12px; bottom: -12px; }
+#strip-stack > #yt-dock .ytd-prog.seeking .ytd-track { height: 5px; margin: -2.5px 0 0; }
 #strip-stack > #yt-dock .ytd-prog .ytd-track > i::after { width: 9px; height: 9px; right: -4.5px; margin-top: -4.5px; }
 .ytd-tip { position: absolute; bottom: 10px; left: 0; transform: translateX(-50%) translateY(3px); padding: 2px 6px; border-radius: 4px; font-size: 10px; line-height: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--c-fff); background: color-mix(in srgb, var(--c-33) 82%, transparent); opacity: 0; pointer-events: none; transition: opacity .12s ease, transform .12s ease; }
 .ytd-prog.seeking .ytd-tip { opacity: .9; transform: translateX(-50%); }
 /* söz alanı: ad satırının altında, kaydırılabilir, anlık söz ortada */
-#strip-stack > #yt-dock .ytd-mid .ytd-lyr { display: block; flex: 0 0 42px; height: 42px; margin: 2px 0 0; padding: 14px 0; background: none; }
-#strip-stack > #yt-dock .ytd-lyr .ytd-ly { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; min-height: 0; padding: 3px 6px; font-size: 10.5px; line-height: 13px; font-weight: 600; font-style: italic; text-align: center; text-wrap: balance; cursor: pointer; }
+#strip-stack > #yt-dock .ytd-mid .ytd-lyr { display: block; flex: 0 0 42px; height: 42px; margin: 2px 0 0; padding: 14px 0; background: none;  -webkit-mask-image: linear-gradient(transparent, #000 20%, #000 80%, transparent); mask-image: linear-gradient(transparent, #000 20%, #000 80%, transparent); }
+#strip-stack > #yt-dock .ytd-lyr .ytd-ly { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; min-height: 0; padding: 3px 6px; font-size: 10.5px; line-height: 13px; font-weight: 600; font-style: normal; text-align: center; text-wrap: balance; cursor: pointer; color: color-mix(in srgb, var(--c-fff) 58%, transparent); }
+#strip-stack > #yt-dock .ytd-lyr .ytd-ly.cur { color: var(--c-fff); }
 #strip-stack > #yt-dock .ytd-lyr .ytd-ly.plain, #strip-stack > #yt-dock .ytd-lyr .ytd-ly.msg { cursor: default; font-weight: 400; }
+/* ===== Şarkı paneli: alttaki şarkı kartı (modern) ===== */
+.ytd-ctl { display: none; }
+#strip-stack > #yt-dock .ytd-ctl { display: none !important; }
+#ytsearch-box > #yt-dock { padding: 12px 14px 8px; border-radius: 20px; background: var(--c-111); border: 1px solid var(--c-33); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+#ytsearch-box > #yt-dock::before, #ytsearch-box > #yt-dock::after { display: none; }
+#ytsearch-box > #yt-dock .ytd-up, #ytsearch-box > #yt-dock .ytd-fold, #ytsearch-box > #yt-dock .ytd-info, #ytsearch-box > #yt-dock .ytd-bar { display: none !important; }
+#ytsearch-box > #yt-dock .ytd-main { gap: 12px; align-items: center; padding: 0; }
+#ytsearch-box > #yt-dock .ytd-cover { width: 56px; height: 56px; border-radius: var(--r-md); }
+#ytsearch-box > #yt-dock .ytd-mid { justify-content: center; }
+#ytsearch-box > #yt-dock .ytd-ex { display: block; height: 16px; line-height: 16px; font-size: 13.5px; font-weight: 700; text-align: left; color: var(--c-fff); white-space: nowrap; overflow: hidden; }
+#ytsearch-box > #yt-dock .ytd-ex .ytd-clip { display: block; flex: none; width: 100%; overflow: hidden; text-overflow: ellipsis; }
+#ytsearch-box > #yt-dock .ytd-ex .ytd-nm { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+#ytsearch-box > #yt-dock .ytd-mid .ytd-lyr { display: block; flex: 0 0 42px; height: 42px; margin: 2px 0 0; padding: 14px 0; background: none; -webkit-mask-image: linear-gradient(transparent, #000 20%, #000 80%, transparent); mask-image: linear-gradient(transparent, #000 20%, #000 80%, transparent); }
+#ytsearch-box > #yt-dock .ytd-lyr .ytd-ly { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; min-height: 0; padding: 3px 6px; font-size: 11px; line-height: 14px; font-weight: 600; text-align: left; text-wrap: balance; cursor: pointer; color: color-mix(in srgb, var(--c-fff) 58%, transparent); }
+#ytsearch-box > #yt-dock .ytd-lyr .ytd-ly.cur { color: var(--c-fff); }
+#ytsearch-box > #yt-dock .ytd-lyr .ytd-ly.plain, #ytsearch-box > #yt-dock .ytd-lyr .ytd-ly.msg { cursor: default; font-weight: 400; }
+#ytsearch-box > #yt-dock .ytd-main > .ytd-x { align-self: flex-start; flex: 0 0 30px; width: 30px; height: 30px; margin: -4px -6px 0 0; background: transparent; color: var(--c-88); }
+#ytsearch-box > #yt-dock .ytd-main > .ytd-x svg { width: 16px; height: 16px; flex-basis: 16px; }
+#ytsearch-box > #yt-dock .ytd-prog { display: block; position: relative; flex: 0 0 auto; width: 100%; height: 26px; margin: 8px 0 0; padding: 0; box-sizing: border-box; }
+#ytsearch-box > #yt-dock .ytd-prog .ytd-t { position: absolute; top: 50%; bottom: auto; transform: translateY(-50%); width: 40px; height: 12px; font-size: 10.5px; line-height: 12px; color: var(--c-88); }
+#ytsearch-box > #yt-dock .ytd-prog .ytd-tc { left: 0; text-align: left; }
+#ytsearch-box > #yt-dock .ytd-prog .ytd-td { right: 0; text-align: right; }
+#ytsearch-box > #yt-dock .ytd-prog .ytd-track { position: absolute; left: 46px; right: 46px; top: 50%; bottom: auto; height: 4px; margin: -2px 0 0; border-radius: 2px; background: color-mix(in srgb, var(--c-fff) 18%, transparent); }
+#ytsearch-box > #yt-dock .ytd-prog .ytd-track::before { content: ''; position: absolute; left: -46px; right: -46px; top: -12px; bottom: -12px; }
+#ytsearch-box > #yt-dock .ytd-prog.seeking .ytd-track { height: 6px; margin: -3px 0 0; }
+#ytsearch-box > #yt-dock .ytd-prog .ytd-track > i::after { width: 10px; height: 10px; right: -5px; margin-top: -5px; }
+#ytsearch-box > #yt-dock .ytd-ctl { display: flex; align-items: center; justify-content: center; gap: 22px; margin: 0; }
+#ytsearch-box > #yt-dock .ytd-ctl .ytd-b { flex: 0 0 44px; width: 44px; height: 44px; background: transparent; color: var(--c-fff); }
+#ytsearch-box > #yt-dock .ytd-ctl .ytd-b svg { width: 24px; height: 24px; flex-basis: 24px; }
+#ytsearch-box > #yt-dock .ytd-ctl .ytd-prev svg { transform: scaleX(-1); }
+#ytsearch-box > #yt-dock .ytd-ctl .ytd-b:active { background: var(--c-22); }
+#ytsearch-box > #yt-dock .ytd-ctl .ytd-play { flex: 0 0 52px; width: 52px; height: 52px; background: var(--send-bg); color: var(--send-ico); }
+#ytsearch-box > #yt-dock .ytd-ctl .ytd-play:active { background: color-mix(in srgb, var(--send-bg) 66%, #000); }
+#ytsearch-box > #yt-dock .ytd-ctl .ytd-play svg { width: 26px; height: 26px; flex-basis: 26px; }
+#ytsearch-box > #yt-dock .ytd-ctl .ytd-b.dis { opacity: .3; pointer-events: none; }
 /* anlık söz satırı (sarma çubuğunun üstünde, daha soluk) */
 .ytd-lp, .ytd-lback { display: none; }
 #yt-dock .ytd-lback { display: none; }
@@ -4877,16 +4912,19 @@ el.innerHTML =
 '<div class="ytd-cover"></div>' +
 '<div class="ytd-mid"><div class="ytd-ex"></div><div class="ytd-lyr" aria-label="Şarkı sözleri"></div>' +
 '</div>' +
-'<button type="button" class="ytd-b ytd-play" aria-label="Oynat">' + YTD_PLAY + '</button>' +
-'<button type="button" class="ytd-b ytd-next" aria-label="Sonraki şarkı" style="display:none">' + YTD_NEXT + '</button>' +
 '<button type="button" class="ytd-b ytd-x" aria-label="Kapat">' + YTD_X + '</button>' +
 '</div>' +
-'<div class="ytd-prog" aria-label="Şarkıyı sar"><span class="ytd-t ytd-tc">0:00</span><div class="ytd-track"><i></i><span class="ytd-tip">0:00</span></div><span class="ytd-t ytd-td">0:00</span></div>';
+'<div class="ytd-prog" aria-label="Şarkıyı sar"><span class="ytd-t ytd-tc">0:00</span><div class="ytd-track"><i></i><span class="ytd-tip">0:00</span></div><span class="ytd-t ytd-td">0:00</span></div>' +
+'<div class="ytd-ctl">' +
+'<button type="button" class="ytd-b ytd-prev" aria-label="Önceki şarkı">' + YTD_NEXT + '</button>' +
+'<button type="button" class="ytd-b ytd-play" aria-label="Oynat">' + YTD_PLAY + '</button>' +
+'<button type="button" class="ytd-b ytd-next" aria-label="Sonraki şarkı">' + YTD_NEXT + '</button>' +
+'</div>';
 wrap.appendChild(el);
 try { if (window.ResizeObserver) new ResizeObserver(() => { try { ytTopInsetSync(); } catch (e) {} }).observe(el); } catch (e) {}
 try { new MutationObserver(() => { try { ytTopInsetSync(); } catch (e) {} }).observe(el, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}
 const q = (s) => el.querySelector(s);
-el._d = { cover: q('.ytd-cover'), info: q('.ytd-info'), ex: q('.ytd-ex'), lp: q('.ytd-lp'), bPrev: q('.ytb-prev'), bPlay: q('.ytb-play'), bNext: q('.ytb-next'), bX: q('.ytb-x'), bExp: q('.ytb-exp'), play: q('.ytd-play'), next: q('.ytd-next'), x: q('.ytd-x'), lyr: q('.ytd-lyr'), track: q('.ytd-track'), tip: q('.ytd-tip'), prog: q('.ytd-prog'), fill: q('.ytd-track > i'), tc: q('.ytd-tc'), td: q('.ytd-td'), seeking: false, frac: 0, dur0: 0 };
+el._d = { cover: q('.ytd-cover'), info: q('.ytd-info'), ex: q('.ytd-ex'), lp: q('.ytd-lp'), bPrev: q('.ytb-prev'), bPlay: q('.ytb-play'), bNext: q('.ytb-next'), bX: q('.ytb-x'), bExp: q('.ytb-exp'), play: q('.ytd-play'), prev: q('.ytd-prev'), next: q('.ytd-next'), x: q('.ytd-x'), lyr: q('.ytd-lyr'), track: q('.ytd-track'), tip: q('.ytd-tip'), prog: q('.ytd-prog'), fill: q('.ytd-track > i'), tc: q('.ytd-tc'), td: q('.ytd-td'), seeking: false, frac: 0, dur0: 0 };
 bindYtTap(el._d.play, () => { if (ytDockCard && ytDockCard._toggle) ytDockCard._toggle(); });
 const doClose = () => {
 const c = ytDockCard;
@@ -4906,6 +4944,7 @@ const c = ytDockCard; try { if (c && c._seekSec) c._seekSec(0); } catch (e) {}
 bindYtTap(el._d.x, doClose);
 bindYtTap(el.querySelector('.ytd-fold'), doFold);
 bindYtTap(el._d.next, doNext);
+bindYtTap(el._d.prev, doPrev);
 bindYtTap(el._d.bX, doClose);
 bindYtTap(el._d.bExp, doFold);
 bindYtTap(el._d.bNext, doNext);
@@ -5014,7 +5053,7 @@ if (ytDockHideTimer) { clearTimeout(ytDockHideTimer); ytDockHideTimer = null; }
 ytDockEl.classList.remove('hide');
 const el = ytDockEl, d = el._d, m = card._meta;
 let plOn = false; try { plOn = !!ytPl && !!card._ghost; } catch (e) {}
-d.next.style.display = plOn ? '' : 'none';
+d.next.style.display = ''; d.next.classList.toggle('dis', !plOn);
 const tt = m ? m.title : 'Şarkı', aa = m ? m.artist : '';
 if (card._cover) {
 const v = 'url(' + card._cover + ')';
