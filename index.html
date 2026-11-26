@@ -12587,6 +12587,20 @@ nickLockSync();
 window.addEventListener('pin-level', nickLockSync);
 setInterval(nickLockSync, 1500);
 })();
+(function initNickSwipe() {
+const line = document.getElementById('input-wrapper'), nk = document.getElementById('nick-input'), ms = document.getElementById('message-input');
+if (!line || !nk || !ms) return;
+let x0 = 0, y0 = 0, on = false;
+line.addEventListener('touchstart', (e) => { const t = e.touches[0]; on = e.touches.length === 1 && document.body.classList.contains('lv-admin') && !e.target.closest('#mic-btn, #rec-ext') && !line.classList.contains('rec-on'); x0 = t.clientX; y0 = t.clientY; }, { passive: true });
+line.addEventListener('touchend', (e) => {
+if (!on) return; on = false;
+const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+const to = dx < 0 ? nk : ms;
+if (to.disabled || to.readOnly || to.offsetParent === null || document.activeElement === to) return;
+to.focus();
+}, { passive: true });
+})();
 (function initThemeSetting() {
 const KEY = 'theme';
 const THEMES = { black: '#000000', gray: '#232323', blue: '#131827', purple: '#110e20' };
