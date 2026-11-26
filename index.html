@@ -2121,7 +2121,7 @@ height: 0; border-top-width: 0; border-bottom-width: 0; transition: max-width .3
 .ytd-tip { position: absolute; bottom: 10px; left: 0; transform: translateX(-50%) translateY(3px); padding: 2px 6px; border-radius: 4px; font-size: 10px; line-height: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--c-fff); background: color-mix(in srgb, var(--c-33) 82%, transparent); opacity: 0; pointer-events: none; transition: opacity .12s ease, transform .12s ease; }
 .ytd-prog.seeking .ytd-tip { opacity: .9; transform: translateX(-50%); }
 /* söz alanı: ad satırının altında, kaydırılabilir, anlık söz ortada */
-#strip-stack > #yt-dock .ytd-mid .ytd-lyr { display: block; flex: 0 0 42px; height: 42px; margin: 2px 0 0; padding: 14px 0; background: none;  -webkit-mask-image: linear-gradient(transparent, #000 20%, #000 80%, transparent); mask-image: linear-gradient(transparent, #000 20%, #000 80%, transparent); }
+#strip-stack > #yt-dock .ytd-mid .ytd-lyr { display: block; flex: 0 0 84px; height: 84px; margin: 2px 0 0; padding: 32px 0; background: none;  -webkit-mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent); }
 #strip-stack > #yt-dock .ytd-lyr .ytd-ly { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; min-height: 0; padding: 3px 6px; font-size: 10.5px; line-height: 13px; font-weight: 600; font-style: normal; text-align: center; text-wrap: balance; cursor: pointer; color: color-mix(in srgb, var(--c-fff) 58%, transparent); }
 #strip-stack > #yt-dock .ytd-lyr .ytd-ly.cur { color: var(--c-fff); }
 #strip-stack > #yt-dock .ytd-lyr .ytd-ly.plain, #strip-stack > #yt-dock .ytd-lyr .ytd-ly.msg { cursor: default; font-weight: 400; }
@@ -2137,7 +2137,7 @@ height: 0; border-top-width: 0; border-bottom-width: 0; transition: max-width .3
 #ytsearch-box > #yt-dock .ytd-ex { display: block; height: 16px; line-height: 16px; font-size: 13.5px; font-weight: 700; text-align: left; color: var(--c-fff); white-space: nowrap; overflow: hidden; }
 #ytsearch-box > #yt-dock .ytd-ex .ytd-clip { display: block; flex: none; width: 100%; overflow: hidden; text-overflow: ellipsis; }
 #ytsearch-box > #yt-dock .ytd-ex .ytd-nm { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-#ytsearch-box > #yt-dock .ytd-mid .ytd-lyr { display: block; flex: 0 0 42px; height: 42px; margin: 2px 0 0; padding: 14px 0; background: none; -webkit-mask-image: linear-gradient(transparent, #000 20%, #000 80%, transparent); mask-image: linear-gradient(transparent, #000 20%, #000 80%, transparent); }
+#ytsearch-box > #yt-dock .ytd-mid .ytd-lyr { display: block; flex: 0 0 84px; height: 84px; margin: 2px 0 0; padding: 32px 0; background: none; -webkit-mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent); }
 #ytsearch-box > #yt-dock .ytd-lyr .ytd-ly { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; min-height: 0; padding: 3px 6px; font-size: 11px; line-height: 14px; font-weight: 600; text-align: left; text-wrap: balance; cursor: pointer; color: color-mix(in srgb, var(--c-fff) 58%, transparent); }
 #ytsearch-box > #yt-dock .ytd-lyr .ytd-ly.cur { color: var(--c-fff); }
 #ytsearch-box > #yt-dock .ytd-lyr .ytd-ly.plain, #ytsearch-box > #yt-dock .ytd-lyr .ytd-ly.msg { cursor: default; font-weight: 400; }
@@ -10574,6 +10574,7 @@ document.getElementById('input-wrapper').classList.remove('rec-on');
 recExt.classList.remove('hot', 'locked');
 recLockEl.classList.remove('hot');
 micBtn.innerHTML = MIC_ICON_HTML;
+micBtn.parentNode.style.transition = 'none'; micBtn.parentNode.style.transform = '';
 }
 function recZoneAt(x, y) {
 if (!recMR) return null;
@@ -10606,6 +10607,7 @@ recExt.classList.remove('hot');
 recLockEl.classList.remove('hot');
 recExt.classList.add('locked');
 recTrashEl.style.left = (recExt._pd || 0) + 'px';
+try { const w = micBtn.parentNode, pr = document.getElementById('tool-pad').getBoundingClientRect(), mr = micBtn.getBoundingClientRect(), W = parseFloat(recExt.style.getPropertyValue('--rx-wl')) || 0; if (W) { w.style.transition = 'transform .2s ease'; w.style.transform = 'translateX(' + Math.round(pr.left + pr.width / 2 - (mr.right - W / 2)) + 'px)'; } } catch (e) {}
 micBtn.innerHTML = SEND_ICON;
 recPhSet(REC_TXT_LOCKED);
 }
