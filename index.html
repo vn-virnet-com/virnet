@@ -163,16 +163,6 @@ display: none; align-items: center; justify-content: space-between;
 padding: 0 15px; background: var(--c-000); border-bottom: 1px solid var(--c-1a);
 font-size: 13.5px; color: var(--c-88);
 }
-#auto-chip { display: none; position: absolute; top: 6px; left: 0; right: 0; margin: 0 auto; z-index: 5; box-sizing: border-box; width: max-content; max-width: calc(100% - 16px); height: 36px; align-items: center; justify-content: center; gap: 7px; padding: 0 4px 0 13px; border-radius: 999px; isolation: isolate; overflow: hidden; white-space: nowrap; font-size: 12.5px; font-weight: 600; line-height: 1.25; font-family: 'Lexend', sans-serif; color: var(--yt-a88); background: linear-gradient(160deg, color-mix(in srgb, var(--c-fff) 16%, transparent) 0%, color-mix(in srgb, var(--c-fff) 5%, transparent) 45%, color-mix(in srgb, var(--c-fff) 9%, transparent) 100%), color-mix(in srgb, var(--c-1a) 80%, transparent); border: 1px solid var(--yt-a20); box-shadow: inset 0 1px 0 var(--yt-a35), inset 0 -1px 0 var(--yt-a12), inset 0 0 14px var(--yt-a12), 0 8px 24px rgba(0,0,0,.38), 0 1px 3px rgba(0,0,0,.3); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-user-select: none; user-select: none; transition: top .3s cubic-bezier(.2,.9,.3,1); }
-#auto-chip.show { display: flex; animation: acIn .22s ease-out; }
-@keyframes acIn { from { opacity: 0; transform: translateY(-8px) scale(.96); } to { opacity: 1; transform: none; } }
-#auto-chip::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; background: radial-gradient(120% 120% at 12% -20%, var(--yt-a28) 0%, transparent 55%), linear-gradient(115deg, transparent 38%, var(--yt-a12) 50%, transparent 62%); opacity: .8; }
-#auto-chip::after { content: ''; position: absolute; left: 16px; right: 16px; top: 0; height: 1px; z-index: -1; pointer-events: none; background: linear-gradient(90deg, transparent, var(--yt-a42), transparent); }
-#auto-chip svg { display: block; flex: 0 0 auto; }
-#auto-chip .ac-txt { overflow: hidden; text-overflow: ellipsis; }
-#auto-chip-x { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 28px; width: 28px; height: 28px; margin: 0 0 0 3px; padding: 0; color: var(--yt-a88); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: background .15s, color .15s, transform .1s; }
-#auto-chip-x svg { width: 14px; height: 14px; }
-@media (prefers-reduced-motion: reduce) { #auto-chip { transition: none; } #auto-chip.show { animation: none; } }
 #status-bar { display: none !important; }
 #status-left { display: flex; align-items: center; }
 #refresh-btn { cursor: pointer; display: inline-flex; align-items: center; padding: 8px 13px 8px 0; margin: -8px 0; color: var(--c-88); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -619,7 +609,7 @@ padding: 8px 14px; font-size: calc(var(--msg-fs) + 1px); font-weight: 700; font-
 .once-btn svg { flex-shrink: 0; }
 .once-btn:disabled, .once-btn.used { cursor: default; color: var(--c-55); border-color: var(--c-33); background: var(--c-111); }
 .once-btn:disabled:active { background: var(--c-111); }
-.yt-card, #yt-dock, #auto-chip, #leap-hud, #vn-toast, .vc-pill, .call-card, .dial-card, .gm-card, #gm-over { --yt-a12: color-mix(in srgb, var(--c-fff) 12%, transparent); --yt-a16: color-mix(in srgb, var(--c-fff) 16%, transparent); --yt-a20: color-mix(in srgb, var(--c-fff) 20%, transparent); --yt-a25: color-mix(in srgb, var(--c-fff) 25%, transparent); --yt-a28: color-mix(in srgb, var(--c-fff) 28%, transparent); --yt-a35: color-mix(in srgb, var(--c-fff) 35%, transparent); --yt-a42: color-mix(in srgb, var(--c-fff) 42%, transparent); --yt-a50: color-mix(in srgb, var(--c-fff) 50%, transparent); --yt-a60: color-mix(in srgb, var(--c-fff) 60%, transparent); --yt-a72: color-mix(in srgb, var(--c-fff) 72%, transparent); --yt-a75: color-mix(in srgb, var(--c-fff) 75%, transparent); --yt-a82: color-mix(in srgb, var(--c-fff) 82%, transparent); --yt-a88: color-mix(in srgb, var(--c-fff) 88%, transparent); }
+.yt-card, #yt-dock, #auto-chip, #leap-hud, .vc-pill, .call-card, .dial-card, .gm-card, #gm-over { --yt-a12: color-mix(in srgb, var(--c-fff) 12%, transparent); --yt-a16: color-mix(in srgb, var(--c-fff) 16%, transparent); --yt-a20: color-mix(in srgb, var(--c-fff) 20%, transparent); --yt-a25: color-mix(in srgb, var(--c-fff) 25%, transparent); --yt-a28: color-mix(in srgb, var(--c-fff) 28%, transparent); --yt-a35: color-mix(in srgb, var(--c-fff) 35%, transparent); --yt-a42: color-mix(in srgb, var(--c-fff) 42%, transparent); --yt-a50: color-mix(in srgb, var(--c-fff) 50%, transparent); --yt-a60: color-mix(in srgb, var(--c-fff) 60%, transparent); --yt-a72: color-mix(in srgb, var(--c-fff) 72%, transparent); --yt-a75: color-mix(in srgb, var(--c-fff) 75%, transparent); --yt-a82: color-mix(in srgb, var(--c-fff) 82%, transparent); --yt-a88: color-mix(in srgb, var(--c-fff) 88%, transparent); }
 .yt-card { display: block; position: relative; box-sizing: border-box; width: 100%; max-width: none; margin: 6px 0 0;  border-radius: var(--r-xl); background: var(--c-1a); color: var(--c-fff); overflow: hidden; white-space: normal; cursor: default; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; font-family: 'Lexend', sans-serif; line-height: 1.2; box-shadow: 0 4px 18px rgba(0,0,0,.35); }
 .yt-card * { -webkit-tap-highlight-color: transparent; }
 .yt-bg { position: absolute; inset: -24px; background: #333 center / cover no-repeat; filter: blur(12px); transform: translateZ(0); opacity: .22; pointer-events: none; }
@@ -1523,15 +1513,6 @@ touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 #leap-hud .lh-coin { display: block; flex: 0 0 auto; filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); }
 #leap-hud .lh-num { color: var(--c-fff); font-weight: 600; font-variant-numeric: tabular-nums; margin-left: 2px; }
 @media (prefers-reduced-motion: reduce) { #leap-hud { transition: opacity .1s linear; } }
-#vn-toast { position: absolute; left: 50%; top: max(calc(env(safe-area-inset-top, 0px) + 10px), calc(var(--vn-sb, 0px) + 8px), calc(var(--strip-b, 0px) + 8px)); z-index: 12600; display: flex; align-items: center; gap: 7px; width: max-content; max-width: calc(100% - 28px); padding: 5px 14px 5px 7px; border-radius: 999px; box-sizing: border-box; white-space: nowrap; color: var(--warn); font-size: 13px; font-weight: 700; background: color-mix(in srgb, var(--c-1a) 94%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); box-shadow: 0 6px 18px rgba(var(--sh),0.55), 0 0 12px color-mix(in srgb, var(--warn) 25%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none; user-select: none; -webkit-user-select: none; opacity: 0; transform: translate(-50%, -26px) scale(.96); transition: opacity .18s ease, transform .26s cubic-bezier(.2,.9,.3,1.15), top .2s ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-#vn-toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); pointer-events: auto; cursor: pointer; }
-#vn-toast .vt-ic { display: block; flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%; background: color-mix(in srgb, var(--warn) 22%, transparent); padding: 3px; box-sizing: border-box; }
-#vn-toast .vt-ic svg { display: block; width: 16px; height: 16px; }
-#vn-toast .vt-n { flex: 0 1 auto; min-width: 0; max-width: 42%; overflow: hidden; text-overflow: ellipsis; }
-#vn-toast .vt-t { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--c-fff); font-weight: 400; opacity: .92; }
-@media (prefers-reduced-motion: reduce) { #vn-toast { transition: opacity .1s linear; transform: translate(-50%, 0); } }
-body.vt-on #leap-hud { opacity: 0 !important; pointer-events: none !important; transition: opacity .14s ease !important; }
-body.vt-back #leap-hud { transition: opacity .6s ease, transform .24s cubic-bezier(.2,.9,.3,1.15), top .2s ease; }
 .leap-num:not(.editing) { overflow: hidden; }
 .leap-num-t { display: inline-block; white-space: nowrap; will-change: transform; }
 .pf-set .pf-l { flex: 1 1 auto; width: auto; }
@@ -1594,14 +1575,14 @@ body.dk-song #pane-notes > #bp-page-prof { display: none; }
 .dk-tab.on { color: var(--on-accent); }
 .dk-tab svg { display: block; width: 22px; height: 22px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 }
-#leap-hud, #vn-toast, .vc-pill {
+#leap-hud, .vc-pill {
 box-sizing: border-box; height: 36px; isolation: isolate; overflow: hidden; font-family: 'Lexend', sans-serif; line-height: 1.25;
 background: linear-gradient(160deg, color-mix(in srgb, var(--c-fff) 16%, transparent) 0%, color-mix(in srgb, var(--c-fff) 5%, transparent) 45%, color-mix(in srgb, var(--c-fff) 9%, transparent) 100%), color-mix(in srgb, var(--c-1a) 80%, transparent);
 border: 1px solid var(--yt-a20);
 box-shadow: inset 0 1px 0 var(--yt-a35), inset 0 -1px 0 var(--yt-a12), inset 0 0 14px var(--yt-a12), 0 8px 24px rgba(0,0,0,.38), 0 1px 3px rgba(0,0,0,.3);
 -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
 }
-#leap-hud::before, #vn-toast::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; background: radial-gradient(120% 120% at 12% -20%, var(--yt-a28) 0%, transparent 55%), linear-gradient(115deg, transparent 38%, var(--yt-a12) 50%, transparent 62%); opacity: .8; }
+#leap-hud::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; background: radial-gradient(120% 120% at 12% -20%, var(--yt-a28) 0%, transparent 55%), linear-gradient(115deg, transparent 38%, var(--yt-a12) 50%, transparent 62%); opacity: .8; }
 #leap-hud { padding: 0 15px 0 7px; gap: 7px; color: var(--warn);
 background: linear-gradient(160deg, color-mix(in srgb, var(--warn) 26%, transparent) 0%, color-mix(in srgb, var(--warn) 7%, transparent) 50%, color-mix(in srgb, var(--warn) 14%, transparent) 100%), color-mix(in srgb, var(--c-1a) 80%, transparent);
 border-color: color-mix(in srgb, var(--warn) 34%, var(--yt-a20));
@@ -1616,16 +1597,10 @@ box-shadow: inset 0 1.5px 0 var(--yt-a60), inset 0 -1px 0 color-mix(in srgb, var
 #leap-hud.pinned::after { opacity: 1; animation: vcSweep 3s ease-in-out infinite; }
 #leap-hud.pinned .lh-num { color: var(--c-fff); }
 #leap-hud .lh-coin { filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
-#vn-toast { padding: 0 15px 0 7px; gap: 7px; color: var(--c-fff); }
-#vn-toast .vt-n { font-weight: 700; color: var(--c-fff); }
-#vn-toast .vt-ic { color: var(--warn); background: color-mix(in srgb, var(--warn) 24%, transparent); box-shadow: inset 0 1px 0 var(--yt-a35); }
 @keyframes vcSweep { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(100%); } }
-@keyframes vcIn { 0% { opacity: 0; transform: translateY(-10px) scale(.94); } 100% { opacity: 1; transform: none; } }
 @keyframes vcLand { 0% { transform: scale(1); } 45% { transform: scale(1.07); } 100% { transform: scale(1); } }
 @keyframes vcDriftA { 0% { transform: translate(-10%, 0) scale(1); } 50% { transform: translate(70%, 12%) scale(1.15); } 100% { transform: translate(25%, -14%) scale(.95); } }
 @keyframes vcDriftB { 0% { transform: translate(10%, -6%) scale(1.05); } 50% { transform: translate(-60%, 10%) scale(.9); } 100% { transform: translate(-20%, -10%) scale(1.12); } }
-#vc-pill { display: none; position: absolute; top: 6px; left: 0; right: 0; margin: 0 auto; z-index: 5; width: max-content; max-width: calc(100% - 16px); }
-#vc-pill.show { display: flex; animation: vcIn .26s cubic-bezier(.2,.9,.3,1.15); }
 .vc-pill { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 15px; border-radius: 999px; white-space: nowrap; font-size: 12.5px; font-weight: 600; color: var(--c-fff); text-shadow: 0 1px 2px rgba(0,0,0,.35); transition: top .3s cubic-bezier(.2,.9,.3,1); -webkit-user-select: none; user-select: none; }
 .vc-pill > span:not(.vc-fx) { position: relative; }
 .vc-pill .vc-n { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
@@ -1646,10 +1621,6 @@ box-shadow: inset 0 1.5px 0 var(--yt-a60), inset 0 -1px 0 color-mix(in srgb, var
 .vc-slot { box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: max-content; min-width: 120px; max-width: 100%; height: 36px; margin: 2px auto 0; border-radius: 999px; background: color-mix(in srgb, #000 50%, transparent); border: 1px solid color-mix(in srgb, var(--c-fff) 8%, transparent); box-shadow: inset 0 2px 7px rgba(0,0,0,.6), inset 0 -1px 0 color-mix(in srgb, var(--c-fff) 7%, transparent); }
 .vc-slot.land { animation: vcLand .3s cubic-bezier(.2,.9,.3,1.3); }
 @media (prefers-reduced-motion: reduce) { .vc-fx i, #leap-hud.pinned::after, #vc-pill.show, .vc-slot.land { animation: none; } }
-#auto-chip { transition: top .3s cubic-bezier(.2,.9,.3,1), translate .45s cubic-bezier(.2,.9,.3,1); }
-#vc-pill { transition: top .45s cubic-bezier(.2,.9,.3,1), translate .45s cubic-bezier(.2,.9,.3,1); }
-#auto-chip.pair, #vc-pill.pair { max-width: calc(50% - 12px); }
-@media (prefers-reduced-motion: reduce) { #auto-chip, #vc-pill { transition: none; } }
 @property --tc { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
 @property --tk { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
 @keyframes ccDrift { 0% { background-position: 0% 0%, 100% 100%, 0 0; } 100% { background-position: 100% 70%, 0% 20%, 0 0; } }
@@ -1926,14 +1897,13 @@ html.vn-fs #tos-page, html.vn-fs #tos-gate { top: var(--vn-sb, 0px); }
 #tos-peer span { display: block; }
 @media (prefers-reduced-motion: reduce) { #tos-gate, #tos-page { transition: none; } }
 /* ===== Düz / sade tasarım (cam efektleri kaldırıldı, mesaj kutusu stili) ===== */
-#yt-dock, #auto-chip, #leap-hud, #vn-toast, .vc-pill, .call-card, .dial-card {
+#yt-dock, #auto-chip, #leap-hud, .vc-pill, .call-card, .dial-card {
 background: var(--c-111); border: 1px solid var(--accent); box-shadow: none; text-shadow: none;
 -webkit-backdrop-filter: none; backdrop-filter: none; }
-#yt-dock::before, #yt-dock::after, #auto-chip::before, #auto-chip::after, #leap-hud::before, #leap-hud::after, #vn-toast::before,
+#yt-dock::before, #yt-dock::after, #auto-chip::before, #auto-chip::after, #leap-hud::before, #leap-hud::after,
 .call-card::before, .call-card::after, .dial-card::before, .dial-card::after { display: none; }
 #leap-hud { border-color: color-mix(in srgb, var(--warn) 60%, transparent); color: var(--warn); }
 #leap-hud.pinned { background: color-mix(in srgb, var(--warn) 20%, var(--c-111)); border-color: var(--warn); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
-#vn-toast .vt-ic { box-shadow: none; }
 .vc-fx i { display: none; }
 .vc-g { background: color-mix(in srgb, var(--ok) 24%, transparent); box-shadow: none; }
 .vc-r { background: color-mix(in srgb, var(--bad) 28%, transparent); box-shadow: none; }
@@ -1987,6 +1957,48 @@ background: var(--c-111); border: 1px solid var(--accent); box-shadow: none; tex
 #tb-call.dialing { pointer-events: none; cursor: not-allowed; }
 #tb-call.dialing svg { stroke: var(--warn); }
 #tb-call.live svg { stroke: #ff8a80; transform: rotate(135deg) scale(.88); }
+/* ===== Üst şeritler: arama / şarkı / oto. oynat =====
+   Sahte durum çubuğuyla aynı yükseklikte, düz, kenardan kenara. Sıra (yukarıdan aşağı): arama, şarkı, oto. oynat. */
+html { --sth: max(var(--vn-sb, 0px), 24px); }
+#strip-stack { position: absolute; top: 0; left: 0; right: 0; z-index: 6; display: flex; flex-direction: column; pointer-events: none; }
+#strip-stack > * { pointer-events: auto; }
+#strip-stack > #vc-pill { order: 1; }
+#strip-stack > #yt-dock { order: 2; }
+#strip-stack > #auto-chip { order: 3; }
+#strip-stack > #vc-pill, #strip-stack > #auto-chip, #strip-stack > #yt-dock {
+position: relative; top: auto; left: auto; right: auto; z-index: auto; margin: 0; translate: none; transform: none;
+flex: 0 0 auto; box-sizing: border-box; width: 100%; max-width: none; align-items: center; gap: 8px;
+border: 0; border-radius: 0; overflow: hidden; isolation: isolate; background: var(--c-111); box-shadow: inset 0 -1px 0 var(--c-33);
+-webkit-backdrop-filter: none; backdrop-filter: none; text-shadow: none; transition: none;
+font-family: 'Lexend', sans-serif; font-size: 11.5px; font-weight: 600; line-height: 1; letter-spacing: 0;
+color: color-mix(in srgb, var(--c-fff) 82%, transparent);
+}
+@keyframes stIn { from { opacity: 0; } to { opacity: 1; } }
+#strip-stack > #vc-pill, #strip-stack > #auto-chip { display: none; height: var(--sth); padding: 0 10px; justify-content: flex-start; }
+#strip-stack > #vc-pill.show, #strip-stack > #auto-chip.show { display: flex; animation: stIn .18s ease-out; }
+/* arama */
+#strip-stack > #vc-pill .vc-n { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 700; color: var(--c-fff); }
+#strip-stack > #vc-pill .vc-sep { opacity: .6; }
+#strip-stack > #vc-pill .vc-t { flex: 0 0 auto; font-size: 11.5px; }
+#strip-stack > #vc-pill .vc-game { height: 100%; width: 32px; margin: 0 -9px 0 auto; }
+#strip-stack > #vc-pill .vc-game svg { width: 15px; height: 15px; }
+/* oto. oynat */
+#strip-stack > #auto-chip > svg { width: 14px; height: 14px; }
+#strip-stack > #auto-chip .ac-txt { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#strip-stack > #auto-chip #auto-chip-x { flex: 0 0 calc(var(--sth) - 6px); width: calc(var(--sth) - 6px); height: calc(var(--sth) - 6px); margin: 0 -3px 0 0; overflow: visible; }
+#strip-stack > #auto-chip #auto-chip-x::before { display: block; content: ''; position: absolute; inset: -6px; left: -10px; right: -10px; top: -6px; bottom: -6px; height: auto; border-radius: 0; background: none; opacity: 1; }
+#strip-stack > #auto-chip #auto-chip-x svg { width: 12px; height: 12px; }
+/* şarkı: varsayılan daraltılmış (şerit yüksekliği), genişletince 3 katı */
+#strip-stack > #yt-dock { display: none; flex-direction: column; justify-content: center; align-items: stretch; gap: 0; padding: 0; }
+#strip-stack > #yt-dock.show { display: flex; animation: stIn .18s ease-out; }
+#strip-stack > #yt-dock.hide { display: none; }
+#strip-stack > #yt-dock.folded { height: var(--sth); padding: 0; }
+#strip-stack > #yt-dock:not(.folded) { height: calc(var(--sth) * 3); padding: 0 12px; gap: 4px; }
+#strip-stack > #yt-dock:not(.folded).lyr-open { height: auto; min-height: calc(var(--sth) * 3); padding: 6px 12px 8px; }
+#strip-stack > #yt-dock .ytd-info { color: color-mix(in srgb, var(--c-fff) 82%, transparent); padding: 0 38px; font-size: 11.5px; line-height: 14px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#strip-stack > #yt-dock .ytd-fold { top: 0; right: 0; width: 40px; height: var(--sth); transform: none; }
+#strip-stack > #yt-dock.folded .ytd-fold { top: 0; transform: none; }
+#strip-stack > #yt-dock .ytd-fold svg { width: 18px; height: 18px; }
 /* ses seviyesi baloncuğu */
 #vol-pill { position: fixed; left: 50%; top: calc(max(calc(env(safe-area-inset-top, 0px) + 10px), calc(var(--vn-sb, 0px) + 8px), calc(var(--strip-b, 0px) + 8px)) + var(--vp-off, 0px)); z-index: 12700; box-sizing: border-box; width: min(220px, calc(100% - 28px)); height: 36px; border-radius: 999px; overflow: hidden; isolation: isolate; background: var(--c-111); border: 1px solid var(--accent); pointer-events: none; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; opacity: 0; transform: translate(-50%, -10px); transition: opacity .18s ease, transform .22s cubic-bezier(.2,.9,.3,1.15); }
 #vol-pill.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
@@ -2190,7 +2202,9 @@ else { root.classList.add('pin-locked'); }
 <div id="new-notes-badge" class="new-badge"><span class="nb-t">Yeni</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></div>
 <div id="chat-wrap">
   <div id="chat-area"></div>
+  <div id="strip-stack">
   <div id="auto-chip" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span class="ac-txt">Oto. Oynat</span><button type="button" id="auto-chip-x" aria-label="Otomatik oynatmayı kapat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  </div>
   <div id="scroll-down-btn" title="En son mesaja git">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
   </div>
@@ -4604,7 +4618,7 @@ const YTD_LYR = YTD_SVG('<rect x="9" y="3" width="6" height="11" rx="3"/><path d
 const YTD_GOTO = YTD_SVG('<path d="M21 15a2 2 0 0 1-2 2H8l-5 4.5V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" transform="translate(0 -.75)"/>');
 const YTD_NEXT = YTD_SVG('<path d="M6 5.5v13l9-6.5z"/><path d="M18.5 5.5v13"/>');
 const YTD_X = YTD_SVG('<path d="M6 6l12 12M18 6L6 18"/>');
-let ytDockFolded = false;
+let ytDockFolded = true;
 let ytDockLyrOpen = false, ytDockLyrUserAt = 0, ytDockLyrCard = null, ytDockLyrLines = null, ytDockLyrState = '', ytDockLyrIdx = -1, ytDockLyrEls = [], ytDockLyrAsked = null;
 function ytDockSetLyr(on) {
 ytDockLyrOpen = !!on;
@@ -4685,7 +4699,7 @@ function ytDockPlace() {
 const el = ytDockEl; if (!el) return;
 const modal = document.getElementById('ytsearch-modal'), box = document.getElementById('ytsearch-box');
 const inPage = !!(modal && box && modal.classList.contains('on')) && isMobileLayout();
-const want = inPage ? box : document.getElementById('chat-wrap');
+const want = inPage ? box : document.getElementById('strip-stack');
 if (want && el.parentNode !== want) want.appendChild(el);
 if (inPage) {
 const h = el.classList.contains('show') ? el.offsetHeight : 0;
@@ -4706,6 +4720,7 @@ if (el) el.classList.remove('show', 'hide');
 function ytDockFitInfo() {
 const el = ytDockEl; if (!el || !el._d || !el.classList.contains('show')) return;
 const i = el._d.info, w = i.clientWidth; if (!w) return;
+if (el.parentNode && el.parentNode.id === 'strip-stack') { if (i.style.fontSize) { i.style.fontSize = ''; i.style.lineHeight = ''; } i.dataset.fit = ''; return; }
 const key = i.textContent + '|' + w;
 if (i.dataset.fit === key) return;
 i.style.fontSize = '11px'; i.style.lineHeight = '14px';
@@ -4716,13 +4731,13 @@ i.dataset.fit = key;
 }
 window.addEventListener('resize', () => { try { ytDockFitInfo(); } catch (e) {} });
 function ytDockBuild() {
-const wrap = document.getElementById('chat-wrap');
+const wrap = document.getElementById('strip-stack');
 if (!wrap) return null;
 const el = document.createElement('div');
 el.id = 'yt-dock';
 el.innerHTML =
 '<div class="ytd-up" role="button" aria-label="Büyük görünüm"><svg viewBox="0 0 48 10" aria-hidden="true"><path d="M3 8.5 24 2l21 6.5"/></svg></div>' +
-'<button type="button" class="ytd-fold" aria-label="Küçült"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>' +
+'<button type="button" class="ytd-fold" aria-label="Genişlet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>' +
 '<div class="ytd-info"></div>' +
 '<div class="ytd-main">' +
 '<div class="ytd-cover"></div>' +
@@ -4748,7 +4763,7 @@ try { if (c._pause) c._pause(); } catch (e) {}
 }
 ytDockHide();
 });
-bindYtTap(el.querySelector('.ytd-fold'), () => { ytDockFolded = !ytDockFolded; el.classList.toggle('folded', ytDockFolded); try { ytDockFitInfo(); } catch (e) {} });
+bindYtTap(el.querySelector('.ytd-fold'), () => { ytDockFolded = !ytDockFolded; el.classList.toggle('folded', ytDockFolded); const fb = el.querySelector('.ytd-fold'); if (fb) fb.setAttribute('aria-label', ytDockFolded ? 'Genişlet' : 'Küçült'); try { ytDockFitInfo(); } catch (e) {} try { ytTopInsetSync(); } catch (e) {} });
 bindYtTap(el._d.next, () => { try { if (ytPl) ytPlNext(); } catch (e) {} });
 bindYtTap(el._d.tog, () => { ytDockSetLyr(!ytDockLyrOpen); });
 ['touchstart', 'wheel', 'mousedown'].forEach((ev) => el._d.lyr.addEventListener(ev, () => { ytDockLyrUserAt = Date.now(); }, { passive: true }));
@@ -4873,65 +4888,25 @@ el.classList.toggle('is-synced', card.classList.contains('is-synced'));
 const it = (aa ? aa + ' — ' : '') + tt + ' — ' + (card.classList.contains('is-synced') ? 'Birlikte Dinliyorsunuz' : 'Tek Dinliyorsunuz');
 if (d.info.textContent !== it) d.info.textContent = it;
 el.classList.toggle('lyr-open', ytDockLyrOpen);
-el.classList.toggle('folded', ytDockFolded && !!el.parentNode && el.parentNode.id === 'chat-wrap');
+if (!el.classList.contains('show')) ytDockFolded = true;
+el.classList.toggle('folded', ytDockFolded && !!el.parentNode && el.parentNode.id === 'strip-stack');
+{ const fb = el.querySelector('.ytd-fold'); const fl = ytDockFolded ? 'Genişlet' : 'Küçült'; if (fb && fb.getAttribute('aria-label') !== fl) fb.setAttribute('aria-label', fl); }
 try { ytDockLyrSync(card, st.cur); } catch (e) {}
 el.classList.add('show');
 try { ytDockFitInfo(); } catch (e) {}
 }
 setInterval(ytDockUpdate, 300);
-function ytChipTop() {
-const d = document.getElementById('yt-dock');
-if (d && d.classList.contains('show') && !d.classList.contains('hide') && d.offsetHeight && d.parentNode && d.parentNode.id === 'chat-wrap') return d.offsetTop + d.offsetHeight + 6;
-return 6;
-}
-var ytPairOn = false, ytPairSince = 0;
-function ytPairUpdate() {
-const c = document.getElementById('auto-chip'), p = document.getElementById('vc-pill');
-const both = !!(c && p && c.classList.contains('show') && p.classList.contains('show'));
-if (!both) { ytPairSince = 0; ytPairOn = false; }
-else if (!ytPairOn) {
-if (!ytPairSince) ytPairSince = Date.now();
-if (Date.now() - ytPairSince >= 450) ytPairOn = true;
-}
-return both;
-}
-function ytChipSync() {
-const c = document.getElementById('auto-chip'); if (!c) return;
-const p = document.getElementById('vc-pill');
-const both = ytPairUpdate();
-const t = ytChipTop() + 'px';
-if (c.style.top !== t) c.style.top = t;
-c.classList.toggle('pair', ytPairOn);
-if (p) p.classList.toggle('pair', ytPairOn);
-let cx = 0, px = 0;
-if (ytPairOn && both) { const wc = c.offsetWidth, wp = p.offsetWidth; cx = Math.round(-(8 + wp) / 2); px = Math.round((8 + wc) / 2); }
-const cs = cx + 'px 0px', ps = px + 'px 0px';
-if (c.style.translate !== cs) c.style.translate = cs;
-if (p && p.style.translate !== ps) p.style.translate = ps;
-}
-function ytStripRelBottom() {
-let rel = ytStripRelBottomBase();
-const p = document.getElementById('vc-pill');
-if (p && p.classList.contains('show') && p.offsetHeight) rel = Math.max(rel, vcPillTop() + p.offsetHeight);
-return rel;
-}
-function ytStripRelBottomBase() {
-let rel = 0;
-const d = document.getElementById('yt-dock');
-if (d && d.classList.contains('show') && !d.classList.contains('hide') && d.offsetHeight && d.parentNode && d.parentNode.id === 'chat-wrap') rel = d.offsetTop + d.offsetHeight;
-const c = document.getElementById('auto-chip');
-if (c && c.classList.contains('show') && c.offsetHeight) rel = Math.max(rel, ytChipTop() + c.offsetHeight);
-return rel;
+const YT_STRIP_IDS = ['vc-pill', 'yt-dock', 'auto-chip'];
+function ytStripH() {
+const st = document.getElementById('strip-stack');
+return (st && st.offsetHeight) ? st.offsetHeight : 0;
 }
 function ytStripBottomSync() {
-try { ytChipSync(); } catch (e) {}
-try { const vp = document.getElementById('vc-pill'); if (vp) { const vt = vcPillTop() + 'px'; if (vp.style.top !== vt) vp.style.top = vt; } } catch (e) {}
 let b = 0;
-const wrap = document.getElementById('chat-wrap');
-if (wrap) {
+const wrap = document.getElementById('chat-wrap'), h = ytStripH();
+if (wrap && h) {
 const r = wrap.getBoundingClientRect();
-const rel = ytStripRelBottom();
-if (rel && r.height && r.right > 0 && r.left < window.innerWidth) b = r.top + rel;
+if (r.height && r.right > 0 && r.left < window.innerWidth) b = r.top + h;
 }
 const v = b ? Math.ceil(b) + 'px' : '0px';
 const rs = document.documentElement.style;
@@ -4940,13 +4915,13 @@ if (rs.getPropertyValue('--strip-b') !== v) rs.setProperty('--strip-b', v);
 let ytInsetWasOn = false;
 function ytTopInsetSync() {
 if (document.hidden) return;
-const anyOn = ['yt-dock', 'auto-chip', 'vc-pill'].some((id) => { const e = document.getElementById(id); return e && e.classList.contains('show'); });
+const anyOn = YT_STRIP_IDS.some((id) => { const e = document.getElementById(id); return e && e.classList.contains('show') && !e.classList.contains('hide'); });
 if (!anyOn && !ytInsetWasOn) return;
 ytInsetWasOn = anyOn;
 try { ytStripBottomSync(); } catch (e) {}
-const area = document.getElementById('chat-area'), wrap = document.getElementById('chat-wrap');
-if (!area || !wrap) return;
-const inset = ytStripRelBottom();
+const area = document.getElementById('chat-area');
+if (!area) return;
+const inset = ytStripH();
 const want = inset ? inset + 8 : 8;
 if (parseFloat(area.style.paddingTop || 8) === want) return;
 const dist = area.scrollHeight - area.scrollTop - area.clientHeight;
@@ -4976,7 +4951,6 @@ let ytAutoReady = false;
 function ytAutoSet(v) {
 ytAutoReady = !!v;
 const c = document.getElementById('auto-chip');
-try { ytChipSync(); } catch (e) {}
 if (c) c.classList.toggle('show', ytAutoReady);
 try { ytTopInsetSync(); } catch (e) {}
 }
@@ -6369,10 +6343,9 @@ const o = vcDurRead(); o[id] = sec;
 const keys = Object.keys(o); while (keys.length > 100) delete o[keys.shift()];
 try { lsSet(VC_DUR_KEY, JSON.stringify(o)); } catch (e) {}
 }
-function vcPillTop() { ytPairUpdate(); if (ytPairOn) return ytChipTop(); const b = ytStripRelBottomBase(); return b ? b + 6 : 6; }
 function vcEnsure() {
 let el = document.getElementById('vc-pill');
-if (!el) { el = vcBuildPill('', 'vc-pill'); el.setAttribute('role', 'status'); chatWrap.appendChild(el); }
+if (!el) { el = vcBuildPill('', 'vc-pill'); el.setAttribute('role', 'status'); (document.getElementById('strip-stack') || chatWrap).appendChild(el); }
 return el;
 }
 function vcRender() {
@@ -6387,7 +6360,6 @@ if (!vcLive) return;
 const el = vcEnsure();
 el._n.textContent = vcLive.name || 'Arama';
 el._setP(0);
-el.style.top = vcPillTop() + 'px';
 vcRender();
 el.classList.add('show');
 clearInterval(vcTick); vcTick = setInterval(vcRender, 250);
@@ -6459,8 +6431,8 @@ var IC_OFF = SVG('<path d="M16 9.5l5 5M21 9.5l-5 5"/>'), IC_LOW = SVG('<path d="
 function canSet() { try { return !!(window.VNApp && typeof VNApp.setVol === 'function'); } catch (e) { return false; } }
 function arm(ms) { clearTimeout(tm); tm = setTimeout(function () { if (dragging) return; el.classList.remove('show'); }, ms); }
 function offs() {
-var o = 0, h = document.getElementById('leap-hud'), t = document.getElementById('vn-toast');
-if ((h && (h.classList.contains('show') || h.classList.contains('pinned'))) || (t && t.classList.contains('show'))) o = 44;
+var o = 0, h = document.getElementById('leap-hud');
+if (h && (h.classList.contains('show') || h.classList.contains('pinned'))) o = 44;
 el.style.setProperty('--vp-off', o + 'px');
 }
 function fracOf(e) { var r = el.getBoundingClientRect(); return r.width ? Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) : 0; }
@@ -6593,7 +6565,7 @@ const src = lp.getBoundingClientRect();
 const w1 = Math.max(60, slot.getBoundingClientRect().width || 120);
 const fly = vcBuildPill('vc-fly');
 fly._n.textContent = live.name || 'Arama'; fly._t.textContent = vcFmt(sec); fly._setP(0);
-fly.style.left = src.left + 'px'; fly.style.top = src.top + 'px'; fly.style.width = src.width + 'px';
+fly.style.left = src.left + 'px'; fly.style.top = src.top + 'px'; fly.style.width = src.width + 'px'; fly.style.height = src.height + 'px'; fly.style.borderRadius = '0px';
 document.body.appendChild(fly);
 fly._n.textContent = 'Bitti';
 vcHideLive();
@@ -6607,6 +6579,8 @@ const ty = Math.min(Math.max(tg.top, 6), window.innerHeight - 42);
 fly.style.left = (src.left + (tg.left - src.left) * e) + 'px';
 fly.style.top = (src.top + (ty - src.top) * e) + 'px';
 fly.style.width = (src.width + (w1 - src.width) * e) + 'px';
+fly.style.height = (src.height + (tg.height - src.height) * e) + 'px';
+fly.style.borderRadius = Math.round(Math.min(tg.height, 36) / 2 * e) + 'px';
 fly._setP(e);
 if (k < 1) { requestAnimationFrame(step); return; }
 vcFill(slot, sec);
@@ -10850,7 +10824,7 @@ try { syncBellPanel(); } catch (e) {}
 try { window.dispatchEvent(new Event('vn-view')); } catch (e) {}
 }
 function noteIncomingMessage(info) {
-if (isMobileLayout() && view === 'notes') { unreadMsgs = true; updateBadges(); restartBadgeBlink(newMsgBadge); try { chatToastFor(info); } catch (e) {} }
+if (isMobileLayout() && view === 'notes') { unreadMsgs = true; updateBadges(); restartBadgeBlink(newMsgBadge); }
 }
 function noteIncomingNotif(i) {
 if (isMobileLayout() && view === 'chat') { unreadNotes = true; updateBadges(); restartBadgeBlink(newNotesBadge); }
@@ -11313,105 +11287,6 @@ const BP_PAGES = 3;
 const bpUnread = [false, false, false];
 let bpLastNew = null;
 function bpDots() { document.querySelectorAll('.bp-tab').forEach((b, i) => { if (b.classList.contains('bp-cmd')) return; b.classList.toggle('new', !!bpUnread[i]); });}
-const VT_ICONS = {
-chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
-0: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>'
-};
-const VT_SHOW_MS = 4200;
-let vtEl = null, vtShown = false, vtHideT = null, vtRevealT = null, vtBackT = null, vtGo = null;
-function vtSnip(t) {
-t = String(t || '').replace(/\s+/g, ' ').trim();
-if (!t) return '';
-let o = t.split(' ').slice(0, 7).join(' ');
-if (o.length > 46) o = o.slice(0, 46).trimEnd();
-return o + (o.length < t.length ? '…' : '');
-}
-function vtBuild() {
-if (vtEl) return;
-vtEl = document.createElement('div');
-vtEl.id = 'vn-toast'; vtEl.setAttribute('role', 'status');
-vtEl.innerHTML = '<span class="vt-ic"></span><span class="vt-n"></span><span class="vt-t"></span>';
-appEl.appendChild(vtEl);
-vtEl.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
-vtEl.addEventListener('contextmenu', (e) => e.preventDefault());
-vtEl.addEventListener('click', (e) => {
-e.stopPropagation(); e.preventDefault();
-const go = vtGo; vtHide();
-if (go) { try { go(); } catch (err) {} }
-});
-let y0 = null;
-vtEl.addEventListener('touchstart', (e) => { y0 = e.touches[0].clientY; }, { passive: true });
-vtEl.addEventListener('touchmove', (e) => { if (y0 !== null && e.touches[0].clientY - y0 < -16) { y0 = null; vtHide(); } }, { passive: true });
-vtEl.addEventListener('touchend', () => { y0 = null; }, { passive: true });
-}
-function vtHide() {
-clearTimeout(vtHideT); clearTimeout(vtRevealT);
-if (!vtEl) return;
-vtEl.classList.remove('show');
-vtGo = null;
-if (!vtShown && !document.body.classList.contains('vt-on')) return;
-vtShown = false;
-clearTimeout(vtBackT);
-vtBackT = setTimeout(() => {
-if (vtShown) return;
-document.body.classList.add('vt-back');
-document.body.classList.remove('vt-on');
-setTimeout(() => document.body.classList.remove('vt-back'), 700);
-}, 260);
-}
-function vtPlace() {
-if (isMobileLayout()) { vtEl.style.left = ''; vtEl.style.maxWidth = ''; return; }
-const pc = document.getElementById('pane-chat'), ar = appEl.getBoundingClientRect();
-if (!pc) return;
-const pr = pc.getBoundingClientRect();
-vtEl.style.left = Math.round(pr.left - ar.left + pr.width / 2) + 'px';
-vtEl.style.maxWidth = Math.max(160, Math.round(pr.width - 28)) + 'px';
-}
-function vtShow(info) {
-if (!info) return;
-vtBuild();
-vtPlace();
-try { ytStripBottomSync(); } catch (e) {}
-vtGo = info.go || null;
-vtEl.querySelector('.vt-ic').innerHTML = VT_ICONS[info.icon] || VT_ICONS.chat;
-vtEl.querySelector('.vt-n').textContent = info.name || '';
-const te = vtEl.querySelector('.vt-t');
-te.textContent = info.text || ''; te.style.display = info.text ? '' : 'none';
-clearTimeout(vtHideT); clearTimeout(vtBackT);
-const arm = () => { clearTimeout(vtHideT); vtHideT = setTimeout(vtHide, VT_SHOW_MS); };
-if (vtShown) { arm(); return; }
-const hud = document.getElementById('leap-hud');
-const hudVisible = !!(hud && hud.classList.contains('show')) && !document.body.classList.contains('vt-on');
-document.body.classList.remove('vt-back');
-document.body.classList.add('vt-on');
-clearTimeout(vtRevealT);
-const reveal = () => { vtShown = true; vtEl.classList.add('show'); arm(); };
-if (hudVisible) vtRevealT = setTimeout(reveal, 190); else reveal();
-}
-function bpToastFor(page, tgt) {
-if (!isMobileLayout()) return;
-if (!(view === 'chat' || (view === 'notes' && bpPage !== page))) return;
-const id = tgt && tgt.id;
-let name = '', text = '';
-const n = notifList.find((x) => x.id === id);
-if (n) { name = n.t || ''; text = n.b || ''; }
-if (!name) name = 'Bildirim';
-vtShow({ icon: 0, name: name, text: vtSnip(text), go: () => bpGoTo(0, tgt || null) });
-}
-function chatToastFor(info) {
-if (!info) return;
-const text = info.kind === 'a' ? 'Sesli mesaj' : info.kind === 'i' ? 'Fotoğraf' : vtSnip(info.text);
-vtShow({ icon: 'chat', name: String(info.nick || '').trim() || 'Sohbet', text: text, go: () => {
-setView('chat');
-setTimeout(() => {
-const t = info.id ? document.getElementById(info.id) : null;
-if (t) {
-try { t.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
-t.classList.add('msg-flash'); setTimeout(() => t.classList.remove('msg-flash'), 800);
-} else { chatArea.scrollTop = chatArea.scrollHeight; }
-}, 380);
-} });
-}
 function bpGoTo(page, tgt) {
 const wasChat = isMobileLayout() && view !== 'notes';
 bpLastNew = null;
@@ -11420,7 +11295,7 @@ bpSetPage(page, wasChat);
 try { renderNotifs(); } catch (e) {}
 setTimeout(() => { const l = document.getElementById('bp-list'); if (l) { try { l.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { l.scrollTop = 0; } } }, wasChat ? 420 : 300);
 }
-function bpMarkUnread(i, tgt) { try { noteIncomingNotif(i); } catch (e) {} bpLastNew = { page: i, tgt: tgt || null }; try { bpToastFor(i, tgt || null); } catch (e) {} if (i === bpPage) return; bpUnread[i] = true; bpDots(); }
+function bpMarkUnread(i, tgt) { try { noteIncomingNotif(i); } catch (e) {} bpLastNew = { page: i, tgt: tgt || null }; if (i === bpPage) return; bpUnread[i] = true; bpDots(); }
 function bpSetPage(p, instant) {
 if (!isMobileLayout()) return;
 p = Math.max(0, Math.min(BP_PAGES - 1, p));
