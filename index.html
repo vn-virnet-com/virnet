@@ -170,7 +170,7 @@ html.song-on body:not(.desk) #vn-sysbar .vs-m { display: flex; }
 #vn-cal .cal-sp { flex: 0 0 34px; width: 34px; height: 30px; }
 #vn-cal .cal-l { display: flex; flex-direction: column; gap: 6px; max-height: 292px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; scrollbar-width: none; }
 #vn-cal .cal-l::-webkit-scrollbar { display: none; }
-#vn-cal .cal-li { flex: 0 0 auto; padding: 6px 10px 5px; border-radius: 12px; color: #1b1b1b; }
+#vn-cal .cal-li { cursor: pointer; -webkit-tap-highlight-color: transparent; flex: 0 0 auto; padding: 6px 10px 5px; border-radius: 12px; color: #1b1b1b; }
 #vn-cal .cal-ln { font-size: 12.5px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
 #vn-cal .cal-ln b { font-weight: 800; }
 #vn-cal .cal-lk { margin-top: 1px; font-size: 10px; font-weight: 600; line-height: 1.2; opacity: .65; }
@@ -14701,7 +14701,7 @@ if (!items.length) s += '<div class="cal-le">Kayıtlı etkinlik yok</div>';
 items.forEach(function (it) {
 var p = it.k.split('-'), y = parseInt(p[0], 10), dt = parseInt(p[2], 10) + ' ' + MN[parseInt(p[1], 10) - 1] + (y !== thisY ? ' ' + y : '');
 var kal = it.dd === 0 ? 'Bugün' : (it.dd === 1 ? 'Yarın' : it.dd + ' gün kaldı');
-s += '<div class="cal-li" style="background:' + CC[it.r.c] + '"><div class="cal-ln"><b>' + evEsc(dt) + '</b> · ' + evEsc(it.r.n) + '</div><div class="cal-lk">' + kal + '</div></div>';
+s += '<div class="cal-li" data-k="' + it.k + '" style="background:' + CC[it.r.c] + '"><div class="cal-ln"><b>' + evEsc(dt) + '</b> · ' + evEsc(it.r.n) + '</div><div class="cal-lk">' + kal + '</div></div>';
 });
 cal.innerHTML = s + '</div>';
 }
@@ -14716,7 +14716,11 @@ var xb = tg.closest('button[data-x]');
 if (xb) { var xk = xb.getAttribute('data-x'); calHideTag(); evChange(xk, { x: 1, t: Date.now() }); calRender(); return; }
 var lbt = tg.closest('button[data-l]');
 if (lbt) { if (lbt.getAttribute('data-l') === 'list') calListRender(); else calRender(); return; }
-if (calMode === 'list') return;
+if (calMode === 'list') {
+var li = tg.closest('.cal-li[data-k]');
+if (li) { var lk = li.getAttribute('data-k'), lp = lk.split('-'); calY = parseInt(lp[0], 10); calM = parseInt(lp[1], 10) - 1; calRender(); calShowTag(lk); }
+return;
+}
 if (calMode === 'edit') {
 var cb = tg.closest('button[data-c]');
 if (cb) { calSel = parseInt(cb.getAttribute('data-c'), 10) || 0; var cs = cal.querySelectorAll('.ce-col'); for (var ci = 0; ci < cs.length; ci++) cs[ci].classList.toggle('sel', ci === calSel); return; }
