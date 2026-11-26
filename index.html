@@ -591,12 +591,13 @@ position: absolute; right: 0; top: 0; height: var(--tb-h); width: var(--tb-w); b
 display: flex; align-items: center; opacity: 0; pointer-events: none; overflow: hidden; z-index: 2;
 transition: width .2s ease, opacity .12s ease, background-color .12s ease;
 }
-#input-wrapper.rec-on #rec-ext { opacity: 1; width: calc(var(--tb-w) + 80px); }
-#input-wrapper.rec-on #rec-ext.locked { width: calc(var(--tb-w) + 40px); }
+#input-wrapper.rec-on #rec-ext { opacity: 1; width: var(--rx-w, calc(var(--tb-w) + 80px)); }
+#input-wrapper.rec-on #rec-ext.locked { width: var(--rx-wl, var(--rx-w, calc(var(--tb-w) + 40px))); }
 #rec-ext.hot { background: #d33; }
 #rec-ext.hot + #mic-btn { background: #d33; }
-.rx { flex: 0 0 40px; width: 40px; height: var(--tb-h); padding: 0; border: 0; background: transparent; color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
+.rx { position: absolute; top: 0; left: 0; flex: 0 0 40px; width: 40px; height: var(--tb-h); padding: 0; border: 0; background: transparent; color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
 .rx svg { display: block; width: 18px; height: 18px; stroke: #fff; pointer-events: none; }
+#rec-lock { left: 40px; }
 #rec-lock.hot { background: color-mix(in srgb, #fff 22%, transparent); }
 #rec-ext.locked #rec-lock { display: none; }
 #rec-ext.locked #rec-trash { pointer-events: auto; cursor: pointer; }
@@ -10536,10 +10537,28 @@ function audPauseAll() {
 try { if (curAud && !curAud.paused) curAud.pause(); } catch (e) {}
 try { document.querySelectorAll('.aud-pl').forEach((p) => { const a = p._audio; if (a && !a.paused) { try { a.pause(); } catch (e) {} } }); } catch (e) {}
 }
+function recLayoutExt() {
+try {
+const pad = document.getElementById('tool-pad'), cam = document.getElementById('tb-cam'), call = document.getElementById('tb-call');
+const cr = cam.getBoundingClientRect(), mr = micBtn.getBoundingClientRect(), pr = pad.getBoundingClientRect();
+if (!cr.width || !mr.width) return;
+let lc = pr.left + pr.width / 2;
+if (call && call.offsetParent !== null) { const kr = call.getBoundingClientRect(); if (kr.width) lc = kr.left + kr.width / 2; }
+const tc = cr.left + cr.width / 2;
+recExt.style.setProperty('--rx-w', Math.round(mr.right - cr.left) + 'px');
+recTrashEl.style.left = Math.round(tc - cr.left - 20) + 'px';
+recLockEl.style.left = Math.round(lc - cr.left - 20) + 'px';
+const pd = Math.max(0, Math.round(cr.width / 2 - 20));
+recExt.style.setProperty('--rx-wl', Math.round(mr.right - lc + 20 + pd) + 'px');
+recExt._pd = pd;
+} catch (e) {}
+}
+window.addEventListener('resize', () => { if (recMR) recLayoutExt(); });
 function showRecUi() {
 const wrap = document.getElementById('msg-wrap');
 if (wrap) wrap.classList.add('recording');
 document.getElementById('input-wrapper').classList.add('rec-on');
+recLayoutExt();
 recLocked = false; recLockTapId = null;
 recPhSet(REC_TXT); recPhTimerStart();
 recExt.classList.remove('hot', 'locked');
@@ -10558,11 +10577,12 @@ micBtn.innerHTML = MIC_ICON_HTML;
 }
 function recZoneAt(x, y) {
 if (!recMR) return null;
-const m = micBtn.getBoundingClientRect(), u = 40;
+const m = micBtn.getBoundingClientRect();
 if (recLocked) return null;
-if (x < m.left - u - 4) return 'trash';
-if (x < m.left - 8) return 'lock';
-return null;
+if (x >= m.left - 8) return null;
+const tr = recTrashEl.getBoundingClientRect(), lk = recLockEl.getBoundingClientRect();
+const tc = tr.left + tr.width / 2, lc = lk.left + lk.width / 2;
+return x < (tc + lc) / 2 ? 'trash' : 'lock';
 }
 function recPhText() {
 if (recExt.classList.contains('hot')) return REC_TXT_TRASH;
@@ -10585,6 +10605,7 @@ recLocked = true;
 recExt.classList.remove('hot');
 recLockEl.classList.remove('hot');
 recExt.classList.add('locked');
+recTrashEl.style.left = (recExt._pd || 0) + 'px';
 micBtn.innerHTML = SEND_ICON;
 recPhSet(REC_TXT_LOCKED);
 }
