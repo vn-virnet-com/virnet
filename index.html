@@ -516,6 +516,7 @@ background: var(--accent); color: var(--on-accent); border-left: 1px solid var(-
 #rec-ph .rp-t { color: var(--c-fff); font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .5px; }
 #rec-ph .rp-h { color: var(--c-88); font-size: 11px; line-height: 13px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 #input-wrapper.rec-on #rec-ph { display: flex; }
+#input-wrapper.rec-on #message-input, #input-wrapper.rec-on #nick-input { caret-color: transparent; pointer-events: none; }
 @keyframes recblink { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
 #tool-row { display: grid; grid-template-rows: 1fr; transition: none; }
 #tool-in { min-height: 0; overflow: hidden; }
@@ -10203,6 +10204,7 @@ micBtn.addEventListener('pointerdown', (event) => {
 if (event.pointerType === 'mouse' && event.button !== 0) return;
 event.preventDefault();
 if (recLocked && recMR) { recLockTapId = event.pointerId; try { micBtn.setPointerCapture(event.pointerId); } catch (e) {} return; }
+recKbWas = (document.activeElement === messageInput);
 clearPress();
 pressActive = true;
 pressId = event.pointerId;
@@ -10439,6 +10441,13 @@ return pick ? pick.deviceId : null;
 } catch (e) { return null; }
 }
 let recHeld = false, recGuard = null;
+let recKbWas = false;
+messageInput.addEventListener('blur', () => {
+if (!recMR || !recKbWas) return;
+setTimeout(() => {
+if (recMR && recKbWas && !document.hidden && !messageInput.disabled && document.activeElement !== messageInput) { try { messageInput.focus({ preventScroll: true }); } catch (e) {} }
+}, 0);
+});
 function relRecHold() { clearInterval(recGuard); recGuard = null; if (recHeld) { recHeld = false; songResumeAfterAudio(); } }
 function recGuardStart() {
 clearInterval(recGuard);
@@ -10582,6 +10591,7 @@ document.addEventListener('visibilitychange', () => {
 if (document.hidden && recMR) { stopRec(false); pressActive = false; clearPress(); }
 });
 function stopRec(send) {
+recKbWas = false;
 recLocked = false; recLockTapId = null;
 if (recAuto) { clearTimeout(recAuto); recAuto = null; }
 micBtn.classList.remove('rec');
