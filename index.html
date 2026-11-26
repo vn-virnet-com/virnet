@@ -2017,7 +2017,7 @@ transition: max-width .3s cubic-bezier(.3,.8,.25,1), flex-grow .3s cubic-bezier(
 }
 #strip-stack > #vc-pill { --mw: 240px; order: 1; background-color: transparent; color: var(--c-fff); }
 #strip-stack > #auto-chip { --mw: 90px; order: 2; background-color: var(--warn); color: #1a1400; }
-#strip-stack > #yt-dock .ytd-bar { --mw: 100vw; flex: 1 1 0; order: 3; background-color: var(--send-bg); color: var(--send-ico); }
+#strip-stack > #yt-dock .ytd-bar { --mw: 100vw; flex: 1 1 0; order: 3; background-color: #4c1d95; color: #fff; }
 /* yokken: yatayda sıfıra daralır */
 #strip-stack > #vc-pill:not(.show), #strip-stack > #auto-chip:not(.show), #strip-stack > #yt-dock:not(.show) .ytd-bar, #strip-stack > #yt-dock.hide .ytd-bar {
 flex-grow: 0; max-width: 0; margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; opacity: 0; pointer-events: none; overflow: hidden;
@@ -2073,7 +2073,13 @@ height: 0; border-top-width: 0; border-bottom-width: 0; transition: max-width .3
 /* anlık söz satırı (sarma çubuğunun üstünde, daha soluk) */
 .ytd-lp, .ytd-lback { display: none; }
 #yt-dock .ytd-lback { display: none; }
-#strip-stack > #yt-dock .ytd-lp { display: block; height: 13px; margin-top: 2px; line-height: 13px; font-size: 11.5px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--c-88); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#strip-stack > #yt-dock .ytd-lp { display: flex; align-items: center; justify-content: center; height: 26px; margin-top: 2px; box-sizing: border-box; overflow: hidden; line-height: 13px; font-size: 11.5px; font-weight: 600; text-align: center; color: var(--c-88); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#strip-stack > #yt-dock .ytd-lp > span { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: normal; overflow-wrap: anywhere; text-wrap: balance; text-align: center; }
+/* şarkı kapağı keskin köşeli */
+#strip-stack > #yt-dock .ytd-cover { border-radius: 0; }
+/* söz görünümü, normal görünümle aynı boyda (genişleyip daralmaz) */
+#strip-stack > #yt-dock .ytd-lwrap { height: 79px; overflow: hidden; }
+#strip-stack > #yt-dock .ytd-lwrap .ytd-lyr { height: 100%; padding: 25px 0; }
 /* söz görünümü: solda geri oku, sağda 3 satırlık kaydırılabilir söz alanı */
 #strip-stack > #yt-dock .ytd-lwrap { display: none; order: 6; flex: 0 0 calc(100% + 13px); margin: 0 -6.5px; box-sizing: border-box; align-items: center; gap: 6px; padding: 0 12px 0 8px; background: var(--c-111); }
 #strip-stack > #yt-dock.lyr-open:not(.folded) .ytd-lwrap { display: flex; }
@@ -4730,7 +4736,7 @@ else if (L.state === 'none') t = 'Söz bulunamadı';
 else if (L.state !== 'ok') t = 'Sözler yüklenemedi';
 else if (!L.synced) t = 'Sözleri göster';
 else { const i = card._lyrIdx ? card._lyrIdx(cur) : -1; const ln = i >= 0 ? L.lines[i] : null; t = (ln && ln.text) || '\u266A'; }
-if (lp.textContent !== t) lp.textContent = t;
+const lps = lp.firstElementChild || lp; if (lps.textContent !== t) lps.textContent = t;
 }
 function ytDockLyrSync(card, cur) {
 const el = ytDockEl; if (!el || !el._d) return;
@@ -4866,7 +4872,7 @@ el.innerHTML =
 '</div>' +
 '<div class="ytd-main">' +
 '<div class="ytd-cover"></div>' +
-'<div class="ytd-mid"><div class="ytd-ex"></div><div class="ytd-lp" role="button" aria-label="Şarkı sözleri"></div>' +
+'<div class="ytd-mid"><div class="ytd-ex"></div><div class="ytd-lp" role="button" aria-label="Şarkı sözleri"><span></span></div>' +
 '<div class="ytd-prog" aria-label="Şarkıyı sar"><div class="ytd-track"><i></i></div><span class="ytd-t ytd-tc">0:00</span><span class="ytd-t ytd-td">0:00</span></div></div>' +
 '<button type="button" class="ytd-b ytd-play" aria-label="Oynat">' + YTD_PLAY + '</button>' +
 '<button type="button" class="ytd-b ytd-next" aria-label="Sonraki şarkı" style="display:none">' + YTD_NEXT + '</button>' +
