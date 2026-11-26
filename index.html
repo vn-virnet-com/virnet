@@ -2075,18 +2075,23 @@ height: 0; border-top-width: 0; border-bottom-width: 0; transition: max-width .3
 #strip-stack > #yt-dock .ytd-mid .ytd-prog { flex: 0 0 24px; height: 24px; margin-top: 2px; }
 #strip-stack > #yt-dock .ytd-track { top: 5px; }
 #strip-stack > #yt-dock .ytd-t { top: 11px; }
-/* sarma çubuğu: genişletilmiş şeridin en altı. solda/sağda süre, ortada çubuk */
-#strip-stack > #yt-dock .ytd-prog { order: 6; display: flex; align-items: center; gap: 10px; flex: 0 0 calc(100% + 13px); width: auto; min-width: 0; height: 28px; margin: 0 -6.5px; padding: 0 16px 2px; box-sizing: border-box; background: var(--c-111); position: relative; }
+/* sarma çubuğu: şeridin direkt alt kenarı. süreler sol/sağ alt köşede, çubuk ikisinin arasında */
+#strip-stack > #yt-dock .ytd-prog { order: 6; display: block; position: relative; flex: 0 0 calc(100% + 13px); width: auto; min-width: 0; height: 17px; margin: 0 -6.5px; padding: 0; box-sizing: border-box; background: var(--c-111); }
 #strip-stack > #yt-dock.folded .ytd-prog { display: none; }
-#strip-stack > #yt-dock .ytd-prog .ytd-t { position: static; top: auto; flex: 0 0 32px; width: 32px; font-size: 10.5px; line-height: 12px; color: var(--c-88); }
-#strip-stack > #yt-dock .ytd-prog .ytd-tc { text-align: left; }
-#strip-stack > #yt-dock .ytd-prog .ytd-td { text-align: right; }
-#strip-stack > #yt-dock .ytd-prog .ytd-track { position: relative; flex: 1 1 0; min-width: 0; top: auto; left: auto; right: auto; height: 3px; margin: 0; border-radius: 2px; background: color-mix(in srgb, var(--c-fff) 18%, transparent); }
-#strip-stack > #yt-dock .ytd-prog .ytd-track::before { content: ''; position: absolute; left: 0; right: 0; top: -12px; bottom: -12px; }
+#strip-stack > #yt-dock .ytd-prog .ytd-t { position: absolute; top: auto; bottom: 2px; width: 38px; font-size: 10px; line-height: 12px; color: var(--c-88); }
+#strip-stack > #yt-dock .ytd-prog .ytd-tc { left: 10px; text-align: left; }
+#strip-stack > #yt-dock .ytd-prog .ytd-td { right: 10px; text-align: right; }
+#strip-stack > #yt-dock .ytd-prog .ytd-track { position: absolute; left: 54px; right: 54px; bottom: 0; top: auto; height: 3px; margin: 0; border-radius: 0; background: color-mix(in srgb, var(--c-fff) 18%, transparent); }
+#strip-stack > #yt-dock .ytd-prog .ytd-track > i { border-radius: 0; }
+#strip-stack > #yt-dock .ytd-prog .ytd-track::before { content: ''; position: absolute; left: -54px; right: -54px; top: -14px; bottom: 0; }
 #strip-stack > #yt-dock .ytd-prog.seeking .ytd-track { height: 5px; margin: 0; }
 #strip-stack > #yt-dock .ytd-prog .ytd-track > i::after { width: 9px; height: 9px; right: -4.5px; margin-top: -4.5px; }
-.ytd-tip { position: absolute; bottom: 14px; left: 0; transform: translateX(-50%) translateY(3px); padding: 2px 6px; border-radius: 4px; font-size: 10px; line-height: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--c-fff); background: color-mix(in srgb, var(--c-33) 82%, transparent); opacity: 0; pointer-events: none; transition: opacity .12s ease, transform .12s ease; }
+.ytd-tip { position: absolute; bottom: 10px; left: 0; transform: translateX(-50%) translateY(3px); padding: 2px 6px; border-radius: 4px; font-size: 10px; line-height: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--c-fff); background: color-mix(in srgb, var(--c-33) 82%, transparent); opacity: 0; pointer-events: none; transition: opacity .12s ease, transform .12s ease; }
 .ytd-prog.seeking .ytd-tip { opacity: .9; transform: translateX(-50%); }
+/* söz alanı: ad satırının altında, kaydırılabilir, anlık söz ortada */
+#strip-stack > #yt-dock .ytd-mid .ytd-lyr { display: block; flex: 0 0 42px; height: 42px; margin: 2px 0 0; padding: 14px 0; background: none; }
+#strip-stack > #yt-dock .ytd-lyr .ytd-ly { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; min-height: 0; padding: 3px 6px; font-size: 10.5px; line-height: 13px; font-weight: 600; font-style: italic; text-align: center; text-wrap: balance; cursor: pointer; }
+#strip-stack > #yt-dock .ytd-lyr .ytd-ly.plain, #strip-stack > #yt-dock .ytd-lyr .ytd-ly.msg { cursor: default; font-weight: 400; }
 /* anlık söz satırı (sarma çubuğunun üstünde, daha soluk) */
 .ytd-lp, .ytd-lback { display: none; }
 #yt-dock .ytd-lback { display: none; }
@@ -4718,8 +4723,8 @@ const YTD_X = YTD_SVG('<path d="M6 6l12 12M18 6L6 18"/>');
 const YTD_BACK = YTD_SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>');
 const YTD_DOWN = YTD_SVG('<path d="M6 9l6 6 6-6"/>');
 let ytDockFolded = true;
-let ytDockLyrOpen = false, ytDockLyrUserAt = 0, ytDockLyrCard = null, ytDockLyrLines = null, ytDockLyrState = '', ytDockLyrIdx = -1, ytDockLyrEls = [], ytDockLyrAsked = null;
-function ytDockSetLyr(on) { ytDockLyrOpen = false; }
+let ytDockLyrOpen = true, ytDockLyrUserAt = 0, ytDockLyrCard = null, ytDockLyrLines = null, ytDockLyrState = '', ytDockLyrIdx = -1, ytDockLyrEls = [], ytDockLyrAsked = null;
+function ytDockSetLyr(on) { ytDockLyrOpen = true; }
 let ytDockLpAsked = null;
 function ytDockLpSync(card, cur) {
 const el = ytDockEl; if (!el || !el._d || !el._d.lp) return;
@@ -4739,7 +4744,7 @@ const lps = lp.firstElementChild || lp; if (lps.textContent !== t) lps.textConte
 function ytDockLyrSync(card, cur) {
 const el = ytDockEl; if (!el || !el._d) return;
 const box = el._d.lyr;
-if (!ytDockLyrOpen) return;
+if (!ytDockLyrOpen || !box || el.classList.contains('folded')) return;
 const L0 = card._lyrData ? card._lyrData() : null;
 if (ytDockLyrAsked !== card || (L0 && L0.state === 'idle' && Date.now() >= (L0.retryAt || 0))) { ytDockLyrAsked = card; try { if (card._ensureLyrics) card._ensureLyrics(); } catch (e) {} }
 const L = card._lyrData ? card._lyrData() : null;
@@ -4870,7 +4875,7 @@ el.innerHTML =
 '</div>' +
 '<div class="ytd-main">' +
 '<div class="ytd-cover"></div>' +
-'<div class="ytd-mid"><div class="ytd-ex"></div><div class="ytd-lp" role="button" aria-label="Şarkı sözleri"><span></span></div>' +
+'<div class="ytd-mid"><div class="ytd-ex"></div><div class="ytd-lyr" aria-label="Şarkı sözleri"></div>' +
 '</div>' +
 '<button type="button" class="ytd-b ytd-play" aria-label="Oynat">' + YTD_PLAY + '</button>' +
 '<button type="button" class="ytd-b ytd-next" aria-label="Sonraki şarkı" style="display:none">' + YTD_NEXT + '</button>' +
@@ -4881,7 +4886,7 @@ wrap.appendChild(el);
 try { if (window.ResizeObserver) new ResizeObserver(() => { try { ytTopInsetSync(); } catch (e) {} }).observe(el); } catch (e) {}
 try { new MutationObserver(() => { try { ytTopInsetSync(); } catch (e) {} }).observe(el, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}
 const q = (s) => el.querySelector(s);
-el._d = { cover: q('.ytd-cover'), info: q('.ytd-info'), ex: q('.ytd-ex'), lp: q('.ytd-lp'), bPrev: q('.ytb-prev'), bPlay: q('.ytb-play'), bNext: q('.ytb-next'), bX: q('.ytb-x'), bExp: q('.ytb-exp'), play: q('.ytd-play'), next: q('.ytd-next'), x: q('.ytd-x'), track: q('.ytd-track'), tip: q('.ytd-tip'), prog: q('.ytd-prog'), fill: q('.ytd-track > i'), tc: q('.ytd-tc'), td: q('.ytd-td'), seeking: false, frac: 0, dur0: 0 };
+el._d = { cover: q('.ytd-cover'), info: q('.ytd-info'), ex: q('.ytd-ex'), lp: q('.ytd-lp'), bPrev: q('.ytb-prev'), bPlay: q('.ytb-play'), bNext: q('.ytb-next'), bX: q('.ytb-x'), bExp: q('.ytb-exp'), play: q('.ytd-play'), next: q('.ytd-next'), x: q('.ytd-x'), lyr: q('.ytd-lyr'), track: q('.ytd-track'), tip: q('.ytd-tip'), prog: q('.ytd-prog'), fill: q('.ytd-track > i'), tc: q('.ytd-tc'), td: q('.ytd-td'), seeking: false, frac: 0, dur0: 0 };
 bindYtTap(el._d.play, () => { if (ytDockCard && ytDockCard._toggle) ytDockCard._toggle(); });
 const doClose = () => {
 const c = ytDockCard;
@@ -4892,7 +4897,7 @@ try { if (c._pause) c._pause(); } catch (e) {}
 }
 ytDockHide();
 };
-const doFold = () => { ytDockFolded = !ytDockFolded; if (ytDockFolded && ytDockLyrOpen) ytDockSetLyr(false); el.classList.toggle('folded', ytDockFolded); const fb = el.querySelector('.ytd-fold'); if (fb) fb.setAttribute('aria-label', ytDockFolded ? 'Genişlet' : 'Küçült'); if (el._d && el._d.bExp) el._d.bExp.setAttribute('aria-label', ytDockFolded ? 'Genişlet' : 'Küçült'); try { ytDockFitInfo(); } catch (e) {} try { ytDockMarquee(); } catch (e) {} try { ytTopInsetSync(); } catch (e) {} };
+const doFold = () => { ytDockFolded = !ytDockFolded; ytDockLyrIdx = -2; el.classList.toggle('folded', ytDockFolded); const fb = el.querySelector('.ytd-fold'); if (fb) fb.setAttribute('aria-label', ytDockFolded ? 'Genişlet' : 'Küçült'); if (el._d && el._d.bExp) el._d.bExp.setAttribute('aria-label', ytDockFolded ? 'Genişlet' : 'Küçült'); try { ytDockFitInfo(); } catch (e) {} try { ytDockMarquee(); } catch (e) {} try { ytTopInsetSync(); } catch (e) {} };
 const doNext = () => { try { if (ytPl) ytPlNext(); } catch (e) {} };
 const doPrev = () => {
 try { if (ytPl) { ytPlPrev(); return; } } catch (e) {}
@@ -4907,6 +4912,17 @@ bindYtTap(el._d.bNext, doNext);
 bindYtTap(el._d.bPrev, doPrev);
 bindYtTap(el._d.bPlay, () => { if (ytDockCard && ytDockCard._toggle) ytDockCard._toggle(); });
 el.querySelector('.ytd-up').addEventListener('click', (e) => { if (el.parentNode && el.parentNode.id === 'strip-stack') { e.stopPropagation(); doFold(); } });
+['touchstart', 'wheel', 'mousedown'].forEach((ev) => el._d.lyr.addEventListener(ev, () => { ytDockLyrUserAt = Date.now(); }, { passive: true }));
+el._d.lyr.addEventListener('mousedown', (e) => { if (e.cancelable) e.preventDefault(); });
+el._d.lyr.addEventListener('click', (e) => {
+e.stopPropagation();
+const c = ytDockCard, row = e.target.closest('.ytd-ly');
+if (!c || !row || row.dataset.i === undefined || !c._lyrData) return;
+const L = c._lyrData();
+if (!L || L.state !== 'ok' || !L.synced) return;
+const ln = L.lines[parseInt(row.dataset.i, 10)];
+if (ln && c._seekSec) { ytDockLyrUserAt = 0; c._seekSec(ln.t); }
+});
 el.addEventListener('click', (e) => { if (isMobileLayout() && el.parentNode && el.parentNode.id === 'ytsearch-box' && !e.target.closest('.ytd-b, .ytd-prog, .ytd-lyr')) { try { ytNpOpen(); } catch (x) {} } });
 const dd = el._d;
 const dSeek = (x) => {
