@@ -149,6 +149,22 @@ html.song-on body:not(.desk) #vn-sysbar .vs-m { display: flex; }
 #vn-cal .cal-d { line-height: 28px; border-radius: 50%; font-variant-numeric: tabular-nums; }
 #vn-cal .cal-d.wk { color: var(--c-88); }
 #vn-cal .cal-d.today { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+#vn-cal .cal-d[data-k] { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#vn-cal .cal-d.ev { color: #1b1b1b; font-weight: 700; }
+#vn-cal .cal-d.ev.today { box-shadow: inset 0 0 0 2px var(--accent); }
+#vn-cal .cal-tag { position: absolute; z-index: 3; display: flex; align-items: center; gap: 2px; max-width: 200px; box-sizing: border-box; padding: 3px 4px 3px 10px; border-radius: 14px; color: #1b1b1b; font-size: 12px; font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,.45); white-space: nowrap; }
+#vn-cal .cal-tag span { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+#vn-cal .cal-tag button { flex: 0 0 auto; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: rgba(0,0,0,.14); color: #1b1b1b; font: inherit; font-size: 15px; line-height: 20px; text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#vn-cal.edit.show { display: flex; flex-direction: column; justify-content: center; }
+#vn-cal .ce-d { text-align: center; font-weight: 700; font-size: 13.5px; margin-bottom: 10px; }
+#vn-cal .ce-in { display: block; width: 100%; box-sizing: border-box; margin: 0 0 12px; padding: 8px 10px; background: var(--c-000); color: var(--c-fff); border: 1px solid var(--c-33); border-radius: 10px; font: inherit; font-size: 14px; outline: none; -webkit-user-select: text; user-select: text; }
+#vn-cal .ce-c { display: flex; justify-content: space-between; padding: 0 4px; margin-bottom: 14px; }
+#vn-cal .ce-col { width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#vn-cal .ce-col.sel { box-shadow: 0 0 0 2px var(--c-111), 0 0 0 4px var(--c-fff); }
+#vn-cal .ce-a { display: flex; gap: 8px; }
+#vn-cal .ce-a button { flex: 1; height: 34px; border-radius: 10px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#vn-cal .ce-no { background: transparent; color: var(--c-fff); border: 1px solid var(--c-33); }
+#vn-cal .ce-ok { background: var(--accent); color: var(--on-accent); border: 0; }
 #setup-panel {
 position: relative; z-index: 10000; padding: 15px;
 display: none; flex-direction: column; gap: 10px; background: var(--c-000);
@@ -3642,6 +3658,7 @@ try { sendAdult('adult-hello'); } catch (e) {}
 try { if (window.__tosHello) window.__tosHello(); } catch (e) {}
 try { pfHello(); } catch (e) {}
 try { if (window.__wxHello) window.__wxHello(); } catch (e) {}
+try { if (window.__calHello) window.__calHello(); } catch (e) {}
 flushNotifOutbox();
 flushOutbox(true);
 try { callResendStates(); } catch (e) {}
@@ -3650,6 +3667,7 @@ try { gameResend(); } catch (e) {}
 try { tkmResend(); } catch (e) {}
 try { vcSendSync(); } catch (e) {}
 try { if (ytCurrent && ytCurrent._announce) ytCurrent._announce(); } catch (e) {}
+setTimeout(() => { try { if (c === conn) ytSyncResume(); } catch (e) {} }, 600);
 if (pingInterval) clearInterval(pingInterval);
 pingInterval = setInterval(() => {
 if (!isConnected()) return;
@@ -3692,6 +3710,7 @@ if (data.type === 'prof-op-photo') { receiveOpPhoto(data); return; }
 if (data.type === 'prof-op-photo-meta') { receiveOpPhotoMeta(data); return; }
 if (data.type === 'prof-op-photo-req') { receiveOpPhotoReq(data); return; }
 if (data.type === 'wx-ov' || data.type === 'wx-ack') { try { if (window.__wxRecv) window.__wxRecv(data); } catch (e) {} return; }
+if (data.type === 'cal' || data.type === 'cal-hello') { try { if (window.__calRecv) window.__calRecv(data); } catch (e) {} return; }
 if (data.type === 'notif') { receiveNotif(data); return; }
 if (data.type === 'notif-del') { receiveNotifDel(data); return; }
 if (data.type === 'notif-ack') { receiveNotifAck(data); return; }
@@ -4401,6 +4420,7 @@ if (!isConnected()) return;
 try { conn.send(Object.assign({ type: 'listen' }, o)); } catch (e) {}
 }
 function ytFindCard(msgId, ytId) {
+if (ytId && ytsGhost && ytsGhost._syncGhost && ytsGhost.isConnected && ytsGhost._ytId === ytId) return ytsGhost;
 if (msgId) {
 const el = document.getElementById(msgId);
 const c = el && el.querySelector('.bubble > .yt-card');
@@ -4413,12 +4433,81 @@ return all.length ? all[all.length - 1] : null;
 function receiveListen(d) {
 if (!d || typeof d.ev !== 'string') return;
 if (d.ev === 'autooff') { try { ytAutoSet(false); } catch (e) {} return; }
-if (['play', 'pause', 'seek', 'beat', 'join', 'leave', 'ready', 'unready', 'go', 'ping', 'pong', 'prep', 'prepok', 'abort'].indexOf(d.ev) < 0) return;
+if (['play', 'pause', 'seek', 'beat', 'join', 'leave', 'ready', 'unready', 'go', 'ping', 'pong', 'prep', 'prepok', 'abort', 'rejoin'].indexOf(d.ev) < 0) return;
 const card = ytFindCard(typeof d.msgId === 'string' ? d.msgId : '', typeof d.ytId === 'string' ? d.ytId : '');
 if (card && card._onListen) card._onListen(d);
 }
 function ytListenResetAll() {
+try { ytSnapTick(); } catch (e) {}
 chatArea.querySelectorAll('.yt-card').forEach((c) => { if (c._listenReset) c._listenReset(); });
+try { if (ytsGhost && ytsGhost._listenReset) ytsGhost._listenReset(); } catch (e) {}
+}
+const YT_SNAP_KEY = 'ytSyncSnap', YT_SNAP_MAX = 120 * 1000;
+let ytSyncSnap = null;
+function ytSnapClear() { ytSyncSnap = null; try { sessionStorage.removeItem(YT_SNAP_KEY); } catch (e) {} }
+function ytSnapTick() {
+try {
+const cs = Array.prototype.slice.call(chatArea.querySelectorAll('.yt-card'));
+if (ytsGhost) cs.push(ytsGhost);
+for (let i = 0; i < cs.length; i++) {
+const c = cs[i];
+if (!c._getState || !c._ytId || c._ended) continue;
+const st = c._getState();
+if (!st.sync || st.st === -1 || st.st === 5 || st.st === 0) continue;
+const m = (c.closest && !c._ghost) ? c.closest('.msg') : null;
+ytSyncSnap = { id: c._ytId, msgId: m ? m.id : '', t: st.cur || 0, play: !!st.playing, auto: !!ytAutoReady, at: Date.now() };
+try { sessionStorage.setItem(YT_SNAP_KEY, JSON.stringify(ytSyncSnap)); } catch (e) {}
+return;
+}
+} catch (e) {}
+}
+setInterval(ytSnapTick, 1000);
+window.addEventListener('pagehide', ytSnapTick);
+document.addEventListener('visibilitychange', () => { if (document.hidden) ytSnapTick(); });
+function ytKillSolo(except) {
+try { if (ytPl) ytPlStop(); } catch (e) {}
+try { localStorage.removeItem(YTPL_KEY); sessionStorage.removeItem('soloSong'); } catch (e) {}
+const g = ytsGhost;
+if (g && g !== except) {
+try { g._pause(); } catch (e) {}
+try { g._destroy(); } catch (e) {}
+try { g.remove(); } catch (e) {}
+if (ytDockCard === g) ytDockCard = null;
+ytsGhost = null;
+}
+}
+function ytSyncResume() {
+let s = ytSyncSnap;
+if (!s) { try { s = JSON.parse(sessionStorage.getItem(YT_SNAP_KEY) || 'null'); } catch (e) { s = null; } }
+if (!s || !s.id) return;
+if (Date.now() - (s.at || 0) > YT_SNAP_MAX) { ytSnapClear(); return; }
+if (!isConnected()) return;
+const chatCs = Array.prototype.slice.call(chatArea.querySelectorAll('.yt-card'));
+let busy = false;
+chatCs.concat(ytsGhost ? [ytsGhost] : []).forEach((c) => { try { if (c._getState && c._getState().sync) busy = true; } catch (e) {} });
+if (busy) return;
+let card = null;
+if (s.msgId) {
+const el = document.getElementById(s.msgId);
+const c0 = el && el.querySelector('.bubble > .yt-card');
+if (c0 && c0._ytId === s.id) card = c0;
+}
+if (!card) {
+const all = chatCs.filter((c) => c._ytId === s.id);
+if (all.length) card = all[all.length - 1];
+}
+if (!card && ytsGhost && ytsGhost.isConnected && ytsGhost._ytId === s.id) { card = ytsGhost; card._syncGhost = true; }
+if (!card) {
+ytKillSolo(null);
+let host = document.getElementById('yt-ghost');
+if (!host) { host = document.createElement('div'); host.id = 'yt-ghost'; document.body.appendChild(host); }
+const g = buildYtCard(s.id, 'https://music.youtube.com/watch?v=' + s.id);
+g._ytId = s.id; g._ghost = true; g._syncGhost = true;
+host.appendChild(g);
+ytsGhost = g; ytDockDismissed = null;
+card = g;
+}
+if (card._resumeSync) card._resumeSync(s);
 }
 function bindYtTap(el, fn) {
 let usedTouch = false, ts = null;
@@ -5110,6 +5199,7 @@ if (c) {
 try { if (c._stopAll) c._stopAll(); } catch (e) {}
 try { if (c._pause) c._pause(); } catch (e) {}
 }
+try { ytKillSolo(null); } catch (e) {}
 ytDockHide();
 };
 const doFold = () => { ytDockFolded = !ytDockFolded; ytDockLyrIdx = -2; el.classList.toggle('folded', ytDockFolded); const fb = el.querySelector('.ytd-fold'); if (fb) fb.setAttribute('aria-label', ytDockFolded ? 'Genişlet' : 'Küçült'); if (el._d && el._d.bExp) el._d.bExp.setAttribute('aria-label', ytDockFolded ? 'Genişlet' : 'Küçült'); try { ytDockFitInfo(); } catch (e) {} try { ytDockMarquee(); } catch (e) {} try { ytTopInsetSync(); } catch (e) {} };
@@ -5595,7 +5685,7 @@ if (player && ready) { player.playVideo(); if (sync) sayForce('play', player.get
 };
 card._destroy = () => {
 dead = true;
-try { if (sync) say('leave', 0); else if (myReady && !starting) sayRaw('unready'); } catch (e) {}
+try { if (sync) { say('leave', 0); ytSnapClear(); } else if (myReady && !starting) sayRaw('unready'); } catch (e) {}
 clearTimeout(expTimer);
 try { if (card._io) card._io.disconnect(); } catch (e) {}
 stopTimer();
@@ -5635,6 +5725,7 @@ if (wantPlay && !held()) { try { player.playVideo(); } catch (e) {} }
 onStateChange: (ev) => {
 const st = ev.data;
 if (st === 1 && card._endLatch) { try { player.pauseVideo(); } catch (e) {} return; }
+if (st === 1 && !sync && card._upAt && Date.now() - card._upAt < 2500 && !(card._uplAt > card._upAt)) { wantPlay = false; pending = null; try { player.pauseVideo(); } catch (e) {} return; }
 if (st === 1) {
 if (ytCurrent && ytCurrent !== card) ytCurrent._pause();
 ytCurrent = card;
@@ -5695,8 +5786,8 @@ if (!ready) { wantPlay = true; card.classList.add('is-loading'); return; }
 try {
 const st = player.getPlayerState();
 muteUntil = 0; localActAt = Date.now(); card._endLatch = 0;
-if (st === 1 || st === 3) { wantPlay = false; player.pauseVideo(); }
-else { wantPlay = true; player.playVideo(); }
+if (st === 1 || st === 3) { wantPlay = false; pending = null; card._upAt = Date.now(); player.pauseVideo(); }
+else { wantPlay = true; card._uplAt = Date.now(); player.playVideo(); }
 } catch (e) {}
 };
 card._toggle = toggle;
@@ -5809,7 +5900,7 @@ else if (now - fixAt > 8000) { fixAt = 0; fixBuf = false; }
 if (tickN % 4 === 0) { sendBeat(st, cur); if (!iAmLeader() && tickN % 20 === 0) clockSample(); }
 if (wantPlay && !held() && st !== 1 && st !== 3 && pReady()) { if (++selfBad >= 12) { selfBad = 0; mute(); try { player.playVideo(); } catch (e) {} } } else selfBad = 0;
 const silent = now - lastPeerHb;
-if (silent > 9000) { sayRaw('leave'); resetSession(true); return; }
+if (silent > 9000) { sayRaw('leave'); try { ytSnapClear(); } catch (e) {} resetSession(true); return; }
 const stale = silent > 4500;
 if (stale !== peerStale) { peerStale = stale; refreshJoin(); }
 };
@@ -5852,6 +5943,7 @@ const fire = () => {
 if (tok !== startTok) return;
 goTimer = null; starting = false;
 sync = true; role = iAmLeader() ? 'host' : 'guest';
+try { ytKillSolo(card); } catch (e) {}
 ytAutoSet(true);
 myReady = false; peerReady = false; readyNote = '';
 sessStart = Date.now(); lastPeerHb = sessStart;
@@ -5909,12 +6001,12 @@ checkBoth();
 const doJoin = () => {
 if (failed) return;
 if (readyNote.indexOf('Zaman aşımı') === 0) return;
-if (sync) { ytAutoSet(false); sayRaw('leave', { u: 1 }); resetSession(true); return; }
+if (sync) { ytAutoSet(false); sayRaw('leave', { u: 1 }); try { ytSnapClear(); } catch (e) {} resetSession(true); return; }
 toggleReady();
 };
-card._onEnded = () => { resetSession(false); };
+card._onEnded = () => { try { ytSnapClear(); } catch (e) {} resetSession(false); };
 card._doJoin = doJoin;
-card._stopAll = () => { if (sync || starting || myReady) { ytAutoSet(false); sayRaw('leave', { u: 1 }); } resetSession(true); };
+card._stopAll = () => { if (sync || starting || myReady) { ytAutoSet(false); sayRaw('leave', { u: 1 }); } if (sync) { try { ytSnapClear(); } catch (e) {} } resetSession(true); };
 card._disarm = () => {
 if (dead || failed || sync || starting || !(myReady || peerReady)) return;
 if (myReady) { try { sayRaw('unready'); } catch (e) {} }
@@ -5924,6 +6016,29 @@ card._toggleReady = toggleReady;
 card._autoReady = () => {
 if (failed || dead || sync || starting || myReady || card._locked || !isConnected()) return;
 toggleReady();
+};
+card._resumeSync = (s) => {
+if (dead || failed || sync || starting) return false;
+try { ytKillSolo(card); } catch (e) {}
+clearTimeout(readyTimer); readyTimer = null;
+cancelStart(); stopSess();
+myReady = false; peerReady = false; readyNote = '';
+const pos = Math.max(0, Number(s.t) || 0);
+card._endLatch = 0; card._ended = false;
+sync = true; role = iAmLeader() ? 'host' : 'guest';
+if (s.auto) { try { ytAutoSet(true); } catch (e) {} }
+sessStart = Date.now(); lastPeerHb = sessStart;
+tickN = 0; lastFix = 0; peerStale = false; peerHidden = false; peerBad = 0; selfBad = 0;
+wantPlay = !!s.play;
+if (wantPlay) card.classList.add('is-loading');
+pending = { t: pos, play: !!s.play };
+refreshJoin();
+mute();
+if (player && ready) applyPending(); else create();
+clearInterval(sessTimer); sessTimer = setInterval(sessTick, 250);
+ytDockCard = card; ytDockDismissed = null;
+sayRaw('rejoin', { t: r2(pos), p: s.play ? 1 : 0, ts: sNow() });
+return true;
 };
 refreshJoin();
 card._onListen = (d) => {
@@ -5974,8 +6089,14 @@ clearTimeout(goTimer); goTimer = null;
 schedule(at, at - clockOff, t);
 return;
 }
+if (d.ev === 'rejoin') {
+if (sync) { lastPeerHb = now; return; }
+if (dead || failed || starting) return;
+card._resumeSync({ id: id, t: t, play: !!d.p, auto: true, at: now });
+return;
+}
 if (d.ev === 'join') return;
-if (d.ev === 'leave') { if (sync && d.u) ytAutoSet(false); if (sync || myReady || peerReady || starting) resetSession(true); return; }
+if (d.ev === 'leave') { try { if (!ytSyncSnap || ytSyncSnap.id === id) ytSnapClear(); } catch (e) {} if (sync && d.u) ytAutoSet(false); if (sync || myReady || peerReady || starting) resetSession(true); return; }
 if (d.ev === 'beat') { onBeat(d); return; }
 if (!sync) return;
 lastPeerHb = now;
@@ -9253,6 +9374,7 @@ ytsSyncIcons();
 function ytsPlay(it, ctx) {
 let engaged = false;
 chatArea.querySelectorAll('.yt-card').forEach((c) => { try { if (c._engaged && c._engaged()) engaged = true; } catch (e) {} });
+try { if (ytsGhost && ytsGhost._engaged && ytsGhost._engaged()) engaged = true; } catch (e) {}
 if (engaged) { flashStatus('Birlikte dinleme sürerken tek başına çalınamaz'); return; }
 let g = ytsGhost;
 if (g && g.isConnected && g._ytId === it.id) {
@@ -9650,6 +9772,7 @@ ytPlUI();
 function ytPlEngaged() {
 let engaged = false;
 chatArea.querySelectorAll('.yt-card').forEach((c) => { try { if (c._engaged && c._engaged()) engaged = true; } catch (e) {} });
+try { if (ytsGhost && ytsGhost._engaged && ytsGhost._engaged()) engaged = true; } catch (e) {}
 return engaged;
 }
 function ytPlPlayCurrent(t, resume, play) {
@@ -14440,7 +14563,106 @@ var cal = document.createElement('div'); cal.id = 'vn-cal'; document.body.append
 var calY = 0, calM = 0;
 var MN = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 var DN = ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'];
+var CC = ['#ff8a8a', '#ffb877', '#ffe680', '#8ec9ff', '#c9a8ff', '#e8b4c6'];
+var CKEY = 'vnCalEv1', EV = {}, calMode = 'grid', calTag = '', calSel = 0, calEditKey = '';
+function evPad(n) { return n < 10 ? '0' + n : '' + n; }
+function evClean(src) {
+var out = {};
+if (!src || typeof src !== 'object') return out;
+Object.keys(src).forEach(function (k) {
+if (!/^\d{4}-\d{2}-\d{2}$/.test(k)) return;
+var r = src[k]; if (!r || typeof r !== 'object') return;
+var t = +r.t; if (!isFinite(t) || t <= 0) return;
+if (r.x) { out[k] = { x: 1, t: t }; return; }
+var n = typeof r.n === 'string' ? r.n.trim().slice(0, 24) : '';
+var c = (typeof r.c === 'number') ? Math.floor(r.c) : -1;
+if (!n || c < 0 || c > 5) return;
+out[k] = { n: n, c: c, t: t };
+});
+return out;
+}
+function evPrune() {
+var lim = Date.now() - 120 * 86400000, ks = Object.keys(EV);
+ks.forEach(function (k) { if (EV[k].x && EV[k].t < lim) delete EV[k]; });
+ks = Object.keys(EV);
+if (ks.length > 600) { ks.sort(function (a, b) { return EV[b].t - EV[a].t; }).slice(600).forEach(function (k) { delete EV[k]; }); }
+}
+function evSave() { try { localStorage.setItem(CKEY, JSON.stringify(EV)); } catch (e) {} }
+try { EV = evClean(JSON.parse(localStorage.getItem(CKEY) || '{}')); evPrune(); } catch (e) { EV = {}; }
+function evNewer(a, b) {
+if (!b) return true;
+if (a.t !== b.t) return a.t > b.t;
+return JSON.stringify(a) > JSON.stringify(b);
+}
+function evOnline() { try { return typeof isConnected === 'function' && !!isConnected(); } catch (e) { return false; } }
+function evSend(type) {
+if (!evOnline()) return;
+try { conn.send({ type: type, d: EV }); } catch (e) {}
+}
+function calChipPaint() {
+try {
+if (!elC) return;
+var n = new Date(), er = EV[n.getFullYear() + '-' + evPad(n.getMonth() + 1) + '-' + evPad(n.getDate())];
+var sp = elC.firstChild && elC.firstChild.style ? elC.firstChild : null;
+if (er && !er.x) { elC.style.background = CC[er.c]; if (sp) sp.style.color = '#1b1b1b'; }
+else { elC.style.background = ''; if (sp) sp.style.color = ''; }
+} catch (e) {}
+}
+function evChange(k, rec) { EV[k] = rec; evPrune(); evSave(); calChipPaint(); evSend('cal'); }
+window.__calHello = function () { evSend('cal-hello'); };
+window.__calRecv = function (m) {
+if (!m || typeof m !== 'object') return;
+var inc = evClean(m.d), ch = false;
+Object.keys(inc).forEach(function (k) { if (evNewer(inc[k], EV[k])) { EV[k] = inc[k]; ch = true; } });
+if (ch) {
+evPrune(); evSave(); calChipPaint();
+if (cal.classList.contains('show') && calMode === 'grid') { var tg = calTag; calRender(); if (tg) calShowTag(tg); }
+}
+if (m.type === 'cal-hello') evSend('cal');
+};
+function calHideTag() { var t = cal.querySelector('.cal-tag'); if (t && t.parentNode) t.parentNode.removeChild(t); calTag = ''; }
+function calShowTag(k) {
+calHideTag();
+var ev = EV[k]; if (!ev || ev.x) return;
+var cell = cal.querySelector('.cal-d[data-k="' + k + '"]'); if (!cell) return;
+var t = document.createElement('div'); t.className = 'cal-tag'; t.style.background = CC[ev.c];
+var sp = document.createElement('span'); sp.textContent = ev.n;
+var x = document.createElement('button'); x.type = 'button'; x.setAttribute('data-x', k); x.setAttribute('aria-label', 'Sil'); x.innerHTML = '&times;';
+t.appendChild(sp); t.appendChild(x); cal.appendChild(t);
+var w = t.offsetWidth, h = t.offsetHeight, cw = cal.clientWidth;
+var l = cell.offsetLeft + cell.offsetWidth / 2 - w / 2; l = Math.max(4, Math.min(cw - w - 4, l));
+var tp = cell.offsetTop - h - 4; if (tp < 2) tp = cell.offsetTop + cell.offsetHeight + 4;
+t.style.left = l + 'px'; t.style.top = tp + 'px';
+calTag = k;
+}
+function calEditOpen(k) {
+var h = cal.offsetHeight, p = k.split('-');
+calHideTag(); calMode = 'edit'; calEditKey = k; calSel = 0;
+cal.style.height = h + 'px'; cal.classList.add('edit');
+var s = '<div class="ce-d">' + parseInt(p[2], 10) + ' ' + MN[parseInt(p[1], 10) - 1] + ' ' + p[0] + '</div>'
++ '<input class="ce-in" type="text" maxlength="24" placeholder="Etkinlik adı" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done">'
++ '<div class="ce-c">';
+for (var i = 0; i < 6; i++) s += '<button type="button" class="ce-col' + (i === 0 ? ' sel' : '') + '" data-c="' + i + '" style="background:' + CC[i] + '" aria-label="Renk ' + (i + 1) + '"></button>';
+s += '</div><div class="ce-a"><button type="button" class="ce-no">İptal</button><button type="button" class="ce-ok">Kaydet</button></div>';
+cal.innerHTML = s;
+var inp = cal.querySelector('.ce-in');
+inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); calEditSave(); } });
+setTimeout(function () { try { inp.focus(); } catch (e) {} }, 60);
+}
+function calEditExit() {
+calMode = 'grid'; calEditKey = '';
+cal.classList.remove('edit'); cal.style.height = '';
+calRender();
+}
+function calEditSave() {
+var inp = cal.querySelector('.ce-in'); if (!inp) return;
+var n = inp.value.trim().slice(0, 24);
+if (!n) { inp.style.borderColor = '#ff6b6b'; try { inp.focus(); } catch (e) {} return; }
+evChange(calEditKey, { n: n, c: calSel, t: Date.now() });
+calEditExit();
+}
 function calRender() {
+calMode = 'grid'; cal.classList.remove('edit'); cal.style.height = '';
 var start = (new Date(calY, calM, 1).getDay() + 6) % 7, days = new Date(calY, calM + 1, 0).getDate(), t = new Date(), i, d;
 var s = '<div class="cal-h"><button type="button" class="cal-nav" data-d="-1" aria-label="Önceki ay">&#8249;</button>'
 + '<button type="button" class="cal-t" data-d="0">' + MN[calM] + ' ' + calY + '</button>'
@@ -14449,15 +14671,38 @@ for (i = 0; i < 7; i++) s += '<span class="cal-w">' + DN[i] + '</span>';
 for (i = 0; i < start; i++) s += '<span></span>';
 for (d = 1; d <= days; d++) {
 var isT = d === t.getDate() && calM === t.getMonth() && calY === t.getFullYear();
-s += '<span class="cal-d' + (isT ? ' today' : '') + (((start + d - 1) % 7) >= 5 ? ' wk' : '') + '">' + d + '</span>';
+var dk = calY + '-' + evPad(calM + 1) + '-' + evPad(d), er = EV[dk], hasEv = !!(er && !er.x);
+s += '<span class="cal-d' + (isT ? ' today' : '') + (((start + d - 1) % 7) >= 5 ? ' wk' : '') + (hasEv ? ' ev' : '') + '" data-k="' + dk + '"' + (hasEv ? ' style="background:' + CC[er.c] + '"' : '') + '>' + d + '</span>';
 }
 cal.innerHTML = s + '</div>';
 }
 function calOpen() { ntClose(); var n = new Date(); calY = n.getFullYear(); calM = n.getMonth(); calRender(); cal.classList.add('show'); }
-function calClose() { cal.classList.remove('show'); }
+function calClose() { cal.classList.remove('show'); cal.classList.remove('edit'); cal.style.height = ''; calMode = 'grid'; calTag = ''; }
 window.__vnCalClose = calClose;
 cal.addEventListener('click', function (e) {
 e.stopPropagation();
+var tg = e.target.closest ? e.target : null;
+if (tg) {
+var xb = tg.closest('button[data-x]');
+if (xb) { var xk = xb.getAttribute('data-x'); calHideTag(); evChange(xk, { x: 1, t: Date.now() }); calRender(); return; }
+if (calMode === 'edit') {
+var cb = tg.closest('button[data-c]');
+if (cb) { calSel = parseInt(cb.getAttribute('data-c'), 10) || 0; var cs = cal.querySelectorAll('.ce-col'); for (var ci = 0; ci < cs.length; ci++) cs[ci].classList.toggle('sel', ci === calSel); return; }
+if (tg.closest('.ce-no')) { calEditExit(); return; }
+if (tg.closest('.ce-ok')) { calEditSave(); return; }
+return;
+}
+if (!tg.closest('.cal-tag')) {
+var dc = tg.closest('.cal-d[data-k]');
+if (dc) {
+var dkk = dc.getAttribute('data-k'), er2 = EV[dkk];
+if (er2 && !er2.x) { if (calTag === dkk) calHideTag(); else calShowTag(dkk); }
+else calEditOpen(dkk);
+return;
+}
+calHideTag();
+}
+}
 var b = e.target.closest ? e.target.closest('button[data-d]') : null;
 if (!b) return;
 var dd = parseInt(b.getAttribute('data-d'), 10);
@@ -14648,6 +14893,7 @@ function clockNow() {
 if (!elT || !elC || !bar.contains(elT)) return;
 var d = new Date(), p2 = function (n) { return ('0' + n).slice(-2); };
 put('c', elC, '<span>' + d.getDate() + ' ' + MONTHS[d.getMonth()] + '</span>', true);
+calChipPaint();
 put('t', elT, p2(d.getHours()) + ':' + p2(d.getMinutes()));
 fitClock();
 }
