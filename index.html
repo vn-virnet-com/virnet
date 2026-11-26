@@ -2001,76 +2001,78 @@ color: color-mix(in srgb, var(--c-fff) 82%, transparent);
 #strip-stack .ytd-nm.mq { animation: ytMq var(--mq-t, 8s) linear infinite; will-change: transform; }
 @keyframes ytMq { 0%, 18% { transform: translateX(0); } 68%, 84% { transform: translateX(var(--mq-x, 0px)); } 100% { transform: translateX(0); } }
 @media (prefers-reduced-motion: reduce) { #strip-stack .ytd-nm.mq { animation: none; } #strip-stack .ytd-nm { max-width: 100%; overflow: hidden; text-overflow: ellipsis; } }
-/* ===== Şerit: kompakt satır (önceki / durdur / sonraki / kapat / genişlet) + genişletilmiş kart ===== */
-.ytd-bar, .ytd-ex { display: none; }
+/* ===== Üst şerit: etiketler (tarih etiketiyle aynı tasarım) + şarkı alt paneli ===== */
+.ytd-bar, .ytd-ex, .ytd-note { display: none; }
 .ytd-mid { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
 .ytd-mid .ytd-prog { flex: 0 0 34px; width: 100%; min-width: 0; }
-#strip-stack > #yt-dock .ytd-info, #strip-stack > #yt-dock .ytd-fold { display: none !important; }
-#strip-stack > #yt-dock .ytd-sync { display: none; flex: 0 0 auto; width: 15px; height: 15px; margin-right: 2px; color: inherit; }
-#strip-stack > #yt-dock.is-synced .ytd-sync { display: block; }
-#strip-stack > #yt-dock .ytd-sync svg { display: block; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-#strip-stack > #yt-dock .ytb { flex: 1 1 0; min-width: 0; height: 100%; margin: 0; padding: 0; border: 0; background: none; color: color-mix(in srgb, var(--on-accent) 78%, transparent); display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-#strip-stack > #yt-dock .ytb svg { display: block; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
-#strip-stack > #yt-dock .ytb-prev svg { transform: scaleX(-1); }
-#strip-stack > #yt-dock .ytb-play { color: var(--on-accent); }
-#strip-stack > #yt-dock .ytb:active { color: var(--on-accent); opacity: .7; }
-#strip-stack > #yt-dock .ytb.dis { opacity: .3; pointer-events: none; }
-/* genişletilmiş: sadece kapak | (şarkıcı — şarkı üstte, sarma çubuğu altta) | söz tuşu */
-#strip-stack > #yt-dock .ytd-main { gap: 12px; padding: 10px 12px 8px; }
-#strip-stack > #yt-dock .ytd-cover { width: 64px; height: 64px; }
-#strip-stack > #yt-dock .ytd-main > .ytd-b:not(.ytd-tog) { display: none !important; }
-#strip-stack > #yt-dock .ytd-ex { display: block; height: 16px; line-height: 16px; font-size: 13px; font-weight: 700; color: var(--c-fff); text-align: center; white-space: nowrap; overflow: hidden; }
-#strip-stack > #yt-dock .ytd-ex .ytd-clip { display: block; flex: none; width: 100%; text-align: center; overflow: hidden; }
-#strip-stack > #yt-dock .ytd-ex .ytd-nm { padding: 0 12px; }
-#strip-stack > #yt-dock .ytd-mid .ytd-prog { margin-top: 6px; }
-#strip-stack .ytd-clip.ov { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%); }
-#strip-stack > #yt-dock.folded .ytd-up { display: none; }
-#strip-stack > #yt-dock:not(.folded) .ytd-up { display: flex; order: 7; flex: 0 0 100%; box-sizing: border-box; margin: 0; height: 14px; background: var(--c-111); }
-/* ===== Üst şerit etiketleri: arama (yeşil) | oto (sarı) | şarkı (vurgu rengi). Durum çubuğu kalınlığında satır, etiketler arası ve kenarlarda boşluk ===== */
-#strip-stack { padding: 0 3px; --chip-h: 18px; --chip-bw: calc((var(--sth) - var(--chip-h)) / 2); }
-#strip-stack > #yt-dock .ytd-main, #strip-stack > #yt-dock .ytd-lyr, #strip-stack > #yt-dock .ytd-up { flex-basis: calc(100% + 6px); margin-left: -3px; margin-right: -3px; }
-#strip-stack > #yt-dock:not(.show) > :not(.ytd-bar), #strip-stack > #yt-dock.hide > :not(.ytd-bar) { display: none !important; }
+#strip-stack > #yt-dock .ytd-info, #strip-stack > #yt-dock .ytd-fold, #strip-stack > #yt-dock .ytd-up { display: none !important; }
+#strip-stack { padding: 0 6.5px; --chip-h: 14.5px; --chip-bw: calc((var(--sth) - var(--chip-h)) / 2); }
+/* etiket: durum çubuğundaki tarih etiketi (.vs-c): 6px köşe, 1.5px/6px boşluk, 11.5px kalın yazı */
 #strip-stack > #vc-pill, #strip-stack > #auto-chip, #strip-stack > #yt-dock .ytd-bar {
-display: flex; position: relative; order: 1; flex: var(--g, 1) 1 0; min-width: 0; max-width: none; width: auto; height: var(--sth); box-sizing: border-box;
-margin: 0 3px; padding: 0 8px; gap: 5px; align-items: center; justify-content: flex-start; overflow: hidden; isolation: isolate; white-space: nowrap;
-border: 0 solid transparent; border-top-width: var(--chip-bw); border-bottom-width: var(--chip-bw); border-radius: 999px; background-clip: padding-box; box-shadow: none; text-shadow: none;
-font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 700; line-height: 1;
-transition: flex-grow .3s cubic-bezier(.3,.8,.25,1), margin .3s cubic-bezier(.3,.8,.25,1), padding .3s cubic-bezier(.3,.8,.25,1), opacity .22s ease;
+display: flex; position: relative; flex: 0 1 auto; min-width: 0; max-width: var(--mw, none); width: auto; height: var(--sth); box-sizing: border-box;
+margin: 0 3.5px; padding: 0 6px; gap: 4px; align-items: center; justify-content: flex-start; isolation: isolate; overflow: visible; white-space: nowrap;
+border: 0 solid transparent; border-top-width: var(--chip-bw); border-bottom-width: var(--chip-bw); border-radius: calc(6px + var(--chip-bw)); background-clip: padding-box; box-shadow: none; text-shadow: none;
+font-family: 'Lexend', sans-serif; font-size: 11.5px; font-weight: 700; line-height: 1; letter-spacing: 0; font-variant-numeric: tabular-nums;
+transition: max-width .3s cubic-bezier(.3,.8,.25,1), margin .3s cubic-bezier(.3,.8,.25,1), padding .3s cubic-bezier(.3,.8,.25,1), opacity .22s ease;
 }
-#strip-stack > #vc-pill { --g: 5; order: 1; background: none; color: #0b1a0f; }
-#strip-stack > #auto-chip { --g: 2; order: 2; background: #ffd60a; color: #241c00; }
-#strip-stack > #yt-dock .ytd-bar { --g: 7; order: 3; background: var(--accent); color: var(--on-accent); }
-/* yokken: yatayda sıfıra daralır (komşular alanı paylaşır) */
-#strip-stack > #vc-pill:not(.show), #strip-stack > #auto-chip:not(.show), #strip-stack > #yt-dock:not(.show) .ytd-bar, #strip-stack > #yt-dock.hide .ytd-bar, #strip-stack > #yt-dock:not(.folded) .ytd-bar {
-flex-grow: 0; margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; opacity: 0; pointer-events: none;
+#strip-stack > #vc-pill { --mw: 62vw; order: 1; background: none; color: var(--c-fff); }
+#strip-stack > #auto-chip { --mw: 120px; order: 2; background: var(--warn); color: #1a1400; }
+#strip-stack > #yt-dock .ytd-bar { --mw: 240px; order: 3; background: var(--send-bg); color: var(--send-ico); }
+/* yokken: yatayda sıfıra daralır, komşular alanı paylaşır */
+#strip-stack > #vc-pill:not(.show), #strip-stack > #auto-chip:not(.show), #strip-stack > #yt-dock:not(.show) .ytd-bar, #strip-stack > #yt-dock.hide .ytd-bar {
+max-width: 0; margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; opacity: 0; pointer-events: none; overflow: hidden;
 }
 /* gelirken: sıfırdan genişler */
-@keyframes chipIn { from { flex-grow: 0; margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; opacity: 0; } }
-#strip-stack > #vc-pill.show, #strip-stack > #auto-chip.show, #strip-stack > #yt-dock.show.folded:not(.hide) .ytd-bar { animation: chipIn .3s cubic-bezier(.3,.8,.25,1); }
+@keyframes chipIn { from { max-width: 0; margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; opacity: 0; overflow: hidden; } to { overflow: hidden; } }
+#strip-stack > #vc-pill.show, #strip-stack > #auto-chip.show, #strip-stack > #yt-dock.show:not(.hide) .ytd-bar { animation: chipIn .3s cubic-bezier(.3,.8,.25,1); }
 /* hiç etiket yokken şerit kapanır (daralma bittikten sonra) */
-#strip-stack:not(:has(#vc-pill.show, #auto-chip.show, #yt-dock.show.folded:not(.hide))) > #vc-pill,
-#strip-stack:not(:has(#vc-pill.show, #auto-chip.show, #yt-dock.show.folded:not(.hide))) > #auto-chip,
-#strip-stack:not(:has(#vc-pill.show, #auto-chip.show, #yt-dock.show.folded:not(.hide))) > #yt-dock .ytd-bar {
-height: 0; border-top-width: 0; border-bottom-width: 0; transition: flex-grow .3s cubic-bezier(.3,.8,.25,1), margin .3s cubic-bezier(.3,.8,.25,1), padding .3s cubic-bezier(.3,.8,.25,1), opacity .22s ease, height .01s .32s, border-width .01s .32s;
+#strip-stack:not(:has(#vc-pill.show, #auto-chip.show, #yt-dock.show:not(.hide))) > #vc-pill,
+#strip-stack:not(:has(#vc-pill.show, #auto-chip.show, #yt-dock.show:not(.hide))) > #auto-chip,
+#strip-stack:not(:has(#vc-pill.show, #auto-chip.show, #yt-dock.show:not(.hide))) > #yt-dock .ytd-bar {
+height: 0; border-top-width: 0; border-bottom-width: 0; transition: max-width .3s cubic-bezier(.3,.8,.25,1), margin .3s cubic-bezier(.3,.8,.25,1), padding .3s cubic-bezier(.3,.8,.25,1), opacity .22s ease, height .01s .32s, border-width .01s .32s;
 }
-/* arama etiketi (yeşil): ad • süre • oyun tuşu */
-#strip-stack > #vc-pill .vc-fx { border-radius: inherit; }
+/* arama: koyu yeşil zemin, beyaz yazı */
+#strip-stack > #vc-pill .vc-fx { border-radius: 6px; }
 #strip-stack > #vc-pill .vc-fx i { display: none; }
-#strip-stack > #vc-pill .vc-g { background: var(--ok); box-shadow: none; }
-#strip-stack > #vc-pill .vc-r { background: var(--bad); box-shadow: none; }
-#strip-stack > #vc-pill .vc-n { color: inherit; }
+#strip-stack > #vc-pill .vc-g { background: color-mix(in srgb, var(--ok) 24%, var(--c-111)); box-shadow: none; }
+#strip-stack > #vc-pill .vc-r { background: color-mix(in srgb, var(--bad) 28%, var(--c-111)); box-shadow: none; }
+#strip-stack > #vc-pill .vc-n { color: inherit; font-weight: 700; }
 #strip-stack > #vc-pill .vc-sep { opacity: .55; }
-#strip-stack > #vc-pill .vc-t { font-size: 10.5px; }
-#strip-stack > #vc-pill .vc-game { width: 22px; height: 100%; margin: 0 -5px 0 auto; color: inherit; }
-#strip-stack > #vc-pill .vc-game svg { width: 14px; height: 14px; filter: none; }
-/* oto etiketi (sarı) */
+#strip-stack > #vc-pill .vc-t { font-size: 11px; }
+#strip-stack > #vc-pill .vc-game { width: 22px; height: var(--sth); margin: 0 -4px 0 2px; color: inherit; }
+#strip-stack > #vc-pill .vc-game svg { width: 12px; height: 12px; filter: none; }
+/* oto: sarı */
 #strip-stack > #auto-chip .ac-txt { flex: 1 1 auto; min-width: 0; }
-#strip-stack > #auto-chip #auto-chip-x { flex: 0 0 22px; width: 22px; height: 100%; margin: 0 -5px 0 0; color: inherit; opacity: .7; }
-#strip-stack > #auto-chip #auto-chip-x svg { width: 11px; height: 11px; }
-/* şarkı etiketi: nota simgesi en başta */
-.ytd-note { display: none; }
-#strip-stack > #yt-dock .ytd-note { display: block; flex: 0 0 auto; width: 14px; height: 14px; margin-right: 2px; }
-#strip-stack > #yt-dock .ytd-note svg { display: block; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+#strip-stack > #auto-chip #auto-chip-x { flex: 0 0 20px; width: 20px; height: var(--sth); margin: 0 -4px 0 0; color: inherit; opacity: .7; }
+#strip-stack > #auto-chip #auto-chip-x svg { width: 10px; height: 10px; }
+/* şarkı etiketi içi */
+#strip-stack > #yt-dock .ytd-note { display: block; flex: 0 0 auto; width: 12px; height: 12px; margin-right: 3px; }
+#strip-stack > #yt-dock .ytd-note svg { display: block; width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+#strip-stack > #yt-dock .ytd-sync { display: none; flex: 0 0 auto; width: 12px; height: 12px; margin-right: 1px; color: inherit; }
+#strip-stack > #yt-dock.is-synced .ytd-sync { display: block; }
+#strip-stack > #yt-dock .ytd-sync svg { display: block; width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+#strip-stack > #yt-dock .ytb { flex: 0 1 24px; min-width: 0; height: var(--sth); margin: 0; padding: 0; border: 0; background: none; color: inherit; opacity: .85; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+#strip-stack > #yt-dock .ytb svg { display: block; width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; transition: transform .2s ease; }
+#strip-stack > #yt-dock .ytb-prev svg { transform: scaleX(-1); }
+#strip-stack > #yt-dock .ytb-play { opacity: 1; }
+#strip-stack > #yt-dock .ytb:active { opacity: .6; }
+#strip-stack > #yt-dock .ytb.dis { opacity: .3; pointer-events: none; }
+#strip-stack > #yt-dock:not(.folded) .ytb-exp svg { transform: rotate(180deg); }
+/* genişletilmiş alt panel: kapak | şarkıcı — şarkı + sarma çubuğu | söz tuşu (ince) */
+#strip-stack > #yt-dock .ytd-main, #strip-stack > #yt-dock .ytd-lyr { flex-basis: calc(100% + 13px); margin-left: -6.5px; margin-right: -6.5px; }
+#strip-stack > #yt-dock .ytd-main { gap: 10px; padding: 6px 12px; box-shadow: none; }
+#strip-stack > #yt-dock .ytd-cover { width: 44px; height: 44px; }
+#strip-stack > #yt-dock .ytd-main > .ytd-b:not(.ytd-tog) { display: none !important; }
+#strip-stack > #yt-dock .ytd-main > .ytd-tog { flex: 0 0 30px; width: 30px; height: 30px; }
+#strip-stack > #yt-dock .ytd-main > .ytd-tog svg { width: 17px; height: 17px; flex-basis: 17px; }
+#strip-stack > #yt-dock:not(.show) > :not(.ytd-bar), #strip-stack > #yt-dock.hide > :not(.ytd-bar) { display: none !important; }
+#strip-stack > #yt-dock .ytd-ex { display: block; height: 14px; line-height: 14px; font-size: 12px; font-weight: 700; color: var(--c-fff); text-align: center; white-space: nowrap; overflow: hidden; }
+#strip-stack > #yt-dock .ytd-ex .ytd-clip { display: block; flex: none; width: 100%; text-align: center; overflow: hidden; }
+#strip-stack > #yt-dock .ytd-ex .ytd-nm { padding: 0 12px; }
+#strip-stack > #yt-dock .ytd-mid .ytd-prog { flex: 0 0 26px; height: 26px; margin-top: 4px; }
+#strip-stack > #yt-dock .ytd-track { top: 6px; }
+#strip-stack > #yt-dock .ytd-t { top: 13px; }
+#strip-stack .ytd-clip.ov { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%); }
 @media (prefers-reduced-motion: reduce) { #strip-stack > #vc-pill, #strip-stack > #auto-chip, #strip-stack > #yt-dock .ytd-bar { transition: none; animation: none !important; } }
 /* ses seviyesi baloncuğu */
 #vol-pill { position: fixed; left: 50%; top: calc(max(calc(env(safe-area-inset-top, 0px) + 10px), calc(var(--vn-sb, 0px) + 8px), calc(var(--strip-b, 0px) + 8px)) + var(--vp-off, 0px)); z-index: 12700; box-sizing: border-box; width: min(220px, calc(100% - 28px)); height: 36px; border-radius: 999px; overflow: hidden; isolation: isolate; background: var(--c-111); border: 1px solid var(--accent); pointer-events: none; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; opacity: 0; transform: translate(-50%, -10px); transition: opacity .18s ease, transform .22s cubic-bezier(.2,.9,.3,1.15); }
@@ -4861,7 +4863,7 @@ try { if (c._pause) c._pause(); } catch (e) {}
 }
 ytDockHide();
 };
-const doFold = () => { ytDockFolded = !ytDockFolded; el.classList.toggle('folded', ytDockFolded); const fb = el.querySelector('.ytd-fold'); if (fb) fb.setAttribute('aria-label', ytDockFolded ? 'Genişlet' : 'Küçült'); try { ytDockFitInfo(); } catch (e) {} try { ytDockMarquee(); } catch (e) {} try { ytTopInsetSync(); } catch (e) {} };
+const doFold = () => { ytDockFolded = !ytDockFolded; el.classList.toggle('folded', ytDockFolded); const fb = el.querySelector('.ytd-fold'); if (fb) fb.setAttribute('aria-label', ytDockFolded ? 'Genişlet' : 'Küçült'); if (el._d && el._d.bExp) el._d.bExp.setAttribute('aria-label', ytDockFolded ? 'Genişlet' : 'Küçült'); try { ytDockFitInfo(); } catch (e) {} try { ytDockMarquee(); } catch (e) {} try { ytTopInsetSync(); } catch (e) {} };
 const doNext = () => { try { if (ytPl) ytPlNext(); } catch (e) {} };
 const doPrev = () => {
 try { if (ytPl) { ytPlPrev(); return; } } catch (e) {}
