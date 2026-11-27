@@ -12498,6 +12498,7 @@ try { syncBarVis(); } catch (e) {}
 }
 function openPf(id, fromBar) {
 cur = id;
+try { const a = document.activeElement; if (a && a !== document.body && a.blur) a.blur(); messageInput.blur(); } catch (e) {}
 if (fromBar) (isMobileLayout() ? panes : (document.getElementById('pane-chat') || panes)).appendChild(pf); else if (pf.parentNode !== page) page.appendChild(pf);
 pf.classList.toggle('admin', notifCanSend());
 pf.classList.add('show');
@@ -12612,6 +12613,7 @@ return;
 if (e.target.closest('.dm-av')) {
 cur = row.dataset.id;
 pv.classList.toggle('admin', notifCanSend());
+pv.classList.toggle('third', thirdCanSend());
 pv.classList.add('show');
 paintCur();
 return;
@@ -12620,7 +12622,7 @@ enterDm(row.dataset.id);
 });
 pv.addEventListener('click', (e) => { if (!e.target.closest('#dm-pv-wrap')) closeAll(); });
 pv.querySelector('#dm-pv-pf').addEventListener('click', () => {
-if (!notifCanSend()) return;
+if (!notifCanSend() && !thirdCanSend()) return;
 openPf(cur, false);
 });
 pv.querySelector('#dm-pv-msg').addEventListener('click', () => { const id = cur; if (isLocked(curChat())) return; closeAll(); enterDm(id); });
@@ -14953,7 +14955,7 @@ body.lv-admin #bp-msg-add { display: flex; }
 #dm-pv-wrap { width: min(86%, 340px, calc(100vh - 170px)); display: flex; flex-direction: column; align-items: stretch; }
 #dm-pv-sq { width: 100%; aspect-ratio: 1 / 1; box-sizing: border-box; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; font-size: 96px; font-weight: 700; line-height: 1; color: var(--on-accent); background: linear-gradient(150deg, var(--accent), color-mix(in srgb, var(--accent) 58%, var(--c-000))); background-size: cover; background-position: center; background-repeat: no-repeat; box-shadow: 0 10px 30px rgba(var(--sh),0.55); user-select: none; -webkit-user-select: none; }
 #dm-pv-bar { width: 100%; height: 38px; margin-top: 10px; display: flex; padding: 2px; box-sizing: border-box; background: var(--c-1a); border: 1px solid var(--c-33); border-radius: var(--r-lg); }
-#dm-pv:not(.admin) #dm-pv-pf { display: none; }
+#dm-pv:not(.admin):not(.third) #dm-pv-pf { display: none; }
 #dm-pv-bar button { flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; border-radius: var(--r-md); background: transparent; color: var(--c-88); cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 #dm-pv-bar svg, #dm-pf-back svg { display: block; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 #dm-pf { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 8; background: var(--c-000); overflow: hidden; align-items: center; justify-content: center; font-family: 'Lexend', sans-serif; }
