@@ -12528,6 +12528,7 @@ if (!isMobileLayout() && pc && cw && cw.parentNode === pc) { if (barEl.parentNod
 else if (barEl.parentNode !== panes.parentNode || barEl.nextSibling !== panes) panes.parentNode.insertBefore(barEl, panes);
 }
 function syncBarVis() { placeBar(); document.body.classList.toggle('dm-bar-on', barShown());
+try { document.body.classList.toggle('dm-hide-tabs', !!ctxId && isMobileLayout() && view === 'chat'); } catch (e) {}
 if (!ctxId && (!isMobileLayout() || view === 'chat')) mainUnread = false;
 if (barEl) { const bb = barEl.querySelector('#dm-bar-back'); if (bb) bb.classList.toggle('alert', mainUnread && !!ctxId); } if (barShown() && unread[ctxId]) { unread[ctxId] = 0; setCounts(); try { updateBadges(); } catch (e) {} } }
 function syncBar() {
@@ -12556,18 +12557,21 @@ document.body.classList.toggle('dm-on', !!id);
 try { window.dispatchEvent(new Event('dm-ctx')); } catch (e) {}
 syncBarVis(); syncBar(); refreshLast();
 }
+function viewNoAnim(v) {
+try { slider.style.transition = 'none'; setView(v); void slider.offsetWidth; } finally { slider.style.transition = ''; }
+}
 function enterDm(id) {
 if (!list.some((x) => x.id === id && !x.d && !isLocked(x))) return;
 closeAll();
 enterCtx(id);
-try { if (isMobileLayout()) setView('chat'); } catch (e) {}
+try { if (isMobileLayout()) viewNoAnim('chat'); } catch (e) {}
 syncBarVis();
 }
 function leaveDm() {
 closeAll();
 const was = !!ctxId, had = mainUnread;
 enterCtx('');
-try { if (was && isMobileLayout()) setView('notes'); } catch (e) {}
+try { if (was && isMobileLayout()) viewNoAnim('notes'); } catch (e) {}
 if (was && had && isMobileLayout()) { unreadMsgs = true; try { updateBadges(); restartBadgeBlink(newMsgBadge); } catch (e) {} }
 syncBarVis();
 }
@@ -12600,6 +12604,11 @@ else if (mqMobile.addListener) mqMobile.addListener(syncBarVis);
 box.addEventListener('click', (e) => {
 const row = e.target.closest && e.target.closest('.dm-row');
 if (!row || !row.dataset.id) return;
+if (e.target.closest('.dm-st') && notifCanSend()) {
+const i = list.findIndex((x) => x.id === row.dataset.id && !x.d);
+if (i >= 0) { const o = list[i]; list[i] = { id: o.id, n: o.n, p: o.p, ts: o.ts, rev: Math.max(Date.now(), o.rev + 1), o: o.o === 0 ? 1 : 0 }; changed(); try { paintCur(); } catch (er) {} }
+return;
+}
 if (e.target.closest('.dm-av')) {
 cur = row.dataset.id;
 pv.classList.toggle('admin', notifCanSend());
@@ -14985,8 +14994,12 @@ body.dm-pf-open #dm-bar { display: none; }
 #dm-bar-game { flex: 0 0 52px; width: 52px; height: 100%; padding: 0; border: 0; background: transparent; color: var(--c-fff); display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 #dm-bar-game:active { background: var(--c-33); }
 .dm-av { position: relative; overflow: visible; }
+.dm-last:empty { display: none; }
+body.dm-hide-tabs #app > #bp-tabs { display: none !important; }
 .dm-st { position: absolute; right: -2px; bottom: -2px; width: 18px; height: 18px; box-sizing: border-box; border-radius: 50%; background: #3ba55d; border: 3px solid var(--c-000); pointer-events: none; }
 .dm-st.off { background: #80848e; }
+body.lv-admin .dm-st { pointer-events: auto; cursor: pointer; }
+body.lv-admin .dm-st::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
 .dm-row.locked { opacity: .55; cursor: default; }
 #dm-pv.locked #dm-pv-msg { display: none; }
 #dm-pf-st { display: none; position: absolute; top: 12px; right: 60px; z-index: 2; width: 40px; height: 40px; padding: 0; border-radius: 50%; border: 1px solid var(--c-33); background: var(--c-1a); align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
