@@ -12271,14 +12271,46 @@ const holders = {}, scrolls = {}, drafts = {}, sticks = {};
 let ctxId = '';
 let barEl = null, barAv = null, barNm = null;
 function holder(id) { return holders[id] || (holders[id] = document.createElement('div')); }
+function ytActiveCard(c) {
+try {
+if (!c || !c._getState || c._ended) return false;
+if (c === ytCurrent) return true;
+try { if (typeof ytDockCard !== 'undefined' && c === ytDockCard) return true; } catch (e) {}
+const s = c._getState();
+return !!(s && (s.playing || s.st === 1 || s.st === 3 || s.sync));
+} catch (e) { return false; }
+}
+function parkableMsg(el) {
+if (!el || el.nodeType !== 1 || !el.classList.contains('msg')) return false;
+const c = el.querySelector('.bubble > .yt-card');
+return !!c && ytActiveCard(c);
+}
 function swapStore(id) {
 if (id === ctxId) return;
 scrolls[ctxId] = chatArea.scrollTop; sticks[ctxId] = stickToBottom;
 const h = holder(ctxId);
-while (chatArea.firstChild) h.appendChild(chatArea.firstChild);
+let parkedOne = false;
+Array.prototype.slice.call(chatArea.childNodes).forEach((k) => {
+if (k.nodeType === 1 && k.classList.contains('dm-parked')) return;
+if (!parkedOne && parkableMsg(k)) {
+parkedOne = true; k.classList.add('dm-parked'); k.dataset.dmCtx = ctxId;
+const ph = document.createComment('p'); ph._m = k; h._ph = ph; h.appendChild(ph);
+return;
+}
+h.appendChild(k);
+});
 ctxId = id;
 const n = holder(id);
-while (n.firstChild) chatArea.appendChild(n.firstChild);
+const phn = n._ph; n._ph = null;
+const pc = phn && phn._m;
+const pok = !!pc && pc.classList.contains('dm-parked') && pc.parentNode === chatArea;
+const nextRef = pok ? pc.nextSibling : null;
+if (pok) { pc.classList.remove('dm-parked'); delete pc.dataset.dmCtx; }
+let seenPh = false;
+Array.prototype.slice.call(n.childNodes).forEach((k) => {
+if (k.nodeType === 8) { if (k === phn) seenPh = true; n.removeChild(k); return; }
+if (pok && !seenPh) chatArea.insertBefore(k, pc); else if (pok) chatArea.insertBefore(k, nextRef); else chatArea.appendChild(k);
+});
 chatArea.scrollTop = (scrolls[id] === undefined) ? chatArea.scrollHeight : scrolls[id];
 stickToBottom = (sticks[id] === undefined) ? true : sticks[id];
 }
@@ -12354,10 +12386,7 @@ withCtx(t, () => h(d));
 return true;
 };
 function lastOf(id) {
-const c = (id === ctxId) ? chatArea : holders[id];
-if (!c) return '';
-const ms = c.querySelectorAll('.msg:not(.live-msg):not(.typing-msg)');
-const m = ms[ms.length - 1];
+const m = lastEl(id);
 if (!m) return '';
 if (m.dataset.audio === '1') return 'Ses';
 if (m.dataset.mediaUrl) return 'Fotoğraf';
@@ -12388,8 +12417,24 @@ const PIN_SVG = '<svg class="dm-pin" viewBox="0 0 24 24" fill="none" stroke="cur
 function lastEl(id) {
 const c = (id === ctxId) ? chatArea : holders[id];
 if (!c) return null;
-const ms = c.querySelectorAll('.msg:not(.live-msg):not(.typing-msg)');
-return ms[ms.length - 1] || null;
+const ms = c.querySelectorAll('.msg:not(.live-msg):not(.typing-msg):not(.dm-parked)');
+let m = ms[ms.length - 1] || null;
+const ph = (id !== ctxId) ? c._ph : null;
+if (ph && ph._m && ph._m.classList.contains('dm-parked')) {
+let after = false;
+for (let x = ph.nextSibling; x; x = x.nextSibling) { if (x.nodeType === 1 && x.classList.contains('msg') && !x.classList.contains('live-msg') && !x.classList.contains('typing-msg')) { after = true; break; } }
+if (!after) m = ph._m;
+}
+return m;
+}
+function unparkStale() {
+Array.prototype.slice.call(chatArea.querySelectorAll('.msg.dm-parked')).forEach((m) => {
+const c = m.querySelector('.bubble > .yt-card');
+if (c && ytActiveCard(c)) return;
+const cid = m.dataset.dmCtx || '', h = holders[cid], ph = h && h._ph;
+if (ph && ph._m === m) { h.insertBefore(m, ph); h.removeChild(ph); h._ph = null; } else { try { m.remove(); } catch (e) {} }
+m.classList.remove('dm-parked'); delete m.dataset.dmCtx;
+});
 }
 function paintLast(l, id) {
 const v = lastOf(id); let own = false;
@@ -12404,7 +12449,7 @@ const seenMsg = new WeakSet(), tracked = {};
 function track(id) {
 const c = (id === ctxId) ? chatArea : holders[id];
 if (!c) { tracked[id] = 1; return false; }
-const ms = c.querySelectorAll('.msg:not(.live-msg):not(.typing-msg)');
+const ms = c.querySelectorAll('.msg:not(.live-msg):not(.typing-msg):not(.dm-parked)');
 let fresh = false;
 for (let i = 0; i < ms.length; i++) { if (!seenMsg.has(ms[i])) { seenMsg.add(ms[i]); if (i === ms.length - 1) fresh = true; } }
 if (!tracked[id]) { tracked[id] = 1; return false; }
@@ -12435,6 +12480,7 @@ setCounts();
 }
 render();
 function refreshLast() {
+try { unparkStale(); } catch (e) {}
 const rows = box.children; let moved = false;
 for (let i = 0; i < rows.length; i++) {
 const id = rows[i].dataset.id;
@@ -16417,11 +16463,12 @@ else start();
 #cancel-reply-btn { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
 #strip-stack > #vc-pill .vc-n, #strip-stack > #vc-pill .vc-n.long { padding: 4px 0; margin: -4px 0; }
 #strip-stack > #vc-pill .vc-n, #strip-stack > #vc-pill .vc-sep, #strip-stack > #vc-pill .vc-t, #strip-stack > #auto-chip .ac-txt { align-self: center; }
-#strip-stack > #yt-dock .ytd-lt { height: var(--chip-h); line-height: var(--chip-h); }
-#strip-stack > #yt-dock .ytd-ltn { line-height: var(--chip-h); }
+#strip-stack > #yt-dock .ytd-lt { height: var(--chip-h); box-sizing: border-box; padding-bottom: 3px; font-size: 9.5px; line-height: 14px; }
+#strip-stack > #yt-dock .ytd-ltn { line-height: 14px; }
 #strip-stack > #auto-chip #auto-chip-x { display: flex; align-items: center; justify-content: center; }
 #strip-stack > #auto-chip #auto-chip-x svg, #strip-stack > #vc-pill .vc-game svg { display: block; flex: 0 0 auto; }
 }
+.msg.dm-parked { position: fixed !important; left: 0; top: 0; width: 100%; height: 1px; overflow: hidden; visibility: hidden; pointer-events: none; }
 .dm-name.pinned { display: flex; align-items: center; gap: 6px; }
 .dm-name.pinned > .dm-nt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dm-pin { flex: 0 0 auto; display: block; width: 13px; height: 13px; color: var(--c-88); }
