@@ -3771,6 +3771,8 @@ if (data.type === 'prof-op-photo') { receiveOpPhoto(data); return; }
 if (data.type === 'prof-op-photo-meta') { receiveOpPhotoMeta(data); return; }
 if (data.type === 'prof-op-photo-req') { receiveOpPhotoReq(data); return; }
 if (data.type === 'wx-ov' || data.type === 'wx-ack') { try { if (window.__wxRecv) window.__wxRecv(data); } catch (e) {} return; }
+if (data.type === 'dm-photo-req') { try { if (window.__dmPhotoReq) window.__dmPhotoReq(data); } catch (e) {} return; }
+if (data.type === 'dm-photo') { try { if (window.__dmPhoto) window.__dmPhoto(data); } catch (e) {} return; }
 if (data.type === 'dm-sync') { try { if (window.__dmRecv) window.__dmRecv(data); } catch (e) {} return; }
 if (data.type === 'cal' || data.type === 'cal-hello') { try { if (window.__calRecv) window.__calRecv(data); } catch (e) {} return; }
 if (data.type === 'notif') { receiveNotif(data); return; }
@@ -12405,6 +12407,8 @@ const bio = (o.d !== 1 && typeof o.b === 'string') ? o.b.replace(/\r\n?/g, '\n')
 const ai = (o.d !== 1 && o.ai === 1) ? 1 : 0;
 return { id: o.id, n: n, p: o.d === 1 ? '' : ph, b: bio, ts: o.ts, rev: o.rev, d: o.d === 1 ? 1 : 0, ai: ai, o: ai ? 1 : (o.o === 0 ? 0 : (o.o === 2 ? 2 : 1)) };
 }
+function dmPh(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return s.length.toString(36) + '-' + (h >>> 0).toString(36); }
+const dmPhWait = {};
 function dmGifTry(f, cb) { if (!f || f.type !== 'image/gif' || f.size > 250000) return false; const fr = new FileReader(); fr.onload = () => { const r = String(fr.result || ''); if (r.indexOf('data:image/gif') === 0 && r.length <= 340000) cb(r); }; fr.onerror = () => {}; fr.readAsDataURL(f); return true; }
 let list = [];
 try { const a = JSON.parse(lsGet('dmChats') || '[]'); if (Array.isArray(a)) a.forEach((o) => { const c = dmClean(o); if (c) list.push(c); }); } catch (e) {}
@@ -12503,7 +12507,7 @@ let stT = 0;
 function send(re) {
 if (!isConnected()) return false;
 if (stT) return false;
-try { conn.send({ type: 'dm-sync', list: list, re: re ? 1 : 0, pin: { id: pinId, rev: pinRev } }); return true; } catch (e) { return false; }
+try { const out = list.map((c) => (c.p ? Object.assign({}, c, { p: '', ph: dmPh(c.p) }) : c)); conn.send({ type: 'dm-sync', list: out, re: re ? 1 : 0, pin: { id: pinId, rev: pinRev } }); return true; } catch (e) { return false; }
 }
 function changed() { save(); render(); dirty = true; if (send(false)) dirty = false; }
 /* Durum (çevrimiçi/boşta/çevrimdışı) değişince karşıya hemen gitmez; son tıklamadan 1 sn sonra tek seferde gider (ara durumlar görünmesin). */
@@ -12511,16 +12515,35 @@ function changedSt() { save(); render(); dirty = true; clearTimeout(stT); stT = 
 setInterval(() => { if (dirty && send(false)) dirty = false; }, 15000);
 window.__dmHello = function () { send(false); };
 window.addEventListener('pin-level', () => { try { render(); } catch (e) {} });
+window.__dmPhotoReq = function (d) {
+if (!d || typeof d.id !== 'string' || typeof d.ph !== 'string' || !isConnected()) return;
+const c = list.find((x) => x.id === d.id && !x.d);
+if (!c || !c.p || dmPh(c.p) !== d.ph) return;
+try { conn.send({ type: 'dm-photo', id: c.id, ph: d.ph, d: c.p }); } catch (e) {}
+};
+window.__dmPhoto = function (d) {
+if (!d || typeof d.id !== 'string' || typeof d.ph !== 'string' || typeof d.d !== 'string') return;
+if (d.d.indexOf('data:image/') !== 0 || d.d.length > (d.d.indexOf('data:image/gif') === 0 ? 340000 : 150000)) return;
+if (!dmPhWait[d.id + ':' + d.ph] || dmPh(d.d) !== d.ph) return;
+delete dmPhWait[d.id + ':' + d.ph];
+const i = list.findIndex((x) => x.id === d.id && !x.d);
+if (i < 0) return;
+list[i] = Object.assign({}, list[i], { p: d.d });
+save(); render(); try { paintCur(); } catch (e) {} try { syncBar(); } catch (e) {}
+};
 window.__dmRecv = function (d) {
 if (!d || !Array.isArray(d.list)) return;
 let ch = false;
-const fresh = [];
+const fresh = [], need = [];
 d.list.slice(0, DM_MAX).forEach((o) => {
 const r = dmClean(o); if (!r) return;
+const ph = (!r.p && !r.d && typeof o.ph === 'string' && o.ph.length <= 24) ? o.ph : '';
 const i = list.findIndex((x) => x.id === r.id);
-if (i < 0) { if (list.length < DM_MAX) { list.push(r); ch = true; if (!r.d && !isLocked(r)) fresh.push(r); } }
-else if (r.rev > list[i].rev) { list[i] = r; ch = true; }
+if (i < 0) { if (list.length < DM_MAX) { list.push(r); ch = true; if (!r.d && !isLocked(r)) fresh.push(r); if (ph) need.push({ id: r.id, ph: ph }); } }
+else if (r.rev > list[i].rev) { const lp = list[i].p; if (ph && lp) { r.p = lp; if (dmPh(lp) !== ph) need.push({ id: r.id, ph: ph }); } else if (ph) need.push({ id: r.id, ph: ph }); list[i] = r; ch = true; }
+else if (ph && r.rev === list[i].rev && (!list[i].p || dmPh(list[i].p) !== ph)) need.push({ id: r.id, ph: ph });
 });
+need.forEach((q) => { const k = q.id + ':' + q.ph; if (dmPhWait[k] && Date.now() - dmPhWait[k] < 20000) return; dmPhWait[k] = Date.now(); try { if (isConnected()) conn.send({ type: 'dm-photo-req', id: q.id, ph: q.ph }); } catch (e) {} });
 if (ch) { try { purge(); } catch (e) {} save(); render(); try { paintCur(); } catch (e) {} }
 fresh.forEach((r) => { try { bump({ msgId: 'dm-new:' + r.id }, r.id); } catch (e) {} });
 try { const pn = d.pin; if (pn && typeof pn.id === 'string' && pn.id.length <= 40 && typeof pn.rev === 'number' && pn.rev > pinRev) { pinId = pn.id; pinRev = pn.rev; savePin(); render(); } } catch (e) {}
