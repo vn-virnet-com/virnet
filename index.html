@@ -15385,7 +15385,8 @@ body.lv-admin #bp-msg-add { display: flex; }
 #dm-bar { display: none; flex: 0 0 auto; height: 48px; box-sizing: border-box; align-items: center; position: relative; z-index: 7; background: var(--c-000); border-bottom: 1px solid var(--c-1a); cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 body.dm-bar-on #dm-bar { display: flex; }
 body.dm-pf-open #dm-bar { display: none; }
-#dm-bar-back { flex: 0 0 52px; width: 52px; height: 100%; padding: 0; border: 0; background: transparent; color: var(--c-fff); display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+#dm-bar-back { flex: 0 0 52px; width: 52px; height: 100%; padding: 0; border: 0; background: transparent; color: var(--c-fff); display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+#dm-bar-back::before { content: ''; position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; box-sizing: border-box; border: 2px solid currentColor; border-radius: 50%; pointer-events: none; }
 @keyframes dm-back-blink {
 0%, 100% { color: var(--c-fff); }
 50% { color: var(--warn); }
