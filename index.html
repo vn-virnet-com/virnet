@@ -2433,7 +2433,7 @@ else { root.classList.add('pin-locked'); }
   <div id="input-wrapper">
     <div id="reply-bar">
       <span id="reply-bar-text">Yanıtlanıyor...</span>
-      <span id="cancel-reply-btn">✕</span>
+      <span id="cancel-reply-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;pointer-events:none"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
     </div>
     <div id="top-row">
       <div id="msg-line">
@@ -2596,7 +2596,7 @@ else { root.classList.add('pin-locked'); }
         <input id="ytsearch-in" type="text" placeholder="YouTube Music'te ara" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false">
         <button id="ytsearch-clear" aria-label="Temizle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
       </div>
-      <button id="ytsearch-x" aria-label="Kapat">✕</button>
+      <button id="ytsearch-x" aria-label="Kapat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;pointer-events:none"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div id="yts-recent"></div>
     <div id="ytpl-strip">
@@ -2637,7 +2637,7 @@ else { root.classList.add('pin-locked'); }
   </div>
 </div>
 <div id="viewer">
-  <div id="viewer-close" title="Sohbete dön">✕</div>
+  <div id="viewer-close" title="Sohbete dön"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;pointer-events:none"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
   <div id="viewer-dl" title="Galeriye indir"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg></div>
   <img id="viewer-img" alt="">
 </div>
@@ -12380,17 +12380,53 @@ try { const a = JSON.parse(lsGet('dmChats') || '[]'); if (Array.isArray(a)) a.fo
 function save() { try { lsSet('dmChats', JSON.stringify(list)); } catch (e) {} }
 const box = document.createElement('div'); box.id = 'dm-list';
 page.insertBefore(box, page.firstChild);
+let pinId = ''; try { pinId = lsGet('dmPin') || ''; } catch (e) {}
+let act = {}; try { const a0 = JSON.parse(lsGet('dmAct') || '{}'); if (a0 && typeof a0 === 'object') act = a0; } catch (e) {}
+function saveAct() { try { lsSet('dmAct', JSON.stringify(act)); } catch (e) {} }
+function sortedList() { return list.filter((c) => !c.d).sort((a, b) => ((b.id === pinId) - (a.id === pinId)) || ((act[b.id] || b.ts) - (act[a.id] || a.ts))); }
+const PIN_SVG = '<svg class="dm-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>';
+function lastEl(id) {
+const c = (id === ctxId) ? chatArea : holders[id];
+if (!c) return null;
+const ms = c.querySelectorAll('.msg:not(.live-msg):not(.typing-msg)');
+return ms[ms.length - 1] || null;
+}
+function paintLast(l, id) {
+const v = lastOf(id); let own = false;
+try { const m = lastEl(id); own = !!(v && m && m.classList.contains('own-msg') && thirdCanSend()); } catch (e) {}
+const k = (own ? '1' : '0') + v;
+if (l.dataset.k === k) return;
+l.dataset.k = k; l.textContent = '';
+if (own) { const b = document.createElement('b'); b.textContent = 'Sen: '; l.appendChild(b); }
+l.appendChild(document.createTextNode(v));
+}
+const seenMsg = new WeakSet(), tracked = {};
+function track(id) {
+const c = (id === ctxId) ? chatArea : holders[id];
+if (!c) { tracked[id] = 1; return false; }
+const ms = c.querySelectorAll('.msg:not(.live-msg):not(.typing-msg)');
+let fresh = false;
+for (let i = 0; i < ms.length; i++) { if (!seenMsg.has(ms[i])) { seenMsg.add(ms[i]); if (i === ms.length - 1) fresh = true; } }
+if (!tracked[id]) { tracked[id] = 1; return false; }
+if (fresh) { act[id] = Date.now(); return true; }
+return false;
+}
+function reorder() {
+const by = {}; Array.prototype.forEach.call(box.children, (r) => { by[r.dataset.id] = r; });
+sortedList().forEach((c) => { const r = by[c.id]; if (r) box.appendChild(r); });
+}
 function render() {
 box.textContent = '';
-list.filter((c) => !c.d).sort((a, b) => b.ts - a.ts).forEach((c) => {
+sortedList().forEach((c) => {
 const row = document.createElement('div'); row.className = 'dm-row'; row.dataset.id = c.id;
 const av = document.createElement('div'); av.className = 'dm-av';
 if (c.p) av.style.backgroundImage = 'url("' + c.p + '")'; else av.textContent = (Array.from(c.n)[0] || '?').toUpperCase();
 const dot = document.createElement('i'); dot.className = 'dm-st' + (c.o === 0 ? ' off' : ''); av.appendChild(dot);
 if (isLocked(c)) row.classList.add('locked');
 const tx = document.createElement('div'); tx.className = 'dm-txt';
-const nm = document.createElement('div'); nm.className = 'dm-name'; nm.textContent = c.n;
-const ls = document.createElement('div'); ls.className = 'dm-last'; ls.textContent = lastOf(c.id);
+const nm = document.createElement('div'); nm.className = 'dm-name';
+if (c.id === pinId) { nm.classList.add('pinned'); const nt = document.createElement('span'); nt.className = 'dm-nt'; nt.textContent = c.n; nm.appendChild(nt); nm.insertAdjacentHTML('beforeend', PIN_SVG); } else nm.textContent = c.n;
+const ls = document.createElement('div'); ls.className = 'dm-last'; paintLast(ls, c.id);
 tx.appendChild(nm); tx.appendChild(ls); row.appendChild(av); row.appendChild(tx);
 const cn = document.createElement('div'); cn.className = 'dm-cnt'; cn.style.display = 'none'; row.appendChild(cn); box.appendChild(row);
 });
@@ -12399,12 +12435,14 @@ setCounts();
 }
 render();
 function refreshLast() {
-const rows = box.children;
+const rows = box.children; let moved = false;
 for (let i = 0; i < rows.length; i++) {
+const id = rows[i].dataset.id;
+try { if (track(id)) moved = true; } catch (e) {}
 const l = rows[i].querySelector('.dm-last'); if (!l) continue;
-const v = lastOf(rows[i].dataset.id);
-if (l.textContent !== v) l.textContent = v;
+paintLast(l, id);
 }
+if (moved) { saveAct(); reorder(); }
 }
 let lastRaf = 0;
 try { new MutationObserver(() => { if (!lastRaf) lastRaf = requestAnimationFrame(() => { lastRaf = 0; refreshLast(); }); }).observe(chatArea, { childList: true }); } catch (e) {}
@@ -12711,7 +12749,23 @@ try { updateBadges(); } catch (err) {}
 document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('.dk-tab')) setTimeout(() => { try { updateBadges(); } catch (err) {} }, 0); }, true);
 if (mqMobile.addEventListener) mqMobile.addEventListener('change', syncBarVis);
 else if (mqMobile.addListener) mqMobile.addListener(syncBarVis);
+let lpT = 0, lpFired = false, lpX = 0, lpY = 0;
+function lpClear() { if (lpT) { clearTimeout(lpT); lpT = 0; } }
+function togglePin(id) { pinId = (pinId === id) ? '' : id; try { lsSet('dmPin', pinId); } catch (e) {} render(); }
+box.addEventListener('pointerdown', (e) => {
+lpFired = false; lpClear();
+const row = e.target.closest && e.target.closest('.dm-row');
+if (!row || !row.dataset.id) return;
+if (!(notifCanSend() || thirdCanSend())) return;
+lpX = e.clientX; lpY = e.clientY;
+const id = row.dataset.id;
+lpT = setTimeout(() => { lpT = 0; lpFired = true; togglePin(id); try { if (navigator.vibrate) navigator.vibrate(15); } catch (er) {} }, 500);
+});
+box.addEventListener('pointermove', (e) => { if (lpT && (Math.abs(e.clientX - lpX) > 8 || Math.abs(e.clientY - lpY) > 8)) lpClear(); });
+['pointerup', 'pointercancel', 'pointerleave'].forEach((n) => box.addEventListener(n, lpClear));
+box.addEventListener('contextmenu', (e) => { if (e.target.closest && e.target.closest('.dm-row')) e.preventDefault(); });
 box.addEventListener('click', (e) => {
+if (lpFired) { lpFired = false; e.stopPropagation(); return; }
 const row = e.target.closest && e.target.closest('.dm-row');
 if (!row || !row.dataset.id) return;
 if (e.target.closest('.dm-st') && notifCanSend()) {
@@ -16356,5 +16410,20 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 else start();
 })();
 </script>
+<style id="vn-fix1">
+/* etiket/✕ düzeltmesi: yazı tipi ölçülerinden bağımsız, daha yüksek ve taşmaya dayanıklı */
+#strip-stack { --chip-h: 17px; }
+#cancel-reply-btn { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
+#strip-stack > #vc-pill .vc-n, #strip-stack > #vc-pill .vc-n.long { padding: 4px 0; margin: -4px 0; }
+#strip-stack > #vc-pill .vc-n, #strip-stack > #vc-pill .vc-sep, #strip-stack > #vc-pill .vc-t, #strip-stack > #auto-chip .ac-txt { align-self: center; }
+#strip-stack > #yt-dock .ytd-lt { height: var(--chip-h); line-height: var(--chip-h); }
+#strip-stack > #yt-dock .ytd-ltn { line-height: var(--chip-h); }
+#strip-stack > #auto-chip #auto-chip-x { display: flex; align-items: center; justify-content: center; }
+#strip-stack > #auto-chip #auto-chip-x svg, #strip-stack > #vc-pill .vc-game svg { display: block; flex: 0 0 auto; }
+.dm-name.pinned { display: flex; align-items: center; gap: 6px; }
+.dm-name.pinned > .dm-nt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dm-pin { flex: 0 0 auto; display: block; width: 13px; height: 13px; color: var(--c-88); }
+.dm-last b { font-weight: 700; color: var(--c-cc, var(--c-fff)); }
+</style>
 </body>
 </html>
