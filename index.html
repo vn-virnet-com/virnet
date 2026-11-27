@@ -96,12 +96,11 @@ html { --vn-top: max(env(safe-area-inset-top, 0px), var(--vn-sb, 0px)); }
 html.vn-fs #vn-sysbar { display: flex; position: relative; }
 #vn-sysbar .vs-lw { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; align-items: center; gap: 7px; padding-left: 24px; margin-right: 10px; }
 #vn-sysbar .vs-r { margin-left: auto; flex: 0 0 auto; height: 100%; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
-#vn-sysbar .vs-c, #vn-sysbar .vs-l, #vn-sysbar .vs-net, #vn-sysbar .vs-bt, #vn-sysbar .vs-bat, #vn-sysbar .vs-t { height: 100%; display: flex; align-items: center; line-height: 1; white-space: nowrap; font-size: inherit; }
+#vn-sysbar .vs-c, #vn-sysbar .vs-net, #vn-sysbar .vs-bt, #vn-sysbar .vs-bat, #vn-sysbar .vs-t { height: 100%; display: flex; align-items: center; line-height: 1; white-space: nowrap; font-size: inherit; }
 #vn-sysbar .vs-t { font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
 #vn-sysbar .vs-c { flex: 0 0 auto; opacity: .8; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 #vn-sysbar .vs-lw .vs-c { height: auto; align-self: center; box-sizing: border-box; padding: 1.5px 6px; border-radius: 6px; background: var(--send-bg); opacity: 1; font-weight: 700; }
 #vn-sysbar .vs-lw .vs-c > span { color: var(--send-ico); }
-#vn-sysbar .vs-l { min-width: 0; max-width: 46vw; overflow: hidden; pointer-events: auto; cursor: pointer; padding: 0 6px; margin: 0 -6px; -webkit-tap-highlight-color: transparent; }
 #vn-sysbar .vs-bat { gap: 4px; }
 #vn-sysbar .vs-bat span { display: block; line-height: 1; }
 #vn-sysbar svg { display: block; flex: 0 0 auto; height: 9px; width: auto; transform: none !important; }
@@ -2467,7 +2466,6 @@ else { root.classList.add('pin-locked'); }
   <div id="bp-slider">
   <div id="bp-page-main" class="bp-page">
   <div id="bp-list"></div>
-  <div id="wx" data-ph="m" aria-label="Hava durumu"></div>
   <div id="bp-add" title="Bildirim gönder"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
   <div id="bp-compose">
     <input id="bp-title-in" type="text" placeholder="Başlık" maxlength="120" autocomplete="off" autocorrect="off" spellcheck="false">
@@ -3273,6 +3271,7 @@ return nickInput.value.trim();
 } catch (e) {}
 return fullNick();
 }
+function dmNick(d, raw) { try { if (window.__dmCtx && window.__dmCtx()) { if (d.classList.contains('own-msg')) return gameNick(); if (d._dn) return d._dn; return sessionStorage.getItem('pinLive') === '1' ? '' : String((window.__dmName && window.__dmName()) || ''); } } catch (e) {} return raw; }
 function fullNick() { try { if (window.__dmCtx && window.__dmCtx()) return ''; } catch (e) {} const f = lockedNick(); return f !== null ? f.trim() : nickInput.value.trim(); }
 function nickLockSync() {
 const f = lockedNick(), on = f !== null;
@@ -3715,7 +3714,6 @@ sendLeap('leap-hello');
 try { sendAdult('adult-hello'); } catch (e) {}
 try { if (window.__tosHello) window.__tosHello(); } catch (e) {}
 try { pfHello(); } catch (e) {}
-try { if (window.__wxHello) window.__wxHello(); } catch (e) {}
 try { if (window.__calHello) window.__calHello(); } catch (e) {}
 try { if (window.__dmHello) window.__dmHello(); } catch (e) {}
 flushNotifOutbox();
@@ -3748,6 +3746,7 @@ onPeerData(d0);
 });
 function onPeerData(data) {
 if (c !== conn) return;
+window.__rdn = (data && typeof data.dn === 'string') ? data.dn.slice(0, 40) : '';
 try { if (window.__dmRoute && window.__dmRoute(data, onPeerData)) return; } catch (e) {}
 missedPings = 0; lastRxAt = Date.now();
 data = mapStringsDeep(data, emojiDecode);
@@ -3770,7 +3769,7 @@ if (data.type === 'prof-photo-req') { receivePhotoReq(data); return; }
 if (data.type === 'prof-op-photo') { receiveOpPhoto(data); return; }
 if (data.type === 'prof-op-photo-meta') { receiveOpPhotoMeta(data); return; }
 if (data.type === 'prof-op-photo-req') { receiveOpPhotoReq(data); return; }
-if (data.type === 'wx-ov' || data.type === 'wx-ack') { try { if (window.__wxRecv) window.__wxRecv(data); } catch (e) {} return; }
+if (data.type === 'wx-ov' || data.type === 'wx-ack') return;
 if (data.type === 'dm-photo-req') { try { if (window.__dmPhotoReq) window.__dmPhotoReq(data); } catch (e) {} return; }
 if (data.type === 'dm-photo') { try { if (window.__dmPhoto) window.__dmPhoto(data); } catch (e) {} return; }
 if (data.type === 'dm-sync') { try { if (window.__dmRecv) window.__dmRecv(data); } catch (e) {} return; }
@@ -6299,6 +6298,7 @@ const rn = resolveNick(rawNick);
 const finalNick = rn.finalNick;
 msgDiv._raw = { text: text, nick: rawNick };
 msgDiv._nick = finalNick;
+if (!isOwnMessage && window.__rdn) msgDiv._dn = window.__rdn;
 msgDiv._hdr = null;
 if (finalNick === '') msgDiv.classList.add('no-nick');
 const bubble = document.createElement('div');
@@ -6351,10 +6351,10 @@ body.appendChild(img);
 body.style.cursor = 'pointer';
 msgDiv._doReply = () => {
 focusInputForReply();
-const activeNick = rawNick;
+const activeNick = dmNick(msgDiv, rawNick);
 replyingTo = { text: media.audio ? 'Ses' : 'Fotoğraf', nick: activeNick, targetId: messageId, img: true, aud: !!media.audio };
-replyBarText.innerText = finalNick
-? `${finalNick} kullanıcısına yanıt veriliyor...`
+replyBarText.innerText = activeNick
+? `${activeNick} kullanıcısına yanıt veriliyor...`
 : 'Mesaja yanıt veriliyor...';
 replyBar.style.display = 'flex';
 adjustInputHeight();
@@ -6384,10 +6384,10 @@ textDiv.appendChild(gameBuildCard(msgDiv, messageId, gameParse(text), !!isOwnMes
 msgDiv._doReply = () => {
 if (msgDiv.dataset.callcard === '1') return;
 focusInputForReply();
-const activeNick = msgDiv._raw.nick;
+const activeNick = dmNick(msgDiv, msgDiv._raw.nick);
 replyingTo = { text: gameParse(msgDiv._raw.text) !== null ? 'Oyun daveti' : (callParse(msgDiv._raw.text) !== null || dialParse(msgDiv._raw.text) !== null) ? 'Arama' : msgDiv._raw.text, nick: activeNick, targetId: messageId };
-replyBarText.innerText = msgDiv._nick
-? `${msgDiv._nick} kullanıcısına yanıt veriliyor...`
+replyBarText.innerText = activeNick
+? `${activeNick} kullanıcısına yanıt veriliyor...`
 : 'Mesaja yanıt veriliyor...';
 replyBar.style.display = 'flex';
 adjustInputHeight();
@@ -12193,21 +12193,20 @@ if (isMobileLayout()) goPanel(b.dataset.p === 'chat' ? 0 : parseInt(b.dataset.p,
 });
 bpSetPage(bpPage, true);
 })();
-let dkPage = (lsGet('dkPage') === 'song') ? 'song' : (lsGet('dkPage') === 'msg') ? 'msg' : (lsGet('dkPage') === 'wx') ? 'wx' : 'prof';
+let dkPage = (lsGet('dkPage') === 'song') ? 'song' : (lsGet('dkPage') === 'msg') ? 'msg'  : 'prof';
 function dkSetPage(which) {
 if (isMobileLayout()) return;
-const song = (which === 'song'), wxp = (which === 'wx'), msgp = (which === 'msg');
-dkPage = song ? 'song' : msgp ? 'msg' : wxp ? 'wx' : 'prof';
+const song = (which === 'song'), msgp = (which === 'msg');
+dkPage = song ? 'song' : msgp ? 'msg'  : 'prof';
 document.body.classList.toggle('dk-song', song);
-document.body.classList.toggle('dk-wx', wxp);
 document.body.classList.toggle('dk-msg', msgp);
 const dk = document.getElementById('dk-tabs');
 if (dk) {
 const inn = dk.firstElementChild;
-if (inn) inn.style.setProperty('--dk-i', song ? '3' : wxp ? '2' : msgp ? '1' : '0');
+if (inn) inn.style.setProperty('--dk-i', song ? '2' : msgp ? '1' : '0');
 dk.querySelectorAll('.dk-tab').forEach((b) => b.classList.toggle('on', b.dataset.d === dkPage));
 }
-if (song || wxp || msgp) { try { pfSetEdit(false); } catch (e) {} }
+if (song || msgp) { try { pfSetEdit(false); } catch (e) {} }
 else { try { pfRender(); } catch (e) {} }
 try { ytsSyncActive(); } catch (e) {}
 try { lsSet('dkPage', dkPage); } catch (e) {}
@@ -12218,7 +12217,6 @@ const right = document.getElementById('pane-notes');
 const prof = document.getElementById('bp-page-prof');
 const song = document.getElementById('ytsearch-modal');
 const sl = document.getElementById('bp-slider');
-const wxEl = document.getElementById('wx');
 const msgEl = document.createElement('div'); msgEl.id = 'bp-page-msg'; msgEl.className = 'bp-page';
 msgEl.innerHTML = '<div id="bp-msg-add" aria-label="Ekle"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>';
 if (!left || !right || !prof || !sl || !song) return;
@@ -12227,7 +12225,6 @@ dk.id = 'dk-tabs';
 dk.innerHTML = '<div id="dk-tabs-in"><div id="dk-pill"></div>' +
 '<button type="button" class="dk-tab on" data-d="prof" aria-label="Profil" title="Profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></button>' +
 '<button type="button" class="dk-tab" data-d="msg" aria-label="Mesajlar" title="Mesajlar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>' +
-'<button type="button" class="dk-tab" data-d="wx" aria-label="Hava durumu" title="Hava durumu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg></button>' +
 '<button type="button" class="dk-tab" data-d="song" aria-label="Şarkı" title="Şarkı"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button></div>';
 dk.querySelectorAll('.dk-tab').forEach((b) => {
 b.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
@@ -12247,15 +12244,12 @@ if (bellPop.parentNode !== left) left.appendChild(bellPop);
 if (prof.parentNode !== right) right.appendChild(prof);
 if (msgEl.parentNode !== right) right.appendChild(msgEl);
 if (song.parentNode !== right) right.appendChild(song);
-if (wxEl && wxEl.parentNode !== right) right.appendChild(wxEl);
 right.appendChild(dk);
 dkSetPage(dkPage);
 } else {
 if (prof.parentNode !== sl) sl.appendChild(prof);
 if (song.parentNode !== sl) sl.appendChild(song);
 if (msgEl.parentNode !== sl || msgEl.nextElementSibling !== song) sl.insertBefore(msgEl, song);
-if (wxEl) { const pm = document.getElementById('bp-page-main'), ad = document.getElementById('bp-add'); if (pm && wxEl.parentNode !== pm) pm.insertBefore(wxEl, ad && ad.parentNode === pm ? ad : null); }
-document.body.classList.remove('dk-wx');
 document.body.classList.remove('dk-msg');
 if (bellPop.parentNode !== right) right.insertBefore(bellPop, right.firstChild);
 document.body.classList.remove('dk-song');
@@ -12373,7 +12367,7 @@ if (c._dmWrapped) return;
 c._dmWrapped = true;
 const o = c.send;
 c.send = (d, ...rest) => {
-if (ctxId && isCtxMsg(d) && !('dm' in d)) d = Object.assign({}, d, { dm: ctxId });
+if (ctxId && isCtxMsg(d) && !('dm' in d)) d = Object.assign({}, d, { dm: ctxId, dn: gameNick() });
 return o(d, ...rest);
 };
 };
@@ -15222,121 +15216,12 @@ guard();
 </script>
 
 <style id="wx-css">
-#bell-pop #bp-list { bottom: 50%; padding: 0 0 12px; }
-#bp-page-main #bp-add { bottom: calc(50% + 12px); }
-#wx { position: absolute; z-index: 0; isolation: isolate; left: 0; right: 0; bottom: 0; height: 50%; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; padding: 10px; color: #fff; border-top: 1px solid var(--c-33); -webkit-user-select: none; user-select: none; text-shadow: 0 1px 2px rgba(0,0,0,.25); }
-#wx .wx-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none; }
-#wx .wx-bg i { position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0; z-index: 0; transition: none; }
-#wx .wx-bg i.prev { opacity: 1; z-index: 1; }
-#wx .wx-bg i.on { opacity: 1; z-index: 2; transition: opacity 2.6s ease-in-out; }
-#wx .wx-bg::after { content: ""; z-index: 3; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.4); pointer-events: none; }
-#wx .wx-bg .m { background: radial-gradient(circle at 82% 12%, rgba(255,240,180,.6) 0, rgba(255,240,180,0) 36%), linear-gradient(180deg, #2b78c2 0%, #59a6df 55%, #9dd0f0 100%); }
-#wx .wx-bg .n { background: radial-gradient(circle at 18% 104%, rgba(255,216,120,.75) 0, rgba(255,216,120,0) 55%), linear-gradient(180deg, #6d3a8c 0%, #d0553f 58%, #f2a24c 100%); }
-#wx .wx-bg .g { background: radial-gradient(1.6px 1.6px at 12% 16%, #fff 50%, transparent 55%), radial-gradient(1.2px 1.2px at 34% 9%, #dfe6ff 50%, transparent 55%), radial-gradient(1.6px 1.6px at 58% 20%, #fff 50%, transparent 55%), radial-gradient(1.2px 1.2px at 78% 8%, #dfe6ff 50%, transparent 55%), radial-gradient(1.4px 1.4px at 91% 24%, #fff 50%, transparent 55%), radial-gradient(1.2px 1.2px at 22% 34%, #dfe6ff 50%, transparent 55%), linear-gradient(180deg, #070b22 0%, #121b45 60%, #232d63 100%); }
-#wx .wx-seg, #wx .wx-top, #wx .wx-mid, #wx .wx-days { position: relative; z-index: 1; }
-#wx .wx-seg { --wx-i: 0; flex: 0 0 auto; display: flex; gap: 6px; margin-bottom: 8px; text-shadow: none; }
-#wx .wx-seg-pill { position: absolute; top: 0; bottom: 0; left: 0; z-index: 1; width: calc((100% - 6px) / 2); border-radius: var(--r-lg); background: var(--accent); transform: translateX(calc(var(--wx-i) * (100% + 6px))); transition: transform .25s ease; pointer-events: none; }
-#wx .wx-sb { flex: 1 1 0; min-width: 0; height: 32px; display: flex; align-items: center; justify-content: center; padding: 0; border: 1px solid var(--c-33); border-radius: var(--r-lg); background: var(--c-1a); color: var(--c-fff); font-family: 'Lexend', sans-serif; font-size: 12.5px; font-weight: 600; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; transition: color .25s ease; }
-#wx .wx-sb span { position: relative; z-index: 2; pointer-events: none; }
-#wx .wx-sb.on { color: var(--on-accent); border-color: transparent; }
-#wx .wx-top { flex: 0 0 auto; height: 26px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; font-weight: 700; letter-spacing: .1px; }
-#wx .wx-tm { font-variant-numeric: tabular-nums; opacity: .95; }
-#wx .wx-mid { --ic: clamp(46px, 8vh, 64px); flex: 1 1 auto; min-height: 0; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 14px; padding: 2px 0 6px; }
-#wx .wx-ic { flex: 0 0 auto; width: var(--ic); height: var(--ic); display: flex; align-items: center; justify-content: center; }
-#wx .wx-txt { flex: 0 1 auto; min-width: 0; height: var(--ic); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; }
-#wx .wx-ic svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 3px 6px rgba(0,0,0,.25)); }
-#wx .wx-t { font-size: calc(var(--ic) * .62); font-weight: 700; line-height: 1; min-height: 1em; white-space: nowrap; }
-#wx .wx-d { font-size: max(11px, calc(var(--ic) * .24)); font-weight: 600; line-height: 1; opacity: .92; min-height: 1em; white-space: nowrap; }
-#wx .wx-days { flex: 0 0 auto; display: flex; gap: 6px; }
-#wx .wx-day { flex: 1 1 0; min-width: 0; height: clamp(100px, 16.5vh, 128px); box-sizing: border-box; padding: 7px 2px 8px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; border-radius: 14px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.2); pointer-events: none; }
-#wx .wx-dn { font-size: 10.5px; font-weight: 700; opacity: .92; line-height: 1; }
-#wx .wx-di { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
-#wx .wx-di svg { display: block; width: 100%; height: 100%; }
-#wx .wx-dt { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; font-weight: 700; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; letter-spacing: -.2px; }
-#wx .wx-tr { display: flex; align-items: baseline; justify-content: center; gap: 3px; }
-#wx .wx-tr .wx-mi { display: flex; align-self: center; width: 11px; height: 11px; }
-#wx .wx-tr .wx-mi svg { display: block; width: 100%; height: 100%; filter: none; }
-#wx .wx-tr em { font-style: normal; font-size: 6.5px; font-weight: 600; letter-spacing: .3px; opacity: .5; }
-.wx-sp { display: block; box-sizing: border-box; width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.28); border-top-color: #fff; animation: wxspin .9s linear infinite; }
-.wx-sp.wx-sp-l { width: 34px; height: 34px; border-width: 3.5px; }
-.wx-sp.wx-sp-s { width: 10px; height: 10px; border-width: 2px; }
-@keyframes wxspin { to { transform: rotate(360deg); } }
-#wx .wx-strip { position: relative; z-index: 1; flex: 0 0 auto; height: clamp(50px, 8.2vh, 64px); margin-bottom: 6px; box-sizing: border-box; border-radius: 14px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.2); pointer-events: none; }
-#wx .wx-g { position: absolute; left: 36px; right: 14px; top: 4px; bottom: 25px; }
-#wx .wx-g svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; }
-#wx .wx-gl { fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
-#wx .wx-dot { position: absolute; left: 0; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.28), 0 1px 4px rgba(0,0,0,.35); opacity: 0; }
-#wx .wx-dot.on { opacity: 1; }
-#wx .wx-dl { position: absolute; left: 50%; bottom: 100%; margin-bottom: 5px; transform: translateX(-50%); font-size: 7px; font-weight: 700; line-height: 1; letter-spacing: .2px; white-space: nowrap; font-variant-numeric: tabular-nums; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.45); pointer-events: none; }
-#wx .wx-e { position: absolute; left: 0; top: 50%; margin-top: 8px; font-size: 6.5px; font-weight: 700; line-height: 1; letter-spacing: .2px; white-space: nowrap; font-variant-numeric: tabular-nums; color: #fff; opacity: 0; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
-#wx .wx-e.on { opacity: .75; }
-#wx .wx-gc { fill: none; stroke-width: 3; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-#wx .wx-gc[data-c="0"] { stroke: #4FC3F7; }
-#wx .wx-gc[data-c="1"] { stroke: #FFD23F; }
-#wx .wx-gc[data-c="2"] { stroke: #3B5BDB; }
-#wx .wx-ax { position: absolute; left: 4px; width: 22px; top: 4px; bottom: 25px; pointer-events: none; }
-#wx .wx-ax span { position: absolute; right: 0; transform: translateY(-50%); font-size: 8px; font-weight: 700; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; letter-spacing: -.2px; opacity: .85; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
-#wx .wx-gd { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
-#wx .wx-gd i { position: absolute; display: block; pointer-events: none; }
-#wx .wx-gd .wx-gh { left: -8px; right: 0; height: 0; margin-top: -.5px; border-top: 1px dotted rgba(255,255,255,.3); }
-#wx .wx-e0 { transform: translateX(-50%); }
-#wx .wx-e1 { left: auto; right: 0; transform: translateX(50%); }
-#wx .wx-dot.sm { transition: left 1.2s ease, top 1.2s ease, opacity .3s ease; }
-#wx .wx-sv { position: absolute; left: 36px; right: 14px; bottom: 3px; height: 22px; display: flex; }
-#wx .wx-ss { flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 700; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
-#wx .wx-ss em { font-style: normal; font-size: 6.5px; font-weight: 600; letter-spacing: .3px; opacity: .5; }
-#wx .wx-ss .wx-mi { display: flex; width: 16px; height: 16px; }
-#wx .wx-ss .wx-mi svg { display: block; width: 100%; height: 100%; filter: none; }
-#wx .wx-rt { display: flex; align-items: center; gap: 6px; }
-#wx #wx-edit { display: none; width: 26px; height: 26px; background: var(--c-111); border: 1px solid var(--c-33); color: var(--c-cc); text-shadow: none; }
-#wx #wx-edit.can { display: inline-flex; }
-#wx #wx-edit svg { width: 14px; height: 14px; }
-#wx-ed { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 12500; display: none; align-items: center; justify-content: center; box-sizing: border-box; padding: 12px; background: rgba(0,0,0,.55); font-family: 'Lexend', sans-serif; }
-#wx-ed.show { display: flex; }
-#wx-ed .wxe-card { width: 100%; max-width: 400px; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; border-radius: var(--r-xl); background: var(--c-111); border: 1px solid var(--c-33); color: var(--c-fff); }
-#wx-ed .wxe-h { flex: 0 0 auto; padding: 13px 14px 10px; font-size: 14px; font-weight: 700; border-bottom: 1px solid var(--c-33); }
-#wx-ed .wxe-b { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 6px 10px 10px; }
-#wx-ed .wxe-dn { padding: 10px 2px 5px; font-size: 12px; font-weight: 700; color: var(--c-88); }
-#wx-ed .wxe-r { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; padding: 4px; border-radius: var(--r-md); border: 1px solid transparent; }
-#wx-ed .wxe-r.bad { border-color: var(--bad); }
-#wx-ed .wxe-l { flex: 0 0 26px; font-size: 9.5px; font-weight: 700; color: var(--c-88); letter-spacing: .3px; }
-#wx-ed .wxe-t { flex: 0 0 48px; width: 48px; height: 30px; box-sizing: border-box; padding: 0 4px; text-align: center; font-family: 'Lexend', sans-serif; font-size: 16px; color: var(--c-fff); background: var(--c-1a); border: 1px solid var(--c-33); border-radius: var(--r-md); outline: none; -moz-appearance: textfield; appearance: textfield; }
-#wx-ed .wxe-t::-webkit-outer-spin-button, #wx-ed .wxe-t::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-#wx-ed .wxe-ks { flex: 1 1 0; min-width: 0; display: flex; gap: 2px; }
-#wx-ed .wxe-k { flex: 1 1 0; min-width: 0; height: 30px; padding: 2px; display: flex; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: var(--r-sm); background: var(--c-1a); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-#wx-ed .wxe-k.on { background: var(--accent); border-color: transparent; }
-#wx-ed .wxe-k svg { display: block; width: 100%; height: 100%; max-width: 22px; }
-#wx-ed .wxe-f { flex: 0 0 auto; display: flex; gap: 6px; padding: 10px; border-top: 1px solid var(--c-33); }
-#wx-ed .wxe-f button { flex: 1 1 0; height: 38px; border: 1px solid var(--c-33); border-radius: var(--r-lg); background: var(--c-1a); color: var(--c-fff); font-family: 'Lexend', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-#wx-ed .wxe-f button:active { background: var(--c-22); }
-#wx-ed .wxe-f button.pri { background: var(--accent); color: var(--on-accent); border-color: transparent; }
-#vn-sysbar .vs-lw .vs-l { height: auto; align-self: center; box-sizing: border-box; max-width: none; overflow: visible; margin: 0; padding: 1.5px 6px; gap: 4px; border-radius: 6px; font-weight: 700; color: #fff; background: #2f7fc4; transition: background-color 2.6s ease-in-out, width .26s ease; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-#vn-sysbar .vs-l > * { transition: opacity .12s ease; }
-#vn-sysbar .vs-l.wx-out > * { opacity: 0; }
-html[data-wxph="n"] #vn-sysbar .vs-lw .vs-l { background: #d2701c; }
-html[data-wxph="g"] #vn-sysbar .vs-lw .vs-l { background: #2b3070; }
-#vn-sysbar .vs-l svg { display: block; width: 12px; height: 12px; flex: 0 0 auto; }
-#vn-sysbar .vs-l .wx-l-i, #vn-sysbar .vs-l .wx-l-t { display: block; line-height: 1; }
 
 @media (min-width: 769px) {
-body.desk-split #bell-pop #bp-list { bottom: 0; }
-body.desk-split #bp-page-main #bp-add { bottom: 12px; }
-#pane-notes > #wx { display: none; position: relative; left: auto; right: auto; bottom: auto; flex: 1 1 0; min-height: 0; width: 100%; height: auto; border-top: 0; padding: 12px; container-type: inline-size; }
-body.dk-wx #pane-notes > #wx { display: flex; }
-body.dk-wx #pane-notes > #bp-page-prof, body.dk-wx #pane-notes > #ytsearch-modal { display: none; }
-#dk-pill { width: calc((100% - 4px) / 4); }
+#dk-pill { width: calc((100% - 4px) / 3); }
 #pane-notes > #bp-page-msg { display: none; flex: 1 1 0; min-height: 0; width: 100%; height: auto; }
 body.dk-msg #pane-notes > #bp-page-msg { display: block; }
-body.dk-msg #pane-notes > #bp-page-prof, body.dk-msg #pane-notes > #ytsearch-modal, body.dk-msg #pane-notes > #wx { display: none; }
-#pane-notes > #wx .wx-mid { --ic: clamp(44px, min(11vh, 20cqw), 84px); }
-#pane-notes > #wx .wx-strip { height: clamp(60px, 12vh, 110px); }
-#pane-notes > #wx .wx-day { height: clamp(96px, 18vh, 160px); }
-#pane-notes > #wx .wx-sb { font-size: clamp(10px, 3.6cqw, 12.5px); }
-#pane-notes > #wx .wx-top { font-size: clamp(10px, 3.6cqw, 12.5px); }
-#pane-notes > #wx .wx-dn { font-size: clamp(8px, 3cqw, 10.5px); }
-#pane-notes > #wx .wx-dt { font-size: clamp(8px, 2.9cqw, 10px); }
-#pane-notes > #wx .wx-di { width: clamp(20px, 7.5cqw, 30px); height: clamp(20px, 7.5cqw, 30px); }
-#pane-notes > #wx .wx-ss { font-size: clamp(8px, 3cqw, 11px); }
+body.dk-msg #pane-notes > #bp-page-prof, body.dk-msg #pane-notes > #ytsearch-modal { display: none; }
 }
 #bp-page-msg { background: var(--c-000); }
 #bp-msg-add { display: none; position: absolute; right: 18px; bottom: 12px; z-index: 4; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(var(--sh),0.5); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -15452,461 +15337,8 @@ body.lv-admin .dm-st::after { content: ''; position: absolute; inset: -8px; bord
 #yts-share-bar .ssb-cmd { background: var(--c-33); color: var(--c-fff); }
 #yts-share-bar .ssb-cmd svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 #dm-bar-game svg { display: block; width: 24px; height: 24px; pointer-events: none; }
-#wx .wx-sb span, #wx .wx-pl, #wx .wx-d, #wx .wx-t, #wx .wx-dn, #wx .wx-dt, #wx .wx-ss { max-width: 100%; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box; }
-#wx .wx-top { gap: 8px; min-width: 0; }
-#wx .wx-pl { flex: 1 1 auto; min-width: 0; white-space: nowrap; }
-#wx .wx-rt { flex: 0 0 auto; }
-#wx .wx-txt { overflow: hidden; max-width: calc(100% - var(--ic) - 14px); }
-#wx .wx-day { overflow: hidden; }
-#wx .wx-days, #wx .wx-seg, #wx .wx-strip { min-width: 0; }
-#wx .wx-ss { overflow: hidden; }
 
-@media (min-width: 769px) {
-#pane-notes > #wx .wx-days { gap: 4px; }
-#pane-notes > #wx .wx-day { padding: 6px 1px 7px; }
-#pane-notes > #wx .wx-dn { font-size: clamp(7px, 2.5cqw, 9.5px); letter-spacing: -.2px; }
-#pane-notes > #wx .wx-di { width: clamp(16px, 5.8cqw, 26px); height: clamp(16px, 5.8cqw, 26px); }
-#pane-notes > #wx .wx-dt { font-size: clamp(7px, 2.4cqw, 9.5px); gap: 3px; letter-spacing: -.3px; max-width: 100%; }
-#pane-notes > #wx .wx-tr { gap: 1.5px; max-width: 100%; }
-#pane-notes > #wx .wx-tr em { font-size: clamp(4.5px, 1.5cqw, 6px); letter-spacing: 0; }
-#pane-notes > #wx .wx-tr .wx-mi { width: clamp(7px, 2.4cqw, 10px); height: clamp(7px, 2.4cqw, 10px); }
-}
 </style>
-<script>(function vnWeather() {
-'use strict';
-var root = document.getElementById('wx');
-if (!root) return;
-var URL_ = 'https://api.open-meteo.com/v1/forecast?latitude=41.0186&longitude=28.9397&hourly=temperature_2m,weather_code&timezone=Europe%2FIstanbul&past_days=1&forecast_days=6';
-var KEY = 'vnWxIstanbul', STALE = 20 * 60 * 1000, RETRY = 60 * 1000;
-var DN = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
-var store = {}, nextTry = 0, busy = false, lastMin = '', lastKey = '', lastLabel = null, cache = {};
-var activeTab = 'ist', ovState = { v: 0, d: { ist: {}, eitin: {} } }, ovAckV = 0, ovLast = 0;
-function ovOf(tb) { return ovState.d[tb] || {}; }
-function recOf(tb, key) {
-var r = tb === 'eitin' ? null : store[key], o = ovOf(tb)[key], m;
-if (!o) return r || undefined;
-m = {};
-['s12', 's16', 's21'].forEach(function (sl) { m[sl] = o[sl] || (r && r[sl]) || undefined; });
-return m;
-}
-function z(n) { return ('0' + n).slice(-2); }
-function nowIst() {
-var d = new Date();
-try {
-var o = {};
-new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Istanbul', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(d).forEach(function (x) { o[x.type] = x.value; });
-if (o.year && o.hour) return { key: o.year + '-' + o.month + '-' + o.day, h: (+o.hour) % 24, m: +o.minute };
-} catch (e) {}
-return { key: d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()), h: d.getHours(), m: d.getMinutes() };
-}
-function addDays(k, n) { var a = k.split('-'), d = new Date(Date.UTC(+a[0], +a[1] - 1, +a[2] + n)); return d.getUTCFullYear() + '-' + z(d.getUTCMonth() + 1) + '-' + z(d.getUTCDate()); }
-function dow(k) { var a = k.split('-'); return new Date(Date.UTC(+a[0], +a[1] - 1, +a[2])).getUTCDay(); }
-function phaseOf(h) {
-if (h >= 7 && h < 15) return { ph: 'm', slot: 's12', off: 0 };
-if (h >= 15 && h < 19) return { ph: 'n', slot: 's16', off: 0 };
-return { ph: 'g', slot: 's21', off: h < 7 ? -1 : 0 };
-}
-function kind(c) {
-if (c === 0 || c === 1) return 'clear';
-if (c === 2) return 'partly';
-if (c === 45 || c === 48) return 'fog';
-if (c >= 51 && c <= 57) return 'drizzle';
-if ((c >= 61 && c <= 67) || (c >= 80 && c <= 82)) return 'rain';
-if ((c >= 71 && c <= 77) || c === 85 || c === 86) return 'snow';
-if (c >= 95) return 'thunder';
-return 'cloud';
-}
-var DESC = { clear: 'Açık Hava', partly: 'Parçalı bulutlu', cloud: 'Bulutlu', fog: 'Sisli', drizzle: 'Çisenti', rain: 'Yağmurlu', snow: 'Karlı', thunder: 'Gök gürültülü' };
-var CL = 'M15 37a9 9 0 0 1-1.4-17.9 12 12 0 0 1 23.2 2.9A7.5 7.5 0 0 1 36.5 37z';
-function cloud(f, t) { return '<path transform="' + t + '" fill="' + f + '" d="' + CL + '"/>'; }
-function sunP(cx, cy, r) {
-var s = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#FFC83D"/>', i, a;
-for (i = 0; i < 8; i++) {
-a = i * Math.PI / 4;
-s += '<line x1="' + (cx + Math.cos(a) * (r + 3)).toFixed(1) + '" y1="' + (cy + Math.sin(a) * (r + 3)).toFixed(1) + '" x2="' + (cx + Math.cos(a) * (r + 6.2)).toFixed(1) + '" y2="' + (cy + Math.sin(a) * (r + 6.2)).toFixed(1) + '" stroke="#FFC83D" stroke-width="2.6" stroke-linecap="round"/>';
-}
-return s;
-}
-function moonP(t) { return '<path transform="' + t + '" fill="#F6E7A8" d="M22.85 9.02A15 15 0 1 0 35.71 30.08A12.5 12.5 0 0 1 22.85 9.02z"/>'; }
-function icon(k, night) {
-var s;
-if (k === 'clear') s = night ? moonP('translate(1 0)') : sunP(24, 24, 9);
-else if (k === 'partly') s = (night ? moonP('translate(-6 -3) scale(.8)') : sunP(17, 17, 7)) + cloud('#E8EEF7', 'translate(5 8) scale(.82)');
-else if (k === 'cloud') s = cloud('#A9B8CE', 'translate(14 -1) scale(.66)') + cloud('#E8EEF7', 'translate(0 7) scale(.92)');
-else if (k === 'fog') s = cloud('#DCE4F0', 'translate(3 -5) scale(.86)') + '<g stroke="#CBD5E4" stroke-width="2.6" stroke-linecap="round"><line x1="9" y1="33" x2="39" y2="33"/><line x1="14" y1="38.5" x2="40" y2="38.5"/><line x1="9" y1="44" x2="33" y2="44"/></g>';
-else if (k === 'drizzle') s = cloud('#D5DEEB', 'translate(3 -3) scale(.88)') + '<g stroke="#7CC4FF" stroke-width="2.4" stroke-linecap="round"><line x1="16" y1="34" x2="14.6" y2="38"/><line x1="24" y1="36" x2="22.6" y2="40"/><line x1="32" y1="34" x2="30.6" y2="38"/></g>';
-else if (k === 'rain') s = cloud('#D5DEEB', 'translate(3 -3) scale(.88)') + '<g stroke="#4DB0FF" stroke-width="2.8" stroke-linecap="round"><line x1="16" y1="34" x2="13.6" y2="42"/><line x1="24" y1="34" x2="21.6" y2="42"/><line x1="32" y1="34" x2="29.6" y2="42"/></g>';
-else if (k === 'snow') s = cloud('#D5DEEB', 'translate(3 -3) scale(.88)') + '<g fill="#fff"><circle cx="16" cy="36" r="2.4"/><circle cx="24" cy="41" r="2.4"/><circle cx="32" cy="36" r="2.4"/></g>';
-else s = cloud('#9AA8BE', 'translate(3 -4) scale(.88)') + '<g stroke="#4DB0FF" stroke-width="2.4" stroke-linecap="round"><line x1="14" y1="33" x2="12.8" y2="37"/><line x1="37" y1="33" x2="35.8" y2="37"/><line x1="13.5" y1="41" x2="12.3" y2="45"/><line x1="37.5" y1="41" x2="36.3" y2="45"/></g><polygon fill="#FFD23F" points="26,26 18,38 24,38 21,47 32,33 26,33 30,26"/>';
-return '<svg viewBox="0 0 48 48" aria-hidden="true">' + s + '</svg>';
-}
-var SPIN = '<span class="wx-sp"></span>';
-try {
-var sv = JSON.parse(localStorage.getItem(KEY) || 'null');
-if (sv && sv.d && typeof sv.d === 'object') { store = sv.d; nextTry = (+sv.at || 0) + STALE; }
-} catch (e) {}
-function save() { try { localStorage.setItem(KEY, JSON.stringify({ at: Date.now(), d: store })); } catch (e) {} }
-function prune(n) {
-var min = n.h < 7 ? addDays(n.key, -1) : n.key, k, ch = false;
-for (k in store) if (store.hasOwnProperty(k) && k < min) { delete store[k]; ch = true; }
-var och = false;
-['ist', 'eitin'].forEach(function (tb) { var o = ovState.d[tb]; for (var kk in o) if (o.hasOwnProperty(kk) && kk < min) { delete o[kk]; och = true; } });
-if (och) ovSave();
-return ch;
-}
-function cur(tb) {
-var n = nowIst(), p = phaseOf(n.h), rec = recOf(tb || 'ist', addDays(n.key, p.off));
-return { n: n, ph: p.ph, v: (rec && rec[p.slot]) || null };
-}
-root.innerHTML = '<div class="wx-bg"><i class="m"></i><i class="n"></i><i class="g"></i></div>'
-+ '<div class="wx-seg"><div class="wx-seg-pill"></div><button type="button" class="wx-sb on" data-i="0"><span>İstanbul</span></button><button type="button" class="wx-sb" data-i="1"><span>Eitin</span></button></div>'
-+ '<div class="wx-top"><span class="wx-pl">İstanbul Geneli</span><span class="wx-rt"><span class="wx-tm"></span><button type="button" class="pf-ib" id="wx-edit" aria-label="Düzenle" title="Düzenle"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button></span></div>'
-+ '<div class="wx-mid"><div class="wx-ic"></div><div class="wx-txt"><div class="wx-t"></div><div class="wx-d"></div></div></div>'
-+ '<div class="wx-strip"><div class="wx-ax"></div><div class="wx-g"><div class="wx-gd"></div><svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path class="wx-gl" d=""/><path class="wx-gc" data-c="0" d=""/><path class="wx-gc" data-c="1" d=""/><path class="wx-gc" data-c="2" d=""/></svg><span class="wx-e wx-e0">07:00</span><span class="wx-e wx-e1">07:00</span><i class="wx-dot"><b class="wx-dl"></b></i></div><div class="wx-sv"></div></div>'
-+ '<div class="wx-days">' + [0, 1, 2, 3, 4].map(function () { return '<div class="wx-day"><span class="wx-dn"></span><span class="wx-di"></span><span class="wx-dt"></span></div>'; }).join('') + '</div>';
-var elPl = root.querySelector('.wx-pl'), elTm = root.querySelector('.wx-tm'), elIc = root.querySelector('.wx-ic'), elT = root.querySelector('.wx-t'), elD = root.querySelector('.wx-d');
-var cards = Array.prototype.slice.call(root.querySelectorAll('.wx-day')).map(function (c) { return { n: c.querySelector('.wx-dn'), i: c.querySelector('.wx-di'), t: c.querySelector('.wx-dt') }; });
-var elG = root.querySelector('.wx-gl'), elDot = root.querySelector('.wx-dot'), elDl = root.querySelector('.wx-dl'), elE0 = root.querySelector('.wx-e0'), elE1 = root.querySelector('.wx-e1'), snapDot = false, elSv = root.querySelector('.wx-sv'), dotInit = false, phInit = false, phTimer = 0;
-var elGc = Array.prototype.slice.call(root.querySelectorAll('.wx-gc')), elGd = root.querySelector('.wx-gd'), elAx = root.querySelector('.wx-ax');
-function setPhase(ph) {
-cache.ph = ph; root.setAttribute('data-ph', ph); document.documentElement.setAttribute('data-wxph', ph);
-var L = Array.prototype.slice.call(root.querySelectorAll('.wx-bg i'));
-if (!phInit) {
-phInit = true;
-L.forEach(function (el) { el.style.transition = 'none'; el.classList.toggle('on', el.classList.contains(ph)); });
-void root.offsetWidth;
-L.forEach(function (el) { el.style.transition = ''; });
-return;
-}
-L.forEach(function (el) {
-if (el.classList.contains(ph)) { el.classList.remove('prev'); el.classList.add('on'); }
-else if (el.classList.contains('on')) { el.classList.remove('on'); el.classList.add('prev'); }
-});
-clearTimeout(phTimer);
-phTimer = setTimeout(function () { L.forEach(function (el) { if (!el.classList.contains('on')) el.classList.remove('prev'); }); }, 2900);
-}
-function xOfT(t) {
-var A = [[7, 1 / 6], [15, 1 / 2], [19, 5 / 6], [31, 1]], k;
-if (t <= 7) return 1 / 6;
-if (t >= 31) return 1;
-for (k = 0; k < 3; k++) if (t <= A[k + 1][0]) return A[k][1] + (t - A[k][0]) / (A[k + 1][0] - A[k][0]) * (A[k + 1][1] - A[k][1]);
-return 1;
-}
-function mono(xs, ys) {
-var n = xs.length, d = [], m = [], k;
-for (k = 0; k < n - 1; k++) d[k] = (ys[k + 1] - ys[k]) / (xs[k + 1] - xs[k]);
-m[0] = 0; m[n - 1] = 0;
-for (k = 1; k < n - 1; k++) m[k] = (d[k - 1] * d[k] <= 0) ? 0 : 2 * d[k - 1] * d[k] / (d[k - 1] + d[k]);
-return function (x) {
-var i = 0, h, t, t2, t3;
-while (i < n - 2 && x > xs[i + 1]) i++;
-h = xs[i + 1] - xs[i]; t = Math.max(0, Math.min(1, (x - xs[i]) / h)); t2 = t * t; t3 = t2 * t;
-return (2 * t3 - 3 * t2 + 1) * ys[i] + (t3 - 2 * t2 + t) * h * m[i] + (-2 * t3 + 3 * t2) * ys[i + 1] + (t3 - t2) * h * m[i + 1];
-};
-}
-function renderStrip(tb, n) {
-var p = phaseOf(n.h), sk = addDays(n.key, p.off), r = recOf(tb, sk) || {}, d = r.s12, e = r.s16, g = r.s21, pr, pv, ts, lo, hi, span, mid, ys, xs, f, i, path = '', x, t, dx, dy;
-if (!(d || e || g)) { put('sv', elSv, '', true); put('gd', elGd, '', true); put('ax', elAx, '', true); if (cache.gp) { cache.gp = ''; elG.setAttribute('d', ''); } elGc.forEach(function (el, m) { cache['gc' + m] = ''; el.setAttribute('d', ''); }); elDot.classList.remove('on'); elE0.classList.remove('on'); elE1.classList.remove('on'); return; }
-d = d || e || g; e = e || d || g; g = g || e || d;
-put('sv', elSv, '<span class="wx-ss"><em>GÜN</em>' + d[0] + '°C' + mini(d, false) + '</span><span class="wx-ss"><em>AKŞ</em>' + e[0] + '°C' + mini(e, false) + '</span><span class="wx-ss"><em>GEC</em>' + g[0] + '°C' + mini(g, true) + '</span>', true);
-pr = recOf(tb, addDays(sk, -1)); pv = pr && pr.s21 ? pr.s21[0] : g[0];
-ts = [pv, d[0], e[0], g[0], g[0]];
-var u = [], LV, yv, yp, hi2, lo2, q, gh = '', ah = '', cxs = [1 / 6, 1 / 2, 5 / 6], sy = [], vs = [d[0], e[0], g[0]];
-vs.forEach(function (v) { if (u.indexOf(v) < 0) u.push(v); });
-u.sort(function (a, b) { return b - a; });
-LV = u.length === 1 ? [20] : (u.length === 2 ? [5, 35] : [5, 20, 35]);
-yv = function (v) { return LV[u.indexOf(v)]; };
-hi2 = u[0]; lo2 = u[u.length - 1];
-if (u.indexOf(pv) >= 0) yp = yv(pv);
-else if (pv > hi2) yp = u.length === 1 ? 12 : 5;
-else if (pv < lo2) yp = u.length === 1 ? 28 : 35;
-else { for (q = 0; q < u.length - 1; q++) if (pv < u[q] && pv > u[q + 1]) break; yp = LV[q] + (u[q] - pv) / (u[q] - u[q + 1]) * (LV[q + 1] - LV[q]); }
-sy = [yv(d[0]), yv(e[0]), yv(g[0])];
-ys = [yp, sy[0], sy[1], sy[2], sy[2]];
-sy.forEach(function (y, m) {
-var yy = (y / 40 * 100).toFixed(2) + '%';
-gh += '<i class="wx-gh" style="top:' + yy + '"></i>';
-});
-u.forEach(function (v, m) { ah += '<span style="top:' + (LV[m] / 40 * 100).toFixed(2) + '%">' + v + '°</span>'; });
-put('gd', elGd, gh, true); put('ax', elAx, ah, true);
-xs = [0, 1 / 6, 1 / 2, 5 / 6, 1];
-f = mono(xs, ys);
-for (i = 0; i <= 72; i++) { x = i / 72; path += (i ? 'L' : 'M') + (x * 100).toFixed(2) + ' ' + f(x).toFixed(2); }
-if (cache.gp !== path) { cache.gp = path; elG.setAttribute('d', path); }
-[1 / 6, 1 / 2, 5 / 6].forEach(function (c, m) {
-var sp = '', w, xx;
-for (w = 0; w <= 6; w++) { xx = c - 0.013 + 0.026 * w / 6; sp += (w ? 'L' : 'M') + (xx * 100).toFixed(2) + ' ' + f(xx).toFixed(2); }
-if (cache['gc' + m] !== sp) { cache['gc' + m] = sp; elGc[m].setAttribute('d', sp); }
-});
-t = n.h + n.m / 60; if (p.off === -1 || n.h < 7) t = n.h + n.m / 60 + (n.h < 7 ? 24 : 0);
-x = xOfT(t); dx = (x * 100).toFixed(2) + '%'; dy = (f(x) / 40 * 100).toFixed(2) + '%';
-var snap = snapDot && dotInit; snapDot = false;
-if (snap) elDot.classList.remove('sm');
-if (cache.dx !== dx) { cache.dx = dx; elDot.style.left = dx; }
-if (cache.dy !== dy) { cache.dy = dy; elDot.style.top = dy; }
-if (snap) { void elDot.offsetWidth; elDot.classList.add('sm'); }
-elDot.classList.add('on');
-put('dl', elDl, z(n.h) + ':' + z(n.m));
-var y0 = (f(0) / 40 * 100).toFixed(2) + '%', y1 = (f(1) / 40 * 100).toFixed(2) + '%';
-if (cache.y0 !== y0) { cache.y0 = y0; elE0.style.top = y0; }
-if (cache.y1 !== y1) { cache.y1 = y1; elE1.style.top = y1; }
-elE0.classList.remove('on'); elE1.classList.add('on');
-if (!dotInit) { dotInit = true; setTimeout(function () { elDot.classList.add('sm'); }, 80); }
-}
-(function wxSeg() {
-var seg = root.querySelector('.wx-seg'), btns = Array.prototype.slice.call(seg.querySelectorAll('.wx-sb')), had = false;
-function mi() { return document.getElementById('message-input'); }
-function keep(e) { var m = mi(); had = !!(m && document.activeElement === m); if (e.cancelable) e.preventDefault(); }
-seg.addEventListener('mousedown', keep);
-seg.addEventListener('touchstart', function () { var m = mi(); had = !!(m && document.activeElement === m); }, { passive: true });
-btns.forEach(function (b) {
-b.addEventListener('click', function () {
-var i = +b.getAttribute('data-i');
-seg.style.setProperty('--wx-i', String(i));
-activeTab = i === 1 ? 'eitin' : 'ist'; snapDot = true; render();
-btns.forEach(function (x) { x.classList.toggle('on', x === b); });
-var m = mi();
-if (had && m && !m.disabled && document.activeElement !== m) { try { m.focus({ preventScroll: true }); } catch (e) {} }
-had = false;
-});
-});
-})();
-var KINDS = [['clear', 0], ['partly', 2], ['cloud', 3], ['fog', 45], ['drizzle', 51], ['rain', 61], ['snow', 71], ['thunder', 95]];
-var SLOTS = [['s12', 'GÜN'], ['s16', 'AKŞ'], ['s21', 'GEC']];
-var OVK = 'vnWxOv';
-function ovClean(d) {
-var out = { ist: {}, eitin: {} };
-['ist', 'eitin'].forEach(function (tb) {
-var src = d && d[tb];
-if (!src || typeof src !== 'object') return;
-Object.keys(src).filter(function (k) { return /^\d{4}-\d{2}-\d{2}$/.test(k); }).sort().slice(-14).forEach(function (k) {
-var r = src[k], o = {}, any = false;
-['s12', 's16', 's21'].forEach(function (sl) {
-var a = r && r[sl];
-if (Array.isArray(a) && a.length >= 2 && isFinite(a[0]) && isFinite(a[1])) { o[sl] = [Math.max(-99, Math.min(99, Math.round(+a[0]))), (+a[1]) | 0]; any = true; }
-});
-if (any) out[tb][k] = o;
-});
-});
-return out;
-}
-function ovSave() { try { localStorage.setItem(OVK, JSON.stringify(ovState)); } catch (e) {} }
-try {
-var o0 = JSON.parse(localStorage.getItem(OVK) || 'null');
-if (o0 && typeof o0.v === 'number' && o0.d) ovState = { v: o0.v, d: ovClean(o0.d) };
-} catch (e) {}
-function wxOnline() { try { return typeof isConnected === 'function' && !!isConnected(); } catch (e) { return false; } }
-function ovSend() {
-if (ovState.v <= 0 || !wxOnline()) return;
-ovLast = Date.now();
-try { conn.send({ type: 'wx-ov', v: ovState.v, d: ovState.d }); } catch (e) {}
-}
-function ovRetry() { if (ovState.v > ovAckV && Date.now() - ovLast > 6000) ovSend(); }
-window.__wxHello = function () { ovAckV = 0; ovSend(); };
-window.__wxRecv = function (m) {
-if (!m || typeof m.v !== 'number') return;
-if (m.type === 'wx-ack') { if (m.v > ovAckV) ovAckV = m.v; return; }
-if (!m.d || typeof m.d !== 'object') return;
-if (m.v > ovState.v) { ovState = { v: m.v, d: ovClean(m.d) }; ovSave(); render(); }
-else if (m.v < ovState.v) { ovSend(); return; }
-if (wxOnline()) { try { conn.send({ type: 'wx-ack', v: ovState.v }); } catch (e) {} }
-};
-function canEdit() { try { return sessionStorage.getItem('pinLive') === '1'; } catch (e) { return false; } }
-var btnEd = root.querySelector('#wx-edit'), ed = null, edHad = false, edTab = 'ist';
-function syncEdBtn() { btnEd.classList.toggle('can', canEdit() && activeTab === 'eitin'); }
-syncEdBtn();
-window.addEventListener('pin-level', syncEdBtn);
-btnEd.addEventListener('mousedown', function (e) { var m = document.getElementById('message-input'); edHad = !!(m && document.activeElement === m); if (e.cancelable) e.preventDefault(); });
-btnEd.addEventListener('touchstart', function () { var m = document.getElementById('message-input'); edHad = !!(m && document.activeElement === m); }, { passive: true });
-function dayLabel(key, i) { var a = key.split('-'); return (i === 0 ? 'Bugün' : (i === 1 ? 'Yarın' : DN[dow(key)])) + ' · ' + a[2] + '.' + a[1]; }
-function fillRow(row, v) {
-var kk = v ? kind(v[1]) : '';
-row.querySelector('.wxe-t').value = v ? v[0] : '';
-Array.prototype.forEach.call(row.querySelectorAll('.wxe-k'), function (b, j) { b.classList.toggle('on', !!v && KINDS[j][0] === kk); });
-row.classList.remove('bad');
-}
-function buildEd() {
-ed = document.createElement('div');
-ed.id = 'wx-ed';
-ed.innerHTML = '<div class="wxe-card"><div class="wxe-h"></div><div class="wxe-b"></div><div class="wxe-f"><button type="button" data-a="cancel">Vazgeç</button><button type="button" data-a="reset">Sıfırla</button><button type="button" class="pri" data-a="save">Kaydet</button></div></div>';
-document.body.appendChild(ed);
-ed.addEventListener('mousedown', function (e) { if (e.target.closest && e.target.closest('button') && e.cancelable) e.preventDefault(); });
-ed.addEventListener('click', function (e) {
-var k = e.target.closest && e.target.closest('.wxe-k'), a = e.target.closest && e.target.closest('[data-a]');
-if (k) {
-var row = k.parentNode.parentNode;
-Array.prototype.forEach.call(k.parentNode.children, function (x) { x.classList.toggle('on', x === k); });
-row.classList.remove('bad');
-return;
-}
-if (!a) return;
-var act = a.getAttribute('data-a');
-if (act === 'cancel') closeEd();
-else if (act === 'reset') resetEd();
-else if (act === 'save') saveEd();
-});
-ed.addEventListener('input', function (e) { var r = e.target.closest && e.target.closest('.wxe-r'); if (r) r.classList.remove('bad'); });
-}
-function eachRow(fn) {
-Array.prototype.forEach.call(ed.querySelectorAll('.wxe-day'), function (d) {
-Array.prototype.forEach.call(d.querySelectorAll('.wxe-r'), function (r) { fn(d.getAttribute('data-key'), r.getAttribute('data-s'), r); });
-});
-}
-function openEd() {
-if (!canEdit() || activeTab !== 'eitin') return;
-if (!ed) buildEd();
-edTab = activeTab;
-var n = nowIst(), h = '', i;
-for (i = 0; i < 5; i++) {
-(function (key, idx) {
-h += '<div class="wxe-day" data-key="' + key + '"><div class="wxe-dn">' + dayLabel(key, idx) + '</div>';
-SLOTS.forEach(function (sl) {
-h += '<div class="wxe-r" data-s="' + sl[0] + '"><span class="wxe-l">' + sl[1] + '</span><input class="wxe-t" type="number" inputmode="numeric" min="-60" max="60" step="1" placeholder="°C"><div class="wxe-ks">' + KINDS.map(function (k) { return '<button type="button" class="wxe-k" title="' + DESC[k[0]] + '">' + icon(k[0], sl[0] === 's21') + '</button>'; }).join('') + '</div></div>';
-});
-h += '</div>';
-})(addDays(n.key, i), i);
-}
-ed.querySelector('.wxe-h').textContent = 'Hava Durumunu Düzenle · ' + (edTab === 'eitin' ? 'Eitin' : 'İstanbul');
-ed.querySelector('.wxe-b').innerHTML = h;
-eachRow(function (key, sl, row) { var o = ovOf(edTab)[key], r = edTab === 'eitin' ? null : store[key]; fillRow(row, (o && o[sl]) || (r && r[sl]) || null); });
-ed.classList.add('show');
-ed.querySelector('.wxe-b').scrollTop = 0;
-}
-function resetEd() { eachRow(function (key, sl, row) { var r = edTab === 'eitin' ? null : store[key]; fillRow(row, (r && r[sl]) || null); }); }
-function closeEd() {
-if (ed) ed.classList.remove('show');
-var m = document.getElementById('message-input');
-if (edHad && m && !m.disabled) { try { m.focus({ preventScroll: true }); } catch (e) {} }
-edHad = false;
-}
-function saveEd() {
-var bad = null, upd = {};
-eachRow(function (key, sl, row) {
-var t = row.querySelector('.wxe-t').value.trim(), sel = row.querySelector('.wxe-k.on'), base = edTab === 'eitin' ? null : (store[key] && store[key][sl]), temp, code;
-upd[key] = upd[key] || {};
-if (t === '' && !sel) { upd[key][sl] = null; return; }
-if ((t === '' || !sel) && !base) { row.classList.add('bad'); if (!bad) bad = row; return; }
-if (t !== '' && !isFinite(+t)) { row.classList.add('bad'); if (!bad) bad = row; return; }
-temp = t === '' ? base[0] : Math.max(-60, Math.min(60, Math.round(+t)));
-code = sel ? KINDS[Array.prototype.indexOf.call(sel.parentNode.children, sel)][1] : base[1];
-upd[key][sl] = (base && base[0] === temp && kind(base[1]) === kind(code)) ? null : [temp, code];
-});
-if (bad) { try { bad.scrollIntoView({ block: 'center' }); } catch (e) {} return; }
-var map = ovState.d[edTab] = ovState.d[edTab] || {};
-Object.keys(upd).forEach(function (key) {
-var o = map[key] || {}, any = false;
-SLOTS.forEach(function (sl) { var u = upd[key][sl[0]]; if (u) o[sl[0]] = u; else delete o[sl[0]]; if (o[sl[0]]) any = true; });
-if (any) map[key] = o; else delete map[key];
-});
-ovState.v = Math.max(Date.now(), ovState.v + 1);
-ovSave();
-ovSend();
-render();
-closeEd();
-}
-btnEd.addEventListener('click', openEd);
-function mini(v, night) { return v ? '<span class="wx-mi">' + icon(kind(v[1]), night) + '</span>' : ''; }
-function put(k, el, v, html) { if (cache[k] === v) return; cache[k] = v; if (html) el.innerHTML = v; else el.textContent = v; }
-function render() {
-if (btnEd) syncEdBtn();
-var c = cur(activeTab), n = c.n, i, k, rec, ic, a, b, s;
-if (prune(n)) save();
-if (cache.ph !== c.ph) setPhase(c.ph);
-renderStrip(activeTab, n);
-put('tm', elTm, z(n.h) + ':' + z(n.m));
-put('pl', elPl, activeTab === 'eitin' ? 'Eitin Geneli' : 'İstanbul Geneli');
-if (c.v) { k = kind(c.v[1]); put('ic', elIc, icon(k, c.ph === 'g'), true); put('t', elT, c.v[0] + '°C'); put('d', elD, (c.v[1] === 1 ? 'Az bulutlu' : DESC[k])); }
-else { put('ic', elIc, '<span class="wx-sp wx-sp-l"></span>', true); put('t', elT, ''); put('d', elD, ''); }
-for (i = 0; i < 5; i++) {
-var key = addDays(n.key, i); rec = recOf(activeTab, key);
-put('dn' + i, cards[i].n, i === 0 ? 'Bugün' : (i === 1 ? 'Yarın' : DN[dow(key)]));
-s = rec && (rec.s12 || rec.s16 || rec.s21);
-if (s) {
-a = rec.s12 ? rec.s12[0] + '°C' : '–'; b = rec.s21 ? rec.s21[0] + '°C' : '–'; var ev = rec.s16 ? rec.s16[0] + '°C' : '–';
-put('di' + i, cards[i].i, icon(kind(s[1]), false), true); put('dt' + i, cards[i].t, '<span class="wx-tr"><em>GÜN</em>' + a + mini(rec.s12, false) + '</span><span class="wx-tr"><em>AKŞ</em>' + ev + mini(rec.s16, false) + '</span><span class="wx-tr"><em>GEC</em>' + b + mini(rec.s21, true) + '</span>', true);
-} else { put('di' + i, cards[i].i, SPIN, true); put('dt' + i, cards[i].t, '–'); }
-}
-}
-function sbPing() { try { if (window.__vnSbTick) window.__vnSbTick(); } catch (e) {} }
-var sbTab = 'ist';
-function lblOf(tb) {
-var c = cur(tb), s = '<span class="wx-l-i">' + (tb === 'eitin' ? 'EI' : 'IS') + '</span>';
-if (document.documentElement.getAttribute('data-wxph') !== c.ph) document.documentElement.setAttribute('data-wxph', c.ph);
-if (c.v) s += icon(kind(c.v[1]), c.ph === 'g') + '<span class="wx-l-t">' + c.v[0] + '°C</span>';
-else s += '<span class="wx-sp wx-sp-s"></span>';
-return s;
-}
-window.__wxLabel = function () { return lblOf(sbTab); };
-var swapBusy = false;
-function flip() {
-var el = document.querySelector('#vn-sysbar .vs-l');
-if (swapBusy) return;
-if (!el || document.hidden) { sbTab = sbTab === 'ist' ? 'eitin' : 'ist'; return; }
-swapBusy = true;
-el.classList.add('wx-out');
-setTimeout(function () {
-try {
-var oldW = el.getBoundingClientRect().width, newW;
-el.style.width = oldW + 'px';
-sbTab = sbTab === 'ist' ? 'eitin' : 'ist';
-sbPing();
-el.style.width = 'auto';
-newW = el.getBoundingClientRect().width;
-el.style.width = oldW + 'px';
-void el.offsetWidth;
-el.style.width = newW + 'px';
-} catch (e) {}
-setTimeout(function () {
-el.style.width = '';
-el.classList.remove('wx-out');
-swapBusy = false;
-}, 270);
-}, 120);
-}
-setInterval(flip, 10000);
-window.__wxGo = function () {
-var i = sbTab === 'eitin' ? 1 : 0, b = root.querySelector('.wx-sb[data-i="' + i + '"]');
-if (b) b.click();
-try { if (typeof goPanel === 'function') goPanel(1); } catch (e) {}
-};
-function parse(j) {
-var h = j && j.hourly, i, t, hr, key, tp, cd, ok = false;
-if (!h || !h.time || !h.temperature_2m || !h.weather_code) return false;
-for (i = 0; i < h.time.length; i++) {
-t = String(h.time[i]); hr = +t.slice(11, 13); key = t.slice(0, 10);
-if (hr !== 12 && hr !== 16 && hr !== 21) continue;
-tp = h.temperature_2m[i]; cd = h.weather_code[i];
-if (tp == null || cd == null) continue;
-(store[key] = store[key] || {})['s' + hr] = [Math.round(tp), cd | 0]; ok = true;
-}
-return ok;
-}
-function fetchWx(force) {
-if (busy || (!force && Date.now() < nextTry)) return;
-busy = true;
-var ctl = window.AbortController ? new AbortController() : null, to = setTimeout(function () { try { if (ctl) ctl.abort(); } catch (e) {} }, 15000);
-fetch(URL_, ctl ? { signal: ctl.signal, cache: 'no-store' } : { cache: 'no-store' })
-.then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
-.then(function (j) { if (parse(j)) { prune(nowIst()); save(); nextTry = Date.now() + STALE; } else nextTry = Date.now() + RETRY; })
-.catch(function () { nextTry = Date.now() + RETRY; })
-.then(function () { clearTimeout(to); busy = false; render(); sbPing(); });
-}
-function step() {
-var n = nowIst(), m = n.key + ' ' + n.h + ':' + n.m;
-if (n.key !== lastKey) { lastKey = n.key; lastMin = m; render(); fetchWx(true); sbPing(); return; }
-if (m !== lastMin) { lastMin = m; render(); sbPing(); }
-fetchWx(false);
-ovRetry();
-}
-render();
-lastKey = nowIst().key;
-fetchWx(false);
-setInterval(step, 1000);
-window.addEventListener('online', function () { fetchWx(true); });
-window.addEventListener('focus', step);
-window.addEventListener('pageshow', step);
-document.addEventListener('visibilitychange', function () { if (!document.hidden) step(); });
-})();</script>
 <script>(function vnSysbar() {
 var V = window.VNApp;
 if (!V || typeof V.sys !== 'function' || typeof V.barDp !== 'function') return;
@@ -16128,7 +15560,7 @@ else { calM += dd; if (calM < 0) { calM = 11; calY--; } else if (calM > 11) { ca
 calRender();
 });
 cal.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-bar.addEventListener('mousedown', function (e) { if (e.target.closest && e.target.closest('.vs-l, .vs-c, .vs-n, .vs-m')) e.preventDefault(); }, true);
+bar.addEventListener('mousedown', function (e) { if (e.target.closest && e.target.closest('.vs-c, .vs-n, .vs-m')) e.preventDefault(); }, true);
 bar.addEventListener('click', function (e) {
 var mb = e.target.closest ? e.target.closest('.vs-m') : null;
 if (mb) {
@@ -16137,15 +15569,6 @@ try { if (document.body.classList.contains('desk')) return; } catch (x) {}
 try { if (nt.classList.contains('show')) ntClose(); } catch (x) {}
 try { if (cal.classList.contains('show')) calClose(); } catch (x) {}
 try { if (typeof openYtSearch === 'function') openYtSearch(); else if (typeof goPanel === 'function') goPanel(4); } catch (x) {}
-return;
-}
-var lb = e.target.closest ? e.target.closest('.vs-l') : null;
-if (lb) {
-e.stopPropagation();
-try { if (!(typeof isMobileLayout === 'function' && isMobileLayout())) return; } catch (x) {}
-try { if (nt.classList.contains('show')) ntClose(); } catch (x) {}
-try { if (cal.classList.contains('show')) calClose(); } catch (x) {}
-try { if (window.__wxGo) window.__wxGo(); } catch (x) {}
 return;
 }
 var nb = e.target.closest ? e.target.closest('.vs-n') : null;
@@ -16243,10 +15666,10 @@ nt.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 document.addEventListener('click', function (e) {
 if (nt.classList.contains('show') && !(e.target.closest && (e.target.closest('#vn-nt') || e.target.closest('.vs-n')))) ntClose();
 }, true);
-var elL, elC, elN, elB, elT, elBt, c = {};
+var elC, elN, elB, elT, elBt, c = {};
 function build() {
-bar.innerHTML = '<span class="vs-n" aria-label="Bildirimler"><i></i></span><span class="vs-lw"><span class="vs-c"></span><span class="vs-l"></span></span><span class="vs-r"><span class="vs-bt"></span><span class="vs-net"></span><span class="vs-bat"></span><span class="vs-t"></span></span><span class="vs-m" aria-label="Şarkılar" role="button"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v11.3A3.9 3.9 0 1 0 11 17.6V7.4l8-1.6v6.5A3.9 3.9 0 1 0 21 15.6V3.6a.6.6 0 0 0-.7-.6l-10.6 2.1A.6.6 0 0 0 9 5.7z"/></svg></i></span>';
-elL = bar.querySelector('.vs-l'); elC = bar.querySelector('.vs-c'); elN = bar.querySelector('.vs-net'); elBt = bar.querySelector('.vs-bt'); elB = bar.querySelector('.vs-bat'); elT = bar.querySelector('.vs-t'); ntDot();
+bar.innerHTML = '<span class="vs-n" aria-label="Bildirimler"><i></i></span><span class="vs-lw"><span class="vs-c"></span></span><span class="vs-r"><span class="vs-bt"></span><span class="vs-net"></span><span class="vs-bat"></span><span class="vs-t"></span></span><span class="vs-m" aria-label="Şarkılar" role="button"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v11.3A3.9 3.9 0 1 0 11 17.6V7.4l8-1.6v6.5A3.9 3.9 0 1 0 21 15.6V3.6a.6.6 0 0 0-.7-.6l-10.6 2.1A.6.6 0 0 0 9 5.7z"/></svg></i></span>';
+elC = bar.querySelector('.vs-c'); elN = bar.querySelector('.vs-net'); elBt = bar.querySelector('.vs-bt'); elB = bar.querySelector('.vs-bat'); elT = bar.querySelector('.vs-t'); ntDot();
 c = {};
 }
 var fitKey = '', fontReq = false;
@@ -16291,14 +15714,12 @@ function put(k, el, v, isHtml) { if (c[k] === v) return; c[k] = v; if (isHtml) e
 function tick() {
 setH();
 if (!curH) return;
-if (!elL || !bar.contains(elL)) build();
+if (!elC || !bar.contains(elC)) build();
 var o = {}; try { o = JSON.parse(V.sys()) || {}; } catch (e) {}
-var wxl = ''; try { if (window.__wxLabel) wxl = window.__wxLabel(); } catch (e) {}
 var net = o.net === 'wifi' || o.net === 'eth' ? wifi(o.net === 'eth' ? -1 : (o.lvl == null ? -1 : o.lvl))
 : o.net === 'cell' ? cell(o.lvl == null ? -1 : o.lvl)
 : o.net === 'other' ? wifi(-1) : off();
 var b = (typeof o.bat === 'number' && o.bat >= 0) ? batt(o.bat, !!o.chg) : '';
-put('l', elL, wxl, true);
 put('bt', elBt, o.bt ? btIcon() : '', true);
 put('n', elN, net, true);
 put('b', elB, b, true);
