@@ -1217,10 +1217,15 @@ body.np-open #app > #bp-tabs { display: none !important; }
 .pf-in:read-only { color: var(--c-dd); }
 #pf-bio-sec { margin: 14px 0 0; }
 #pf-bio-card { position: relative; }
-#pf-bio { display: block; text-align: center; width: 100%; min-height: 76px; max-height: 180px; margin: 0; padding: 12px 13px 22px; box-sizing: border-box; border: 0; border-radius: var(--r-lg); outline: none; resize: none; background: transparent; color: var(--c-fff); font-family: 'Lexend', sans-serif; font-size: 15px; font-weight: 300; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; }
+#pf-bio { display: block; text-align: center; width: 100%; min-height: 76px; max-height: 180px; margin: 0; padding: 12px 13px 22px; box-sizing: border-box; border: 0; border-radius: var(--r-lg); outline: none; resize: none; background: transparent; color: var(--c-fff); font-family: 'Lexend', sans-serif; font-size: 15px; font-weight: 300; line-height: 1.4; white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; }
 #pf-bio-ph { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; font-size: 15px; font-weight: 300; color: var(--c-55); pointer-events: none; }
 #pf-bio:placeholder-shown ~ #pf-bio-ph { display: flex; }
 #pf-bio:focus { box-shadow: inset 0 0 0 1px var(--accent); }
+#pf-bio, #dm-bio-in { overflow-y: auto; }
+#pf-bio::-webkit-scrollbar, #dm-bio-in::-webkit-scrollbar { width: 5px; }
+#pf-bio::-webkit-scrollbar-track, #dm-bio-in::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
+#pf-bio::-webkit-scrollbar-thumb, #dm-bio-in::-webkit-scrollbar-thumb { background: var(--c-55); border-radius: 3px; }
+@supports not selector(::-webkit-scrollbar) { #pf-bio, #dm-bio-in { scrollbar-width: thin; scrollbar-color: var(--c-55) transparent; } }
 #pf-bio-n { position: absolute; right: 12px; bottom: 6px; font-size: 11px; font-weight: 300; color: var(--c-66); pointer-events: none; font-variant-numeric: tabular-nums; }
 .pf-in:not(:read-only):focus { background: var(--c-1a); box-shadow: 0 0 0 1px var(--accent); }
 .pf-in.bad { box-shadow: 0 0 0 1px var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--c-1a)); }
@@ -12494,13 +12499,14 @@ const fileUp = document.createElement('input'); fileUp.type = 'file'; fileUp.acc
 const sq = pv.querySelector('#dm-pv-sq'), pfAv = pf.querySelector('#dm-pf-av'), pfName = pf.querySelector('#dm-pf-name'), pfNin = pf.querySelector('#dm-pf-nin'), lightsEl = pf.querySelector('#dm-lights');
 let cur = '', editingName = false, lightKey = null;
 const bioBox = pf.querySelector('#dm-pf-bio'), bioTa = pf.querySelector('#dm-pf-bio-t'), bioCnt = pf.querySelector('#dm-pf-bio-n');
-function bioFit() { try { bioTa.style.height = 'auto'; bioTa.style.height = Math.min(180, bioTa.scrollHeight + 2) + 'px'; } catch (e) {} }
+function bioFit() { try { bioTa.style.height = 'auto'; bioTa.style.height = (bioTa.scrollHeight + 2) + 'px'; } catch (e) {} }
 function dmBioPaint(c) {
 const adm = notifCanSend();
 bioTa.readOnly = !adm;
 bioBox.style.display = (adm || c.b) ? '' : 'none';
 if (document.activeElement !== bioTa) bioTa.value = c.b || '';
 bioCnt.textContent = bioTa.value.length + '/150';
+bioCnt.style.display = adm ? '' : 'none';
 bioFit();
 }
 function dmBioCommit() {
@@ -12568,15 +12574,20 @@ lightsFor(c.p);
 }
 function closeAll() {
 try { dmBioCommit(); } catch (e) {}
+const kbBack = dmKbBack; dmKbBack = false;
+if (kbBack) { const f = () => { try { if (ctxId && !pf.classList.contains('show') && !messageInput.disabled && (!isMobileLayout() || view === 'chat')) messageInput.focus({ preventScroll: true }); } catch (e) {} }; [0, 60, 250].forEach((ms) => setTimeout(f, ms)); }
 if (editingName) { editingName = false; pfNin.style.display = 'none'; pfName.style.display = ''; }
 pv.classList.remove('show'); pf.classList.remove('show'); cur = '';
 if (pf.parentNode !== page) page.appendChild(pf);
 document.body.classList.remove('dm-pf-open');
 try { syncBarVis(); } catch (e) {}
 }
+var dmKbBack = false, barPdAt = 0, barPdKb = false;
 function openPf(id, fromBar) {
 cur = id;
+dmKbBack = !!fromBar && (document.activeElement === messageInput || (Date.now() - barPdAt < 900 && barPdKb));
 try { const a = document.activeElement; if (a && a !== document.body && a.blur) a.blur(); messageInput.blur(); } catch (e) {}
+if (fromBar) [40, 160, 400].forEach((ms) => setTimeout(() => { try { if (pf.classList.contains('show') && document.activeElement === messageInput) messageInput.blur(); } catch (e) {} }, ms));
 if (fromBar) (isMobileLayout() ? panes : (document.getElementById('pane-chat') || panes)).appendChild(pf); else if (pf.parentNode !== page) page.appendChild(pf);
 pf.classList.toggle('admin', notifCanSend());
 pf.classList.add('show');
@@ -12658,6 +12669,7 @@ barEl = document.createElement('div'); barEl.id = 'dm-bar';
 barEl.innerHTML = '<button type="button" id="dm-bar-back" aria-label="DM listesi" title="DM listesi">' + SV_BACK + '</button><div id="dm-bar-mid"><div id="dm-bar-av"></div><div id="dm-bar-nm"></div></div><button type="button" id="dm-bar-game" aria-label="Oyun daveti gönder" title="Oyun">' + GAME_PAD_SVG + '</button>';
 barAv = barEl.querySelector('#dm-bar-av'); barNm = barEl.querySelector('#dm-bar-nm');
 placeBar();
+barEl.addEventListener('pointerdown', () => { barPdAt = Date.now(); barPdKb = document.activeElement === messageInput; }, true);
 barEl.addEventListener('click', (e) => {
 if (e.target.closest && e.target.closest('#dm-bar-back')) { leaveDm(); return; }
 if (e.target.closest && e.target.closest('#dm-bar-game')) { e.stopPropagation(); try { gameOpenPicker(); } catch (er) {} return; }
@@ -15050,8 +15062,8 @@ body.lv-admin #bp-msg-add { display: flex; }
 #dm-pf-name { max-width: 100%; font-size: 20px; font-weight: 700; line-height: 1.25; color: var(--c-fff); text-align: center; overflow-wrap: anywhere; word-break: break-word; }
 #dm-pf-nin { display: none; width: min(260px, 100%); box-sizing: border-box; border: 1px solid var(--c-33); border-radius: var(--r-md); background: var(--c-000); color: var(--c-fff); outline: none; font-size: 18px; font-weight: 700; text-align: center; padding: 6px 10px; caret-color: var(--accent); font-family: 'Lexend', sans-serif; }
 #dm-pf.admin #dm-pf-av, #dm-pf.admin #dm-pf-name { cursor: pointer; }
-#dm-pf-bio { position: relative; width: min(300px, 100%); box-sizing: border-box; background: var(--c-111); border: 1px solid var(--c-33); border-radius: var(--r-lg); overflow: hidden; }
-#dm-pf-bio-t { display: block; width: 100%; min-height: 76px; max-height: 180px; margin: 0; padding: 12px 13px 22px; box-sizing: border-box; border: 0; border-radius: var(--r-lg); outline: none; resize: none; background: transparent; color: var(--c-fff); font-family: 'Lexend', sans-serif; font-size: 15px; font-weight: 300; line-height: 1.4; text-align: center; white-space: pre-wrap; overflow-wrap: anywhere; caret-color: var(--accent); }
+#dm-pf-bio { position: relative; width: 100%; box-sizing: border-box; background: var(--c-111); border: 1px solid var(--c-33); border-radius: var(--r-lg); overflow: hidden; }
+#dm-pf-bio-t { display: block; width: 100%; min-height: 76px; max-height: none; overflow: hidden; margin: 0; padding: 12px 13px 22px; box-sizing: border-box; border: 0; border-radius: var(--r-lg); outline: none; resize: none; background: transparent; color: var(--c-fff); font-family: 'Lexend', sans-serif; font-size: 15px; font-weight: 300; line-height: 1.4; text-align: center; white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; caret-color: var(--accent); }
 #dm-pf-bio-t:focus { box-shadow: inset 0 0 0 1px var(--accent); }
 #dm-pf-bio-ph { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; font-size: 15px; font-weight: 300; color: var(--c-55); pointer-events: none; }
 #dm-pf-bio-t:placeholder-shown ~ #dm-pf-bio-ph { display: flex; }
@@ -15059,7 +15071,7 @@ body.lv-admin #bp-msg-add { display: flex; }
 #dm-pf:not(.admin) #dm-pf-bio-t { pointer-events: none; -webkit-user-select: none; user-select: none; min-height: 0; padding-bottom: 12px; }
 #dm-pf:not(.admin) #dm-pf-bio-n, #dm-pf:not(.admin) #dm-pf-bio-ph { display: none; }
 #dm-bio-wrap { position: relative; width: 100%; box-sizing: border-box; }
-#dm-bio-in { display: block; width: 100%; min-height: 76px; max-height: 140px; margin: 0; padding: 8px 10px 20px; box-sizing: border-box; border: 1px solid var(--c-33); border-radius: var(--r-md); background: var(--c-000); color: var(--c-fff); outline: none; resize: none; font-family: 'Lexend', sans-serif; font-size: 15px; font-weight: 300; line-height: 1.4; text-align: center; white-space: pre-wrap; overflow-wrap: anywhere; caret-color: var(--accent); }
+#dm-bio-in { display: block; width: 100%; min-height: 76px; max-height: 140px; margin: 0; padding: 8px 10px 20px; box-sizing: border-box; border: 1px solid var(--c-33); border-radius: var(--r-md); background: var(--c-000); color: var(--c-fff); outline: none; resize: none; font-family: 'Lexend', sans-serif; font-size: 15px; font-weight: 300; line-height: 1.4; text-align: center; white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; caret-color: var(--accent); }
 #dm-bio-in:focus { border-color: var(--accent); }
 #dm-bio-ph { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; font-size: 15px; font-weight: 300; color: var(--c-55); pointer-events: none; }
 #dm-bio-in:placeholder-shown ~ #dm-bio-ph { display: flex; }
