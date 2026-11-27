@@ -12398,21 +12398,142 @@ if (gameParse(tx) !== null) return 'Oyun';
 try { if (new RegExp(YT_URL_RE.source, YT_URL_RE.flags.replace('g', '')).test(tx)) return 'Şarkı'; } catch (e) {}
 return tx.replace(/\s+/g, ' ').trim().slice(0, 80);
 }
+const DM_GIF_MAX = 6000000, DM_INLINE_MAX = 100000;
+let dmIdbP = null;
+function dmIdb() { if (!dmIdbP) dmIdbP = new Promise((res) => { try { if (!window.indexedDB) { res(null); return; } try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {} const r = indexedDB.open('vnPhotos', 1); r.onupgradeneeded = () => { try { r.result.createObjectStore('p'); } catch (e) {} }; r.onsuccess = () => res(r.result); r.onerror = () => res(null); r.onblocked = () => res(null); } catch (e) { res(null); } }); return dmIdbP; }
+function dmIdbOp(mode, fn) { return dmIdb().then((db) => new Promise((res) => { if (!db) { res({ ok: false }); return; } try { const tx = db.transaction('p', mode); const rq = fn(tx.objectStore('p')); tx.oncomplete = () => res({ ok: true, v: rq ? rq.result : undefined }); tx.onerror = () => res({ ok: false }); tx.onabort = () => res({ ok: false }); } catch (e) { res({ ok: false }); } })); }
+function dmIdbPut(k, v) { return dmIdbOp('readwrite', (st) => st.put(v, k)); }
+function dmIdbGet(k) { return dmIdbOp('readonly', (st) => st.get(k)); }
+function dmIdbDel(k) { return dmIdbOp('readwrite', (st) => st.delete(k)); }
 function dmClean(o) {
 if (!o || typeof o.id !== 'string' || !o.id || o.id.length > 40 || typeof o.n !== 'string') return null;
 const n = o.n.replace(/\s+/g, ' ').trim().slice(0, 40);
 if (!n || typeof o.rev !== 'number' || typeof o.ts !== 'number') return null;
-const ph = (typeof o.p === 'string' && o.p.indexOf('data:image/') === 0 && o.p.length <= (o.p.indexOf('data:image/gif') === 0 ? 340000 : 150000)) ? o.p : '';
+const ph = (typeof o.p === 'string' && o.p.indexOf('data:image/') === 0 && o.p.length <= (o.p.indexOf('data:image/gif') === 0 ? DM_GIF_MAX : 150000)) ? o.p : '';
 const bio = (o.d !== 1 && typeof o.b === 'string') ? o.b.replace(/\r\n?/g, '\n').slice(0, 150) : '';
 const ai = (o.d !== 1 && o.ai === 1) ? 1 : 0;
 return { id: o.id, n: n, p: o.d === 1 ? '' : ph, b: bio, ts: o.ts, rev: o.rev, d: o.d === 1 ? 1 : 0, ai: ai, o: ai ? 1 : (o.o === 0 ? 0 : (o.o === 2 ? 2 : 1)) };
 }
 function dmPh(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return s.length.toString(36) + '-' + (h >>> 0).toString(36); }
 const dmPhWait = {};
-function dmGifTry(f, cb) { if (!f || f.type !== 'image/gif' || f.size > 250000) return false; const fr = new FileReader(); fr.onload = () => { const r = String(fr.result || ''); if (r.indexOf('data:image/gif') === 0 && r.length <= 340000) cb(r); }; fr.onerror = () => {}; fr.readAsDataURL(f); return true; }
+function dmLzw(ix) {
+const out = []; let cur = 0, sh = 0;
+const emit = (c, sz) => { cur |= c << sh; sh += sz; while (sh >= 8) { out.push(cur & 255); cur >>>= 8; sh -= 8; } };
+let size = 9, next = 258, tab = new Map();
+emit(256, size);
+let code = ix[0];
+for (let i = 1; i < ix.length; i++) {
+const k = ix[i], key = code * 256 + k, nx = tab.get(key);
+if (nx === undefined) {
+emit(code, size);
+if (next === 4096) { emit(256, size); next = 258; size = 9; tab = new Map(); }
+else { if (next >= (1 << size)) size++; tab.set(key, next++); }
+code = k;
+} else code = nx;
+}
+emit(code, size); emit(257, size);
+if (sh > 0) out.push(cur & 255);
+return out;
+}
+function dmGifEnc(frs, w, h, dl) {
+const o = [];
+const u16 = (v) => { o.push(v & 255, (v >> 8) & 255); };
+'GIF89a'.split('').forEach((c) => o.push(c.charCodeAt(0)));
+u16(w); u16(h); o.push(0xF7, 0, 0);
+for (let i = 0; i < 256; i++) { if (i < 252) { const r = Math.floor(i / 42), g = Math.floor((i % 42) / 6), b = i % 6; o.push(Math.round(r * 255 / 5), Math.round(g * 255 / 6), Math.round(b * 255 / 5)); } else o.push(0, 0, 0); }
+o.push(0x21, 0xFF, 0x0B); 'NETSCAPE2.0'.split('').forEach((c) => o.push(c.charCodeAt(0))); o.push(3, 1, 0, 0, 0);
+frs.forEach((ix, n) => {
+o.push(0x21, 0xF9, 4, 0); u16(dl[n]); o.push(0, 0);
+o.push(0x2C); u16(0); u16(0); u16(w); u16(h); o.push(0, 8);
+const d = dmLzw(ix);
+for (let p = 0; p < d.length; p += 255) { const l = Math.min(255, d.length - p); o.push(l); for (let q = 0; q < l; q++) o.push(d[p + q]); }
+o.push(0);
+});
+o.push(0x3B);
+return new Uint8Array(o);
+}
+async function dmGifShrink(f) {
+if (typeof ImageDecoder === 'undefined') return null;
+const dec = new ImageDecoder({ data: await f.arrayBuffer(), type: 'image/gif' });
+await dec.tracks.ready;
+const total = dec.tracks.selectedTrack.frameCount;
+if (!total) return null;
+const S = 160;
+const cv = document.createElement('canvas'); cv.width = S; cv.height = S;
+const g = cv.getContext('2d', { willReadFrequently: true });
+const base = Math.max(1, Math.ceil(total / 100));
+const keep = [];
+for (let i = 0; i < total; i++) {
+const im = (await dec.decode({ frameIndex: i })).image;
+const ms = (im.duration || 100000) / 1000;
+if (i % base === 0) {
+const iw = im.displayWidth, ih = im.displayHeight, m = Math.min(iw, ih);
+g.fillStyle = '#222'; g.fillRect(0, 0, S, S);
+g.drawImage(im, (iw - m) / 2, (ih - m) / 2, m, m, 0, 0, S, S);
+keep.push({ d: g.getImageData(0, 0, S, S), ms: 0 });
+}
+keep[keep.length - 1].ms += ms;
+im.close();
+}
+try { dec.close(); } catch (e) {}
+const c2 = document.createElement('canvas'); const g2 = c2.getContext('2d', { willReadFrequently: true });
+const tries = [[160, 1], [128, 1], [128, 2], [96, 2], [96, 3]];
+for (const tr of tries) {
+const sz = tr[0], st = tr[1];
+c2.width = sz; c2.height = sz;
+const frs = [], dl = [];
+for (let i = 0; i < keep.length; i += st) {
+let ms = 0; for (let j = i; j < Math.min(keep.length, i + st); j++) ms += keep[j].ms;
+let px;
+if (sz === S) px = keep[i].d.data;
+else { g.putImageData(keep[i].d, 0, 0); g2.clearRect(0, 0, sz, sz); g2.drawImage(cv, 0, 0, S, S, 0, 0, sz, sz); px = g2.getImageData(0, 0, sz, sz).data; }
+const ix = new Uint8Array(sz * sz);
+for (let p = 0, q = 0; q < ix.length; p += 4, q++) ix[q] = Math.round(px[p] / 51) * 42 + Math.round(px[p + 1] / 42.5) * 6 + Math.round(px[p + 2] / 51);
+frs.push(ix); dl.push(Math.max(2, Math.round(ms / 10)));
+}
+const bytes = dmGifEnc(frs, sz, sz, dl);
+if (bytes.length <= 3000000) {
+let s = ''; for (let p = 0; p < bytes.length; p += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(p, p + 0x8000));
+return 'data:image/gif;base64,' + btoa(s);
+}
+}
+return null;
+}
+function dmGifTry(f, cb, fb) { if (!f || f.type !== 'image/gif') return false; if (f.size > 4000000) { dmGifShrink(f).then((r) => { if (r) cb(r); else if (fb) fb(); }).catch(() => { if (fb) fb(); }); return true; } const fr = new FileReader(); fr.onload = () => { const r = String(fr.result || ''); if (r.indexOf('data:image/gif') === 0 && r.length <= DM_GIF_MAX) cb(r); }; fr.onerror = () => {}; fr.readAsDataURL(f); return true; }
 let list = [];
-try { const a = JSON.parse(lsGet('dmChats') || '[]'); if (Array.isArray(a)) a.forEach((o) => { const c = dmClean(o); if (c) list.push(c); }); } catch (e) {}
-function save() { try { lsSet('dmChats', JSON.stringify(list)); } catch (e) {} }
+const dmPending = new Set(), dmIdbLast = {}; let dmIdbOk = null;
+try { const a = JSON.parse(lsGet('dmChats') || '[]'); if (Array.isArray(a)) a.forEach((o) => { const c = dmClean(o); if (c) { list.push(c); if (o && o.pi === 1 && !c.p && !c.d) dmPending.add(c.id); } }); } catch (e) {}
+function dmHydrate() {
+const ids = Array.from(dmPending);
+if (!ids.length) return;
+Promise.all(ids.map((id) => dmIdbGet('dm:' + id).then((r) => {
+dmPending.delete(id);
+const v = r && r.ok ? r.v : null;
+if (typeof v === 'string' && v.indexOf('data:image/') === 0 && v.length <= (v.indexOf('data:image/gif') === 0 ? DM_GIF_MAX : 150000)) {
+const i = list.findIndex((x) => x.id === id && !x.d);
+if (i >= 0 && !list[i].p) { list[i] = Object.assign({}, list[i], { p: v }); dmIdbLast[id] = v; return true; }
+}
+return false;
+}))).then((a) => { if (a.some(Boolean)) { try { render(); } catch (e) {} try { paintCur(); } catch (e) {} try { syncBar(); } catch (e) {} } });
+}
+dmIdb().then((db) => { dmIdbOk = !!db; if (db) { try { dmHydrate(); } catch (e) {} } else dmPending.clear(); });
+function save() {
+try {
+const out = [], puts = [];
+list.forEach((c) => {
+if (dmIdbOk === true && c.p && c.p.length > DM_INLINE_MAX) {
+out.push(Object.assign({}, c, { p: '', pi: 1 }));
+if (dmIdbLast[c.id] !== c.p) { dmIdbLast[c.id] = c.p; puts.push(c); }
+} else if (!c.p && dmPending.has(c.id)) out.push(Object.assign({}, c, { pi: 1 }));
+else {
+out.push(c);
+if (dmIdbLast[c.id] !== undefined && !dmPending.has(c.id)) { delete dmIdbLast[c.id]; dmIdbDel('dm:' + c.id); }
+}
+});
+puts.forEach((c) => { dmIdbPut('dm:' + c.id, c.p).then((r) => { if (!r.ok) { delete dmIdbLast[c.id]; dmIdbOk = false; try { lsSet('dmChats', JSON.stringify(list)); } catch (e) {} } }); });
+lsSet('dmChats', JSON.stringify(out));
+} catch (e) {}
+}
 const box = document.createElement('div'); box.id = 'dm-list';
 page.insertBefore(box, page.firstChild);
 let pinId = '', pinRev = 0;
@@ -12523,7 +12644,7 @@ try { conn.send({ type: 'dm-photo', id: c.id, ph: d.ph, d: c.p }); } catch (e) {
 };
 window.__dmPhoto = function (d) {
 if (!d || typeof d.id !== 'string' || typeof d.ph !== 'string' || typeof d.d !== 'string') return;
-if (d.d.indexOf('data:image/') !== 0 || d.d.length > (d.d.indexOf('data:image/gif') === 0 ? 340000 : 150000)) return;
+if (d.d.indexOf('data:image/') !== 0 || d.d.length > (d.d.indexOf('data:image/gif') === 0 ? DM_GIF_MAX : 150000)) return;
 if (!dmPhWait[d.id + ':' + d.ph] || dmPh(d.d) !== d.ph) return;
 delete dmPhWait[d.id + ':' + d.ph];
 const i = list.findIndex((x) => x.id === d.id && !x.d);
@@ -12602,7 +12723,7 @@ avX.addEventListener('click', (e) => { e.stopPropagation(); pend = ''; setAv(); 
 fileIn.addEventListener('change', () => {
 const f = fileIn.files && fileIn.files[0];
 if (!f || !/^image\//.test(f.type)) return;
-if (dmGifTry(f, (g) => { pend = g; setAv(); })) return;
+const crop = () => {
 const url = URL.createObjectURL(f);
 const im = new Image();
 im.onload = () => {
@@ -12611,6 +12732,9 @@ catch (e) { URL.revokeObjectURL(url); }
 };
 im.onerror = () => { URL.revokeObjectURL(url); };
 im.src = url;
+};
+if (dmGifTry(f, (g) => { pend = g; setAv(); }, crop)) return;
+crop();
 });
 [cancel, saveBtn].forEach((b) => b.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); }));
 cancel.addEventListener('click', closeBox);
@@ -12770,6 +12894,7 @@ const c = ctxId ? list.find((x) => x.id === ctxId && !x.d) : null;
 if (ctxId && (!c || isLocked(c))) { leaveDm(); return; }
 if (!c) return;
 barNm.textContent = ''; barNm.classList.toggle('has-ai', !!c.ai);
+try { const gb = barEl.querySelector('#dm-bar-game'); if (gb) gb.style.visibility = c.ai ? 'hidden' : ''; } catch (e) {}
 if (c.ai) { const nt3 = document.createElement('span'); nt3.className = 'dm-nt'; nt3.textContent = c.n; barNm.appendChild(nt3); barNm.appendChild(aiTag()); } else barNm.textContent = c.n;
 barAv.style.backgroundImage = c.p ? 'url("' + c.p + '")' : '';
 barAv.textContent = c.p ? '' : (Array.from(c.n)[0] || '?').toUpperCase();
@@ -12815,7 +12940,7 @@ placeBar();
 barEl.addEventListener('pointerdown', () => { barPdAt = Date.now(); barPdKb = document.activeElement === messageInput; }, true);
 barEl.addEventListener('click', (e) => {
 if (e.target.closest && e.target.closest('#dm-bar-back')) { leaveDm(); return; }
-if (e.target.closest && e.target.closest('#dm-bar-game')) { e.stopPropagation(); try { gameOpenPicker(); } catch (er) {} return; }
+if (e.target.closest && e.target.closest('#dm-bar-game')) { e.stopPropagation(); try { const cg = ctxId ? list.find((x) => x.id === ctxId && !x.d) : null; if (!(cg && cg.ai)) gameOpenPicker(); } catch (er) {} return; }
 if (ctxId) openPf(ctxId, true);
 });
 window.addEventListener('vn-view', syncBarVis);
@@ -12904,7 +13029,7 @@ pfAv.addEventListener('click', () => { if (!notifCanSend()) return; fileUp.value
 fileUp.addEventListener('change', () => {
 const f = fileUp.files && fileUp.files[0];
 if (!f || !/^image\//.test(f.type) || !notifCanSend()) return;
-if (dmGifTry(f, (g) => { if (notifCanSend() && curChat()) upd({ p: g }); })) return;
+const crop = () => {
 const url = URL.createObjectURL(f);
 const im = new Image();
 im.onload = () => {
@@ -12913,6 +13038,9 @@ catch (e) { URL.revokeObjectURL(url); }
 };
 im.onerror = () => { URL.revokeObjectURL(url); };
 im.src = url;
+};
+if (dmGifTry(f, (g) => { if (notifCanSend() && curChat()) upd({ p: g }); }, crop)) return;
+crop();
 });
 function finishName(saveIt) {
 if (!editingName) return;
