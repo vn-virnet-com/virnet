@@ -12518,6 +12518,7 @@ function bioFit() { try { bioTa.style.height = 'auto'; bioTa.style.height = (bio
 function dmBioPaint(c) {
 const adm = notifCanSend();
 bioTa.readOnly = !adm;
+bioTa.tabIndex = adm ? 0 : -1;
 bioBox.style.display = (adm || c.b) ? '' : 'none';
 if (document.activeElement !== bioTa) bioTa.value = c.b || '';
 bioCnt.textContent = bioTa.value.length + '/150';
@@ -12533,6 +12534,8 @@ if (v !== (c.b || '')) upd({ b: v });
 bioTa.addEventListener('input', () => { bioCnt.textContent = bioTa.value.length + '/150'; bioFit(); });
 bioTa.addEventListener('keydown', (e) => { if (e.key === 'Escape') { dmBioCommit(); return; } e.stopPropagation(); });
 bioTa.addEventListener('blur', dmBioCommit);
+['selectstart','copy','cut','contextmenu','dragstart'].forEach((ev) => bioBox.addEventListener(ev, (e) => { if (!notifCanSend()) { e.preventDefault(); e.stopPropagation(); } }, true));
+bioTa.addEventListener('focus', () => { if (!notifCanSend()) bioTa.blur(); });
 function curChat() { return list.find((x) => x.id === cur && !x.d) || null; }
 function lightsSet(cols) {
 for (let i = 0; i < 3; i++) {
@@ -15083,6 +15086,8 @@ body.lv-admin #bp-msg-add { display: flex; }
 #dm-pf-bio-ph { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; font-size: 15px; font-weight: 300; color: var(--c-55); pointer-events: none; }
 #dm-pf-bio-t:placeholder-shown ~ #dm-pf-bio-ph { display: flex; }
 #dm-pf-bio-n { position: absolute; right: 12px; bottom: 6px; font-size: 11px; font-weight: 300; color: var(--c-66); pointer-events: none; font-variant-numeric: tabular-nums; }
+#dm-pf:not(.admin) #dm-pf-bio, #dm-pf:not(.admin) #dm-pf-bio * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+#dm-pf:not(.admin) #dm-pf-bio-t::selection { background: transparent; color: inherit; }
 #dm-pf:not(.admin) #dm-pf-bio-t { pointer-events: none; -webkit-user-select: none; user-select: none; min-height: 0; padding-bottom: 12px; }
 #dm-pf:not(.admin) #dm-pf-bio-n, #dm-pf:not(.admin) #dm-pf-bio-ph { display: none; }
 #dm-bio-wrap { position: relative; width: 100%; box-sizing: border-box; }
