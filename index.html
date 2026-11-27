@@ -7156,7 +7156,7 @@ var PNT_ICON_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5C1
 var GAME_KEY = 'gameStates', GAME_PLAY_KEY = 'gamePlay', GAME_PLAY_MAX = 6 * 3600 * 1000;
 var GAME_PAD_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="11" x2="10" y2="11"/><line x1="8" y1="9" x2="8" y2="13"/><line x1="15" y1="12" x2="15.01" y2="12"/><line x1="18" y1="10" x2="18.01" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></svg>';
 var GAME_BURGER_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="35" width="34" height="5" rx="2.5" fill="#7A3E1D"/><path d="M8 32h32v3H30l-3 4-3-4H8z" fill="#FFC83D"/><rect x="8" y="28" width="32" height="4" rx="2" fill="#E5432F"/><path d="M6 24q3-3 6 0t6 0t6 0t6 0t6 0t6 0v4H6z" fill="#6CC04A"/><path d="M8 23C8 11 16 6 24 6s16 5 16 17z" fill="#E8913A"/><g fill="#FFF1CF"><ellipse cx="17" cy="13" rx="1.7" ry="1"/><ellipse cx="24" cy="10" rx="1.7" ry="1"/><ellipse cx="31" cy="13" rx="1.7" ry="1"/><ellipse cx="21" cy="17" rx="1.7" ry="1"/><ellipse cx="28" cy="17" rx="1.7" ry="1"/></g><rect x="8" y="40" width="32" height="5" rx="2.5" fill="#E8913A"/></svg>';
-var gameCards = {}, gameMine = {}, gamePeer = {}, gameActive = null, gameOver = null, gameInerted = [], gameInvAt = 0;
+var gameKindMap = {}, gameCards = {}, gameMine = {}, gamePeer = {}, gameActive = null, gameOver = null, gameInerted = [], gameInvAt = 0;
 var GAME_WAIT_MS = 30000, gameTimers = {}, gameToAt = {}, gameOwn = {}, gameTickI = 0, gameFocusBack = false, gameMediaGuard = 0;
 var gmMedia = new Set();
 (function () {
@@ -7375,7 +7375,7 @@ const el = document.createElement('div');
 const kind = (typeof name === 'string' && name.indexOf(PNT_MARK) === 0) ? 'paint' : (typeof name === 'string' && name.indexOf(DN_MARK) === 0) ? 'dnow' : 'kuks';
 if (kind === 'paint') name = name.slice(PNT_MARK.length);
 else if (kind === 'dnow') name = name.slice(DN_MARK.length);
-el._kind = kind;
+el._kind = kind; gameKindMap[id] = kind;
 el.className = 'gm-card' + (kind === 'paint' ? ' pnt' : kind === 'dnow' ? ' dnow' : '');
 el.innerHTML = '<div class="gm-bg"></div><div class="gm-ui"><div class="gm-head"><div class="gm-cover' + (kind === 'paint' ? ' pnt' : kind === 'dnow' ? ' dnow' : '') + '">' + (kind === 'paint' ? PNT_ICON_SVG : kind === 'dnow' ? DN_ICON_SVG : GAME_BURGER_SVG) + '</div><div class="gm-title"></div></div>' +
 '<button type="button" class="gm-join"><span class="gm-lab">Katıl ve Oyna</span><span class="gm-cnt">0/2</span></button></div>';
@@ -7559,7 +7559,7 @@ gameInerted = [];
 Array.from(document.body.children).forEach((ch) => { if (ch.id === 'pin-lock' || ch.id === 'idle-modal') return; if (!ch.inert) { try { ch.inert = true; ch.setAttribute('aria-hidden', 'true'); gameInerted.push(ch); } catch (e) {} } });
 document.body.appendChild(ov);
 gameOver = ov;
-const gkind = (gameCards[id] && gameCards[id]._kind) || 'kuks';
+const gkind = gameKindMap[id] || (gameCards[id] && gameCards[id]._kind) || 'kuks';
 if (gkind === 'paint') {
 ov.setAttribute('aria-label', 'Paint');
 ov.querySelector('.gm-bar-t').textContent = 'Paint';
@@ -14978,9 +14978,13 @@ body.lv-admin #bp-msg-add { display: flex; }
 body.dm-bar-on #dm-bar { display: flex; }
 body.dm-pf-open #dm-bar { display: none; }
 #dm-bar-back { flex: 0 0 52px; width: 52px; height: 100%; padding: 0; border: 0; background: transparent; color: var(--c-fff); display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-#dm-bar-back.alert { animation: np-back-blink 1s ease-in-out infinite; }
-#dm-bar-back.alert:active { animation: none; background: var(--c-33); color: var(--c-fff); }
-@media (prefers-reduced-motion: reduce) { #dm-bar-back.alert { animation: none; background: color-mix(in srgb, var(--warn) 32%, var(--c-1a)); color: var(--warn); } }
+@keyframes dm-back-blink {
+0%, 100% { color: var(--c-fff); }
+50% { color: var(--warn); }
+}
+#dm-bar-back.alert { animation: dm-back-blink 1s ease-in-out infinite; }
+#dm-bar-back.alert:active { animation: none; background: transparent; color: var(--c-fff); }
+@media (prefers-reduced-motion: reduce) { #dm-bar-back.alert { animation: none; background: transparent; color: var(--warn); } }
 #dm-bar-back svg { display: block; width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 #dm-bar-mid { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
 #dm-bar-av { flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; line-height: 1; color: var(--on-accent); background: linear-gradient(150deg, var(--accent), color-mix(in srgb, var(--accent) 58%, var(--c-000))); background-size: cover; background-position: center; background-repeat: no-repeat; overflow: hidden; }
