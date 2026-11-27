@@ -12398,7 +12398,7 @@ if (gameParse(tx) !== null) return 'Oyun';
 try { if (new RegExp(YT_URL_RE.source, YT_URL_RE.flags.replace('g', '')).test(tx)) return 'Şarkı'; } catch (e) {}
 return tx.replace(/\s+/g, ' ').trim().slice(0, 80);
 }
-const DM_GIF_MAX = 6000000, DM_INLINE_MAX = 100000;
+const DM_GIF_MAX = 14000000, DM_INLINE_MAX = 100000;
 let dmIdbP = null;
 function dmIdb() { if (!dmIdbP) dmIdbP = new Promise((res) => { try { if (!window.indexedDB) { res(null); return; } try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {} const r = indexedDB.open('vnPhotos', 1); r.onupgradeneeded = () => { try { r.result.createObjectStore('p'); } catch (e) {} }; r.onsuccess = () => res(r.result); r.onerror = () => res(null); r.onblocked = () => res(null); } catch (e) { res(null); } }); return dmIdbP; }
 function dmIdbOp(mode, fn) { return dmIdb().then((db) => new Promise((res) => { if (!db) { res({ ok: false }); return; } try { const tx = db.transaction('p', mode); const rq = fn(tx.objectStore('p')); tx.oncomplete = () => res({ ok: true, v: rq ? rq.result : undefined }); tx.onerror = () => res({ ok: false }); tx.onabort = () => res({ ok: false }); } catch (e) { res({ ok: false }); } })); }
@@ -12499,7 +12499,7 @@ return 'data:image/gif;base64,' + btoa(s);
 }
 return null;
 }
-function dmGifTry(f, cb, fb) { if (!f || f.type !== 'image/gif') return false; if (f.size > 4000000) { dmGifShrink(f).then((r) => { if (r) cb(r); else if (fb) fb(); }).catch(() => { if (fb) fb(); }); return true; } const fr = new FileReader(); fr.onload = () => { const r = String(fr.result || ''); if (r.indexOf('data:image/gif') === 0 && r.length <= DM_GIF_MAX) cb(r); }; fr.onerror = () => {}; fr.readAsDataURL(f); return true; }
+function dmGifTry(f, cb, fb) { if (!f || f.type !== 'image/gif') return false; if (f.size > 10000000) { dmGifShrink(f).then((r) => { if (r) cb(r); else if (fb) fb(); }).catch(() => { if (fb) fb(); }); return true; } const fr = new FileReader(); fr.onload = () => { const r = String(fr.result || ''); if (r.indexOf('data:image/gif') === 0 && r.length <= DM_GIF_MAX) cb(r); }; fr.onerror = () => {}; fr.readAsDataURL(f); return true; }
 let list = [];
 const dmPending = new Set(), dmIdbLast = {}; let dmIdbOk = null;
 try { const a = JSON.parse(lsGet('dmChats') || '[]'); if (Array.isArray(a)) a.forEach((o) => { const c = dmClean(o); if (c) { list.push(c); if (o && o.pi === 1 && !c.p && !c.d) dmPending.add(c.id); } }); } catch (e) {}
@@ -12664,7 +12664,7 @@ if (i < 0) { if (list.length < DM_MAX) { list.push(r); ch = true; if (!r.d && !i
 else if (r.rev > list[i].rev) { const lp = list[i].p; if (ph && lp) { r.p = lp; if (dmPh(lp) !== ph) need.push({ id: r.id, ph: ph }); } else if (ph) need.push({ id: r.id, ph: ph }); list[i] = r; ch = true; }
 else if (ph && r.rev === list[i].rev && (!list[i].p || dmPh(list[i].p) !== ph)) need.push({ id: r.id, ph: ph });
 });
-need.forEach((q) => { const k = q.id + ':' + q.ph; if (dmPhWait[k] && Date.now() - dmPhWait[k] < 20000) return; dmPhWait[k] = Date.now(); try { if (isConnected()) conn.send({ type: 'dm-photo-req', id: q.id, ph: q.ph }); } catch (e) {} });
+need.forEach((q) => { const k = q.id + ':' + q.ph; if (dmPhWait[k] && Date.now() - dmPhWait[k] < 120000) return; dmPhWait[k] = Date.now(); try { if (isConnected()) conn.send({ type: 'dm-photo-req', id: q.id, ph: q.ph }); } catch (e) {} });
 if (ch) { try { purge(); } catch (e) {} save(); render(); try { paintCur(); } catch (e) {} }
 fresh.forEach((r) => { try { bump({ msgId: 'dm-new:' + r.id }, r.id); } catch (e) {} });
 try { const pn = d.pin; if (pn && typeof pn.id === 'string' && pn.id.length <= 40 && typeof pn.rev === 'number' && pn.rev > pinRev) { pinId = pn.id; pinRev = pn.rev; savePin(); render(); } } catch (e) {}
