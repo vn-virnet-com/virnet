@@ -12400,11 +12400,12 @@ function dmClean(o) {
 if (!o || typeof o.id !== 'string' || !o.id || o.id.length > 40 || typeof o.n !== 'string') return null;
 const n = o.n.replace(/\s+/g, ' ').trim().slice(0, 40);
 if (!n || typeof o.rev !== 'number' || typeof o.ts !== 'number') return null;
-const ph = (typeof o.p === 'string' && o.p.indexOf('data:image/') === 0 && o.p.length <= 150000) ? o.p : '';
+const ph = (typeof o.p === 'string' && o.p.indexOf('data:image/') === 0 && o.p.length <= (o.p.indexOf('data:image/gif') === 0 ? 340000 : 150000)) ? o.p : '';
 const bio = (o.d !== 1 && typeof o.b === 'string') ? o.b.replace(/\r\n?/g, '\n').slice(0, 150) : '';
 const ai = (o.d !== 1 && o.ai === 1) ? 1 : 0;
 return { id: o.id, n: n, p: o.d === 1 ? '' : ph, b: bio, ts: o.ts, rev: o.rev, d: o.d === 1 ? 1 : 0, ai: ai, o: ai ? 1 : (o.o === 0 ? 0 : (o.o === 2 ? 2 : 1)) };
 }
+function dmGifTry(f, cb) { if (!f || f.type !== 'image/gif' || f.size > 250000) return false; const fr = new FileReader(); fr.onload = () => { const r = String(fr.result || ''); if (r.indexOf('data:image/gif') === 0 && r.length <= 340000) cb(r); }; fr.onerror = () => {}; fr.readAsDataURL(f); return true; }
 let list = [];
 try { const a = JSON.parse(lsGet('dmChats') || '[]'); if (Array.isArray(a)) a.forEach((o) => { const c = dmClean(o); if (c) list.push(c); }); } catch (e) {}
 function save() { try { lsSet('dmChats', JSON.stringify(list)); } catch (e) {} }
@@ -12578,6 +12579,7 @@ avX.addEventListener('click', (e) => { e.stopPropagation(); pend = ''; setAv(); 
 fileIn.addEventListener('change', () => {
 const f = fileIn.files && fileIn.files[0];
 if (!f || !/^image\//.test(f.type)) return;
+if (dmGifTry(f, (g) => { pend = g; setAv(); })) return;
 const url = URL.createObjectURL(f);
 const im = new Image();
 im.onload = () => {
@@ -12879,6 +12881,7 @@ pfAv.addEventListener('click', () => { if (!notifCanSend()) return; fileUp.value
 fileUp.addEventListener('change', () => {
 const f = fileUp.files && fileUp.files[0];
 if (!f || !/^image\//.test(f.type) || !notifCanSend()) return;
+if (dmGifTry(f, (g) => { if (notifCanSend() && curChat()) upd({ p: g }); })) return;
 const url = URL.createObjectURL(f);
 const im = new Image();
 im.onload = () => {
