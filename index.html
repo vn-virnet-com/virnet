@@ -12496,11 +12496,15 @@ let lastRaf = 0;
 try { new MutationObserver(() => { if (!lastRaf) lastRaf = requestAnimationFrame(() => { lastRaf = 0; refreshLast(); }); }).observe(chatArea, { childList: true }); } catch (e) {}
 setInterval(() => { if (!document.hidden) refreshLast(); }, 2000);
 let dirty = false;
+let stT = 0;
 function send(re) {
 if (!isConnected()) return false;
+if (stT) return false;
 try { conn.send({ type: 'dm-sync', list: list, re: re ? 1 : 0, pin: { id: pinId, rev: pinRev } }); return true; } catch (e) { return false; }
 }
 function changed() { save(); render(); dirty = true; if (send(false)) dirty = false; }
+/* Durum (çevrimiçi/boşta/çevrimdışı) değişince karşıya hemen gitmez; son tıklamadan 1 sn sonra tek seferde gider (ara durumlar görünmesin). */
+function changedSt() { save(); render(); dirty = true; clearTimeout(stT); stT = setTimeout(() => { stT = 0; if (send(false)) dirty = false; }, 1000); }
 setInterval(() => { if (dirty && send(false)) dirty = false; }, 15000);
 window.__dmHello = function () { send(false); };
 window.addEventListener('pin-level', () => { try { render(); } catch (e) {} });
@@ -12819,7 +12823,7 @@ const row = e.target.closest && e.target.closest('.dm-row');
 if (!row || !row.dataset.id) return;
 if (e.target.closest('.dm-st') && notifCanSend()) {
 const i = list.findIndex((x) => x.id === row.dataset.id && !x.d);
-if (i >= 0) { const o = list[i]; list[i] = { id: o.id, n: o.n, p: o.p, b: o.b || '', ts: o.ts, rev: Math.max(Date.now(), o.rev + 1), o: o.o === 0 ? 1 : (o.o === 2 ? 0 : 2) }; changed(); try { paintCur(); } catch (er) {} }
+if (i >= 0) { const o = list[i]; list[i] = { id: o.id, n: o.n, p: o.p, b: o.b || '', ts: o.ts, rev: Math.max(Date.now(), o.rev + 1), o: o.o === 0 ? 1 : (o.o === 2 ? 0 : 2) }; changedSt(); try { paintCur(); } catch (er) {} }
 return;
 }
 if (e.target.closest('.dm-av')) {
@@ -12846,7 +12850,7 @@ const i = list.findIndex((x) => x.id === cur && !x.d);
 if (i < 0) return;
 const o = list[i];
 list[i] = { id: o.id, n: o.n, p: o.p, b: o.b || '', ts: o.ts, rev: Math.max(Date.now(), o.rev + 1), o: o.o === 0 ? 1 : (o.o === 2 ? 0 : 2) };
-changed(); paintCur();
+changedSt(); paintCur();
 });
 const delBtn = pf.querySelector('#dm-pf-del'); let delT = 0;
 delBtn.addEventListener('click', () => {
@@ -16478,6 +16482,26 @@ else start();
 .dm-name.pinned > .dm-nt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dm-pin { flex: 0 0 auto; display: block; width: 13px; height: 13px; color: var(--c-88); }
 .dm-last b { font-weight: 700; color: var(--c-cc, var(--c-fff)); }
+.dm-row { margin: 4px 12px; padding: 6px 20px 6px 6px; border-radius: 999px; background: var(--c-111); border: 1px solid var(--c-22); box-shadow: 0 2px 8px rgba(var(--sh),0.25); }
+.dm-row .dm-st { border-color: var(--c-111); }
+.dm-row.sel { background: color-mix(in srgb, var(--accent) 12%, var(--c-111)); border-color: color-mix(in srgb, var(--accent) 70%, transparent); }
+.dm-row:active { background: var(--c-1a); }
+/* DM alanı görünüm iyileştirmesi (yalnızca CSS; işlev değişmez) */
+.dm-cnt { background: var(--accent); color: var(--on-accent); box-shadow: 0 0 0 2px var(--c-111); }
+.dm-row { transition: transform .12s ease, background-color .15s ease; }
+.dm-row:active { transform: scale(.98); }
+#dm-box, #dm-pv-sq { border-radius: var(--r-xl); }
+#dm-pv-bar { border-radius: var(--r-pill); }
+#dm-pv-bar button { border-radius: var(--r-pill); }
+#dm-pf-bio, #dm-pf-bio-t { border-radius: var(--r-xl); }
+@media (prefers-reduced-motion: reduce) { .dm-row { transition: none; } .dm-row:active { transform: none; } }
+@supports selector(:has(*)) {
+.dm-row:has(.dm-cnt[style*="flex"]) .dm-name { color: var(--c-fff); }
+.dm-row:has(.dm-cnt[style*="flex"]) .dm-last { color: var(--c-cc, var(--c-fff)); font-weight: 400; }
+.dm-row:has(.dm-cnt[style*="flex"]) .dm-av { box-shadow: 0 0 0 2px var(--accent); }
+.dm-row:has(.dm-name.pinned) { border-color: color-mix(in srgb, var(--accent) 45%, var(--c-22)); }
+.dm-row.sel:has(.dm-name.pinned) { border-color: color-mix(in srgb, var(--accent) 70%, transparent); }
+}
 </style>
 </body>
 </html>
