@@ -395,7 +395,7 @@ body.nick-locked #nick-input, body.nick-locked #nick-dot, body.nick-locked .dn-n
 body.nick-locked #message-input { padding-left: 14px; border-radius: var(--r-lg) 0 0 var(--r-lg); }
 body.nick-locked #ph-overlay { left: 14px; }
 body.nick-locked .dn-in { border-radius: var(--r-lg) 0 0 var(--r-lg); }
-body.dm-on #tb-call, body.dm-on #nick-input, body.dm-on #nick-dot, body.dm-on #live-toggle { display: none !important; }
+body.dm-on #tb-call, body.dm-on #nick-input, body.dm-on #nick-dot { display: none !important; }
 body.dm-on #message-input { padding-left: 14px; border-radius: var(--r-lg) 0 0 var(--r-lg); font-weight: 400 !important; }
 body.dm-on #ph-overlay { left: 14px; }
 body.dm-on .msg.no-nick:not(.typing-msg) .msg-body:not(.msg-media-body) { font-weight: 400; }
@@ -12402,7 +12402,8 @@ const n = o.n.replace(/\s+/g, ' ').trim().slice(0, 40);
 if (!n || typeof o.rev !== 'number' || typeof o.ts !== 'number') return null;
 const ph = (typeof o.p === 'string' && o.p.indexOf('data:image/') === 0 && o.p.length <= 150000) ? o.p : '';
 const bio = (o.d !== 1 && typeof o.b === 'string') ? o.b.replace(/\r\n?/g, '\n').slice(0, 150) : '';
-return { id: o.id, n: n, p: o.d === 1 ? '' : ph, b: bio, ts: o.ts, rev: o.rev, d: o.d === 1 ? 1 : 0, o: o.o === 0 ? 0 : (o.o === 2 ? 2 : 1) };
+const ai = (o.d !== 1 && o.ai === 1) ? 1 : 0;
+return { id: o.id, n: n, p: o.d === 1 ? '' : ph, b: bio, ts: o.ts, rev: o.rev, d: o.d === 1 ? 1 : 0, ai: ai, o: ai ? 1 : (o.o === 0 ? 0 : (o.o === 2 ? 2 : 1)) };
 }
 let list = [];
 try { const a = JSON.parse(lsGet('dmChats') || '[]'); if (Array.isArray(a)) a.forEach((o) => { const c = dmClean(o); if (c) list.push(c); }); } catch (e) {}
@@ -12414,7 +12415,8 @@ try { const pr = lsGet('dmPin') || ''; if (pr.charAt(0) === '{') { const po = JS
 function savePin() { try { lsSet('dmPin', JSON.stringify({ id: pinId, rev: pinRev })); } catch (e) {} }
 let act = {}; try { const a0 = JSON.parse(lsGet('dmAct') || '{}'); if (a0 && typeof a0 === 'object') act = a0; } catch (e) {}
 function saveAct() { try { lsSet('dmAct', JSON.stringify(act)); } catch (e) {} }
-function sortedList() { return list.filter((c) => !c.d).sort((a, b) => ((b.id === pinId) - (a.id === pinId)) || ((act[b.id] || b.ts) - (act[a.id] || a.ts))); }
+function sortedList() { return list.filter((c) => !c.d).sort((a, b) => ((b.id === pinId && !b.ai) - (a.id === pinId && !a.ai)) || ((act[b.id] || b.ts) - (act[a.id] || a.ts))); }
+function aiTag() { const s = document.createElement('span'); s.className = 'dm-ai'; s.textContent = 'AI'; return s; }
 const PIN_SVG = '<svg class="dm-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>';
 function lastEl(id) {
 const c = (id === ctxId) ? chatArea : holders[id];
@@ -12468,11 +12470,11 @@ sortedList().forEach((c) => {
 const row = document.createElement('div'); row.className = 'dm-row'; row.dataset.id = c.id;
 const av = document.createElement('div'); av.className = 'dm-av';
 if (c.p) av.style.backgroundImage = 'url("' + c.p + '")'; else av.textContent = (Array.from(c.n)[0] || '?').toUpperCase();
-const dot = document.createElement('i'); dot.className = 'dm-st' + (c.o === 0 ? ' off' : (c.o === 2 ? ' idle' : '')); av.appendChild(dot);
+const dot = document.createElement('i'); dot.className = 'dm-st' + (c.o === 0 ? ' off' : (c.o === 2 ? ' idle' : '')); if (!c.ai) av.appendChild(dot);
 if (isLocked(c)) row.classList.add('locked');
 const tx = document.createElement('div'); tx.className = 'dm-txt';
 const nm = document.createElement('div'); nm.className = 'dm-name';
-if (c.id === pinId) { nm.classList.add('pinned'); const nt = document.createElement('span'); nt.className = 'dm-nt'; nt.textContent = c.n; nm.appendChild(nt); nm.insertAdjacentHTML('beforeend', PIN_SVG); } else nm.textContent = c.n;
+if (c.id === pinId && !c.ai) { nm.classList.add('pinned'); const nt = document.createElement('span'); nt.className = 'dm-nt'; nt.textContent = c.n; nm.appendChild(nt); nm.insertAdjacentHTML('beforeend', PIN_SVG); } else if (c.ai) { nm.classList.add('has-ai'); const nt2 = document.createElement('span'); nt2.className = 'dm-nt'; nt2.textContent = c.n; nm.appendChild(nt2); nm.appendChild(aiTag()); } else nm.textContent = c.n;
 const ls = document.createElement('div'); ls.className = 'dm-last'; paintLast(ls, c.id);
 tx.appendChild(nm); tx.appendChild(ls); row.appendChild(av); row.appendChild(tx);
 const cn = document.createElement('div'); cn.className = 'dm-cnt'; cn.style.display = 'none'; row.appendChild(cn); box.appendChild(row);
@@ -12524,7 +12526,7 @@ try { const pn = d.pin; if (pn && typeof pn.id === 'string' && pn.id.length <= 4
 if (!d.re) send(true);
 };
 const ov = document.createElement('div'); ov.id = 'dm-ov';
-ov.innerHTML = '<div id="dm-box"><div id="dm-av" role="button" tabindex="0" aria-label="Fotoğraf ekle"><span id="dm-av-t">?</span><button type="button" id="dm-av-x" aria-label="Fotoğrafı kaldır" title="Fotoğrafı kaldır"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><input id="dm-name-in" type="text" placeholder="İsim" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false"><div id="dm-bio-wrap"><textarea id="dm-bio-in" maxlength="150" rows="3" placeholder=" " autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Biyografi"></textarea><span id="dm-bio-ph" aria-hidden="true">Biyografi</span><span id="dm-bio-n">0/150</span></div><div id="dm-actions"><span id="dm-cancel">İptal</span><span id="dm-save">Kaydet</span></div></div>';
+ov.innerHTML = '<div id="dm-box"><div id="dm-av" role="button" tabindex="0" aria-label="Fotoğraf ekle"><span id="dm-av-t">?</span><button type="button" id="dm-av-x" aria-label="Fotoğrafı kaldır" title="Fotoğrafı kaldır"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><input id="dm-name-in" type="text" placeholder="İsim" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false"><div id="dm-bio-wrap"><textarea id="dm-bio-in" maxlength="150" rows="3" placeholder=" " autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Biyografi"></textarea><span id="dm-bio-ph" aria-hidden="true">Biyografi</span><span id="dm-bio-n">0/150</span></div><div id="dm-ai-row" role="checkbox" aria-checked="false" aria-label="AI" tabindex="0"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span>AI</span></div><div id="dm-actions"><span id="dm-cancel">İptal</span><span id="dm-save">Kaydet</span></div></div>';
 page.appendChild(ov);
 const fileIn = document.createElement('input'); fileIn.type = 'file'; fileIn.accept = 'image/*'; fileIn.hidden = true;
 page.appendChild(fileIn);
@@ -12534,6 +12536,11 @@ bioIn.addEventListener('input', () => { bioN.textContent = bioIn.value.length + 
 bioIn.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); closeBox(); } });
 const nameIn = ov.querySelector('#dm-name-in'), cancel = ov.querySelector('#dm-cancel'), saveBtn = ov.querySelector('#dm-save');
 let pend = '';
+const aiRow = ov.querySelector('#dm-ai-row'); let pendAi = false;
+function setAi(v) { pendAi = !!v; aiRow.classList.toggle('on', pendAi); aiRow.setAttribute('aria-checked', pendAi ? 'true' : 'false'); }
+aiRow.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
+aiRow.addEventListener('click', () => setAi(!pendAi));
+aiRow.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setAi(!pendAi); } });
 function setAv() {
 avT.textContent = (Array.from(nameIn.value.trim())[0] || '?').toUpperCase();
 av.classList.toggle('has-photo', !!pend);
@@ -12542,13 +12549,13 @@ av.setAttribute('aria-label', pend ? 'Fotoğrafı değiştir' : 'Fotoğraf ekle'
 }
 function openBox() {
 if (!notifCanSend()) return;
-pend = ''; nameIn.value = ''; bioIn.value = ''; bioN.textContent = '0/150'; nameIn.classList.remove('bad'); setAv();
+pend = ''; nameIn.value = ''; bioIn.value = ''; bioN.textContent = '0/150'; nameIn.classList.remove('bad'); setAi(false); setAv();
 ov.classList.add('show');
 try { nameIn.focus(); } catch (e) {}
 }
 function closeBox() {
 ov.classList.remove('show');
-pend = ''; nameIn.value = ''; bioIn.value = ''; bioN.textContent = '0/150'; nameIn.classList.remove('bad'); setAv();
+pend = ''; nameIn.value = ''; bioIn.value = ''; bioN.textContent = '0/150'; nameIn.classList.remove('bad'); setAi(false); setAv();
 try { nameIn.blur(); } catch (e) {}
 }
 const addBtn = page.querySelector('#bp-msg-add');
@@ -12588,7 +12595,7 @@ const n = nameIn.value.replace(/\s+/g, ' ').trim().slice(0, 40);
 if (!n) { nameIn.classList.add('bad'); try { nameIn.focus(); } catch (e) {} return; }
 if (list.length >= DM_MAX) return;
 const now = Date.now();
-list.push({ id: now.toString(36) + Math.random().toString(36).slice(2, 8), n: n, p: pend, b: bioIn.value.replace(/\r\n?/g, '\n').slice(0, 150), ts: now, rev: now, o: 1 });
+list.push({ id: now.toString(36) + Math.random().toString(36).slice(2, 8), n: n, p: pend, b: bioIn.value.replace(/\r\n?/g, '\n').slice(0, 150), ts: now, rev: now, ai: pendAi ? 1 : 0, o: 1 });
 closeBox();
 changed();
 });
@@ -12674,11 +12681,11 @@ const c = curChat();
 if (!c) { closeAll(); return; }
 const ini = (Array.from(c.n)[0] || '?').toUpperCase();
 pv.classList.toggle('locked', isLocked(c));
-try { const sb = pf.querySelector('#dm-pf-st'); if (sb) { sb.classList.toggle('on', c.o !== 0 && c.o !== 2); sb.classList.toggle('idle', c.o === 2); sb.title = c.o === 0 ? 'Çevrimdışı' : (c.o === 2 ? 'Boşta' : 'Çevrimiçi'); sb.setAttribute('aria-label', sb.title); } } catch (e) {}
+try { const sb = pf.querySelector('#dm-pf-st'); if (sb) { sb.style.display = c.ai ? 'none' : ''; sb.classList.toggle('on', c.o !== 0 && c.o !== 2); sb.classList.toggle('idle', c.o === 2); sb.title = c.o === 0 ? 'Çevrimdışı' : (c.o === 2 ? 'Boşta' : 'Çevrimiçi'); sb.setAttribute('aria-label', sb.title); } } catch (e) {}
 const bg = c.p ? 'url("' + c.p + '")' : '';
 sq.style.backgroundImage = bg; sq.textContent = c.p ? '' : ini;
 pfAv.style.backgroundImage = bg; pfAv.textContent = c.p ? '' : ini;
-if (!editingName) pfName.textContent = c.n;
+if (!editingName) { pfName.textContent = c.n; if (c.ai) pfName.appendChild(aiTag()); }
 try { dmBioPaint(c); } catch (e) {}
 lightsFor(c.p);
 }
@@ -12709,7 +12716,7 @@ function upd(patch) {
 const i = list.findIndex((x) => x.id === cur);
 if (i < 0) return;
 const o = list[i];
-list[i] = { id: o.id, n: patch.n !== undefined ? patch.n : o.n, p: patch.p !== undefined ? patch.p : o.p, b: patch.b !== undefined ? patch.b : (o.b || ''), ts: o.ts, rev: Math.max(Date.now(), o.rev + 1), o: o.o === 0 ? 0 : (o.o === 2 ? 2 : 1) };
+list[i] = { id: o.id, n: patch.n !== undefined ? patch.n : o.n, p: patch.p !== undefined ? patch.p : o.p, b: patch.b !== undefined ? patch.b : (o.b || ''), ts: o.ts, rev: Math.max(Date.now(), o.rev + 1), ai: o.ai ? 1 : 0, o: o.o === 0 ? 0 : (o.o === 2 ? 2 : 1) };
 changed();
 paintCur();
 }
@@ -12737,7 +12744,8 @@ if (!barEl) return;
 const c = ctxId ? list.find((x) => x.id === ctxId && !x.d) : null;
 if (ctxId && (!c || isLocked(c))) { leaveDm(); return; }
 if (!c) return;
-barNm.textContent = c.n;
+barNm.textContent = ''; barNm.classList.toggle('has-ai', !!c.ai);
+if (c.ai) { const nt3 = document.createElement('span'); nt3.className = 'dm-nt'; nt3.textContent = c.n; barNm.appendChild(nt3); barNm.appendChild(aiTag()); } else barNm.textContent = c.n;
 barAv.style.backgroundImage = c.p ? 'url("' + c.p + '")' : '';
 barAv.textContent = c.p ? '' : (Array.from(c.n)[0] || '?').toUpperCase();
 }
@@ -12804,7 +12812,7 @@ if (mqMobile.addEventListener) mqMobile.addEventListener('change', syncBarVis);
 else if (mqMobile.addListener) mqMobile.addListener(syncBarVis);
 let lpT = 0, lpFired = false, lpX = 0, lpY = 0;
 function lpClear() { if (lpT) { clearTimeout(lpT); lpT = 0; } }
-function togglePin(id) { pinId = (pinId === id) ? '' : id; pinRev = Math.max(Date.now(), pinRev + 1); savePin(); render(); dirty = true; if (send(false)) dirty = false; }
+function togglePin(id) { const c1 = list.find((x) => x.id === id); if (c1 && c1.ai) return; pinId = (pinId === id) ? '' : id; pinRev = Math.max(Date.now(), pinRev + 1); savePin(); render(); dirty = true; if (send(false)) dirty = false; }
 box.addEventListener('pointerdown', (e) => {
 lpFired = false; lpClear();
 const row = e.target.closest && e.target.closest('.dm-row');
@@ -12812,6 +12820,7 @@ if (!row || !row.dataset.id) return;
 if (!(notifCanSend() || thirdCanSend())) return;
 lpX = e.clientX; lpY = e.clientY;
 const id = row.dataset.id;
+{ const c1 = list.find((x) => x.id === id && !x.d); if (c1 && c1.ai) return; }
 lpT = setTimeout(() => { lpT = 0; lpFired = true; togglePin(id); try { if (navigator.vibrate) navigator.vibrate(15); } catch (er) {} }, 500);
 });
 box.addEventListener('pointermove', (e) => { if (lpT && (Math.abs(e.clientX - lpX) > 8 || Math.abs(e.clientY - lpY) > 8)) lpClear(); });
@@ -12823,7 +12832,7 @@ const row = e.target.closest && e.target.closest('.dm-row');
 if (!row || !row.dataset.id) return;
 if (e.target.closest('.dm-st') && notifCanSend()) {
 const i = list.findIndex((x) => x.id === row.dataset.id && !x.d);
-if (i >= 0) { const o = list[i]; list[i] = { id: o.id, n: o.n, p: o.p, b: o.b || '', ts: o.ts, rev: Math.max(Date.now(), o.rev + 1), o: o.o === 0 ? 1 : (o.o === 2 ? 0 : 2) }; changedSt(); try { paintCur(); } catch (er) {} }
+if (i >= 0) { const o = list[i]; list[i] = { id: o.id, n: o.n, p: o.p, b: o.b || '', ts: o.ts, rev: Math.max(Date.now(), o.rev + 1), ai: o.ai ? 1 : 0, o: o.o === 0 ? 1 : (o.o === 2 ? 0 : 2) }; changedSt(); try { paintCur(); } catch (er) {} }
 return;
 }
 if (e.target.closest('.dm-av')) {
@@ -12846,10 +12855,11 @@ pf.querySelector('#dm-pf-back').addEventListener('click', closeAll);
 const stBtn = pf.querySelector('#dm-pf-st');
 stBtn.addEventListener('click', () => {
 if (!notifCanSend()) return;
+{ const c0 = curChat(); if (c0 && c0.ai) return; }
 const i = list.findIndex((x) => x.id === cur && !x.d);
 if (i < 0) return;
 const o = list[i];
-list[i] = { id: o.id, n: o.n, p: o.p, b: o.b || '', ts: o.ts, rev: Math.max(Date.now(), o.rev + 1), o: o.o === 0 ? 1 : (o.o === 2 ? 0 : 2) };
+list[i] = { id: o.id, n: o.n, p: o.p, b: o.b || '', ts: o.ts, rev: Math.max(Date.now(), o.rev + 1), ai: o.ai ? 1 : 0, o: o.o === 0 ? 1 : (o.o === 2 ? 0 : 2) };
 changedSt(); paintCur();
 });
 const delBtn = pf.querySelector('#dm-pf-del'); let delT = 0;
@@ -13445,12 +13455,12 @@ function readAllowed() {
 try { return sessionStorage.getItem('pinLive') === '1'; } catch (e) { return false; }
 }
 function showHide() {
-if (tgl) tgl.style.display = (allowed && !inDm()) ? 'inline-flex' : 'none';
+if (tgl) tgl.style.display = allowed ? 'inline-flex' : 'none';
 }
 allowed = readAllowed();
 showHide();
 function apply(val, init) {
-const dyn = allowed && !inDm() && (val === 'dynamic');
+const dyn = allowed && (val === 'dynamic');
 liveMode = dyn;
 document.body.classList.toggle('live-on', dyn);
 if (tgl) {
@@ -13477,7 +13487,7 @@ showHide();
 apply(lsGet(LIVE_KEY) === 'dynamic' ? 'dynamic' : 'static', false);
 });
 document.addEventListener('keydown', (e) => {
-if (!allowed || inDm()) return;
+if (!allowed) return;
 if (!e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
 if (e.code !== 'KeyD' && String(e.key).toLowerCase() !== 'd') return;
 if (document.documentElement.classList.contains('pin-locked')) return;
@@ -13491,7 +13501,7 @@ if (tgl) {
 tgl.addEventListener('pointerdown', (e) => { if (e.cancelable) e.preventDefault(); });
 tgl.addEventListener('mousedown', (e) => e.preventDefault());
 tgl.addEventListener('click', (e) => {
-if (!allowed || inDm()) return;
+if (!allowed) return;
 if (e.button !== undefined && e.button !== 0) return;
 const val = liveMode ? 'static' : 'dynamic';
 lsSet(LIVE_KEY, val);
@@ -16481,6 +16491,15 @@ else start();
 .dm-name.pinned { display: flex; align-items: center; gap: 6px; }
 .dm-name.pinned > .dm-nt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dm-pin { flex: 0 0 auto; display: block; width: 13px; height: 13px; color: var(--c-88); }
+.dm-ai { flex: 0 0 auto; display: inline-flex; align-items: center; height: 14.5px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; background: color-mix(in srgb, var(--accent) 30%, var(--c-22)); color: var(--c-fff); font-family: 'Lexend', sans-serif; font-size: 9.5px; font-weight: 700; line-height: 1; letter-spacing: .3px; white-space: nowrap; vertical-align: middle; }
+.dm-name.has-ai, #dm-bar-nm.has-ai { display: flex; align-items: center; gap: 6px; }
+.dm-name.has-ai > .dm-nt, #dm-bar-nm.has-ai > .dm-nt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#dm-pf-name .dm-ai { margin-left: 8px; position: relative; top: -2px; }
+#dm-ai-row { display: flex; align-items: center; gap: 8px; align-self: flex-start; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; color: var(--c-cc); font-size: 14px; }
+#dm-ai-row i { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; box-sizing: border-box; border-radius: 6px; border: 1.5px solid var(--c-55); background: transparent; }
+#dm-ai-row i svg { width: 14px; height: 14px; fill: none; stroke: var(--on-accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+#dm-ai-row.on i { background: var(--accent); border-color: var(--accent); }
+#dm-ai-row.on i svg { opacity: 1; }
 .dm-last b { font-weight: 700; color: var(--c-cc, var(--c-fff)); }
 .dm-row { margin: 4px 12px; padding: 6px 20px 6px 6px; border-radius: 999px; background: var(--c-111); border: 1px solid var(--c-22); box-shadow: 0 2px 8px rgba(var(--sh),0.25); }
 .dm-row .dm-st { border-color: var(--c-111); }
