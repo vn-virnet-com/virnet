@@ -16412,6 +16412,7 @@ else start();
 </script>
 <style id="vn-fix1">
 /* etiket/✕ düzeltmesi: yazı tipi ölçülerinden bağımsız, daha yüksek ve taşmaya dayanıklı */
+@media (min-width: 769px) {
 #strip-stack { --chip-h: 17px; }
 #cancel-reply-btn { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
 #strip-stack > #vc-pill .vc-n, #strip-stack > #vc-pill .vc-n.long { padding: 4px 0; margin: -4px 0; }
@@ -16420,6 +16421,7 @@ else start();
 #strip-stack > #yt-dock .ytd-ltn { line-height: var(--chip-h); }
 #strip-stack > #auto-chip #auto-chip-x { display: flex; align-items: center; justify-content: center; }
 #strip-stack > #auto-chip #auto-chip-x svg, #strip-stack > #vc-pill .vc-game svg { display: block; flex: 0 0 auto; }
+}
 .dm-name.pinned { display: flex; align-items: center; gap: 6px; }
 .dm-name.pinned > .dm-nt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dm-pin { flex: 0 0 auto; display: block; width: 13px; height: 13px; color: var(--c-88); }
