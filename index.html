@@ -12899,8 +12899,13 @@ if (c.ai) { const nt3 = document.createElement('span'); nt3.className = 'dm-nt';
 barAv.style.backgroundImage = c.p ? 'url("' + c.p + '")' : '';
 barAv.textContent = c.p ? '' : (Array.from(c.n)[0] || '?').toUpperCase();
 }
+function dmHistSync(id) {
+if (id) { if (!window.__dmHistOn) { window.__dmHistOn = true; try { history.pushState({ dm: 1 }, ''); } catch (e) { window.__dmHistOn = false; } } }
+else if (window.__dmHistOn) { window.__dmHistOn = false; try { history.back(); } catch (e) {} }
+}
 function enterCtx(id) {
 if (id === ctxId) return;
+try { dmHistSync(id); } catch (e) {}
 try { stopLive(); } catch (e) {}
 try { hideTypingIndicator(); } catch (e) {}
 try { hideRecIndicator(); } catch (e) {}
@@ -12933,6 +12938,13 @@ try { if (was && isMobileLayout()) viewNoAnim('notes'); } catch (e) {}
 if (was && had && isMobileLayout()) { unreadMsgs = true; try { updateBadges(); restartBadgeBlink(newMsgBadge); } catch (e) {} }
 syncBarVis();
 }
+window.addEventListener('popstate', (e) => {
+if (!ctxId || !window.__dmHistOn) return;
+if (e.state && e.state.dm) return;
+window.__dmHistOn = false;
+leaveDm();
+try { if (isMobileLayout()) bpSetPage(2, true); } catch (er) {}
+});
 barEl = document.createElement('div'); barEl.id = 'dm-bar';
 barEl.innerHTML = '<button type="button" id="dm-bar-back" aria-label="DM listesi" title="DM listesi">' + SV_BACK + '</button><div id="dm-bar-mid"><div id="dm-bar-av"></div><div id="dm-bar-nm"></div></div><button type="button" id="dm-bar-game" aria-label="Oyun daveti gönder" title="Oyun">' + GAME_PAD_SVG + '</button>';
 barAv = barEl.querySelector('#dm-bar-av'); barNm = barEl.querySelector('#dm-bar-nm');
@@ -12954,7 +12966,7 @@ newNotesBadge.addEventListener('click', (e) => {
 if (!window.__dmBadge()) return;
 e.stopImmediatePropagation(); e.preventDefault();
 badgeOn = false;
-try { if (isMobileLayout()) setView('notes'); else dkSetPage('msg'); } catch (err) {}
+try { if (isMobileLayout()) { const wc = view !== 'notes'; setView('notes'); bpSetPage(2, wc); } else dkSetPage('msg'); } catch (err) {}
 try { updateBadges(); } catch (err) {}
 }, true);
 document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('.dk-tab')) setTimeout(() => { try { updateBadges(); } catch (err) {} }, 0); }, true);
