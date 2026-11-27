@@ -12409,7 +12409,9 @@ try { const a = JSON.parse(lsGet('dmChats') || '[]'); if (Array.isArray(a)) a.fo
 function save() { try { lsSet('dmChats', JSON.stringify(list)); } catch (e) {} }
 const box = document.createElement('div'); box.id = 'dm-list';
 page.insertBefore(box, page.firstChild);
-let pinId = ''; try { pinId = lsGet('dmPin') || ''; } catch (e) {}
+let pinId = '', pinRev = 0;
+try { const pr = lsGet('dmPin') || ''; if (pr.charAt(0) === '{') { const po = JSON.parse(pr); if (po && typeof po.id === 'string' && typeof po.rev === 'number') { pinId = po.id; pinRev = po.rev; } } else pinId = pr; } catch (e) {}
+function savePin() { try { lsSet('dmPin', JSON.stringify({ id: pinId, rev: pinRev })); } catch (e) {} }
 let act = {}; try { const a0 = JSON.parse(lsGet('dmAct') || '{}'); if (a0 && typeof a0 === 'object') act = a0; } catch (e) {}
 function saveAct() { try { lsSet('dmAct', JSON.stringify(act)); } catch (e) {} }
 function sortedList() { return list.filter((c) => !c.d).sort((a, b) => ((b.id === pinId) - (a.id === pinId)) || ((act[b.id] || b.ts) - (act[a.id] || a.ts))); }
@@ -12496,7 +12498,7 @@ setInterval(() => { if (!document.hidden) refreshLast(); }, 2000);
 let dirty = false;
 function send(re) {
 if (!isConnected()) return false;
-try { conn.send({ type: 'dm-sync', list: list, re: re ? 1 : 0 }); return true; } catch (e) { return false; }
+try { conn.send({ type: 'dm-sync', list: list, re: re ? 1 : 0, pin: { id: pinId, rev: pinRev } }); return true; } catch (e) { return false; }
 }
 function changed() { save(); render(); dirty = true; if (send(false)) dirty = false; }
 setInterval(() => { if (dirty && send(false)) dirty = false; }, 15000);
@@ -12514,6 +12516,7 @@ else if (r.rev > list[i].rev) { list[i] = r; ch = true; }
 });
 if (ch) { try { purge(); } catch (e) {} save(); render(); try { paintCur(); } catch (e) {} }
 fresh.forEach((r) => { try { bump({ msgId: 'dm-new:' + r.id }, r.id); } catch (e) {} });
+try { const pn = d.pin; if (pn && typeof pn.id === 'string' && pn.id.length <= 40 && typeof pn.rev === 'number' && pn.rev > pinRev) { pinId = pn.id; pinRev = pn.rev; savePin(); render(); } } catch (e) {}
 if (!d.re) send(true);
 };
 const ov = document.createElement('div'); ov.id = 'dm-ov';
@@ -12797,7 +12800,7 @@ if (mqMobile.addEventListener) mqMobile.addEventListener('change', syncBarVis);
 else if (mqMobile.addListener) mqMobile.addListener(syncBarVis);
 let lpT = 0, lpFired = false, lpX = 0, lpY = 0;
 function lpClear() { if (lpT) { clearTimeout(lpT); lpT = 0; } }
-function togglePin(id) { pinId = (pinId === id) ? '' : id; try { lsSet('dmPin', pinId); } catch (e) {} render(); }
+function togglePin(id) { pinId = (pinId === id) ? '' : id; pinRev = Math.max(Date.now(), pinRev + 1); savePin(); render(); dirty = true; if (send(false)) dirty = false; }
 box.addEventListener('pointerdown', (e) => {
 lpFired = false; lpClear();
 const row = e.target.closest && e.target.closest('.dm-row');
