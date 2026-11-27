@@ -9448,7 +9448,8 @@ if (c.p) b.style.backgroundImage = 'url("' + c.p + '")'; else b.textContent = (A
 bar.appendChild(b);
 });
 ['pointerdown', 'mousedown', 'touchstart'].forEach((ev) => bar.addEventListener(ev, (e) => e.stopPropagation()));
-function close() { document.removeEventListener('pointerdown', close, true); document.removeEventListener('keydown', onKey, true); window.removeEventListener('resize', close); try { bar.remove(); } catch (e) {} }
+function onDown(e) { if (e && e.target && bar.contains(e.target)) return; close(); }
+function close() { document.removeEventListener('pointerdown', onDown, true); document.removeEventListener('keydown', onKey, true); window.removeEventListener('resize', close); try { bar.remove(); } catch (e) {} }
 function onKey(e) { if (e.key === 'Escape') { e.stopPropagation(); close(); } }
 document.body.appendChild(bar);
 const vw = document.documentElement.clientWidth || window.innerWidth, vh = window.innerHeight, m = 8;
@@ -9457,7 +9458,7 @@ const ar = anchor.getBoundingClientRect(), bw = bar.offsetWidth, bh = bar.offset
 let left = ar.right - bw; left = Math.max(m, Math.min(left, vw - bw - m));
 let top = ar.top - bh - 6; if (top < m) top = Math.min(ar.bottom + 6, vh - bh - m); top = Math.max(m, top);
 bar.style.left = left + 'px'; bar.style.top = top + 'px';
-setTimeout(() => { document.addEventListener('pointerdown', close, true); document.addEventListener('keydown', onKey, true); window.addEventListener('resize', close); }, 0);
+setTimeout(() => { document.addEventListener('pointerdown', onDown, true); document.addEventListener('keydown', onKey, true); window.addEventListener('resize', close); }, 0);
 ytsList.addEventListener('scroll', close, { once: true, passive: true });
 }
 function ytsRender(items, limit) {
