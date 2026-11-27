@@ -5954,7 +5954,7 @@ sayRaw('beat', { t: r2(cur), p: (st === 1 || st === 3) ? 1 : 0, b: st === 3 ? 1 
 const sessTick = () => {
 if (!sync) return;
 const now = Date.now(); tickN++;
-if (!isConnected()) { resetSession(true); flash('Bağlantı koptu'); return; }
+if (!isConnected()) { resetSession(false); flash('Bağlantı koptu'); return; }
 const st = curSt(), cur = curPos();
 if (fixAt) {
 if (st === 3) fixBuf = true;
@@ -5964,7 +5964,7 @@ else if (now - fixAt > 8000) { fixAt = 0; fixBuf = false; }
 if (tickN % 4 === 0) { sendBeat(st, cur); if (!iAmLeader() && tickN % 20 === 0) clockSample(); }
 if (wantPlay && !held() && st !== 1 && st !== 3 && pReady()) { if (++selfBad >= 12) { selfBad = 0; mute(); try { player.playVideo(); } catch (e) {} } } else selfBad = 0;
 const silent = now - lastPeerHb;
-if (silent > 9000) { sayRaw('leave'); try { ytSnapClear(); } catch (e) {} resetSession(true); return; }
+if (silent > 9000) { sayRaw('leave'); try { ytSnapClear(); } catch (e) {} resetSession(false); return; }
 const stale = silent > 4500;
 if (stale !== peerStale) { peerStale = stale; refreshJoin(); }
 };
@@ -6087,21 +6087,22 @@ try { ytKillSolo(card); } catch (e) {}
 clearTimeout(readyTimer); readyTimer = null;
 cancelStart(); stopSess();
 myReady = false; peerReady = false; readyNote = '';
-const pos = Math.max(0, Number(s.t) || 0);
+let pos = Math.max(0, Number(s.t) || 0), resumePlay = !!s.play;
+try { if (player && ready && curSt() === 1) { const cp = curPos(); if (isFinite(cp) && cp > 0) { pos = cp; resumePlay = true; } } } catch (e) {}
 card._endLatch = 0; card._ended = false;
 sync = true; role = iAmLeader() ? 'host' : 'guest';
 if (s.auto) { try { ytAutoSet(true); } catch (e) {} }
 sessStart = Date.now(); lastPeerHb = sessStart;
 tickN = 0; lastFix = 0; peerStale = false; peerHidden = false; peerBad = 0; selfBad = 0;
-wantPlay = !!s.play;
+wantPlay = resumePlay;
 if (wantPlay) card.classList.add('is-loading');
-pending = { t: pos, play: !!s.play };
+pending = { t: pos, play: resumePlay };
 refreshJoin();
 mute();
 if (player && ready) applyPending(); else create();
 clearInterval(sessTimer); sessTimer = setInterval(sessTick, 250);
 ytDockCard = card; ytDockDismissed = null;
-sayRaw('rejoin', { t: r2(pos), p: s.play ? 1 : 0, ts: sNow() });
+sayRaw('rejoin', { t: r2(pos), p: resumePlay ? 1 : 0, ts: sNow() });
 return true;
 };
 refreshJoin();
@@ -6160,7 +6161,7 @@ card._resumeSync({ id: id, t: t, play: !!d.p, auto: true, at: now });
 return;
 }
 if (d.ev === 'join') return;
-if (d.ev === 'leave') { try { if (!ytSyncSnap || ytSyncSnap.id === id) ytSnapClear(); } catch (e) {} if (sync && d.u) ytAutoSet(false); if (sync || myReady || peerReady || starting) resetSession(true); return; }
+if (d.ev === 'leave') { try { if (!ytSyncSnap || ytSyncSnap.id === id) ytSnapClear(); } catch (e) {} if (sync && d.u) ytAutoSet(false); if (sync || myReady || peerReady || starting) resetSession(!!d.u); return; }
 if (d.ev === 'beat') { onBeat(d); return; }
 if (!sync) return;
 lastPeerHb = now;
@@ -6181,7 +6182,7 @@ if (Math.abs(cur - t) > 0.3) player.seekTo(t, true);
 }
 } catch (e) {}
 };
-card._listenReset = () => { resetSession(true); };
+card._listenReset = () => { resetSession(false); };
 card._announce = () => { if (sync) sendBeat(); };
 bindYtTap(btn, toggle);
 bindYtTap(joinBtn, doJoin);
@@ -12934,7 +12935,7 @@ function leaveDm() {
 closeAll();
 const was = !!ctxId, had = mainUnread;
 enterCtx('');
-try { if (was && isMobileLayout()) viewNoAnim('notes'); } catch (e) {}
+try { if (was && isMobileLayout()) { viewNoAnim('notes'); bpSetPage(2, true); } } catch (e) {}
 if (was && had && isMobileLayout()) { unreadMsgs = true; try { updateBadges(); restartBadgeBlink(newMsgBadge); } catch (e) {} }
 syncBarVis();
 }
