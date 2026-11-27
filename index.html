@@ -9438,6 +9438,7 @@ if (!isConnected()) { flashStatus('Bağlı değil, link gönderilmedi'); return;
 const go = () => { sendTextNow(link); chatArea.scrollTop = chatArea.scrollHeight; };
 try { if (id && window.__dmWith) window.__dmWith(id, go); else if (!id && window.__dmCtx && window.__dmCtx() && window.__dmWith) window.__dmWith('', go); else go(); } catch (er) { flashStatus('Gönderilemedi'); return; }
 closeYtSearch();
+try { if (window.__dmGo) window.__dmGo(id); } catch (er) {}
 });
 return b;
 };
@@ -12305,6 +12306,7 @@ unread[t] = (unread[t] || 0) + 1;
 badgeOn = true;
 setCounts();
 try { updateBadges(); if (isMobileLayout() ? view === 'chat' : dkPage !== 'msg') restartBadgeBlink(newNotesBadge); } catch (e) {}
+try { syncBarVis(); } catch (e) {}
 }
 window.__dmBadge = function () {
 if (!isMobileLayout() && dkPage === 'msg') badgeOn = false;
@@ -12319,6 +12321,12 @@ window.__dmCtx = function () { return ctxId; };
 function isLocked(c) { let r = false; try { r = !!c && c.o === 0 && thirdCanSend(); } catch (e) {} return r; }
 window.__dmTargets = function () { return list.filter((c) => !c.d && !isLocked(c)).sort((a, b) => b.ts - a.ts); };
 window.__dmWith = withCtx;
+window.__dmGo = function (id) {
+if (id) { enterDm(id); return; }
+closeAll(); enterCtx(''); mainUnread = false;
+try { if (isMobileLayout()) viewNoAnim('chat'); } catch (e) {}
+syncBarVis();
+};
 window.__dmName = function () { const c = ctxId ? list.find((x) => x.id === ctxId && !x.d) : null; return c ? c.n : ''; };
 window.__dmFind = function (id) {
 for (const k in holders) { if (k === ctxId) continue; const el = holders[k].querySelector('[id="' + id + '"]'); if (el) return el; }
@@ -12355,6 +12363,7 @@ if (m.dataset.mediaUrl) return 'Fotoğraf';
 const tx = (m._raw && typeof m._raw.text === 'string') ? m._raw.text : '';
 if (callParse(tx) !== null || dialParse(tx) !== null) return 'Arama';
 if (gameParse(tx) !== null) return 'Oyun';
+try { if (new RegExp(YT_URL_RE.source, YT_URL_RE.flags.replace('g', '')).test(tx)) return 'Şarkı'; } catch (e) {}
 return tx.replace(/\s+/g, ' ').trim().slice(0, 80);
 }
 function dmClean(o) {
@@ -12411,13 +12420,15 @@ window.addEventListener('pin-level', () => { try { render(); } catch (e) {} });
 window.__dmRecv = function (d) {
 if (!d || !Array.isArray(d.list)) return;
 let ch = false;
+const fresh = [];
 d.list.slice(0, DM_MAX).forEach((o) => {
 const r = dmClean(o); if (!r) return;
 const i = list.findIndex((x) => x.id === r.id);
-if (i < 0) { if (list.length < DM_MAX) { list.push(r); ch = true; } }
+if (i < 0) { if (list.length < DM_MAX) { list.push(r); ch = true; if (!r.d && !isLocked(r)) fresh.push(r); } }
 else if (r.rev > list[i].rev) { list[i] = r; ch = true; }
 });
 if (ch) { try { purge(); } catch (e) {} save(); render(); try { paintCur(); } catch (e) {} }
+fresh.forEach((r) => { try { bump({ msgId: 'dm-new:' + r.id }, r.id); } catch (e) {} });
 if (!d.re) send(true);
 };
 const ov = document.createElement('div'); ov.id = 'dm-ov';
@@ -12624,7 +12635,7 @@ else if (barEl.parentNode !== panes.parentNode || barEl.nextSibling !== panes) p
 function syncBarVis() { placeBar(); document.body.classList.toggle('dm-bar-on', barShown());
 try { document.body.classList.toggle('dm-hide-tabs', !!ctxId && isMobileLayout() && view === 'chat'); } catch (e) {}
 if (!ctxId && (!isMobileLayout() || view === 'chat')) mainUnread = false;
-if (barEl) { const bb = barEl.querySelector('#dm-bar-back'); if (bb) bb.classList.toggle('alert', mainUnread && !!ctxId); } if (barShown() && unread[ctxId]) { unread[ctxId] = 0; setCounts(); try { updateBadges(); } catch (e) {} } }
+if (barEl) { const bb = barEl.querySelector('#dm-bar-back'); if (bb) bb.classList.toggle('alert', !!ctxId && (mainUnread || Object.keys(unread).some((k) => k !== ctxId && unread[k] > 0))); } if (barShown() && unread[ctxId]) { unread[ctxId] = 0; setCounts(); try { updateBadges(); } catch (e) {} } }
 function syncBar() {
 try { const rs = box.children; for (let i = 0; i < rs.length; i++) rs[i].classList.toggle('sel', !!ctxId && rs[i].dataset.id === ctxId); } catch (e) {}
 if (!barEl) return;
