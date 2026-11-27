@@ -12305,10 +12305,11 @@ if (d.msgId) { if (counted.indexOf(d.msgId) !== -1) return; counted.push(d.msgId
 unread[t] = (unread[t] || 0) + 1;
 badgeOn = true;
 setCounts();
-try { updateBadges(); if (isMobileLayout() ? view === 'chat' : dkPage !== 'msg') restartBadgeBlink(newNotesBadge); } catch (e) {}
+try { updateBadges(); if (isMobileLayout() ? view === 'chat' : dkPage !== 'msg') if (!ctxId) restartBadgeBlink(newNotesBadge); } catch (e) {}
 try { syncBarVis(); } catch (e) {}
 }
 window.__dmBadge = function () {
+if (ctxId) return false;
 if (!isMobileLayout() && dkPage === 'msg') badgeOn = false;
 if (!badgeOn) return false;
 let n = 0; for (const k in unread) n += unread[k];
