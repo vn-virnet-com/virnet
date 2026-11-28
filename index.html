@@ -1376,6 +1376,16 @@ button.pf-di:active { background: var(--c-22); }
 .pf-mtot .pf-l { width: auto; flex: 1 1 auto; font-weight: 400; color: var(--c-cc); }
 .pf-mtot .pf-v { flex: 0 0 auto; gap: 10px; }
 #pf-mem-total { font-size: 15px; font-weight: 700; color: var(--c-fff); font-variant-numeric: tabular-nums; }
+#nu-val { font-size: 15px; font-weight: 700; color: var(--c-fff); font-variant-numeric: tabular-nums; white-space: nowrap; }
+#ps-note { margin: 0; padding: 0 13px 12px; text-align: center; font-size: 11.5px; font-weight: 300; line-height: 1.4; color: var(--c-77); }
+#blk-battery .pf-card + .pf-hint + .pf-card { margin-top: 14px; }
+#vn-sysbar .vs-leaf { display: none; height: 100%; align-items: center; margin-right: -3px; color: #4cd964; }
+#vn-sysbar .vs-leaf svg { height: 10px; }
+html.ps-on #vn-sysbar .vs-leaf { display: flex; }
+html.ps-on *, html.ps-on *::before, html.ps-on *::after { animation-iteration-count: 1 !important; }
+html.ps-on #pf-lights, html.ps-on #dm-lights, html.ps-on .vc-fx { display: none !important; }
+html.ps-3 *, html.ps-3 *::before, html.ps-3 *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+#pb-val { font-size: 15px; font-weight: 700; color: var(--c-fff); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pf-badge { display: inline-block; padding: 3px 11px; border-radius: var(--r-pill); font-size: 11.5px; font-weight: 700; line-height: 1.35; color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); border: 1px solid color-mix(in srgb, var(--ok) 50%, transparent); }
 .pf-mh:first-child { border-top: 0; }
 .pf-mh .pf-mof { margin-left: 8px; letter-spacing: 0; text-transform: none; color: var(--accent); }
@@ -2565,6 +2575,18 @@ else { root.classList.add('pin-locked'); }
         <div class="pf-row stk"><span class="pf-l">Tema</span><div class="pf-v"><div class="seg" id="seg-theme"><button type="button" class="seg-btn active" data-val="black" aria-pressed="true">Siyah</button><button type="button" class="seg-btn" data-val="gray" aria-pressed="false">Gri</button><button type="button" class="seg-btn" data-val="blue" aria-pressed="false">Mavi</button><button type="button" class="seg-btn" data-val="purple" aria-pressed="false">Mor</button></div></div></div>
       </div>
     </div>
+    <div class="pf-sec pf-set" id="blk-battery">
+      <div class="pf-st">PİL TÜKETİMİ</div>
+      <div class="pf-card">
+        <div class="pf-row"><span class="pf-l">Saatlik Pil Kullanımı</span><span class="pf-v"><span id="pb-val">—</span></span></div>
+        <div class="pf-row"><span class="pf-l">Saatlik Net Kullanım<small id="nu-range"></small></span><span class="pf-v"><span id="nu-val">—</span></span></div>
+      </div>
+      <div class="pf-hint" id="pb-hint"></div>
+      <div class="pf-card">
+        <div class="pf-row stk"><span class="pf-l">Pil Tasarrufu</span><div class="pf-v"><div class="seg" id="seg-psave"><button type="button" class="seg-btn active" data-val="0" aria-pressed="true">Yok</button><button type="button" class="seg-btn" data-val="1" aria-pressed="false">Hafif</button><button type="button" class="seg-btn" data-val="2" aria-pressed="false">Orta</button><button type="button" class="seg-btn" data-val="3" aria-pressed="false">Yüksek</button></div></div></div>
+        <div id="ps-note">Pil tasarrufu yok.</div>
+      </div>
+    </div>
     <div class="pf-sec pf-set" id="blk-content">
       <div class="pf-st">İçerik</div>
       <div class="pf-card">
@@ -2866,6 +2888,28 @@ let finishedLiveIds = [];
 function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
 function lsSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
 function lsRemove(key) { try { localStorage.removeItem(key); } catch (e) {} }
+(function vnPSInit() {
+var KEY = 'vnPS', MSG = ['Pil tasarrufu yok.', 'Animasyonlar hafifletildi.', 'Animasyonlar ve bağlantı hafifletildi.', 'Animasyon, bağlantı ve özellikler hafifletildi.'];
+var skipC = {};
+// n. tikte bir calistir (diger tikleri atla); zamanlayici ayni kalir, clearInterval ile uyumludur
+window.vnPSSkip = function (k, n) { if (n <= 1) return false; skipC[k] = (skipC[k] || 0) + 1; if (skipC[k] >= n) { skipC[k] = 0; return false; } return true; };
+window.vnPSW = function (fn, key, lvl, n) { return function () { if (window.vnPS >= lvl && window.vnPSSkip(key, n)) return; return fn.apply(this, arguments); }; };
+var lv = parseInt(lsGet(KEY) || '0', 10); if (!(lv >= 0 && lv <= 3)) lv = 0;
+window.vnPS = lv;
+var btns = Array.prototype.slice.call(document.querySelectorAll('#seg-psave .seg-btn')), note = document.getElementById('ps-note');
+function apply(v) {
+window.vnPS = v;
+var h = document.documentElement;
+h.classList.toggle('ps-on', v > 0); h.classList.toggle('ps-2', v >= 2); h.classList.toggle('ps-3', v >= 3);
+btns.forEach(function (b) { var on = parseInt(b.dataset.val, 10) === v; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+if (note) note.textContent = MSG[v];
+}
+btns.forEach(function (b) {
+b.addEventListener('pointerdown', function (e) { e.preventDefault(); });
+b.addEventListener('click', function () { var v = parseInt(b.dataset.val, 10); if (!(v >= 0 && v <= 3)) v = 0; lsSet(KEY, String(v)); apply(v); });
+});
+apply(lv);
+})();
 const OUTBOX_KEY = 'outboxV1';
 const OUTBOX_MAX = 50;
 const SEEN_KEY = 'seenMsgIdsV1';
@@ -3625,7 +3669,7 @@ peerOpenAt = Date.now();
 if (serverTimer) { clearTimeout(serverTimer); serverTimer = null; }
 if (!isConnected()) setStatus('Cihazınız hazır. RAM bekleniyor...', false);
 if (retryInterval) clearInterval(retryInterval);
-retryInterval = setInterval(tryConnect, 3000);
+retryInterval = setInterval(vnPSW(tryConnect, 'retry', 2, 2), 3000);
 tryConnect();
 });
 p.on('connection', (c) => {
@@ -3726,7 +3770,7 @@ try { vcSendSync(); } catch (e) {}
 try { if (ytCurrent && ytCurrent._announce) ytCurrent._announce(); } catch (e) {}
 setTimeout(() => { try { if (c === conn) ytSyncResume(); } catch (e) {} }, 600);
 if (pingInterval) clearInterval(pingInterval);
-pingInterval = setInterval(() => {
+pingInterval = setInterval(vnPSW(() => {
 if (!isConnected()) return;
 if (Date.now() < busyUntil) return;
 const idle = Date.now() - lastRxAt >= 3500;
@@ -3738,7 +3782,7 @@ const dead = conn;
 handleDisconnect();
 try { dead.close(); } catch (e) {}
 }
-}, 4000);
+}, 'ping', 2, 2), 4000);
 };
 if (c.open) onOpen(); else c.on('open', onOpen);
 c.on('data', (d0) => {
@@ -3922,7 +3966,7 @@ return;
 }
 if (down > 90000 && sinceStart > 90000) startPeer();
 }
-setInterval(watchdog, 4000);
+setInterval(vnPSW(watchdog, 'wd', 2, 2), 4000);
 function releasePeer() {
 try { if (conn) conn.close(); } catch (e) {}
 try { if (peer && !peer.destroyed) peer.destroy(); } catch (e) {}
@@ -4082,7 +4126,7 @@ return ok;
 if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t).then(() => true, () => fb());
 return Promise.resolve(fb());
 }
-function reducedMotion() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
+function reducedMotion() { if (window.vnPS >= 1) return true; try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
 function makeMsgAct(cls, title, svg, onClick) {
 const b = document.createElement('button');
 b.type = 'button';
@@ -5424,7 +5468,7 @@ try { ytDockLpSync(card, st.cur); } catch (e) {}
 el.classList.add('show');
 try { ytDockFitInfo(); } catch (e) {}
 }
-setInterval(ytDockUpdate, 300);
+setInterval(vnPSW(ytDockUpdate, 'dock', 3, 3), 300);
 const YT_STRIP_IDS = ['vc-pill', 'yt-dock', 'auto-chip'];
 function ytStripH() {
 const st = document.getElementById('strip-stack');
@@ -5457,7 +5501,7 @@ const dist = area.scrollHeight - area.scrollTop - area.clientHeight;
 area.style.paddingTop = want + 'px';
 area.scrollTop = Math.max(0, area.scrollHeight - area.clientHeight - dist);
 }
-setInterval(ytTopInsetSync, 150);
+setInterval(vnPSW(ytTopInsetSync, 'inset', 3, 3), 150);
 try { const st0 = document.getElementById('strip-stack'); if (st0 && window.ResizeObserver) new ResizeObserver(() => { try { ytTopInsetSync(); } catch (e) {} }).observe(st0); } catch (e) {}
 window.addEventListener('resize', () => { try { ytTopInsetSync(); } catch (e) {} });
 let ytSweepRaf = 0;
@@ -9523,7 +9567,7 @@ b.innerHTML = on ? YTD_PAUSE : YTD_PLAY;
 b.setAttribute('aria-label', on ? 'Duraklat' : 'Oynat');
 });
 }
-setInterval(ytsSyncIcons, 500);
+setInterval(vnPSW(ytsSyncIcons, 'ico', 3, 2), 500);
 function runYtSearch() {
 const q = ytsIn.value.trim();
 if (ytsTimer) { clearTimeout(ytsTimer); ytsTimer = null; }
@@ -10027,7 +10071,7 @@ on = !!c && !c._ended && ytDockDismissed !== c && !!c._getState().playing;
 } catch (e) {}
 try { document.documentElement.classList.toggle('song-on', on); } catch (e) {}
 }
-setInterval(vnSongBtnSync, 400);
+setInterval(vnPSW(vnSongBtnSync, 'song', 3, 3), 400);
 /* Bildirime basılınca (APK): çalan şarkı büyük kapaklı "Şimdi çalıyor" görünümünde açılır.
    3828'de PIN ekranı / gizlilik kapağı kalkana kadar bekler; PIN girilince açılır. 6687 ve PIN'siz durumda hemen açılır. */
 window.vnOpenNp = function () {
@@ -14848,6 +14892,75 @@ pfSave();
 pfRender();
 setInterval(() => { if (!document.hidden && (!isMobileLayout() || bpPage === 1)) pfRender(); }, 5000);
 })();
+(function pbInit() {
+var val = document.getElementById('pb-val'), hint = document.getElementById('pb-hint');
+if (!val) return;
+var V = window.VNApp, timer = 0, ema = null, shown = '', inView = false, bgNow = false;
+function put(t, h) { if (shown !== t) { shown = t; val.textContent = t; } if (hint && hint.textContent !== h) hint.textContent = h; }
+function read() {
+if (!V || typeof V.batNow !== 'function') { put('—', V ? 'Bu özellik için uygulamanın yeni sürümü gerekli.' : 'Yalnızca uygulamada ölçülür.'); return; }
+var o = {}; try { o = JSON.parse(V.batNow()) || {}; } catch (e) {}
+if (o.chg) { ema = null; put('Şarjda', 'Şarj olurken tüketim hesaplanmaz.'); return; }
+if (!(o.ma > 0) || !(o.cap > 0)) { put('—', 'Bu cihaz anlık akım bilgisi vermiyor.'); return; }
+var x = o.ma / o.cap * 100;
+ema = ema == null ? x : ema * 0.7 + x * 0.3;
+put('%' + (Math.round(ema * 10) / 10).toFixed(1).replace('.', ','), 'Anlık akıma göre tahmin; ekran, müzik ve ağa göre değişir.');
+}
+function stop() { if (timer) { clearInterval(timer); timer = 0; } }
+function sync() {
+if (inView && !bgNow && !document.hidden) { if (!timer) { ema = null; read(); timer = setInterval(read, 2000); } }
+else stop();
+}
+window.__pbBg = function (b) { bgNow = !!b; sync(); };
+try { new IntersectionObserver(function (es) { inView = es[es.length - 1].isIntersecting; sync(); }).observe(val); } catch (e) { inView = true; }
+document.addEventListener('visibilitychange', sync);
+sync();
+})();
+(function nuInit() {
+var rEl = document.getElementById('nu-range'), vEl = document.getElementById('nu-val');
+if (!rEl || !vEl) return;
+var V = window.VNApp, KEY = 'vn_nu', H = 3600000, MAXH = 5400000, GAP = 600000, tm = 0, lastObs = 0;
+var MO = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+var st = { s: null, last: null };
+try { var j = JSON.parse(lsGet(KEY) || 'null'); if (j && j.last) st.last = j.last; } catch (e) {}
+// Uygulama kapalıyken şarj olmuş olabilir: yarım kalan ölçüm penceresi devralınmaz, yeni pencere açılır
+function save() { lsSet(KEY, JSON.stringify(st)); }
+function hm(t) { var d = new Date(t); return (d.getHours() < 10 ? '0' : '') + d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes(); }
+function dm(t) { var d = new Date(t); return d.getDate() + ' ' + MO[d.getMonth()]; }
+function rng(a, b) { return dm(a) === dm(b) ? dm(a) + ', ' + hm(a) + ' — ' + hm(b) : dm(a) + ' ' + hm(a) + ' — ' + dm(b) + ' ' + hm(b); }
+function render() {
+var v = '—', r = '';
+if (!V || typeof V.sys !== 'function') r = 'Yalnızca uygulamada ölçülür';
+else if (st.last) { v = '%' + st.last.u; r = rng(st.last.t0, st.last.t1); }
+else r = st.s ? 'İlk ölçüm: ' + hm(st.s.t + H) : 'Şarj bitince ölçülür';
+if (vEl.textContent !== v) vEl.textContent = v;
+if (rEl.textContent !== r) rEl.textContent = r;
+}
+function snap() { var o = {}; try { o = JSON.parse(V.sys()) || {}; } catch (e) {} obs(o.bat, !!o.chg, o.lc); }
+function plan() {
+clearTimeout(tm); tm = 0;
+if (!st.s) return;
+tm = setTimeout(function () { tm = 0; snap(); }, Math.max(1000, st.s.t + H - Date.now()));
+}
+function obs(p, chg, lc) {
+if (!V || typeof p !== 'number' || p < 0) return;
+var now = Date.now(), prev = lastObs; lastObs = now;
+if (chg) { if (st.s) { st.s = null; plan(); render(); } return; }   // şarjdayken ölçme, pencereyi bırak
+if (!st.s) { st.s = { t: now, p: p }; plan(); render(); return; }
+// Pencere içinde şarja hiç takılmış mı? Yeni APK'da yerel kayıt (lc) kesin söyler; eskisinde uzun gözlem boşluğu şüpheli sayılır
+var plugged = typeof lc === 'number' ? lc > st.s.t : !!(prev && now - prev > GAP);
+if (plugged) { st.s = { t: now, p: p }; plan(); render(); return; }
+var el = now - st.s.t;
+if (el < H) return;
+if (el <= MAXH && st.s.p >= p) st.last = { t0: st.s.t, t1: now, u: st.s.p - p };
+st.s = { t: now, p: p };
+save(); plan(); render();
+}
+window.__nuObs = obs;
+render();
+try { if (V && typeof V.sys === 'function') snap(); } catch (e) {}
+document.addEventListener('visibilitychange', function () { if (!document.hidden && st.s && Date.now() >= st.s.t + H) snap(); });
+})();
 (function initPfMarquee() {
 const st = new WeakMap();
 function frame(now) {
@@ -15668,7 +15781,7 @@ if (nt.classList.contains('show') && !(e.target.closest && (e.target.closest('#v
 }, true);
 var elC, elN, elB, elT, elBt, c = {};
 function build() {
-bar.innerHTML = '<span class="vs-n" aria-label="Bildirimler"><i></i></span><span class="vs-lw"><span class="vs-c"></span></span><span class="vs-r"><span class="vs-bt"></span><span class="vs-net"></span><span class="vs-bat"></span><span class="vs-t"></span></span><span class="vs-m" aria-label="Şarkılar" role="button"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v11.3A3.9 3.9 0 1 0 11 17.6V7.4l8-1.6v6.5A3.9 3.9 0 1 0 21 15.6V3.6a.6.6 0 0 0-.7-.6l-10.6 2.1A.6.6 0 0 0 9 5.7z"/></svg></i></span>';
+bar.innerHTML = '<span class="vs-n" aria-label="Bildirimler"><i></i></span><span class="vs-lw"><span class="vs-c"></span></span><span class="vs-r"><span class="vs-bt"></span><span class="vs-net"></span><span class="vs-leaf"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 20C4 10 10 4 20 4C20 14 14 20 4 20Z"/><path d="M4 20L14.5 9.5" style="stroke:var(--c-000)" stroke-width="1.7" stroke-linecap="round" fill="none"/></svg></span><span class="vs-bat"></span><span class="vs-t"></span></span><span class="vs-m" aria-label="Şarkılar" role="button"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v11.3A3.9 3.9 0 1 0 11 17.6V7.4l8-1.6v6.5A3.9 3.9 0 1 0 21 15.6V3.6a.6.6 0 0 0-.7-.6l-10.6 2.1A.6.6 0 0 0 9 5.7z"/></svg></i></span>';
 elC = bar.querySelector('.vs-c'); elN = bar.querySelector('.vs-net'); elBt = bar.querySelector('.vs-bt'); elB = bar.querySelector('.vs-bat'); elT = bar.querySelector('.vs-t'); ntDot();
 c = {};
 }
@@ -15716,6 +15829,7 @@ setH();
 if (!curH) return;
 if (!elC || !bar.contains(elC)) build();
 var o = {}; try { o = JSON.parse(V.sys()) || {}; } catch (e) {}
+try { if (window.__nuObs) window.__nuObs(o.bat, !!o.chg, o.lc); } catch (e) {}
 var net = o.net === 'wifi' || o.net === 'eth' ? wifi(o.net === 'eth' ? -1 : (o.lvl == null ? -1 : o.lvl))
 : o.net === 'cell' ? cell(o.lvl == null ? -1 : o.lvl)
 : o.net === 'other' ? wifi(-1) : off();
