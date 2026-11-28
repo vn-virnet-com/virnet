@@ -1119,12 +1119,10 @@ body.no-anim #app { transition: none !important; }
 body.live-on #input-wrapper::after {
 content: ''; position: absolute; inset: -1px; z-index: 3; pointer-events: none; box-sizing: border-box;
 border-radius: inherit; padding: 2px;
-background: conic-gradient(from var(--live-a), #fff 0deg, color-mix(in srgb, #fff 55%, var(--warn)) 22deg, var(--warn) 85deg, var(--warn) 275deg, color-mix(in srgb, #fff 55%, var(--warn)) 338deg, #fff 360deg);
+background: var(--warn);
 -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
 mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude;
-animation: liveRingSpin 3.4s linear infinite;
 }
-@media (prefers-reduced-motion: reduce) { body.live-on #input-wrapper::after { animation: none; } }
 #nick-input { -webkit-touch-callout: none; touch-action: pan-y; }
 @keyframes nick-nudge-prev { from { transform: translateX(-9px); opacity: 0.35; } to { transform: none; opacity: 1; } }
 @keyframes nick-nudge-next { from { transform: translateX(9px); opacity: 0.35; } to { transform: none; opacity: 1; } }
@@ -1396,7 +1394,7 @@ html.ps-on #pf-lights, html.ps-on #dm-lights, html.ps-on .vc-fx { display: none 
 html.ps-3 *, html.ps-3 *::before, html.ps-3 *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
 /* Pil tasarrufu (kademeli): Hafif+ bildirim sabit kirmizi, Orta+ canli mesaj/altin cerceve sabit sari, Yuksek: sarma cubuklari siçramali + hareketi azalt */
 html.ps-on #vn-sysbar .vs-n.on i { animation: none !important; background: #ff3b30; }
-html.ps-2 body.live-on #input-wrapper::after, html.ps-2 .tkm-card::after { animation: none !important; background: var(--warn) !important; }
+html.ps-2 .tkm-card::after { animation: none !important; background: var(--warn) !important; }
 html.ps-3 .ytd-track > i, html.ps-3 .yt-track > i, html.ps-3 #yt-np .np-track > i { transition: none !important; }
 #pb-val { font-size: 15px; font-weight: 700; color: var(--c-fff); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pf-badge { display: inline-block; padding: 3px 11px; border-radius: var(--r-pill); font-size: 11.5px; font-weight: 700; line-height: 1.35; color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); border: 1px solid color-mix(in srgb, var(--ok) 50%, transparent); }
@@ -2905,7 +2903,7 @@ function lsRemove(key) { try { localStorage.removeItem(key); } catch (e) {} }
 var KEY = 'vnPS', NAMES = ['Yok', 'Hafif', 'Orta', 'Yüksek'];
 var ROWS = {
 1: ['Animasyonlar bir kez oynayıp durur.', 'Işık ve parlama efektleri kapanır.', 'Bildirim rozeti yanıp sönmez, sabit kırmızı kalır.', 'Durum çubuğunda yaprak simgesi görünür.'],
-2: ['Canlı mesaj çerçevesi dönmez, sabit sarı yanar.', 'Bağlantı kontrolleri daha seyrek yapılır.'],
+2: ['Bağlantı kontrolleri daha seyrek yapılır.'],
 3: ['Şarkı sarma çubukları kaymaz, adım adım sıçrar.', 'Bulanıklık efektleri kapanır.', 'Şarkı şeridi daha seyrek güncellenir.', 'Hareketi azalt modu açıkmış gibi davranır.']
 };
 // sarma cubugu: Yuksek'te %2,5'lik adimlarla siçrar (pürüzsüz kaymaz)
