@@ -1385,6 +1385,10 @@ html.ps-on #vn-sysbar .vs-leaf { display: flex; }
 html.ps-on *, html.ps-on *::before, html.ps-on *::after { animation-iteration-count: 1 !important; }
 html.ps-on #pf-lights, html.ps-on #dm-lights, html.ps-on .vc-fx { display: none !important; }
 html.ps-3 *, html.ps-3 *::before, html.ps-3 *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+/* Pil tasarrufu (kademeli): Hafif+ bildirim sabit kirmizi, Orta+ canli mesaj/altin cerceve sabit sari, Yuksek: sarma cubuklari siçramali + hareketi azalt */
+html.ps-on #vn-sysbar .vs-n.on i { animation: none !important; background: #ff3b30; }
+html.ps-2 body.live-on #input-wrapper::after, html.ps-2 .tkm-card::after { animation: none !important; background: var(--warn) !important; }
+html.ps-3 .ytd-track > i, html.ps-3 .yt-track > i, html.ps-3 #yt-np .np-track > i { transition: none !important; }
 #pb-val { font-size: 15px; font-weight: 700; color: var(--c-fff); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pf-badge { display: inline-block; padding: 3px 11px; border-radius: var(--r-pill); font-size: 11.5px; font-weight: 700; line-height: 1.35; color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); border: 1px solid color-mix(in srgb, var(--ok) 50%, transparent); }
 .pf-mh:first-child { border-top: 0; }
@@ -2889,7 +2893,48 @@ function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { retu
 function lsSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
 function lsRemove(key) { try { localStorage.removeItem(key); } catch (e) {} }
 (function vnPSInit() {
-var KEY = 'vnPS', MSG = ['Pil tasarrufu yok.', 'Animasyonlar hafifletildi.', 'Animasyonlar ve bağlantı hafifletildi.', 'Animasyon, bağlantı ve özellikler hafifletildi.'];
+var KEY = 'vnPS', MSG = ['Pil tasarrufu yok.', 'Animasyonlar hafifletildi, bildirim sabit yanar.', 'Animasyonlar ve bağlantı hafifletildi, gifler bir kez oynar, canlı mesaj çerçevesi sabit sarı.', 'Hareket azaltma modu açık: sarma çubukları sıçrar, animasyon, bağlantı ve özellikler en aza iner.'];
+// sarma cubugu: Yuksek'te %2,5'lik adimlarla siçrar (pürüzsüz kaymaz)
+window.vnBarPct = function (cur, dur) { if (!dur) return '0'; var f = Math.min(1, Math.max(0, cur / dur)); if (window.vnPS >= 3) f = Math.floor(f * 40) / 40; return (f * 100) + '%'; };
+// gif profil fotografi: Orta+ seviyede dongu uzantisi etkisiz kilinir, gif bir kez oynar
+var gifC = new Map();
+window.vnGO = function (u) {
+if (typeof u !== 'string' || window.vnPS < 2 || u.indexOf('data:image/gif') !== 0) return u;
+if (gifC.has(u)) return gifC.get(u);
+var r = u;
+try {
+var cut = u.indexOf(',') + 1;
+if (cut > 0 && u.slice(0, cut).indexOf(';base64') > 0) {
+var head = u.slice(cut, cut + 4096), bin = atob(head), at = bin.indexOf('NETSCAPE2.0');
+if (at < 0) at = bin.indexOf('ANIMEXTS1.0');
+if (at > 0) { bin = bin.slice(0, at) + 'X' + bin.slice(at + 1); r = u.slice(0, cut) + btoa(bin) + u.slice(cut + head.length); }
+}
+} catch (e) { r = u; }
+if (gifC.size >= 8) gifC.delete(gifC.keys().next().value);
+gifC.set(u, r);
+return r;
+};
+// Yuksek: "hareketi azalt" medya kurallarini html.ps-3 altina kopyalayip sanki sistem ayari acikmis gibi davran
+function buildRM() {
+try {
+var old = document.getElementById('vn-ps-rm'); if (old) old.remove();
+var out = [];
+var split = function (t) { var a = [], d = 0, c = ''; for (var i = 0; i < t.length; i++) { var ch = t[i]; if (ch === '(' || ch === '[') d++; else if (ch === ')' || ch === ']') d--; if (ch === ',' && d === 0) { a.push(c); c = ''; } else c += ch; } if (c.trim()) a.push(c); return a; };
+Array.prototype.forEach.call(document.styleSheets, function (ss) {
+var rules; try { rules = ss.cssRules; } catch (e) { return; }
+if (!rules) return;
+Array.prototype.forEach.call(rules, function (r) {
+if (r.type !== 4 || !/prefers-reduced-motion:\s*reduce/.test(r.conditionText || (r.media && r.media.mediaText) || '')) return;
+Array.prototype.forEach.call(r.cssRules, function (ir) {
+if (ir.type !== 1 || !ir.selectorText) return;
+out.push(split(ir.selectorText).map(function (x) { return 'html.ps-3 ' + x.trim(); }).join(', ') + ' { ' + ir.style.cssText + ' }');
+});
+});
+});
+if (out.length) { var st = document.createElement('style'); st.id = 'vn-ps-rm'; st.textContent = out.join('\n'); document.head.appendChild(st); }
+} catch (e) {}
+}
+window.addEventListener('load', function () { if (window.vnPS >= 3) buildRM(); });
 var skipC = {};
 // n. tikte bir calistir (diger tikleri atla); zamanlayici ayni kalir, clearInterval ile uyumludur
 window.vnPSSkip = function (k, n) { if (n <= 1) return false; skipC[k] = (skipC[k] || 0) + 1; if (skipC[k] >= n) { skipC[k] = 0; return false; } return true; };
@@ -2903,10 +2948,11 @@ var h = document.documentElement;
 h.classList.toggle('ps-on', v > 0); h.classList.toggle('ps-2', v >= 2); h.classList.toggle('ps-3', v >= 3);
 btns.forEach(function (b) { var on = parseInt(b.dataset.val, 10) === v; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
 if (note) note.textContent = MSG[v];
+if (v >= 3 && document.readyState === 'complete') buildRM();
 }
 btns.forEach(function (b) {
 b.addEventListener('pointerdown', function (e) { e.preventDefault(); });
-b.addEventListener('click', function () { var v = parseInt(b.dataset.val, 10); if (!(v >= 0 && v <= 3)) v = 0; lsSet(KEY, String(v)); apply(v); });
+b.addEventListener('click', function () { var v = parseInt(b.dataset.val, 10); if (!(v >= 0 && v <= 3)) v = 0; lsSet(KEY, String(v)); apply(v); try { document.dispatchEvent(new Event('vnps')); } catch (e) {} });
 });
 apply(lv);
 })();
@@ -5439,7 +5485,7 @@ const k = st.playing ? 'p' : 'q';
 if (d.play.dataset.i !== k) { d.play.dataset.i = k; d.play.innerHTML = st.playing ? YTD_PAUSE : YTD_PLAY; }
 d.play.setAttribute('aria-label', st.playing ? 'Duraklat' : 'Oynat');
 if (!d.seeking && !d.barSeeking) {
-d.fill.style.width = st.dur ? Math.min(100, st.cur / st.dur * 100) + '%' : '0';
+d.fill.style.width = vnBarPct(st.cur, st.dur);
 const tcs = ytFmt(st.cur);
 if (d.tc.textContent !== tcs) d.tc.textContent = tcs;
 }
@@ -5725,7 +5771,7 @@ if (!player || !ready) return;
 try {
 const d = player.getDuration() || 0, c = player.getCurrentTime() || 0;
 if (!seeking) {
-barEl.style.width = d ? Math.min(100, c / d * 100) + '%' : '0';
+barEl.style.width = vnBarPct(c, d);
 curEl.textContent = ytFmt(c);
 }
 durEl.textContent = ytFmt(d);
@@ -9492,7 +9538,7 @@ return b;
 bar.appendChild(mk('ssb-cmd', '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor" stroke="none" font-family="Lexend,Arial,sans-serif">CMD</text></svg>', 'CMD', ''));
 tg.forEach((c) => {
 const b = mk('ssb-av', '', c.n, c.id);
-if (c.p) b.style.backgroundImage = 'url("' + c.p + '")'; else b.textContent = (Array.from(c.n)[0] || '?').toUpperCase();
+if (c.p) b.style.backgroundImage = 'url("' + vnGO(c.p) + '")'; else b.textContent = (Array.from(c.n)[0] || '?').toUpperCase();
 bar.appendChild(b);
 });
 ['pointerdown', 'mousedown', 'touchstart'].forEach((ev) => bar.addEventListener(ev, (e) => e.stopPropagation()));
@@ -10172,7 +10218,7 @@ if (pb.dataset.i !== k) { pb.dataset.i = k; pb.innerHTML = s.playing ? YTD_PAUSE
 const pl = !!ytPl && !!c._ghost;
 q('.np-prev').style.display = pl ? '' : 'none'; q('.np-next').style.display = pl ? '' : 'none';
 q('.np-fav').classList.toggle('on', ytsIsFav(c._ytId));
-if (!ytNpSeek) { q('.np-track > i').style.width = s.dur ? Math.min(100, s.cur / s.dur * 100) + '%' : '0'; q('.np-tc').textContent = ytFmt(s.cur); }
+if (!ytNpSeek) { q('.np-track > i').style.width = vnBarPct(s.cur, s.dur); q('.np-tc').textContent = ytFmt(s.cur); }
 q('.np-td').textContent = ytFmt(s.dur);
 try { ytNpLyr(c, s.cur); } catch (e) {}
 }
@@ -12634,7 +12680,7 @@ box.textContent = '';
 sortedList().forEach((c) => {
 const row = document.createElement('div'); row.className = 'dm-row'; row.dataset.id = c.id;
 const av = document.createElement('div'); av.className = 'dm-av';
-if (c.p) av.style.backgroundImage = 'url("' + c.p + '")'; else av.textContent = (Array.from(c.n)[0] || '?').toUpperCase();
+if (c.p) av.style.backgroundImage = 'url("' + vnGO(c.p) + '")'; else av.textContent = (Array.from(c.n)[0] || '?').toUpperCase();
 const dot = document.createElement('i'); dot.className = 'dm-st' + (c.o === 0 ? ' off' : (c.o === 2 ? ' idle' : '')); if (!c.ai) av.appendChild(dot);
 if (isLocked(c)) row.classList.add('locked');
 const tx = document.createElement('div'); tx.className = 'dm-txt';
@@ -12728,7 +12774,7 @@ aiRow.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' 
 function setAv() {
 avT.textContent = (Array.from(nameIn.value.trim())[0] || '?').toUpperCase();
 av.classList.toggle('has-photo', !!pend);
-av.style.backgroundImage = pend ? 'url("' + pend + '")' : '';
+av.style.backgroundImage = pend ? 'url("' + vnGO(pend) + '")' : '';
 av.setAttribute('aria-label', pend ? 'Fotoğrafı değiştir' : 'Fotoğraf ekle');
 }
 function openBox() {
@@ -12863,6 +12909,7 @@ lightsSet(pick);
 img.onerror = () => { if (lightKey === url) lightsSet([]); };
 img.src = url;
 }
+document.addEventListener('vnps', function () { try { render(); } catch (e) {} try { paintCur(); } catch (e) {} try { syncBar(); } catch (e) {} });
 function paintCur() {
 if (!pv.classList.contains('show') && !pf.classList.contains('show')) return;
 const c = curChat();
@@ -12870,7 +12917,7 @@ if (!c) { closeAll(); return; }
 const ini = (Array.from(c.n)[0] || '?').toUpperCase();
 pv.classList.toggle('locked', isLocked(c));
 try { const sb = pf.querySelector('#dm-pf-st'); if (sb) { sb.style.display = c.ai ? 'none' : ''; sb.classList.toggle('on', c.o !== 0 && c.o !== 2); sb.classList.toggle('idle', c.o === 2); sb.title = c.o === 0 ? 'Çevrimdışı' : (c.o === 2 ? 'Boşta' : 'Çevrimiçi'); sb.setAttribute('aria-label', sb.title); } } catch (e) {}
-const bg = c.p ? 'url("' + c.p + '")' : '';
+const bg = c.p ? 'url("' + vnGO(c.p) + '")' : '';
 sq.style.backgroundImage = bg; sq.textContent = c.p ? '' : ini;
 pfAv.style.backgroundImage = bg; pfAv.textContent = c.p ? '' : ini;
 if (!editingName) { pfName.textContent = c.n; if (c.ai) pfName.appendChild(aiTag()); }
@@ -12935,7 +12982,7 @@ if (!c) return;
 barNm.textContent = ''; barNm.classList.toggle('has-ai', !!c.ai);
 try { const gb = barEl.querySelector('#dm-bar-game'); if (gb) gb.style.visibility = c.ai ? 'hidden' : ''; } catch (e) {}
 if (c.ai) { const nt3 = document.createElement('span'); nt3.className = 'dm-nt'; nt3.textContent = c.n; barNm.appendChild(nt3); barNm.appendChild(aiTag()); } else barNm.textContent = c.n;
-barAv.style.backgroundImage = c.p ? 'url("' + c.p + '")' : '';
+barAv.style.backgroundImage = c.p ? 'url("' + vnGO(c.p) + '")' : '';
 barAv.textContent = c.p ? '' : (Array.from(c.n)[0] || '?').toUpperCase();
 }
 function dmHistSync(id) {
@@ -14441,7 +14488,7 @@ const html = list.map((r) => {
 const ph = pfOpPhOf(r.id).d, act = r.id === pfData.sel, inert = !adm && !ph;
 const lbl = adm ? 'Operatör fotoğrafını değiştir' : (ph ? 'Operatör fotoğrafını büyüt' : 'Operatör');
 return '<div class="pf-dev" data-id="' + r.id + '">' +
-'<button type="button" class="pf-oav' + (ph ? ' has-photo' : '') + (inert ? ' inert' : '') + '" aria-label="' + lbl + '"' + (ph ? ' style="background-image:url(' + ph + ')"' : '') + '><span class="pf-oav-t">' + escapeHtml((Array.from(r.n.trim())[0] || '?').toUpperCase()) + '</span></button>' +
+'<button type="button" class="pf-oav' + (ph ? ' has-photo' : '') + (inert ? ' inert' : '') + '" aria-label="' + lbl + '"' + (ph ? ' style="background-image:url(' + vnGO(ph) + ')"' : '') + '><span class="pf-oav-t">' + escapeHtml((Array.from(r.n.trim())[0] || '?').toUpperCase()) + '</span></button>' +
 '<div class="pf-dm">' +
 (can
 ? '<input class="pf-in pf-medit pf-opn" type="text" maxlength="40" value="' + pfAttr(r.n) + '" aria-label="Operatör adı" autocomplete="off" autocorrect="off" spellcheck="false" name="pf-op-n" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">'
@@ -14557,6 +14604,7 @@ pfLightsSet(pick.slice(0, 3));
 img.onerror = () => { if (pfLightKey === url) pfLightsReset(); };
 img.src = url;
 }
+document.addEventListener('vnps', function () { try { pfRender(); } catch (e) {} });
 function pfRender() {
 if (!pfEl('pf-scroll')) return;
 const adm = notifCanSend();
@@ -14571,7 +14619,7 @@ pfEl('pf-hname').textContent = nm;
 pfEl('pf-huser').textContent = d.user ? '@' + d.user : '';
 const av = pfEl('pf-av');
 av.classList.toggle('has-photo', !!pfPhoto.d);
-av.style.backgroundImage = pfPhoto.d ? 'url(' + pfPhoto.d + ')' : '';
+av.style.backgroundImage = pfPhoto.d ? 'url(' + vnGO(pfPhoto.d) + ')' : '';
 av.setAttribute('aria-label', pfPhoto.d ? 'Fotoğrafı değiştir' : 'Fotoğraf ekle');
 pfLightsSync();
 const eb = pfEl('pf-edit');
@@ -14757,7 +14805,7 @@ if (e.target.closest('.pf-oav')) {
 if (notifCanSend()) { opPickId = id; opFile.value = ''; opFile.click(); return; }
 const ph = pfOpPhOf(id).d;
 if (!ph) return;
-openViewer(ph);
+openViewer(vnGO(ph));
 viewer.classList.remove('dl-on'); viewerDlUrl = null; viewerDlBlob = null;
 viewer.classList.add('op-view'); viewerImg.classList.add('once');
 return;
@@ -14911,7 +14959,7 @@ function sync() {
 if (inView && !bgNow && !document.hidden) { if (!timer) { ema = null; read(); timer = setInterval(read, 2000); } }
 else stop();
 }
-window.__pbBg = function (b) { bgNow = !!b; sync(); };
+window.__pbBg = function (b) { bgNow = !!b; sync(); try { if (window.__nuBg) window.__nuBg(!!b); } catch (e) {} };
 try { new IntersectionObserver(function (es) { inView = es[es.length - 1].isIntersecting; sync(); }).observe(val); } catch (e) { inView = true; }
 document.addEventListener('visibilitychange', sync);
 sync();
@@ -14919,23 +14967,20 @@ sync();
 (function nuInit() {
 var rEl = document.getElementById('nu-range'), vEl = document.getElementById('nu-val');
 if (!rEl || !vEl) return;
-var V = window.VNApp, KEY = 'vn_nu', H = 3600000, MAXH = 5400000, GAP = 600000, tm = 0, lastObs = 0;
-var MO = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+// 20 dk boyunca şarj hiç olmadan ve uygulama ekrandayken ölçer; farkı 3 ile çarpıp saatlik % olarak gösterir
+var V = window.VNApp, KEY = 'vn_nu2', H = 1200000, MAXH = 1800000, GAP = 120000, MUL = 3, tm = 0, lastObs = 0, bgNow = false, charging = false;
 var st = { s: null, last: null };
 try { var j = JSON.parse(lsGet(KEY) || 'null'); if (j && j.last) st.last = j.last; } catch (e) {}
-// Uygulama kapalıyken şarj olmuş olabilir: yarım kalan ölçüm penceresi devralınmaz, yeni pencere açılır
 function save() { lsSet(KEY, JSON.stringify(st)); }
-function hm(t) { var d = new Date(t); return (d.getHours() < 10 ? '0' : '') + d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes(); }
-function dm(t) { var d = new Date(t); return d.getDate() + ' ' + MO[d.getMonth()]; }
-function rng(a, b) { return dm(a) === dm(b) ? dm(a) + ', ' + hm(a) + ' — ' + hm(b) : dm(a) + ' ' + hm(a) + ' — ' + dm(b) + ' ' + hm(b); }
 function render() {
 var v = '—', r = '';
 if (!V || typeof V.sys !== 'function') r = 'Yalnızca uygulamada ölçülür';
-else if (st.last) { v = '%' + st.last.u; r = rng(st.last.t0, st.last.t1); }
-else r = st.s ? 'İlk ölçüm: ' + hm(st.s.t + H) : 'Şarj bitince ölçülür';
+else if (st.last) v = '%' + st.last.u;
+else r = st.s ? 'Ölçülüyor' : (charging ? 'Şarj bitince ölçülür' : '');
 if (vEl.textContent !== v) vEl.textContent = v;
 if (rEl.textContent !== r) rEl.textContent = r;
 }
+function abandon() { if (st.s) { st.s = null; clearTimeout(tm); tm = 0; } render(); }
 function snap() { var o = {}; try { o = JSON.parse(V.sys()) || {}; } catch (e) {} obs(o.bat, !!o.chg, o.lc); }
 function plan() {
 clearTimeout(tm); tm = 0;
@@ -14944,22 +14989,25 @@ tm = setTimeout(function () { tm = 0; snap(); }, Math.max(1000, st.s.t + H - Dat
 }
 function obs(p, chg, lc) {
 if (!V || typeof p !== 'number' || p < 0) return;
+charging = chg;
+if (bgNow || document.hidden) { abandon(); return; }   // uygulama ekranda değilse ölçme
 var now = Date.now(), prev = lastObs; lastObs = now;
-if (chg) { if (st.s) { st.s = null; plan(); render(); } return; }   // şarjdayken ölçme, pencereyi bırak
+if (chg) { abandon(); return; }                         // şarjdayken ölçme
 if (!st.s) { st.s = { t: now, p: p }; plan(); render(); return; }
-// Pencere içinde şarja hiç takılmış mı? Yeni APK'da yerel kayıt (lc) kesin söyler; eskisinde uzun gözlem boşluğu şüpheli sayılır
+// Pencere içinde şarja hiç takılmış mı? Yeni APK'da yerel kayıt (lc) kesin söyler; eskisinde gözlem boşluğu şüpheli sayılır
 var plugged = typeof lc === 'number' ? lc > st.s.t : !!(prev && now - prev > GAP);
 if (plugged) { st.s = { t: now, p: p }; plan(); render(); return; }
 var el = now - st.s.t;
 if (el < H) return;
-if (el <= MAXH && st.s.p >= p) st.last = { t0: st.s.t, t1: now, u: st.s.p - p };
+if (el <= MAXH && st.s.p >= p) st.last = { u: (st.s.p - p) * MUL };
 st.s = { t: now, p: p };
 save(); plan(); render();
 }
 window.__nuObs = obs;
+window.__nuBg = function (b) { bgNow = !!b; if (b) abandon(); else if (V && typeof V.sys === 'function') snap(); };
 render();
 try { if (V && typeof V.sys === 'function') snap(); } catch (e) {}
-document.addEventListener('visibilitychange', function () { if (!document.hidden && st.s && Date.now() >= st.s.t + H) snap(); });
+document.addEventListener('visibilitychange', function () { if (document.hidden) abandon(); else if (V && typeof V.sys === 'function') snap(); });
 })();
 (function initPfMarquee() {
 const st = new WeakMap();
