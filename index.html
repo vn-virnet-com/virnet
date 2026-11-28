@@ -1377,7 +1377,16 @@ button.pf-di:active { background: var(--c-22); }
 .pf-mtot .pf-v { flex: 0 0 auto; gap: 10px; }
 #pf-mem-total { font-size: 15px; font-weight: 700; color: var(--c-fff); font-variant-numeric: tabular-nums; }
 #nu-val { font-size: 15px; font-weight: 700; color: var(--c-fff); font-variant-numeric: tabular-nums; white-space: nowrap; }
-#ps-note { margin: 0; padding: 0 13px 12px; text-align: center; font-size: 11.5px; font-weight: 300; line-height: 1.4; color: var(--c-77); }
+#ps-note { margin: 0; padding: 0; }
+#ps-tbl { width: 100%; border-collapse: collapse; border-top: 1px solid var(--c-33); }
+#ps-tbl td { padding: 8px 12px; vertical-align: top; border-bottom: 1px solid var(--c-22, var(--c-33)); font-size: 12px; line-height: 1.4; color: var(--c-cc); }
+#ps-tbl tr:last-child td { border-bottom: 0; }
+#ps-tbl td.pt-l { width: 1%; white-space: nowrap; padding-right: 8px; font-weight: 700; font-size: 11.5px; }
+#ps-tbl td.pt-l.l1 { color: #ff9f0a; }
+#ps-tbl td.pt-l.l2 { color: #ffd23f; }
+#ps-tbl td.pt-l.l3 { color: #30d158; }
+#ps-tbl td.pt-l.l0 { color: var(--c-77); }
+#ps-tbl td.pt-r { font-weight: 300; }
 #blk-battery .pf-card + .pf-hint + .pf-card { margin-top: 14px; }
 #vn-sysbar .vs-leaf { display: none; height: 100%; align-items: center; margin-right: -3px; color: #4cd964; }
 #vn-sysbar .vs-leaf svg { height: 10px; }
@@ -2588,7 +2597,7 @@ else { root.classList.add('pin-locked'); }
       <div class="pf-hint" id="pb-hint"></div>
       <div class="pf-card">
         <div class="pf-row stk"><span class="pf-l">Pil Tasarrufu</span><div class="pf-v"><div class="seg" id="seg-psave"><button type="button" class="seg-btn active" data-val="0" aria-pressed="true">Yok</button><button type="button" class="seg-btn" data-val="1" aria-pressed="false">Hafif</button><button type="button" class="seg-btn" data-val="2" aria-pressed="false">Orta</button><button type="button" class="seg-btn" data-val="3" aria-pressed="false">Yüksek</button></div></div></div>
-        <div id="ps-note">Pil tasarrufu yok.</div>
+        <div id="ps-note"><table id="ps-tbl"></table></div>
       </div>
     </div>
     <div class="pf-sec pf-set" id="blk-content">
@@ -2893,7 +2902,12 @@ function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { retu
 function lsSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
 function lsRemove(key) { try { localStorage.removeItem(key); } catch (e) {} }
 (function vnPSInit() {
-var KEY = 'vnPS', MSG = ['Pil tasarrufu yok.', 'Animasyonlar hafifletildi, bildirim sabit yanar.', 'Animasyonlar ve bağlantı hafifletildi, gifler bir kez oynar, canlı mesaj çerçevesi sabit sarı.', 'Hareket azaltma modu açık: sarma çubukları sıçrar, animasyon, bağlantı ve özellikler en aza iner.'];
+var KEY = 'vnPS', NAMES = ['Yok', 'Hafif', 'Orta', 'Yüksek'];
+var ROWS = {
+1: ['Animasyonlar bir kez oynayıp durur.', 'Işık ve parlama efektleri kapanır.', 'Bildirim rozeti yanıp sönmez, sabit kırmızı kalır.', 'Durum çubuğunda yaprak simgesi görünür.'],
+2: ['Gifli profil fotoğrafları bir kez oynar.', 'Canlı mesaj çerçevesi dönmez, sabit sarı yanar.', 'Bağlantı kontrolleri daha seyrek yapılır.'],
+3: ['Şarkı sarma çubukları kaymaz, adım adım sıçrar.', 'Bulanıklık efektleri kapanır.', 'Şarkı şeridi daha seyrek güncellenir.', 'Hareketi azalt modu açıkmış gibi davranır.']
+};
 // sarma cubugu: Yuksek'te %2,5'lik adimlarla siçrar (pürüzsüz kaymaz)
 window.vnBarPct = function (cur, dur) { if (!dur) return '0'; var f = Math.min(1, Math.max(0, cur / dur)); if (window.vnPS >= 3) f = Math.floor(f * 40) / 40; return (f * 100) + '%'; };
 // gif profil fotografi: Orta+ seviyede dongu uzantisi etkisiz kilinir, gif bir kez oynar
@@ -2941,13 +2955,13 @@ window.vnPSSkip = function (k, n) { if (n <= 1) return false; skipC[k] = (skipC[
 window.vnPSW = function (fn, key, lvl, n) { return function () { if (window.vnPS >= lvl && window.vnPSSkip(key, n)) return; return fn.apply(this, arguments); }; };
 var lv = parseInt(lsGet(KEY) || '0', 10); if (!(lv >= 0 && lv <= 3)) lv = 0;
 window.vnPS = lv;
-var btns = Array.prototype.slice.call(document.querySelectorAll('#seg-psave .seg-btn')), note = document.getElementById('ps-note');
+var btns = Array.prototype.slice.call(document.querySelectorAll('#seg-psave .seg-btn')), tbl = document.getElementById('ps-tbl');
 function apply(v) {
 window.vnPS = v;
 var h = document.documentElement;
 h.classList.toggle('ps-on', v > 0); h.classList.toggle('ps-2', v >= 2); h.classList.toggle('ps-3', v >= 3);
 btns.forEach(function (b) { var on = parseInt(b.dataset.val, 10) === v; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
-if (note) note.textContent = MSG[v];
+if (tbl) { var h = ''; if (v === 0) h = '<tr><td class="pt-l l0">Yok</td><td class="pt-r">Pil için kısıtlanan özellik yok.</td></tr>'; else for (var L = v; L >= 1; L--) ROWS[L].forEach(function (t, k) { h += '<tr><td class="pt-l l' + L + '">' + (k === 0 ? NAMES[L] : '') + '</td><td class="pt-r">' + t + '</td></tr>'; }); tbl.innerHTML = h; }
 if (v >= 3 && document.readyState === 'complete') buildRM();
 }
 btns.forEach(function (b) {
